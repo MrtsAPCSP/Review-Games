@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excavation Log · Unit 2.2 Egyptian Art</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --sand-0:#f4ead1;
+  --sand-1:#e7d3a1;
+  --sand-2:#cfa96b;
+  --layer-new:#b98a52;
+  --layer-mid:#96693f;
+  --layer-old:#734c31;
+  --layer-early:#4a2f22;
+  --ink:#2c1c10;
+  --gold:#c9982e;
+  --gold-bright:#e8b840;
+  --lapis:#1f5c68;
+  --lapis-bright:#2f8a92;
+  --lapis-deep:#123b43;
+  --carnelian:#a13d2b;
+  --paper:#fbf3de;
+  --line:rgba(44,28,16,0.18);
+  --shadow:0 10px 30px rgba(30,17,6,0.25);
+  --radius:14px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--sand-0);
+  color:var(--ink);
+  font-family:'Work Sans', sans-serif;
+  line-height:1.55;
+}
+:focus-visible{outline:3px solid var(--lapis-bright); outline-offset:2px;}
+
+.mono{font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em;}
+h1,h2,h3{font-family:'Cinzel', serif; margin:0; letter-spacing:0.01em;}
+
+body{
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(255,255,255,0.25), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(255,255,255,0.15), transparent 45%),
+    repeating-linear-gradient(115deg, rgba(44,28,16,0.025) 0px, rgba(44,28,16,0.025) 2px, transparent 2px, transparent 6px);
+}
+
+.site{max-width:1080px; margin:0 auto; padding:0 20px 100px;}
+
+.header{
+  padding:34px 0 20px;
+  border-bottom:2px dashed var(--sand-2);
+  display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; align-items:flex-end;
+}
+.header .tag{font-size:0.72rem; color:var(--carnelian); text-transform:uppercase; margin-bottom:6px;}
+.header h1{font-size:2.1rem; color:var(--ink);}
+.header .site-code{font-size:0.78rem; color:var(--ink); opacity:0.75; text-align:right;}
+.header .site-code div{margin-bottom:2px;}
+.header .expedition-badge{
+  font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--paper); background:var(--carnelian);
+  padding:4px 10px; border-radius:999px; display:inline-block; margin-bottom:4px;
+}
+
+/* part nav cards */
+.part-nav{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:26px 0 6px;}
+@media (max-width:700px){.part-nav{grid-template-columns:1fr;}}
+.part-card{
+  border-radius:14px; padding:18px 20px; cursor:pointer; border:2px solid var(--ink); text-align:left;
+  transition:transform .15s ease; display:block; text-decoration:none;
+}
+.part-card:hover{transform:translateY(-2px);}
+.part-card.one{background:var(--sand-1); color:var(--ink);}
+.part-card.two{background:var(--lapis); color:var(--sand-0);}
+.part-card .eyebrow2{font-family:'IBM Plex Mono',monospace; font-size:0.68rem; text-transform:uppercase; opacity:0.75; letter-spacing:0.06em;}
+.part-card h3{font-size:1.15rem; margin:4px 0 6px;}
+.part-card p{margin:0; font-size:0.85rem; opacity:0.85;}
+
+.part-banner{
+  margin:64px 0 30px; padding:22px 26px; border-radius:16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.part-banner.one{background:linear-gradient(120deg, var(--sand-1), var(--sand-0)); border:2px solid var(--ink);}
+.part-banner.two{background:linear-gradient(120deg, var(--lapis-deep), var(--lapis)); border:2px solid var(--lapis-deep); color:var(--sand-0);}
+.part-banner .num{font-family:'Cinzel',serif; font-size:2.4rem; font-weight:900; opacity:0.35; line-height:1;}
+.part-banner .txt h2{font-size:1.5rem;}
+.part-banner .txt p{margin:4px 0 0; font-size:0.9rem; opacity:0.85; max-width:560px;}
+.part-banner.two .num{color:var(--sand-0);}
+
+.hero{padding:38px 0 10px; display:grid; grid-template-columns:1.3fr 1fr; gap:34px; align-items:center;}
+@media (max-width:760px){.hero{grid-template-columns:1fr;}}
+.hero p{font-size:1.05rem; max-width:520px;}
+.hero .lede{font-size:1.28rem; font-weight:600; color:var(--ink);}
+.hero-note{
+  margin-top:16px; font-size:0.82rem; color:var(--ink); background:var(--paper);
+  border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.hero-note svg{flex:none; width:20px; height:20px; margin-top:2px; color:var(--carnelian);}
+.cta-row{margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;}
+.btn{
+  font-family:'IBM Plex Mono', monospace; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em;
+  border:none; border-radius:999px; padding:12px 22px; cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease; background:var(--ink); color:var(--paper);
+}
+.btn:hover{transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,0.25);}
+.btn.ghost{background:transparent; color:var(--ink); border:1.5px solid var(--ink);}
+.btn.lapis{background:var(--lapis-bright); color:var(--lapis-deep);}
+.btn.ghost-light{background:transparent; color:var(--sand-0); border:1.5px solid var(--sand-0);}
+
+.core-preview{
+  position:relative; border-radius:16px; overflow:hidden; border:2px solid var(--ink);
+  box-shadow:var(--shadow); height:230px; display:flex; flex-direction:column;
+}
+.core-preview .band{flex:1; display:flex; align-items:center; padding:0 14px; font-family:'IBM Plex Mono',monospace; font-size:0.68rem; color:var(--sand-0); text-transform:uppercase; letter-spacing:0.05em; justify-content:space-between;}
+.core-preview .band.b1{background:var(--layer-new);}
+.core-preview .band.b2{background:var(--layer-mid);}
+.core-preview .band.b3{background:var(--layer-old);}
+.core-preview .band.b4{background:var(--layer-early);}
+.core-preview .depth{opacity:0.75;}
+
+.progress-strip{
+  position:sticky; top:0; z-index:30; background:rgba(244,234,209,0.94); backdrop-filter:blur(4px);
+  border-bottom:1px solid var(--line); padding:9px 0; margin:0 -20px 0;
+}
+.progress-inner{max-width:1080px; margin:0 auto; padding:0 20px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-size:0.72rem;}
+.progress-item{display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; color:var(--ink); opacity:0.55;}
+.progress-item.done{opacity:1; color:var(--lapis);}
+.progress-item .dot{width:8px; height:8px; border-radius:50%; background:var(--sand-2); flex:none;}
+.progress-item.done .dot{background:var(--lapis-bright);}
+.progress-sep{opacity:0.3; font-family:'IBM Plex Mono',monospace;}
+
+section.block{padding:56px 0 10px;}
+.section-head{margin-bottom:26px;}
+.section-head .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase; color:var(--carnelian); letter-spacing:0.08em; margin-bottom:6px;}
+.section-head.two .eyebrow{color:var(--lapis-bright);}
+.section-head h2{font-size:1.7rem;}
+.section-head p{max-width:640px; opacity:0.85; margin-top:8px;}
+
+.strata{border-radius:var(--radius); overflow:hidden; border:2px solid var(--ink); box-shadow:var(--shadow);}
+.layer{border-top:2px solid var(--ink);}
+.layer:first-child{border-top:none;}
+.layer-head{
+  width:100%; text-align:left; border:none; cursor:pointer; display:flex; align-items:center; gap:16px;
+  padding:18px 20px; font-family:'Cinzel',serif; color:var(--sand-0);
+}
+.layer[data-layer="new-kingdom"] .layer-head{background:var(--layer-new);}
+.layer[data-layer="middle-kingdom"] .layer-head{background:var(--layer-mid);}
+.layer[data-layer="old-kingdom"] .layer-head{background:var(--layer-old);}
+.layer[data-layer="early-dynastic"] .layer-head{background:var(--layer-early);}
+.layer-head .icon{flex:none; width:34px; height:34px; padding:6px; border-radius:50%; background:rgba(255,255,255,0.14); color:var(--gold-bright);}
+.layer-head .titles{flex:1; min-width:0;}
+.layer-head .titles h3{font-size:1.1rem; color:var(--sand-0);}
+.layer-head .titles .dates{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; opacity:0.8; margin-top:2px; text-transform:none; letter-spacing:0.02em;}
+.layer-head .depth-mark{font-family:'IBM Plex Mono',monospace; font-size:0.68rem; opacity:0.7; text-align:right; flex:none;}
+.layer-head .chevron{flex:none; width:18px; height:18px; transition:transform .25s ease;}
+.layer.open .layer-head .chevron{transform:rotate(180deg);}
+
+.layer-body{background:var(--paper); max-height:0; overflow:hidden; transition:max-height .4s ease;}
+.layer.open .layer-body{max-height:3000px;}
+.layer-body-inner{padding:22px 22px 26px;}
+.layer-note{font-size:0.94rem; opacity:0.9; margin:0 0 18px; max-width:680px;}
+
+.finds-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:14px;}
+.find{perspective:1200px; height:220px;}
+.find-inner{position:relative; width:100%; height:100%; transition:transform .55s cubic-bezier(.4,.2,.2,1); transform-style:preserve-3d; cursor:pointer; border-radius:10px;}
+.find.flipped .find-inner{transform:rotateY(180deg);}
+.find-face{position:absolute; inset:0; border-radius:10px; backface-visibility:hidden; padding:14px; display:flex; flex-direction:column; border:1.5px solid var(--ink);}
+.find-face.front{background:var(--sand-1); justify-content:space-between;}
+.find-face.front .find-icon{width:36px; height:36px; color:var(--carnelian);}
+.find-face.front h4{font-size:0.98rem; margin:8px 0 2px;}
+.find-face.front .meta{font-family:'IBM Plex Mono',monospace; font-size:0.68rem; opacity:0.7;}
+.find-face.front .tap{font-family:'IBM Plex Mono',monospace; font-size:0.65rem; text-transform:uppercase; opacity:0.55; letter-spacing:0.05em;}
+.find-face.back{background:var(--ink); color:var(--sand-0); transform:rotateY(180deg); overflow-y:auto;}
+.find-face.back h4{font-size:0.86rem; color:var(--gold-bright); margin-bottom:6px;}
+.find-face.back ul{margin:0; padding-left:16px; font-size:0.78rem;}
+.find-face.back li{margin-bottom:5px;}
+
+.chamber{margin-top:22px; border:2px dashed var(--gold); border-radius:12px; padding:16px 18px; background:linear-gradient(135deg, rgba(201,152,46,0.08), rgba(201,152,46,0.02));}
+.chamber-toggle{width:100%; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:12px; font-family:'Cinzel',serif; color:var(--carnelian); text-align:left;}
+.chamber-toggle .cart{flex:none; width:30px; height:30px;}
+.chamber-toggle .lead{font-size:0.68rem; font-family:'IBM Plex Mono',monospace; color:var(--ink); opacity:0.65; text-transform:uppercase; display:block; margin-bottom:2px;}
+.chamber-body{max-height:0; overflow:hidden; transition:max-height .5s ease;}
+.chamber.open .chamber-body{max-height:900px;}
+.chamber-body-inner{padding-top:14px;}
+
+.tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;}
+.tab-btn{
+  font-family:'IBM Plex Mono',monospace; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.04em;
+  padding:9px 16px; border-radius:999px; border:1.5px solid var(--ink); background:transparent; cursor:pointer; color:var(--ink);
+}
+.tab-btn.active{background:var(--ink); color:var(--sand-0);}
+.tabs.two .tab-btn{border-color:var(--lapis); color:var(--lapis-deep);}
+.tabs.two .tab-btn.active{background:var(--lapis); color:var(--sand-0);}
+
+.vocab-grid{display:none; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:12px;}
+.vocab-grid.active{display:grid;}
+.vcard{perspective:1000px; height:130px;}
+.vcard-inner{position:relative; width:100%; height:100%; cursor:pointer; transition:transform .5s ease; transform-style:preserve-3d;}
+.vcard.flipped .vcard-inner{transform:rotateY(180deg);}
+.vface{position:absolute; inset:0; border-radius:10px; backface-visibility:hidden; padding:12px; border:1.5px solid var(--ink); display:flex; align-items:center; justify-content:center; text-align:center;}
+.vface.f{background:var(--sand-1);}
+.vface.f span{font-family:'Cinzel',serif; font-size:0.95rem;}
+.vface.b{background:var(--lapis); color:var(--sand-0); transform:rotateY(180deg); font-size:0.78rem; overflow-y:auto;}
+
+.trial-wrap{background:var(--ink); color:var(--sand-0); border-radius:16px; padding:32px; box-shadow:var(--shadow);}
+.trial-head{display:flex; gap:20px; align-items:center; margin-bottom:22px; flex-wrap:wrap;}
+.trial-head svg{width:52px; height:52px; color:var(--gold-bright); flex:none;}
+.trial-head h3{color:var(--sand-0); font-size:1.3rem;}
+.trial-head p{margin:4px 0 0; font-size:0.85rem; opacity:0.75; max-width:520px;}
+.set-badge{
+  display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.68rem; text-transform:uppercase;
+  color:var(--ink); background:var(--gold-bright); padding:4px 10px; border-radius:999px; margin-bottom:8px;
+}
+.q{margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.12);}
+.q p.qtext{font-weight:600; margin:0 0 10px;}
+.opts{display:grid; gap:8px;}
+.opt{display:flex; gap:10px; align-items:flex-start; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; cursor:pointer; font-size:0.86rem;}
+.opt:hover{border-color:var(--gold-bright);}
+.opt input{margin-top:3px;}
+.trial-actions{display:flex; gap:12px; align-items:center; margin-top:6px; flex-wrap:wrap;}
+.scale-wrap{margin-top:26px; display:none;}
+.scale-wrap.show{display:block;}
+.scale-svg{display:block; margin:0 auto;}
+.verdict{margin-top:14px; text-align:center; font-family:'Cinzel',serif; font-size:1.05rem; color:var(--gold-bright);}
+.verdict-sub{text-align:center; font-size:0.85rem; opacity:0.8; margin-top:6px;}
+.score-line{text-align:center; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; opacity:0.7; margin-top:4px;}
+
+/* ---- workshop shared ---- */
+.workshop-panel{display:none;}
+.workshop-panel.active{display:block;}
+.wcard{
+  background:var(--paper); border:2px solid var(--lapis); border-radius:16px; padding:26px; box-shadow:var(--shadow);
+}
+.wcard h3{color:var(--lapis-deep); font-size:1.2rem; margin-bottom:8px;}
+.wcard .wdesc{font-size:0.9rem; opacity:0.85; max-width:640px; margin-bottom:20px;}
+.win-msg{
+  margin-top:16px; padding:12px 16px; border-radius:10px; background:var(--lapis); color:var(--sand-0);
+  font-family:'Cinzel',serif; font-size:0.95rem; display:none; text-align:center;
+}
+.win-msg.show{display:block;}
+
+/* ---- name decoder ---- */
+.decoder-input-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
+.decoder-input-row input{
+  flex:1; min-width:180px; padding:11px 14px; border-radius:8px; border:1.5px solid var(--lapis);
+  font-family:'Work Sans',sans-serif; font-size:1rem; background:#fff;
+}
+.cartouche-wrap{display:flex; justify-content:center; padding:20px 10px;}
+.cartouche{
+  display:inline-flex; align-items:center; gap:6px; padding:16px 26px; border:5px solid var(--ink);
+  border-radius:999px; background:var(--sand-1); position:relative; flex-wrap:wrap; max-width:100%;
+}
+.cartouche::before, .cartouche::after{
+  content:""; position:absolute; width:6px; background:var(--ink); top:-5px; bottom:-5px;
+}
+.cartouche::before{left:-3px;}
+.cartouche::after{right:-3px;}
+.glyph-tile{
+  width:44px; height:54px; background:var(--sand-0); border:1.5px solid var(--ink); border-radius:6px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+}
+.glyph-tile svg{width:22px; height:22px; color:var(--carnelian);}
+.glyph-tile span{font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:700;}
+.decoder-empty{text-align:center; opacity:0.6; font-size:0.85rem; font-family:'IBM Plex Mono',monospace;}
+.decoder-caption{text-align:center; font-size:0.72rem; opacity:0.55; margin-top:10px; font-family:'IBM Plex Mono',monospace;}
+
+/* ---- sort game ---- */
+.sort-pool{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; min-height:44px;}
+.chip{
+  font-size:0.82rem; padding:9px 14px; border-radius:999px; border:1.5px solid var(--ink); background:var(--sand-1);
+  cursor:pointer; transition:transform .1s ease;
+}
+.chip.selected{background:var(--gold-bright); border-color:var(--carnelian); transform:translateY(-2px);}
+.bins{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+.bin{border-radius:12px; border:2px dashed rgba(255,255,255,0.4); padding:14px; min-height:130px; color:var(--sand-0); cursor:pointer;}
+.bin.wrong{border-color:var(--carnelian); background:rgba(161,61,43,0.3);}
+.bin[data-kingdom="new"]{background:var(--layer-new);}
+.bin[data-kingdom="mid"]{background:var(--layer-mid);}
+.bin[data-kingdom="old"]{background:var(--layer-old);}
+.bin[data-kingdom="early"]{background:var(--layer-early);}
+.bin h4{font-family:'Cinzel',serif; font-size:0.92rem; margin:0 0 8px;}
+.bin .placed-chip{font-size:0.76rem; background:rgba(255,255,255,0.18); border-radius:6px; padding:5px 8px; margin-bottom:6px;}
+.sort-progress{font-family:'IBM Plex Mono',monospace; font-size:0.78rem; margin-top:16px; opacity:0.8;}
+
+/* ---- palette labeling ---- */
+.palette-layout{display:grid; grid-template-columns:1fr 260px; gap:24px;}
+@media (max-width:760px){.palette-layout{grid-template-columns:1fr;}}
+.palette-shield{
+  position:relative; width:100%; max-width:340px; height:400px; margin:0 auto;
+  background:linear-gradient(160deg, #8a9a8a, #5f7268);
+  border-radius:46% 46% 50% 50% / 22% 22% 62% 62%;
+  border:3px solid var(--ink);
+}
+.palette-shield .ear{
+  position:absolute; width:44px; height:30px; background:#5f7268; border:3px solid var(--ink); border-radius:50% 50% 20% 20%; top:-18px;
+}
+.palette-shield .ear.left{left:44px;}
+.palette-shield .ear.right{right:44px;}
+.palette-shield .band{position:absolute; left:0; right:0; border-top:1.5px dashed rgba(0,0,0,0.25);}
+.pin{
+  position:absolute; width:30px; height:30px; border-radius:50%; background:var(--gold-bright); color:var(--ink);
+  border:2px solid var(--ink); display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:0.85rem; cursor:pointer; transform:translate(-50%,-50%);
+}
+.pin.filled{background:var(--lapis-bright); color:var(--sand-0); border-color:var(--lapis-deep);}
+.pin.revealed{background:var(--carnelian); color:var(--sand-0);}
+.pin.wrong-flash{background:#c0392b;}
+.label-bank{display:flex; flex-direction:column; gap:8px;}
+.label-chip{
+  font-size:0.8rem; padding:9px 12px; border-radius:8px; border:1.5px solid var(--lapis); background:#fff; cursor:pointer;
+}
+.label-chip.selected{background:var(--gold-bright); border-color:var(--carnelian);}
+.findings-log{margin-top:20px; font-size:0.82rem;}
+.findings-log ol{margin:6px 0 0; padding-left:20px;}
+.findings-log li{margin-bottom:4px;}
+
+footer{margin-top:60px; padding-top:20px; border-top:2px dashed var(--sand-2); font-family:'IBM Plex Mono',monospace; font-size:0.72rem; opacity:0.6; text-align:center;}
+
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+
+<svg class="sr-only" aria-hidden="true">
+  <symbol id="icon-ankh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="6" r="3.4"/><path d="M12 9.4V22M7 14h10"/>
+  </symbol>
+  <symbol id="icon-pyramid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M12 3 L22 20 H2 Z"/><path d="M9 20 L12 12 L15 20"/>
+  </symbol>
+  <symbol id="icon-scroll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4h11a2 2 0 0 1 0 4H8"/><path d="M6 20h11a2 2 0 0 0 0-4H8"/><path d="M6 4c-1.5 0-2 1-2 2v12c0 1 .5 2 2 2"/>
+  </symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="8" r="3.2"/><path d="M12 14v8M8 22h8M5 15l2-2M19 15l-2-2M3 20l4-2M21 20l-4-2"/>
+  </symbol>
+  <symbol id="icon-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="8" width="18" height="8" rx="4"/><path d="M8 8v8M13 8v8"/>
+  </symbol>
+  <symbol id="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 9l6 6 6-6"/>
+  </symbol>
+  <symbol id="icon-mastaba" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+    <path d="M4 18 L7 8 H17 L20 18 Z"/><rect x="10" y="13" width="4" height="5"/>
+  </symbol>
+  <symbol id="icon-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3v18M6 21h12M4 8h16"/><path d="M4 8l-2 6h6l-2-6M20 8l-2 6h6l-2-6"/>
+  </symbol>
+  <symbol id="icon-feather" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 3C9 4 5 12 5 20c8-1 12-6 13-14Z"/><path d="M8 17l9-13M9 14l6-9M11 11l4-6"/>
+  </symbol>
+
+  <!-- simplified glyph icons, reused across letters per the unit's alphabet chart -->
+  <symbol id="glyph-bird" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 15c3-6 8-9 13-8 3 1 5 3 5 3s-3 0-4 2c2 1 3 3 3 3-2 0-4-1-5-2-3 2-8 3-12 2Z"/>
+  </symbol>
+  <symbol id="glyph-leg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 3v10l6 8M9 13h6"/>
+  </symbol>
+  <symbol id="glyph-bowl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 11a8 4 0 0 0 16 0Z"/><path d="M4 11c0-1 2-2 8-2s8 1 8 2"/>
+  </symbol>
+  <symbol id="glyph-oval" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+    <ellipse cx="12" cy="12" rx="8" ry="5"/>
+  </symbol>
+  <symbol id="glyph-reed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M8 21 C7 14 9 6 10 2 M12 21 C11 13 13 6 14 2 M16 21 C15 14 17 7 18 3"/>
+  </symbol>
+  <symbol id="glyph-snake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M4 6c4 0 2 4 6 4s2-4 6-4 2 4 6 4"/>
+  </symbol>
+  <symbol id="glyph-jarstand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 4h8l-2 8h-4Z"/><path d="M6 20h12M9 12v8M15 12v8"/>
+  </symbol>
+  <symbol id="glyph-rope" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    <path d="M9 2c3 2-3 4 0 6s-3 4 0 6-3 4 0 6M15 2c-3 2 3 4 0 6s3 4 0 6 3 4 0 6"/>
+  </symbol>
+  <symbol id="glyph-lion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 16c2-3 4-4 7-4h8c2 0 4 1 5 3M6 12c0-3 2-5 4-5M18 16v4M8 16v4"/>
+  </symbol>
+  <symbol id="glyph-water" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 9l4-3 4 3 4-3 4 3 4-3M2 15l4-3 4 3 4-3 4 3 4-3"/>
+  </symbol>
+  <symbol id="glyph-loop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+    <circle cx="12" cy="12" r="7"/>
+  </symbol>
+  <symbol id="glyph-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+    <rect x="5" y="5" width="14" height="14" rx="1"/>
+  </symbol>
+  <symbol id="glyph-cloth" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3v18M16 3v18M8 3c3 2 5 2 8 0M8 21c3-2 5-2 8 0"/>
+  </symbol>
+  <symbol id="glyph-dome" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 18c0-6 4-10 9-10s9 4 9 10Z"/>
+  </symbol>
+  <symbol id="glyph-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M3 12h18"/><circle cx="18" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+  </symbol>
+</svg>
+
+<div class="progress-strip">
+  <div class="progress-inner">
+    <div class="progress-item" id="prog-new"><span class="dot"></span>New Kingdom</div>
+    <div class="progress-item" id="prog-mid"><span class="dot"></span>Middle Kingdom</div>
+    <div class="progress-item" id="prog-old"><span class="dot"></span>Old Kingdom</div>
+    <div class="progress-item" id="prog-early"><span class="dot"></span>Early Dynastic</div>
+    <div class="progress-item" id="prog-chamber"><span class="dot"></span>Sealed Chamber</div>
+    <div class="progress-item" id="prog-journal"><span class="dot"></span>Field Journal</div>
+    <div class="progress-item" id="prog-trial"><span class="dot"></span>Trial of the Heart</div>
+    <span class="progress-sep">||</span>
+    <div class="progress-item" id="prog-decoder"><span class="dot"></span>Name Decoder</div>
+    <div class="progress-item" id="prog-sort"><span class="dot"></span>Sort the Finds</div>
+    <div class="progress-item" id="prog-label"><span class="dot"></span>Label the Palette</div>
+  </div>
+</div>
+
+<div class="site">
+
+  <header class="header">
+    <div>
+      <div class="tag mono">Site file · unit 2.2</div>
+      <h1>Excavation Log: Egyptian Art</h1>
+    </div>
+    <div class="site-code mono">
+      <div class="expedition-badge" id="expedition-badge">EXPEDITION NO. 1</div>
+      <div>SITE: NILE VALLEY, 3150–332 BCE</div>
+      <div>FINDS CATALOGUED: 9 + 25 TERMS</div>
+    </div>
+  </header>
+
+  <div class="part-nav">
+    <a class="part-card one" href="#excavation" onclick="event.preventDefault(); document.getElementById('excavation').scrollIntoView({behavior:'smooth'})">
+      <div class="eyebrow2 mono">Part One</div>
+      <h3>The Dig</h3>
+      <p>Excavate four strata, catalogue every find, and stand trial before Anubis. Review, start to finish.</p>
+    </a>
+    <a class="part-card two" href="#workshop" onclick="event.preventDefault(); document.getElementById('workshop').scrollIntoView({behavior:'smooth'})">
+      <div class="eyebrow2 mono">Part Two</div>
+      <h3>The Workshop</h3>
+      <p>Carve your name in glyphs, sort every find by kingdom, and re-label the Narmer Palette by hand.</p>
+    </a>
+  </div>
+
+  <section class="hero">
+    <div>
+      <p class="lede" id="hero-lede">You are the lead archaeologist on this trench.</p>
+      <p id="hero-body">Every layer of sand you clear takes you further back in time. Brush away the New Kingdom to find Hatshepsut's temple and Tutankhamen's coffin, keep digging past the Middle Kingdom, and hit bedrock at the Predynastic — where the Palette of Narmer records the very birth of the Egyptian state. Somewhere in the New Kingdom layer, a sealed chamber has been walled over for three thousand years.</p>
+      <div class="hero-note">
+        <svg viewBox="0 0 24 24"><use href="#icon-feather"/></svg>
+        <div>Real stratigraphy rule: the deeper you dig, the older it gets. Finish the Dig, then head to the Workshop — that's where you stop reading and start building.</div>
+      </div>
+      <div class="cta-row">
+        <button class="btn" onclick="document.getElementById('excavation').scrollIntoView({behavior:'smooth'})">Begin excavating ↓</button>
+        <button class="btn ghost" onclick="document.getElementById('workshop').scrollIntoView({behavior:'smooth'})">Jump to the Workshop</button>
+      </div>
+    </div>
+    <div class="core-preview" aria-hidden="true">
+      <div class="band b1"><span>New Kingdom</span><span class="depth">−1.2m</span></div>
+      <div class="band b2"><span>Middle Kingdom</span><span class="depth">−2.4m</span></div>
+      <div class="band b3"><span>Old Kingdom</span><span class="depth">−3.6m</span></div>
+      <div class="band b4"><span>Early Dynastic</span><span class="depth">−4.8m</span></div>
+    </div>
+  </section>
+
+  <div class="part-banner one">
+    <div class="num">1</div>
+    <div class="txt"><h2>The Dig</h2><p>Excavate the strata, build your Field Journal, then stand trial before Anubis.</p></div>
+  </div>
+
+  <section class="block" id="excavation">
+    <div class="section-head">
+      <div class="eyebrow mono">Trench 2.2</div>
+      <h2>The stratigraphy</h2>
+      <p>Click a layer to excavate it. Tap any find to turn it over and read the field notes on the back — Form, Function, Content, and Context, straight out of your workbook.</p>
+    </div>
+
+    <div class="strata">
+
+      <div class="layer" data-layer="new-kingdom">
+        <button class="layer-head" aria-expanded="false">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-sun"/></svg>
+          <div class="titles">
+            <h3>New Kingdom</h3>
+            <div class="dates mono">c. 1550–1075 BCE · Dynasties 18–20</div>
+          </div>
+          <div class="depth-mark">−1.2m<br>topsoil</div>
+          <svg class="chevron" viewBox="0 0 24 24"><use href="#icon-chevron"/></svg>
+        </button>
+        <div class="layer-body">
+          <div class="layer-body-inner">
+            <p class="layer-note">Egypt's richest, most powerful era. Ahmose I reunites the kingdom in 1550 BCE, Hatshepsut rules as one of the most successful female pharaohs, and burials move from pyramids to hidden tombs cut into the Valley of the Kings.</p>
+            <div class="finds-grid" id="grid-new">
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Temple of Amun-Re">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-pyramid"/></svg>
+                    <div><h4>Temple of Amun-Re</h4><div class="meta mono">Karnak · c. 1550–1250 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Cut sandstone &amp; mud brick; hypostyle hall of 134 columns like a "forest of columns."</li>
+                      <li><b>Function:</b> State temple to Amun-Re, entered through monumental pylons.</li>
+                      <li><b>Content:</b> Clerestory windows drop light into the dense colonnade.</li>
+                      <li><b>Context:</b> Expanded by generations of pharaohs to show continuous devotion.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Mortuary Temple of Hatshepsut">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-mastaba"/></svg>
+                    <div><h4>Mortuary Temple of Hatshepsut</h4><div class="meta mono">Deir el-Bahri · c. 1473–1458 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Axial plan — an elongated ground plan set into the cliffs.</li>
+                      <li><b>Function:</b> Funerary temple honoring Hatshepsut after death.</li>
+                      <li><b>Content:</b> Terraced colonnades echo the mountain behind them.</li>
+                      <li><b>Context:</b> Built by one of the few female pharaohs to rule in her own right.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Innermost Coffin of Tutankhamen">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-ankh"/></svg>
+                    <div><h4>Innermost Coffin of Tutankhamen</h4><div class="meta mono">Valley of the Kings · c. 1323 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Solid gold with enamel &amp; semiprecious stone inlay, 6'1" long.</li>
+                      <li><b>Function:</b> Sarcophagus housing the king's mummified body and Ka.</li>
+                      <li><b>Content:</b> Crook and flail crossed on the chest — symbols of kingship.</li>
+                      <li><b>Context:</b> Found intact by Howard Carter in 1922, nested inside two more coffins.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Last Judgment of Hunefer">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-scroll"/></svg>
+                    <div><h4>Last Judgment of Hunefer</h4><div class="meta mono">Book of the Dead · c. 1275 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Painted papyrus scroll, read left to right.</li>
+                      <li><b>Function:</b> Guides the deceased through judgment in the underworld.</li>
+                      <li><b>Content:</b> Anubis weighs Hunefer's heart against the feather of Ma'at while Ammit waits to devour failures.</li>
+                      <li><b>Context:</b> This exact scene inspired the Trial waiting for you below.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="chamber" id="chamber">
+              <button class="chamber-toggle" aria-expanded="false" onclick="toggleChamber()">
+                <svg class="cart" viewBox="0 0 24 24"><use href="#icon-cart"/></svg>
+                <span>
+                  <span class="lead">unmarked · sealed since antiquity</span>
+                  Break the seal on the hidden chamber
+                </span>
+              </button>
+              <div class="chamber-body">
+                <div class="chamber-body-inner">
+                  <p class="layer-note" id="chamber-intro" style="margin-bottom:14px;">Someone tried to erase this from the record.</p>
+                  <div class="finds-grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));">
+                    <div class="find" tabindex="0" role="button" aria-label="Flip card: Akhenaton, Nefertiti, and Three Daughters">
+                      <div class="find-inner">
+                        <div class="find-face front" style="background:#f0dfae;">
+                          <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-sun"/></svg>
+                          <div><h4>Akhenaton, Nefertiti, and Three Daughters</h4><div class="meta mono">Amarna Period · c. 1353–1335 BCE</div></div>
+                          <div class="tap">tap to flip</div>
+                        </div>
+                        <div class="find-face back">
+                          <h4>Field notes</h4>
+                          <ul>
+                            <li><b>Form:</b> Limestone sunken relief — outlines cut deep so figures seem to project forward.</li>
+                            <li><b>Function:</b> Domestic devotional scene, not a formal state portrait.</li>
+                            <li><b>Content:</b> The family basks under Aton, the sun-disk — Egypt's first experiment with a single god.</li>
+                            <li><b>Context:</b> Bodies are soft, curving, and unidealized — the one moment Egyptian art broke its own rules.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="layer" data-layer="middle-kingdom">
+        <button class="layer-head" aria-expanded="false">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-scroll"/></svg>
+          <div class="titles"><h3>Middle Kingdom</h3><div class="dates mono">c. 1975–1640 BCE · Dynasties 9–14</div></div>
+          <div class="depth-mark">−2.4m</div>
+          <svg class="chevron" viewBox="0 0 24 24"><use href="#icon-chevron"/></svg>
+        </button>
+        <div class="layer-body">
+          <div class="layer-body-inner">
+            <p class="layer-note">Thinner layer, fewer grave goods — but a turning point in the record. Pharaoh Mentuhotep II reunites Upper and Lower Egypt after civil war, royal burials shift north near Memphis, and irrigation canals start carrying Nile water directly to the fields.</p>
+            <div class="finds-grid" id="grid-mid">
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Middle Kingdom field summary">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-ankh"/></svg>
+                    <div><h4>Reunification &amp; Irrigation</h4><div class="meta mono">field summary</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li>Mentuhotep II reunites Egypt around 2040 BCE, ending the First Intermediate Period.</li>
+                      <li>Royal tombs relocate north, closer to Memphis.</li>
+                      <li>New irrigation systems pull Nile water to crops, boosting food security.</li>
+                      <li>Sets the stage for the wealth and expansion of the New Kingdom above.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layer" data-layer="old-kingdom">
+        <button class="layer-head" aria-expanded="false">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-pyramid"/></svg>
+          <div class="titles"><h3>Old Kingdom</h3><div class="dates mono">c. 2575–2150 BCE · Dynasties 4–8</div></div>
+          <div class="depth-mark">−3.6m</div>
+          <svg class="chevron" viewBox="0 0 24 24"><use href="#icon-chevron"/></svg>
+        </button>
+        <div class="layer-body">
+          <div class="layer-body-inner">
+            <p class="layer-note">The Age of Pyramids. Ra the sun god rises to prominence, the pyramid's shape echoes his sacred benben stone, and the Giza plateau becomes the grandest necropolis ever built. By Dynasty 7–8 the state weakens and the layer above thins into famine.</p>
+            <div class="finds-grid" id="grid-old">
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Seated Scribe">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-scroll"/></svg>
+                    <div><h4>Seated Scribe</h4><div class="meta mono">Saqqara · c. 2500 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Painted limestone, inlaid rock-crystal eyes, 1'9" high.</li>
+                      <li><b>Function:</b> A Ka statue — a home for the soul if the mummy failed.</li>
+                      <li><b>Content:</b> Alert, individualized face; unusually relaxed pose for Egyptian art.</li>
+                      <li><b>Context:</b> Scribes held real social status — literacy was power.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Great Pyramids and Great Sphinx">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-pyramid"/></svg>
+                    <div><h4>Great Pyramids &amp; Great Sphinx</h4><div class="meta mono">Giza · c. 2550–2490 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Cut limestone, originally faced in white limestone with a gleaming capstone.</li>
+                      <li><b>Function:</b> Tombs for Khufu, Khafre, and Menkaure; the Sphinx guards the necropolis.</li>
+                      <li><b>Content:</b> Pyramid shape recalls the benben, the sacred mound of the sun cult.</li>
+                      <li><b>Context:</b> Evolved from the mastaba through the step pyramid to this final form.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: King Menkaure and his Queen">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-mastaba"/></svg>
+                    <div><h4>King Menkaure &amp; his Queen</h4><div class="meta mono">Gizeh · c. 2490–2472 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Graywacke, 4'6.5" high, both figures carved from one block.</li>
+                      <li><b>Function:</b> Idealized funerary portrait for the afterlife.</li>
+                      <li><b>Content:</b> Rigid, forward-facing "Egyptian stance"; queen's embrace signals unity, not affection.</li>
+                      <li><b>Context:</b> The permanent, unchanging pose was meant to last for eternity.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layer" data-layer="early-dynastic">
+        <button class="layer-head" aria-expanded="false">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-ankh"/></svg>
+          <div class="titles"><h3>Early Dynastic / Predynastic</h3><div class="dates mono">c. 3150–2575 BCE · Dynasties 1–3</div></div>
+          <div class="depth-mark">−4.8m<br>bedrock</div>
+          <svg class="chevron" viewBox="0 0 24 24"><use href="#icon-chevron"/></svg>
+        </button>
+        <div class="layer-body">
+          <div class="layer-body-inner">
+            <p class="layer-note">Bedrock. This is where the Egyptian visual language is born — hierarchy of scale, composite pose, and hieroglyphic writing all appear together, fully formed, on a single slate palette.</p>
+            <div class="finds-grid" id="grid-early">
+              <div class="find" tabindex="0" role="button" aria-label="Flip card: Palette of King Narmer">
+                <div class="find-inner">
+                  <div class="find-face front">
+                    <svg class="find-icon" viewBox="0 0 24 24"><use href="#icon-ankh"/></svg>
+                    <div><h4>Palette of King Narmer</h4><div class="meta mono">Hierakonpolis · c. 3000–2920 BCE</div></div>
+                    <div class="tap">tap to flip</div>
+                  </div>
+                  <div class="find-face back">
+                    <h4>Field notes</h4>
+                    <ul>
+                      <li><b>Form:</b> Slate, 2'1" high, carved on both sides.</li>
+                      <li><b>Function:</b> Ceremonial object commemorating the unification of Upper and Lower Egypt.</li>
+                      <li><b>Content:</b> Narmer in the smiting pose wears the White Crown on one side, the Red Crown on the other.</li>
+                      <li><b>Context:</b> Sets the "Egyptian stance" — composite frontal/profile pose — that lasts 3,000 years.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="block" id="journal">
+    <div class="section-head">
+      <div class="eyebrow mono">Finds catalogue</div>
+      <h2>Field journal</h2>
+      <p>Every object needs a label before it goes in the case. Tap a tag to reveal its definition — sort by category to review in smaller sets.</p>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" onclick="showTab('periods')">Time periods</button>
+      <button class="tab-btn" onclick="showTab('architecture')">Architecture</button>
+      <button class="tab-btn" onclick="showTab('religious')">Religious &amp; symbolic</button>
+      <button class="tab-btn" onclick="showTab('writing')">Art &amp; writing</button>
+    </div>
+
+    <div class="vocab-grid active" id="tab-periods"></div>
+    <div class="vocab-grid" id="tab-architecture"></div>
+    <div class="vocab-grid" id="tab-religious"></div>
+    <div class="vocab-grid" id="tab-writing"></div>
+  </section>
+
+  <section class="block" id="trial">
+    <div class="section-head">
+      <div class="eyebrow mono">Final assessment · part one</div>
+      <h2>The Trial of the Heart</h2>
+      <p>Anubis weighs every heart against the feather of Ma'at. Answer honestly — Ammit is listening.</p>
+    </div>
+
+    <div class="trial-wrap">
+      <div class="trial-head">
+        <svg viewBox="0 0 24 24"><use href="#icon-scale"/></svg>
+        <div>
+          <span class="set-badge" id="set-badge">SET A</span>
+          <h3 id="set-title">Foundations &amp; Stone</h3>
+          <p id="set-desc">Eight questions stand between you and eternity.</p>
+        </div>
+      </div>
+
+      <form id="quiz-form">
+        <div id="quiz-questions"></div>
+        <div class="trial-actions">
+          <button type="button" class="btn" style="background:var(--gold); color:var(--ink);" onclick="gradeQuiz()">Submit to Anubis</button>
+          <button type="button" class="btn ghost" style="color:var(--sand-0); border-color:var(--sand-0);" onclick="resetQuiz()">Reshuffle this set</button>
+        </div>
+      </form>
+
+      <div class="scale-wrap" id="scale-wrap">
+        <svg class="scale-svg" id="scale-svg" width="260" height="140" viewBox="0 0 260 140">
+          <line x1="130" y1="10" x2="130" y2="120" stroke="#c9982e" stroke-width="4"/>
+          <line x1="90" y1="130" x2="170" y2="130" stroke="#c9982e" stroke-width="4"/>
+          <g id="beam" style="transform-origin:130px 30px;">
+            <line x1="60" y1="30" x2="200" y2="30" stroke="#e8b840" stroke-width="4"/>
+            <circle cx="130" cy="30" r="5" fill="#e8b840"/>
+            <line x1="60" y1="30" x2="60" y2="55" stroke="#e8b840" stroke-width="2"/>
+            <path d="M45 55 h30 l-6 20 h-18 Z" fill="#a13d2b"/>
+            <text x="60" y="90" text-anchor="middle" fill="#fbf3de" font-size="10" font-family="IBM Plex Mono, monospace">heart</text>
+            <line x1="200" y1="30" x2="200" y2="55" stroke="#e8b840" stroke-width="2"/>
+            <path d="M185 55 h30 l-6 20 h-18 Z" fill="#2f8a92"/>
+            <text x="200" y="90" text-anchor="middle" fill="#fbf3de" font-size="10" font-family="IBM Plex Mono, monospace">Ma'at</text>
+          </g>
+        </svg>
+        <div class="verdict" id="verdict-text"></div>
+        <div class="verdict-sub" id="verdict-sub"></div>
+        <div class="score-line" id="score-line"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="part-banner two">
+    <div class="num">2</div>
+    <div class="txt"><h2>The Workshop</h2><p>Stop reading, start building. Three hands-on challenges using everything you just excavated.</p></div>
+  </div>
+
+  <section class="block" id="workshop">
+    <div class="section-head two">
+      <div class="eyebrow mono">Hands-on · part two</div>
+      <h2>Pick a bench</h2>
+      <p>Each challenge below checks your work as you go. There's no single "finish line" — do them in any order.</p>
+    </div>
+
+    <div class="tabs two" role="tablist">
+      <button class="tab-btn active" onclick="showWorkshopTab('decoder')">Carve Your Name</button>
+      <button class="tab-btn" onclick="showWorkshopTab('sort')">Sort the Finds</button>
+      <button class="tab-btn" onclick="showWorkshopTab('label')">Label the Palette</button>
+    </div>
+
+    <!-- DECODER -->
+    <div class="workshop-panel active" id="workshop-decoder">
+      <div class="wcard">
+        <h3>Carve your name into a cartouche</h3>
+        <p class="wdesc">Egyptian royal names were written inside an oval loop called a cartouche — the same device on the Palette of Narmer. Type your name below to see it rendered in simplified glyph tiles, the same set used in your unit's alphabet chart.</p>
+        <div class="decoder-input-row">
+          <input type="text" id="name-input" placeholder="Type your name..." maxlength="16" oninput="decodeName()">
+          <button class="btn lapis" onclick="decodeName()">Carve it</button>
+        </div>
+        <div class="cartouche-wrap">
+          <div class="cartouche" id="cartouche-output">
+            <span class="decoder-empty">your name will appear here, carved in stone</span>
+          </div>
+        </div>
+        <p class="decoder-caption">Simplified glyph shapes for illustration — check your unit's alphabet chart for the full reference.</p>
+      </div>
+    </div>
+
+    <!-- SORT -->
+    <div class="workshop-panel" id="workshop-sort">
+      <div class="wcard">
+        <h3>Sort every find by kingdom</h3>
+        <p class="wdesc">Click a find, then click the kingdom bin where it belongs. Bins are color-matched to the strata you already dug through in Part One.</p>
+        <div class="sort-pool" id="sort-pool"></div>
+        <div class="bins">
+          <div class="bin" data-kingdom="new" onclick="attemptPlace('new')"><h4>New Kingdom</h4><div class="bin-list"></div></div>
+          <div class="bin" data-kingdom="mid" onclick="attemptPlace('mid')"><h4>Middle Kingdom</h4><div class="bin-list"></div></div>
+          <div class="bin" data-kingdom="old" onclick="attemptPlace('old')"><h4>Old Kingdom</h4><div class="bin-list"></div></div>
+          <div class="bin" data-kingdom="early" onclick="attemptPlace('early')"><h4>Early Dynastic</h4><div class="bin-list"></div></div>
+        </div>
+        <div class="sort-progress" id="sort-progress">0 of 10 finds correctly sorted</div>
+        <div class="win-msg" id="sort-win">All ten finds are back where they belong. The trench is fully catalogued.</div>
+        <div class="trial-actions" style="margin-top:14px;">
+          <button class="btn ghost" onclick="resetSort()">Reshuffle &amp; reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LABEL -->
+    <div class="workshop-panel" id="workshop-label">
+      <div class="wcard">
+        <h3>Re-label the Palette of Narmer</h3>
+        <p class="wdesc">This is the same labeling exercise from your workbook, rebuilt as a click-to-place challenge. Click a label from the word bank, then click the numbered pin on the schematic where it belongs.</p>
+        <div class="palette-layout">
+          <div class="palette-shield" id="palette-shield">
+            <div class="ear left"></div>
+            <div class="ear right"></div>
+            <div class="band" style="top:14%;"></div>
+            <div class="band" style="top:72%;"></div>
+          </div>
+          <div class="label-bank" id="label-bank"></div>
+        </div>
+        <div class="findings-log">
+          <b>Findings log</b>
+          <ol id="findings-list"></ol>
+        </div>
+        <div class="win-msg" id="label-win">Every label placed correctly. The palette is fully documented.</div>
+        <div class="trial-actions" style="margin-top:14px;">
+          <button class="btn ghost" onclick="revealLabels()">Reveal remaining labels</button>
+          <button class="btn ghost" onclick="resetLabels()">Reshuffle &amp; reset</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer id="footer-line">
+    excavation log · unit 2.2 egyptian art · handle every artifact with care
+  </footer>
+
+</div>
+
+<script>
+/* ---------------- shuffle helper ---------------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* ================= PART ONE (unchanged core) ================= */
+
+const vocabData = {
+  periods: [
+    ["Early Dynastic Egypt","Immediately follows the unification of Upper and Lower Egypt, c. 3150 BCE."],
+    ["Old Kingdom Egypt","c. 2700–2200 BCE, the 'Age of Pyramids,' spanning the 3rd through 6th Dynasty."],
+    ["Middle Kingdom Egypt","c. 2040–1782 BCE, marked by the reunification of Egypt under Mentuhotep II."],
+    ["New Kingdom Egypt","c. 1570–1069 BCE, Egypt's most prosperous period and the peak of its power."],
+    ["Third Intermediate Period","Began with the death of Ramesses XI in 1077 BCE, lasting to 664 BCE; ruled by non-native Egyptians and marked by political instability."],
+    ["Upper and Lower Egypt","Upper Egypt is the southern part of the country where the Nile begins; Lower Egypt is the northern part where the Nile empties into the Mediterranean."]
+  ],
+  architecture: [
+    ["Mastaba","Arabic for 'bench' — a low, flat-roofed Egyptian tomb with sides sloping down to the ground."],
+    ["Necropolis","Literally a 'city of the dead'; a large burial area."],
+    ["Pylon","A monumental gateway to an Egyptian temple, marked by two flat sloping walls with a smaller entrance between them."],
+    ["Hypostyle","A hall in an Egyptian temple with a roof supported by a dense thicket of columns — a 'forest of columns.'"],
+    ["Peristyle court","A colonnade surrounding a building or enclosing a courtyard."],
+    ["Clerestory","A roof that rises above lower roofs and has window space beneath it."],
+    ["Axial Plan","A building laid out with an elongated ground plan."],
+    ["Serdab","A tomb-like chamber that housed the Ka statue of a deceased individual."],
+    ["Veneer","A thin sheet of polished stone or tile used to cover a rough base."]
+  ],
+  religious: [
+    ["Ka","The soul, or spiritual essence, of a person — it either ascends to heaven or can live inside a statue of itself."],
+    ["Ankh","An Egyptian symbol of life."],
+    ["Sarcophagus","A container for human remains."],
+    ["Pharaoh","A king of ancient Egypt, believed to be a god."],
+    ["Sunken Relief","Carving in which the outlines of figures are cut deeply into the surface so the figures seem to project forward."],
+    ["Amarna Style","Art created during the rule of Akhenaton, featuring a more relaxed, fluid, naturalistic figure style."]
+  ],
+  writing: [
+    ["Hieroglyphics","Egyptian writing that uses symbols or pictures as characters."],
+    ["Papyrus","A tall aquatic plant whose fiber is used as a writing surface in ancient Egypt."],
+    ["Artistic Convention","A generally accepted or traditional way of representing forms in art."],
+    ["Canon of Proportions","An established set of rules or standards used to represent the ideal human figure."]
+  ]
+};
+
+const quizSets = [
+  {
+    name: "Foundations & Stone",
+    desc: "Predynastic beginnings and the Old Kingdom's age of pyramids.",
+    questions: [
+      {q:"What did the ancient Egyptians believe the Ka was?", opts:["A type of hieroglyphic script","The spiritual essence of a person that could live in a statue","A tax collected by the pharaoh","A style of column"], a:1},
+      {q:"The Great Pyramids and Great Sphinx were built at which site?", opts:["Karnak","Deir el-Bahri","Giza","Abydos"], a:2},
+      {q:"What material is the Seated Scribe carved from?", opts:["Graywacke","Painted limestone","Solid gold","Slate"], a:1},
+      {q:"The Palette of Narmer most likely commemorates:", opts:["A trade agreement with Nubia","The unification of Upper and Lower Egypt","The building of the Sphinx","The death of a scribe"], a:1},
+      {q:"A mastaba is best described as:", opts:["A low, flat-roofed tomb with sloping sides","A hall full of columns","A gateway to a temple","A painted scroll"], a:0},
+      {q:"Upper Egypt refers to:", opts:["The northern Nile Delta","The southern part of Egypt where the Nile begins","Modern-day Cairo only","The Sinai peninsula"], a:1},
+      {q:"A serdab was used to:", opts:["Store grain","House the Ka statue of the deceased","Hold temple offerings of wine","Bury pet animals"], a:1},
+      {q:"The pyramid's shape is thought to echo:", opts:["The crook and flail","The benben, the sacred mound of the sun cult","The Nile's delta","The Ankh"], a:1}
+    ]
+  },
+  {
+    name: "Temples & Gold",
+    desc: "New Kingdom architecture, at the height of Egypt's power.",
+    questions: [
+      {q:"Who commissioned the Mortuary Temple at Deir el-Bahri?", opts:["Akhenaton","Menkaure","Narmer","Hatshepsut"], a:3},
+      {q:"A hypostyle hall is best described as:", opts:["A hall with a roof held up by a dense thicket of columns","An open courtyard with no roof","A monumental gateway","An underground burial chamber"], a:0},
+      {q:"What material makes up the innermost coffin of Tutankhamen?", opts:["Painted limestone","Solid gold with enamel and semiprecious stone inlay","Graywacke","Slate"], a:1},
+      {q:"A pylon is:", opts:["A monumental gateway marked by two flat sloping walls","A type of Egyptian crown","A burial chamber for the Ka","A style of hieroglyph"], a:0},
+      {q:"A clerestory is:", opts:["A roof that rises above lower roofs with window space beneath","A colonnade around a courtyard","A container for human remains","A type of relief carving"], a:0},
+      {q:"In the Last Judgment of Hunefer, who weighs the deceased's heart?", opts:["Osiris","Horus","Anubis","Ra"], a:2},
+      {q:"An axial plan describes a building with:", opts:["A circular footprint","An elongated ground plan","No roof at all","Underground-only chambers"], a:1},
+      {q:"The Third Intermediate Period is generally characterized by:", opts:["Peace and prosperity","Rule by non-native Egyptians and political instability","The construction of the Great Pyramids","The birth of hieroglyphics"], a:1}
+    ]
+  },
+  {
+    name: "Heresy & Judgment",
+    desc: "The Amarna Period, sacred symbols, and the weighing of the soul.",
+    questions: [
+      {q:"During the Amarna Period, which single god did Akhenaton promote above all others?", opts:["Osiris","Aton, the sun disk","Anubis","Horus"], a:1},
+      {q:"Amarna-style art is generally characterized by:", opts:["Rigid, idealized poses","Naturalistic, relaxed, curving forms","Only frontal views, never profile","Bright blue backgrounds"], a:1},
+      {q:"An Ankh is a symbol of:", opts:["Kingship","Life","Death","Writing"], a:1},
+      {q:"A sunken relief is carving in which:", opts:["Figures are carved to stand out from the surface","Outlines are cut deeply so figures seem to project forward","Only outlines are painted, never carved","Figures are removed entirely"], a:1},
+      {q:"In architecture, a veneer is:", opts:["A thin sheet of polished stone or tile covering a rough base","A type of column capital","A burial chamber","A ceremonial crown"], a:0},
+      {q:"The crook and flail crossed on Tutankhamen's chest symbolize:", opts:["Marriage","Kingship","Writing","Agriculture"], a:1},
+      {q:"Who reunited Egypt at the start of the Middle Kingdom?", opts:["Narmer","Akhenaton","Mentuhotep II","Ramses II"], a:2},
+      {q:"A sarcophagus is:", opts:["A container for human remains","A temple gateway","A writing surface","A type of crown"], a:0}
+    ]
+  }
+];
+
+const heroVariants = [
+  {lede:"You are the lead archaeologist on this trench.", body:"Every layer of sand you clear takes you further back in time. Brush away the New Kingdom to find Hatshepsut's temple and Tutankhamen's coffin, keep digging past the Middle Kingdom, and hit bedrock at the Predynastic — where the Palette of Narmer records the very birth of the Egyptian state."},
+  {lede:"The permit just came through — the trench is yours.", body:"Four strata sit between you and 3,000 years of Egyptian history. Start at the New Kingdom's gold and temples, and work your way down through the Middle and Old Kingdoms until you hit the bedrock of the Predynastic, where it all began."},
+  {lede:"Someone else started this dig. You're finishing it.", body:"Half the site notes are missing, so you'll need to excavate every layer yourself — from Hatshepsut's temple near the surface down to the Palette of Narmer buried at bedrock. Go slowly. Nothing here is replaceable."}
+];
+
+const chamberIntros = [
+  "Someone tried to erase this from the record. A generation after his death, Akhenaten's monuments were dismantled and his name chiseled out — which is exactly why his reign shows up as a walled-off chamber inside the New Kingdom layer.",
+  "Later pharaohs spent a fortune trying to make this reign disappear. They failed — but only just. What's inside is the closest thing Egyptian art ever got to breaking its own rules.",
+  "This chamber was bricked over on purpose. Whoever sealed it wanted the Amarna Period forgotten entirely. It almost worked."
+];
+
+const verdictPass = [
+  {v:"Your heart is lighter than the feather.", s:"Osiris grants passage. You know this trench cold."},
+  {v:"Ma'at herself nods.", s:"Balance achieved. This unit holds no more secrets from you."}
+];
+const verdictMid = [
+  {v:"The scale wavers.", s:"Ammit is watching. Revisit the Field Journal and try again."},
+  {v:"Close, but the beam still tips.", s:"A few more terms need brushing off before you're ready."}
+];
+const verdictFail = [
+  {v:"The heart sinks.", s:"Back into the trench — excavate each layer again before your next trial."},
+  {v:"Ammit stirs.", s:"This one needs a full re-dig. Start back at the New Kingdom layer."}
+];
+
+const STATE_KEY = "egypt-dig-expedition";
+let currentSetIndex = 0;
+let expeditionNumber = 1;
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(STATE_KEY, false);
+    return JSON.parse(res.value);
+  }catch(e){
+    return {expedition: 0};
+  }
+}
+async function saveState(state){
+  try{ await window.storage.set(STATE_KEY, JSON.stringify(state), false); }catch(e){ /* no persistence available */ }
+}
+
+async function initExpedition(){
+  let state;
+  try{ state = await loadState(); }catch(e){ state = {expedition: 0}; }
+  expeditionNumber = (state.expedition || 0) + 1;
+  currentSetIndex = (expeditionNumber - 1) % quizSets.length;
+  await saveState({expedition: expeditionNumber});
+
+  document.getElementById('expedition-badge').textContent = "EXPEDITION NO. " + expeditionNumber;
+
+  const hv = heroVariants[Math.floor(Math.random()*heroVariants.length)];
+  document.getElementById('hero-lede').textContent = hv.lede;
+  document.getElementById('hero-body').textContent = hv.body;
+  document.getElementById('chamber-intro').textContent = chamberIntros[Math.floor(Math.random()*chamberIntros.length)];
+
+  const setLetters = ["A","B","C"];
+  document.getElementById('set-badge').textContent = "SET " + setLetters[currentSetIndex];
+  document.getElementById('set-title').textContent = quizSets[currentSetIndex].name;
+  document.getElementById('set-desc').textContent = quizSets[currentSetIndex].desc + " Eight questions stand between you and eternity.";
+
+  buildQuiz();
+  shuffleDisplayOrder();
+}
+
+document.querySelectorAll('.layer-head').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const layer = btn.closest('.layer');
+    const opening = !layer.classList.contains('open');
+    layer.classList.toggle('open');
+    btn.setAttribute('aria-expanded', opening ? 'true':'false');
+    markProgress(layer.dataset.layer);
+  });
+});
+function markProgress(key){
+  const map = {'new-kingdom':'prog-new','middle-kingdom':'prog-mid','old-kingdom':'prog-old','early-dynastic':'prog-early'};
+  const el = document.getElementById(map[key]);
+  if(el) el.classList.add('done');
+}
+
+function toggleChamber(){
+  const chamber = document.getElementById('chamber');
+  chamber.classList.toggle('open');
+  const btn = chamber.querySelector('.chamber-toggle');
+  btn.setAttribute('aria-expanded', chamber.classList.contains('open') ? 'true':'false');
+  if(chamber.classList.contains('open')){ document.getElementById('prog-chamber').classList.add('done'); }
+}
+
+document.getElementById('excavation').addEventListener('click', e=>{
+  const card = e.target.closest('.find');
+  if(card) card.classList.toggle('flipped');
+});
+document.getElementById('excavation').addEventListener('keydown', e=>{
+  if(e.key==='Enter'||e.key===' '){
+    const card = e.target.closest('.find');
+    if(card){ e.preventDefault(); card.classList.toggle('flipped'); }
+  }
+});
+
+function shuffleDisplayOrder(){
+  ['grid-new','grid-mid','grid-old','grid-early'].forEach(id=>{
+    const grid = document.getElementById(id);
+    if(!grid) return;
+    const cards = shuffle(Array.from(grid.children));
+    cards.forEach(c=>grid.appendChild(c));
+  });
+  document.querySelectorAll('.vocab-grid').forEach(grid=>{
+    const cards = shuffle(Array.from(grid.children));
+    cards.forEach(c=>grid.appendChild(c));
+  });
+}
+
+function buildVocab(){
+  Object.keys(vocabData).forEach(cat=>{
+    const grid = document.getElementById('tab-'+cat);
+    vocabData[cat].forEach(([term,def])=>{
+      const card = document.createElement('div');
+      card.className='vcard';
+      card.tabIndex=0;
+      card.setAttribute('role','button');
+      card.setAttribute('aria-label','Flip term: '+term);
+      card.innerHTML = '<div class="vcard-inner"><div class="vface f"><span>'+term+'</span></div><div class="vface b">'+def+'</div></div>';
+      const flip = ()=>{card.classList.toggle('flipped'); document.getElementById('prog-journal').classList.add('done');};
+      card.addEventListener('click',flip);
+      card.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();flip();} });
+      grid.appendChild(card);
+    });
+  });
+}
+buildVocab();
+
+function showTab(cat){
+  document.querySelectorAll('#journal .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.vocab-grid').forEach(g=>g.classList.remove('active'));
+  document.getElementById('tab-'+cat).classList.add('active');
+  const labelMap = {periods:'time',architecture:'architecture',religious:'religious',writing:'writing'};
+  [...document.querySelectorAll('#journal .tab-btn')].forEach(b=>{
+    if(b.textContent.toLowerCase().includes(labelMap[cat])) b.classList.add('active');
+  });
+}
+
+let activeQuizQuestions = [];
+
+function buildQuiz(){
+  const set = quizSets[currentSetIndex];
+  const shuffledQuestions = shuffle(set.questions);
+  activeQuizQuestions = shuffledQuestions.map(item=>{
+    const optIndexes = shuffle(item.opts.map((o,i)=>i));
+    const newOpts = optIndexes.map(i=>item.opts[i]);
+    const newAnswer = optIndexes.indexOf(item.a);
+    return {q:item.q, opts:newOpts, a:newAnswer};
+  });
+
+  const wrap = document.getElementById('quiz-questions');
+  wrap.innerHTML='';
+  activeQuizQuestions.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className='q';
+    div.innerHTML = '<p class="qtext">'+(i+1)+'. '+item.q+'</p><div class="opts">'+
+      item.opts.map((o,j)=>'<label class="opt"><input type="radio" name="q'+i+'" value="'+j+'"><span>'+o+'</span></label>').join('')+
+      '</div>';
+    wrap.appendChild(div);
+  });
+  document.getElementById('scale-wrap').classList.remove('show');
+}
+function resetQuiz(){ buildQuiz(); }
+
+function gradeQuiz(){
+  let score = 0;
+  activeQuizQuestions.forEach((item,i)=>{
+    const chosen = document.querySelector('input[name="q'+i+'"]:checked');
+    if(chosen && parseInt(chosen.value)===item.a) score++;
+  });
+  const pct = score / activeQuizQuestions.length;
+  document.getElementById('scale-wrap').classList.add('show');
+  document.getElementById('scale-wrap').scrollIntoView({behavior:'smooth', block:'center'});
+
+  const beam = document.getElementById('beam');
+  const angle = (0.5 - pct) * 30;
+  beam.style.transition = 'transform 1s ease';
+  beam.style.transform = 'rotate('+angle+'deg)';
+
+  const verdict = document.getElementById('verdict-text');
+  const sub = document.getElementById('verdict-sub');
+  document.getElementById('score-line').textContent = 'Score: '+score+' / '+activeQuizQuestions.length;
+
+  let pool;
+  if(pct >= 0.8) pool = verdictPass;
+  else if(pct >= 0.5) pool = verdictMid;
+  else pool = verdictFail;
+  const chosenLine = pool[Math.floor(Math.random()*pool.length)];
+  verdict.textContent = chosenLine.v;
+  sub.textContent = chosenLine.s;
+
+  document.getElementById('prog-trial').classList.add('done');
+}
+
+/* ================= PART TWO: THE WORKSHOP ================= */
+
+function showWorkshopTab(name){
+  document.querySelectorAll('#workshop .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.workshop-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('workshop-'+name).classList.add('active');
+  const idx = {decoder:0, sort:1, label:2}[name];
+  document.querySelectorAll('#workshop .tab-btn')[idx].classList.add('active');
+}
+
+/* ---- Name decoder ---- */
+const glyphMap = {
+  A:'glyph-bird', B:'glyph-leg', C:'glyph-bowl', D:'glyph-oval', E:'glyph-reed',
+  F:'glyph-snake', G:'glyph-jarstand', H:'glyph-rope', I:'glyph-reed', J:'glyph-snake',
+  K:'glyph-bowl', L:'glyph-lion', M:'glyph-bird', N:'glyph-water', O:'glyph-loop',
+  P:'glyph-square', Q:'glyph-bowl', R:'glyph-oval', S:'glyph-cloth', T:'glyph-dome',
+  U:'glyph-reed', V:'glyph-snake', W:'glyph-bird', X:'glyph-bowl', Y:'glyph-reed', Z:'glyph-bolt'
+};
+function decodeName(){
+  const raw = document.getElementById('name-input').value.toUpperCase().replace(/[^A-Z]/g,'');
+  const out = document.getElementById('cartouche-output');
+  if(!raw){
+    out.innerHTML = '<span class="decoder-empty">your name will appear here, carved in stone</span>';
+    return;
+  }
+  out.innerHTML = raw.split('').map(letter=>{
+    const sym = glyphMap[letter] || 'glyph-oval';
+    return '<div class="glyph-tile"><svg viewBox="0 0 24 24"><use href="#'+sym+'"/></svg><span>'+letter+'</span></div>';
+  }).join('');
+  document.getElementById('prog-decoder').classList.add('done');
+}
+
+/* ---- Sort the finds ---- */
+const sortItems = [
+  {id:'amun-re', label:'Temple of Amun-Re', kingdom:'new'},
+  {id:'hatshepsut', label:'Mortuary Temple of Hatshepsut', kingdom:'new'},
+  {id:'tut-coffin', label:'Innermost Coffin of Tutankhamen', kingdom:'new'},
+  {id:'hunefer', label:'Last Judgment of Hunefer', kingdom:'new'},
+  {id:'akhenaton', label:'Akhenaton, Nefertiti & Three Daughters', kingdom:'new'},
+  {id:'scribe', label:'Seated Scribe', kingdom:'old'},
+  {id:'pyramids', label:'Great Pyramids & Great Sphinx', kingdom:'old'},
+  {id:'menkaure', label:'King Menkaure and his Queen', kingdom:'old'},
+  {id:'irrigation', label:'Reunification & Irrigation', kingdom:'mid'},
+  {id:'narmer', label:'Palette of King Narmer', kingdom:'early'}
+];
+let sortSelected = null;
+let sortPlacedCount = 0;
+
+function buildSort(){
+  sortPlacedCount = 0;
+  document.getElementById('sort-win').classList.remove('show');
+  document.querySelectorAll('.bin .bin-list').forEach(b=>b.innerHTML='');
+  const pool = document.getElementById('sort-pool');
+  pool.innerHTML='';
+  shuffle(sortItems).forEach(item=>{
+    const chip = document.createElement('div');
+    chip.className='chip';
+    chip.textContent = item.label;
+    chip.dataset.id = item.id;
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('.sort-pool .chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      sortSelected = chip;
+    });
+    pool.appendChild(chip);
+  });
+  updateSortProgress();
+}
+function updateSortProgress(){
+  document.getElementById('sort-progress').textContent = sortPlacedCount+' of '+sortItems.length+' finds correctly sorted';
+}
+function attemptPlace(kingdom){
+  if(!sortSelected) return;
+  const id = sortSelected.dataset.id;
+  const item = sortItems.find(i=>i.id===id);
+  const binEl = document.querySelector('.bin[data-kingdom="'+kingdom+'"]');
+  if(item.kingdom === kingdom){
+    const tag = document.createElement('div');
+    tag.className='placed-chip';
+    tag.textContent = item.label;
+    binEl.querySelector('.bin-list').appendChild(tag);
+    sortSelected.remove();
+    sortSelected = null;
+    sortPlacedCount++;
+    updateSortProgress();
+    if(sortPlacedCount === sortItems.length){
+      document.getElementById('sort-win').classList.add('show');
+      document.getElementById('prog-sort').classList.add('done');
+    }
+  } else {
+    binEl.classList.add('wrong');
+    setTimeout(()=>binEl.classList.remove('wrong'), 500);
+    sortSelected.classList.remove('selected');
+    sortSelected = null;
+  }
+}
+function resetSort(){ buildSort(); }
+
+/* ---- Label the palette ---- */
+const paletteLabels = [
+  {id:1, top:'10%', left:'80%', answer:"Horus falcon holding a foe's head"},
+  {id:2, top:'24%', left:'34%', answer:'Mace / smiting pose'},
+  {id:3, top:'17%', left:'50%', answer:'White Crown of Upper Egypt'},
+  {id:4, top:'38%', left:'14%', answer:'Sandal-bearer'},
+  {id:5, top:'44%', left:'64%', answer:'Kneeling foe'},
+  {id:6, top:'84%', left:'50%', answer:'Dead foes with a walled city'}
+];
+let labelSelected = null;
+let labelFilledCount = 0;
+
+function buildLabels(){
+  labelFilledCount = 0;
+  document.getElementById('label-win').classList.remove('show');
+  document.getElementById('findings-list').innerHTML = '';
+  const shield = document.getElementById('palette-shield');
+  shield.querySelectorAll('.pin').forEach(p=>p.remove());
+  paletteLabels.forEach(p=>{
+    const pin = document.createElement('div');
+    pin.className='pin';
+    pin.textContent = p.id;
+    pin.style.top = p.top;
+    pin.style.left = p.left;
+    pin.dataset.id = p.id;
+    pin.addEventListener('click', ()=>attemptPin(p.id, pin));
+    shield.appendChild(pin);
+  });
+  const bank = document.getElementById('label-bank');
+  bank.innerHTML='';
+  shuffle(paletteLabels.map(p=>p.answer)).forEach(text=>{
+    const chip = document.createElement('div');
+    chip.className='label-chip';
+    chip.textContent = text;
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('.label-chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      labelSelected = {el:chip, text:text};
+    });
+    bank.appendChild(chip);
+  });
+}
+function attemptPin(pinId, pinEl){
+  if(!labelSelected) return;
+  const pin = paletteLabels.find(p=>p.id===pinId);
+  if(pinEl.classList.contains('filled') || pinEl.classList.contains('revealed')) return;
+  if(pin.answer === labelSelected.text){
+    pinEl.classList.add('filled');
+    labelSelected.el.remove();
+    labelSelected = null;
+    labelFilledCount++;
+    const li = document.createElement('li');
+    li.textContent = 'Pin '+pinId+': '+pin.answer;
+    document.getElementById('findings-list').appendChild(li);
+    if(labelFilledCount === paletteLabels.length){
+      document.getElementById('label-win').classList.add('show');
+      document.getElementById('prog-label').classList.add('done');
+    }
+  } else {
+    pinEl.classList.add('wrong-flash');
+    setTimeout(()=>pinEl.classList.remove('wrong-flash'), 500);
+    labelSelected.el.classList.remove('selected');
+    labelSelected = null;
+  }
+}
+function revealLabels(){
+  paletteLabels.forEach(p=>{
+    const pinEl = document.querySelector('.pin[data-id="'+p.id+'"]');
+    if(!pinEl.classList.contains('filled') && !pinEl.classList.contains('revealed')){
+      pinEl.classList.add('revealed');
+      const li = document.createElement('li');
+      li.textContent = 'Pin '+p.id+': '+p.answer+' (revealed)';
+      document.getElementById('findings-list').appendChild(li);
+    }
+  });
+  labelFilledCount = paletteLabels.length;
+  document.getElementById('label-win').classList.add('show');
+  document.getElementById('prog-label').classList.add('done');
+}
+function resetLabels(){ buildLabels(); }
+
+/* ---------------- go ---------------- */
+initExpedition();
+buildSort();
+buildLabels();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Lumen Society — Unit 3.1: Late Antiquity</title>
+<style>
+:root{
+  --tufa:#3a2a1e;
+  --tufa-deep:#241811;
+  --terracotta:#b5651d;
+  --terracotta-bright:#d97f2e;
+  --candle:#e8b93f;
+  --candle-glow:#ffd873;
+  --parchment:#f2e6c9;
+  --parchment-dim:#e8d8ae;
+  --marble:#eef0ee;
+  --marble-dim:#d9dcd6;
+  --gold:#c9972c;
+  --gold-bright:#f0c14b;
+  --maroon:#5c1a1a;
+  --ink:#241811;
+  --success:#3f7d4a;
+  --success-bright:#5aa869;
+  --danger:#a33636;
+  --danger-bright:#c94848;
+  --sky:#2a4a5c;
+  --shadow: rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family: Georgia, 'Times New Roman', serif;
+  background: radial-gradient(circle at 50% -10%, #4a3320 0%, var(--tufa) 45%, var(--tufa-deep) 100%);
+  color: var(--parchment);
+  min-height:100vh;
+  transition: background 1.2s ease;
+  overflow-x:hidden;
+}
+body.theme-light{
+  background: radial-gradient(circle at 50% -10%, #fdf6e3 0%, var(--marble) 55%, #cdd2c8 100%);
+  color: var(--ink);
+}
+.wrap{max-width:900px;margin:0 auto;padding:18px 16px 60px;}
+h1,h2,h3{font-family: 'Palatino Linotype', Georgia, serif; letter-spacing:.5px;}
+.screen{display:none;}
+.screen.active{display:block; animation: fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+button{font-family:inherit; cursor:pointer;}
+.btn{
+  background: linear-gradient(180deg, var(--terracotta-bright), var(--terracotta));
+  color:#fff8ea; border:2px solid #7a3d0f; border-radius:10px;
+  padding:12px 22px; font-size:1rem; font-weight:bold;
+  box-shadow: 0 3px 0 #5c2c0a, 0 6px 12px var(--shadow);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:translateY(1px); box-shadow:0 1px 0 #5c2c0a;}
+.btn.secondary{background: linear-gradient(180deg,#6b6156,#4a4239); border-color:#332e28;}
+.btn.gold{background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-color:#7a5a10; color:#2b1d05;}
+.btn:disabled{opacity:.4; cursor:not-allowed; transform:none;}
+.btn-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;}
+.center{text-align:center;}
+
+/* ---------- TITLE ---------- */
+.candle-icon{font-size:3rem; filter:drop-shadow(0 0 12px var(--candle-glow));}
+.title-card{
+  background: rgba(20,12,6,.55);
+  border:1px solid rgba(230,190,100,.25);
+  border-radius:16px;
+  padding:26px 22px;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.4);
+}
+body.theme-light .title-card{ background:rgba(255,255,255,.65); border-color:rgba(180,150,90,.35); box-shadow:inset 0 0 40px rgba(0,0,0,.06);}
+.eyebrow{
+  text-transform:uppercase; letter-spacing:3px; font-size:.72rem;
+  color:var(--candle-glow); font-weight:bold;
+}
+body.theme-light .eyebrow{color:var(--gold);}
+.title-main{font-size:2.1rem; margin:6px 0 4px; color:var(--parchment);}
+body.theme-light .title-main{color:var(--maroon);}
+.title-sub{font-style:italic; opacity:.85; margin-bottom:18px;}
+.story-box{
+  background: rgba(0,0,0,.25); border-left:4px solid var(--terracotta-bright);
+  padding:14px 16px; border-radius:6px; line-height:1.55; margin:14px 0;
+}
+body.theme-light .story-box{ background: rgba(0,0,0,.04); border-left-color: var(--gold);}
+.mode-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+@media (max-width:600px){.mode-grid{grid-template-columns:1fr;}}
+.mode-card{
+  background:rgba(0,0,0,.28); border:1px solid rgba(230,190,100,.3); border-radius:12px;
+  padding:16px; text-align:left; cursor:pointer; transition:transform .15s, border-color .15s;
+}
+body.theme-light .mode-card{background:rgba(0,0,0,.04); border-color:rgba(150,120,60,.35);}
+.mode-card:hover{transform:translateY(-3px); border-color:var(--candle-glow);}
+.mode-card h3{margin:0 0 6px; color:var(--candle-glow);}
+body.theme-light .mode-card h3{color:var(--gold);}
+.mode-card p{margin:0; font-size:.92rem; opacity:.85; line-height:1.4;}
+
+/* ---------- TEAM SETUP ---------- */
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:.85rem; margin-bottom:5px; opacity:.85;}
+.field input{
+  width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(230,190,100,.4);
+  background:rgba(255,255,255,.08); color:inherit; font-size:1rem;
+}
+body.theme-light .field input{background:rgba(255,255,255,.7); border-color:rgba(150,120,60,.4);}
+
+/* ---------- HUD ---------- */
+.hud{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:rgba(0,0,0,.3); border-radius:12px; padding:10px 14px; margin-bottom:16px;
+  flex-wrap:wrap;
+}
+body.theme-light .hud{background:rgba(0,0,0,.05);}
+.hud-item{font-size:.85rem;}
+.hud-item b{font-size:1.1rem; display:block; color:var(--candle-glow);}
+body.theme-light .hud-item b{color:var(--gold);}
+.progress-track{height:8px; border-radius:6px; background:rgba(255,255,255,.15); overflow:hidden; margin:10px 0 6px;}
+body.theme-light .progress-track{background:rgba(0,0,0,.1);}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--terracotta-bright),var(--candle-glow)); transition:width .4s ease;}
+.turn-banner{
+  text-align:center; font-weight:bold; padding:8px; border-radius:8px; margin-bottom:12px;
+  background: rgba(201,151,44,.18); border:1px dashed var(--gold);
+}
+
+/* ---------- ACT INTRO / TRANSITION ---------- */
+.act-banner{
+  text-align:center; padding:34px 20px; border-radius:16px;
+  background: rgba(0,0,0,.3); border:1px solid rgba(230,190,100,.3);
+}
+body.theme-light .act-banner{background:rgba(0,0,0,.04);}
+.act-icon{font-size:3.4rem;}
+.act-title{font-size:1.6rem; margin:8px 0 2px; color:var(--candle-glow);}
+body.theme-light .act-title{color:var(--maroon);}
+
+/* ---------- QUESTION CARD ---------- */
+.qcard{
+  background:rgba(0,0,0,.28); border-radius:14px; padding:20px; border:1px solid rgba(230,190,100,.25);
+}
+body.theme-light .qcard{background:#fff; border-color:#e0d6b8; box-shadow:0 4px 14px rgba(0,0,0,.06);}
+.qtag{font-size:.72rem; text-transform:uppercase; letter-spacing:2px; color:var(--terracotta-bright); font-weight:bold;}
+.qtext{font-size:1.15rem; line-height:1.5; margin:8px 0 16px;}
+.choices{display:grid; gap:10px;}
+.choice-btn{
+  text-align:left; padding:12px 14px; border-radius:10px; border:2px solid rgba(230,190,100,.35);
+  background:rgba(255,255,255,.05); color:inherit; font-size:.98rem; line-height:1.35;
+}
+body.theme-light .choice-btn{background:#faf7ee; border-color:#ddd0a8;}
+.choice-btn:hover{border-color:var(--candle-glow);}
+.choice-btn.correct{background:rgba(63,125,74,.35); border-color:var(--success-bright);}
+.choice-btn.wrong{background:rgba(163,54,54,.35); border-color:var(--danger-bright);}
+.choice-btn.dim{opacity:.5;}
+.explain-box{
+  margin-top:14px; padding:12px 14px; border-radius:10px; font-size:.92rem; line-height:1.5;
+  background:rgba(0,0,0,.22);
+}
+body.theme-light .explain-box{background:#f3efe0;}
+.feedback-word{font-weight:bold; font-size:1.05rem;}
+.feedback-word.good{color:var(--success-bright);}
+.feedback-word.bad{color:var(--danger-bright);}
+
+/* ---------- MATCHING MINIGAME ---------- */
+.match-wrap{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media (max-width:600px){.match-wrap{grid-template-columns:1fr;}}
+.match-col h4{margin:0 0 8px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; opacity:.7;}
+.match-item{
+  display:block; width:100%; text-align:left; margin-bottom:8px; padding:10px 12px;
+  border-radius:9px; border:2px solid rgba(230,190,100,.35); background:rgba(255,255,255,.05); color:inherit;
+}
+body.theme-light .match-item{background:#faf7ee; border-color:#ddd0a8;}
+.match-item.selected{border-color:var(--candle-glow); box-shadow:0 0 0 2px rgba(232,185,63,.4);}
+.match-item.solved{background:rgba(63,125,74,.3); border-color:var(--success-bright); opacity:.75;}
+.match-item.shake{animation:shake .3s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+/* ---------- BASILICA LABELING ---------- */
+.label-instructions{margin-bottom:10px; font-size:.92rem; opacity:.9;}
+.chip-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+.chip{
+  padding:8px 14px; border-radius:20px; border:2px solid var(--gold); background:rgba(201,151,44,.15);
+  color:inherit; font-size:.88rem; font-weight:bold;
+}
+.chip.selected{background:var(--gold); color:#241811;}
+.chip.used{opacity:.3; border-style:dashed;}
+.blueprint{
+  background: rgba(240,230,200,.08); border-radius:10px; padding:14px; border:1px dashed rgba(230,190,100,.4);
+  max-width:340px; margin:0 auto;
+}
+body.theme-light .blueprint{background:#faf6ea;}
+.bp-atrium{margin:0 auto 6px; width:70%; height:34px; border:2px solid var(--stone,#8a7f6b); border-radius:4px;
+  display:flex; align-items:center; justify-content:center; font-size:.72rem; opacity:.8; background:rgba(255,255,255,.03);}
+.bp-narthex{width:90%; height:26px; margin:0 auto; background:rgba(180,150,90,.25); border:2px solid var(--gold);
+  display:flex; align-items:center; justify-content:center; font-size:.72rem; border-radius:2px;}
+.bp-nave-row{display:flex; width:90%; margin:0 auto; height:130px;}
+.bp-aisle{flex:0.55; background:rgba(180,110,60,.2); border:2px solid var(--terracotta-bright); display:flex; align-items:center; justify-content:center; font-size:.65rem; text-align:center;}
+.bp-nave{flex:1; background:rgba(63,125,74,.15); border:2px solid var(--success-bright); display:flex; align-items:center; justify-content:center; font-size:.72rem;}
+.bp-transept{width:110%; margin:0 -5%; height:34px; background:rgba(92,26,26,.25); border:2px solid var(--maroon); display:flex; align-items:center; justify-content:center; font-size:.7rem;}
+.bp-apse{width:60%; margin:0 auto; height:44px; border-radius:50% 50% 0 0; background:rgba(232,185,63,.25); border:2px solid var(--gold-bright); display:flex; align-items:flex-end; justify-content:center; padding-bottom:4px; font-size:.7rem;}
+.zone-btn{all:unset; cursor:pointer; width:100%; height:100%; display:flex; align-items:inherit; justify-content:inherit;}
+.zone-filled{background:rgba(63,125,74,.5) !important; border-color:var(--success-bright) !important; font-weight:bold;}
+.zone-flash{animation:flashRed .4s;}
+@keyframes flashRed{0%,100%{background:inherit;} 50%{background:rgba(163,54,54,.6) !important;}}
+
+/* ---------- FINAL / SUMMARY ---------- */
+.badge-box{text-align:center; padding:20px;}
+.badge-emoji{font-size:4rem;}
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:18px 0;}
+.stat-card{background:rgba(0,0,0,.25); border-radius:10px; padding:12px; text-align:center;}
+body.theme-light .stat-card{background:rgba(0,0,0,.04);}
+.stat-card b{display:block; font-size:1.4rem; color:var(--candle-glow);}
+body.theme-light .stat-card b{color:var(--gold);}
+.breakdown-row{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.08); font-size:.92rem;}
+body.theme-light .breakdown-row{border-bottom-color:rgba(0,0,0,.08);}
+
+/* ---------- STUDY HALL ---------- */
+.tab-row{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+.tab-btn{padding:8px 16px; border-radius:20px; border:2px solid rgba(230,190,100,.4); background:transparent; color:inherit; font-weight:bold;}
+.tab-btn.active{background:var(--gold); color:#241811; border-color:var(--gold);}
+.filter-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+.filter-chip{padding:5px 12px; border-radius:14px; font-size:.78rem; border:1px solid rgba(230,190,100,.4); background:transparent; color:inherit;}
+.filter-chip.active{background:rgba(201,151,44,.3); border-color:var(--gold);}
+.flashcard{
+  min-height:180px; border-radius:16px; padding:24px; display:flex; align-items:center; justify-content:center;
+  text-align:center; font-size:1.1rem; cursor:pointer; border:2px solid var(--gold);
+  background: linear-gradient(160deg, rgba(201,151,44,.18), rgba(0,0,0,.15));
+  line-height:1.5;
+}
+body.theme-light .flashcard{background: linear-gradient(160deg, #fff8e6, #f6efd8);}
+.flash-hint{text-align:center; font-size:.8rem; opacity:.65; margin-top:8px;}
+.small-note{font-size:.82rem; opacity:.75; margin-top:6px;}
+footer.credit{text-align:center; font-size:.75rem; opacity:.5; margin-top:40px;}
+.timer-pill{
+  display:inline-block; padding:4px 12px; border-radius:14px; background:rgba(163,54,54,.3); font-weight:bold; font-size:.85rem;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ TITLE SCREEN ============ -->
+  <div class="screen active" id="screen-title">
+    <div class="title-card">
+      <div class="candle-icon center">🕯️</div>
+      <div class="eyebrow center">AP Art History · Unit 3.1</div>
+      <h1 class="title-main center">The Lumen Society</h1>
+      <p class="title-sub center">A secret mission through Catacombs &amp; Cathedrals — Late Antiquity, 200–500 C.E.</p>
+      <div class="story-box">
+        <p><b>Rome, c. 250 C.E.</b> Christianity is illegal. To worship, you must go underground — literally. You are a member of a hidden community that gathers in the catacombs, marks its dead with secret symbols, and waits.</p>
+        <p>Then, in 313 C.E., everything changes. Learn the Faith's hidden signs, master the sacred architecture, and carry your community from darkness into the light of the first great basilicas.</p>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-card" onclick="goTeamSetup()">
+          <h3>🤝 Paired Mission</h3>
+          <p>Work through the story together as a team. Discuss each question with your partner before choosing — you'll take turns leading the answer.</p>
+        </div>
+        <div class="mode-card" onclick="goStudyHall()">
+          <h3>📖 Study Hall (Solo)</h3>
+          <p>Review at your own pace — anytime, even at home. Flashcards, an untimed practice test, and a 60-second Lightning Round.</p>
+        </div>
+      </div>
+      <p class="small-note center" id="highscore-line"></p>
+    </div>
+  </div>
+
+  <!-- ============ TEAM SETUP ============ -->
+  <div class="screen" id="screen-team">
+    <div class="title-card">
+      <h2>🤝 Form Your Society</h2>
+      <p class="small-note">Enter your names — you'll alternate leading each answer, but talk it through together!</p>
+      <div class="field">
+        <label>Partner A's name</label>
+        <input id="nameA" placeholder="e.g. Priscilla" maxlength="20">
+      </div>
+      <div class="field">
+        <label>Partner B's name (leave blank if playing solo)</label>
+        <input id="nameB" placeholder="e.g. Fabian" maxlength="20">
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="startMission()">Begin the Mission →</button>
+        <button class="btn secondary" onclick="showScreen('screen-title')">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ACT / NARRATIVE TRANSITION ============ -->
+  <div class="screen" id="screen-narrative">
+    <div class="act-banner">
+      <div class="act-icon" id="narr-icon">⛓️</div>
+      <div class="act-title" id="narr-title">Chapter</div>
+      <div class="story-box" style="text-align:left; margin-top:16px;" id="narr-text"></div>
+      <div class="btn-row center" style="justify-content:center;">
+        <button class="btn gold" id="narr-continue">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN PLAY SCREEN ============ -->
+  <div class="screen" id="screen-play">
+    <div class="hud">
+      <div class="hud-item">Chapter<br><b id="hud-act">1/4</b></div>
+      <div class="hud-item">Score<br><b id="hud-score">0</b></div>
+      <div class="hud-item">Streak<br><b id="hud-streak">0 🔥</b></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="turn-banner" id="turn-banner" style="display:none;"></div>
+    <div id="play-area"></div>
+  </div>
+
+  <!-- ============ FINAL SCREEN ============ -->
+  <div class="screen" id="screen-final">
+    <div class="title-card">
+      <div class="badge-box">
+        <div class="badge-emoji" id="final-emoji">🏛️</div>
+        <h2 id="final-title">Mission Complete</h2>
+        <p id="final-subtitle"></p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><b id="final-score">0</b>Total Score</div>
+        <div class="stat-card"><b id="final-acc">0%</b>Accuracy</div>
+        <div class="stat-card"><b id="final-streak">0</b>Best Streak</div>
+      </div>
+      <h3>Chapter Breakdown</h3>
+      <div id="final-breakdown"></div>
+      <div class="btn-row center" style="justify-content:center;">
+        <button class="btn" onclick="startMission()">🔄 Replay (New Path)</button>
+        <button class="btn secondary" onclick="goStudyHall()">📖 Keep Studying</button>
+        <button class="btn secondary" onclick="showScreen('screen-title')">🏠 Main Hall</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STUDY HALL ============ -->
+  <div class="screen" id="screen-study">
+    <div class="title-card">
+      <h2>📖 Study Hall</h2>
+      <p class="small-note">Review anytime — no timer pressure unless you want one. Great for the night before a quiz!</p>
+      <div class="tab-row">
+        <button class="tab-btn active" data-tab="flash" onclick="setStudyTab('flash')">🃏 Flashcards</button>
+        <button class="tab-btn" data-tab="test" onclick="setStudyTab('test')">📝 Practice Test</button>
+        <button class="tab-btn" data-tab="lightning" onclick="setStudyTab('lightning')">⚡ Lightning Round</button>
+      </div>
+      <div id="study-area"></div>
+      <div class="btn-row"><button class="btn secondary" onclick="showScreen('screen-title')">← Back to Main Hall</button></div>
+    </div>
+  </div>
+
+  <footer class="credit">The Lumen Society · Unit 3.1: Late Antiquity · Built for offline classroom &amp; home review</footer>
+</div>
+
+<script>
+/* =========================================================================
+   DATA
+   ========================================================================= */
+
+const VOCAB_Q = [
+ {id:"v1",tag:"underground",q:"In the catacombs, what were the small underground rooms used as mortuary chapels called?",choices:["Cubicula","Loculi","Narthex","Ambulatory"],a:0,ex:"Cubicula were small underground rooms serving as mortuary chapels within the catacombs."},
+ {id:"v2",tag:"underground",q:"What term describes the wall openings carved to receive the bodies of the dead?",choices:["Spolia","Loculi","Transept","Facade"],a:1,ex:"Loculi are openings in catacomb walls that received the dead."},
+ {id:"v3",tag:"underground",q:"An underground passageway used for burial is called a ____.",choices:["Basilica","Catacomb","Atrium","Clerestory"],a:1,ex:"A catacomb is an underground passageway used for burial."},
+ {id:"v4",tag:"underground",q:"A figure shown with both hands raised in a gesture of prayer is called a(n) ____ figure.",choices:["Narrative","Orant","Evangelist","Central-plan"],a:1,ex:"An Orant Figure has hands raised in prayer."},
+ {id:"v5",tag:"underground",q:"An image or series of images used to tell a story is called a ____ image.",choices:["Orant","Narrative","Axial","Spolia"],a:1,ex:"A Narrative Image tells a story through pictures."},
+ {id:"v6",tag:"underground",q:"Who are the 'Evangelists' in Christian art?",choices:["The four authors of the Gospels","The twelve apostles","Roman emperors who legalized Christianity","Angels who guard the catacombs"],a:0,ex:"The Evangelists — Matthew, Mark, Luke, and John — wrote the four Gospels."},
+ {id:"v7",tag:"architecture",q:"Which term names the semicircular endpoint of a church where the altar sits?",choices:["Narthex","Apse","Nave","Atrium"],a:1,ex:"The apse is the endpoint of a church that holds the altar."},
+ {id:"v8",tag:"architecture",q:"The main, central aisle of a church is called the ____.",choices:["Transept","Nave","Ambulatory","Facade"],a:1,ex:"The nave is the main aisle running through the center of a church."},
+ {id:"v9",tag:"architecture",q:"Which term names the aisle that crosses perpendicular to the nave, where clergy originally stood?",choices:["Transept","Clerestory","Narthex","Spolia"],a:0,ex:"The transept crosses the nave at a right angle."},
+ {id:"v10",tag:"architecture",q:"A church's open courtyard located in front of the building is its ____.",choices:["Atrium","Apse","Cubiculum","Ambulatory"],a:0,ex:"The atrium is the courtyard in front of a Christian church."},
+ {id:"v11",tag:"architecture",q:"The part of the atrium closest to the church, acting as a lobby, is the ____.",choices:["Nave","Narthex","Transept","Facade"],a:1,ex:"The narthex is the vestibule/lobby closest to the basilica."},
+ {id:"v12",tag:"architecture",q:"A church plan with a long nave, side aisles, and an apse is called a ____ plan.",choices:["Central","Basilica","Cruciform-only","Rotunda"],a:1,ex:"This describes a Basilica (Axial) plan."},
+ {id:"v13",tag:"architecture",q:"A church built with a circular plan and the altar placed in the middle is called a ____ plan church.",choices:["Basilica","Axial","Central","Narthex"],a:2,ex:"A Central-plan church is circular, with the altar in the middle."},
+ {id:"v14",tag:"architecture",q:"The upper 'window story' of a church that admits light into the nave is the ____.",choices:["Clerestory","Ambulatory","Narthex","Spolia"],a:0,ex:"The clerestory is a row of windows set high in the nave wall."},
+ {id:"v15",tag:"architecture",q:"A passageway that wraps around the apse or altar is called the ____.",choices:["Facade","Ambulatory","Transept","Loculi"],a:1,ex:"The ambulatory circles around the apse or altar area."},
+ {id:"v16",tag:"architecture",q:"The principal front of a building, especially the side facing a street or open space, is its ____.",choices:["Facade","Apse","Nave","Cubiculum"],a:0,ex:"The facade is the main face of a building."},
+ {id:"v17",tag:"architecture",q:"Reusing architectural pieces from an older building in a new, different context is called ____.",choices:["Iconoclasm","Spolia","Narthex","Orant"],a:1,ex:"Spolia is the reuse of architectural pieces outside their original context."},
+ {id:"v18",tag:"underground",q:"The Catacomb of Priscilla is famous for a fresco of Christ shown as the ____.",choices:["Enthroned Emperor","Good Shepherd","Risen King on a throne","Pantocrator"],a:1,ex:"Before Christianity was legal, Christ was often shown as the humble Good Shepherd."},
+ {id:"v19",tag:"architecture",q:"Which statement is TRUE of a basilica-plan church?",choices:["It is circular, with the altar in the exact center","It has a long nave, side aisles, and an apse","It has no windows at all","It was outlawed after Constantine"],a:1,ex:"A basilica plan is axial: a long nave flanked by aisles, ending in an apse."},
+ {id:"v20",tag:"underground",q:"Loculi and cubicula are both features you would find inside a ____.",choices:["Basilica","Catacomb","Baptistery","Narthex"],a:1,ex:"Both loculi (burial niches) and cubicula (mortuary chapels) are catacomb features."}
+];
+
+const HISTORY_Q = [
+ {id:"h1",tag:"history",q:"From about 100–300 C.E., practicing Christianity in the Roman Empire was...",choices:["The official state religion","Illegal, and often practiced in secret","Only allowed in Egypt","Legal everywhere except Rome"],a:1,ex:"Christianity was illegal among pagan Romans from roughly 100–300 C.E., forcing believers into hiding."},
+ {id:"h2",tag:"history",q:"What 313 C.E. event granted religious tolerance across the Roman Empire?",choices:["The Council of Nicaea","The Edict of Milan","The Great Schism","The Sack of Rome"],a:1,ex:"The Edict of Milan (313 C.E.) established religious tolerance in the Roman Empire."},
+ {id:"h3",tag:"history",q:"Which emperor issued the Edict of Milan?",choices:["Diocletian","Nero","Constantine","Justinian"],a:2,ex:"Emperor Constantine changed Christianity's legal status with the Edict of Milan."},
+ {id:"h4",tag:"history",q:"Christianity is often called a 'narrative religion' because...",choices:["It has no written texts","New Testament stories were depicted directly in art","Only music was permitted","Art was completely banned"],a:1,ex:"Christian art directly illustrated New Testament stories — a 'narrative' approach."},
+ {id:"h5",tag:"history",q:"Before Constantine's reign, Jesus was often shown in art as the humble...",choices:["Enthroned Emperor","Good Shepherd, in simple robes with a shepherd's crook","Warrior King","Roman Senator"],a:1,ex:"Early imagery favored the gentle Good Shepherd over triumphant imperial imagery."},
+ {id:"h6",tag:"history",q:"After Christianity became the Empire's official religion, Jesus began to be shown as...",choices:["A plain shepherd with no symbols of status","Imperial and godly — purple and gold robes, a staff of power, a crown-like halo","A Roman soldier in armor","Entirely without a halo"],a:1,ex:"Once Christianity was official, imagery shifted toward imperial, godly symbolism."},
+ {id:"h7",tag:"history",q:"The periodic rejection or destruction of religious images by some medieval groups is called...",choices:["Spolia","Iconoclasm","Ambulatory","Narthex"],a:1,ex:"Iconoclasm is the rejection of images, which occurred at various points in medieval history."},
+ {id:"h8",tag:"history",q:"Medieval art is chiefly concerned with which three traits?",choices:["War, trade, and agriculture","Religious expression, court life, and scholarship","Science, medicine, and law","Music, dance, and theater"],a:1,ex:"Religious expression, court life (royalty), and scholarship drive medieval art."},
+ {id:"h9",tag:"history",q:"Knowledge and learning spread throughout medieval Europe mainly through...",choices:["Printed newspapers","Trade, pilgrimage, and military activity such as the Crusades","Royal decree alone","Isolated monasteries with no outside contact"],a:1,ex:"Trade routes, pilgrimages, and the Crusades carried ideas across medieval Europe."},
+ {id:"h10",tag:"history",q:"Unit 3 (Early Europe & Colonial Americas) spans roughly what time period?",choices:["200–1750 C.E.","1500–1900 C.E.","3000 B.C.E.–200 C.E.","500–800 C.E."],a:0,ex:"This unit covers roughly 200 C.E. to 1750 C.E."}
+];
+
+const WORK48_Q = [
+ {id:"w48_1",tag:"work48",q:"Where is the Catacomb of Priscilla located?",choices:["Rome, Italy","Ravenna, Italy","Constantinople","Alexandria, Egypt"],a:0,ex:"The Catacomb of Priscilla is in Rome, Italy."},
+ {id:"w48_2",tag:"work48",q:"What is the approximate date range for the Catacomb of Priscilla frescoes?",choices:["c. 200–400 C.E.","c. 1200–1400 C.E.","c. 30–100 C.E.","c. 800–1000 C.E."],a:0,ex:"The frescoes date to roughly 200–400 C.E."},
+ {id:"w48_3",tag:"work48",q:"What medium was used to create the Catacomb of Priscilla's images?",choices:["Marble mosaic","Excavated tufa and fresco","Bronze relief","Oil on canvas"],a:1,ex:"The catacomb was carved from tufa and decorated with fresco."},
+ {id:"w48_4",tag:"work48",q:"Which vocabulary term describes the small mortuary chapel rooms found in the Catacomb of Priscilla?",choices:["Narthex","Cubicula","Transept","Ambulatory"],a:1,ex:"Cubicula are the small mortuary-chapel rooms in catacombs."},
+ {id:"w48_5",tag:"work48",q:"Which vocabulary term describes the burial niches carved into the catacomb's walls?",choices:["Loculi","Spolia","Clerestory","Facade"],a:0,ex:"Loculi are the wall niches that received the dead."},
+ {id:"w48_6",tag:"work48",q:"The Good Shepherd fresco shows Christ as a humble figure among sheep. Why might early Christians have chosen this image rather than, say, a Crucifixion scene?",choices:["Crucifixion scenes were too difficult to paint","Christianity was illegal, so imagery had to stay gentle and coded rather than openly triumphant","There was no story of Christ's death yet","Roman law required shepherd imagery specifically"],a:1,ex:"Under persecution, believers used quiet, coded imagery like the Good Shepherd rather than overt Christian triumph."},
+ {id:"w48_7",tag:"work48",q:"An Orant Figure, also found in the Catacomb of Priscilla, is shown...",choices:["Riding a horse","With hands raised in prayer","Holding a sword","Seated on a throne"],a:1,ex:"An Orant Figure has hands raised in a gesture of prayer."},
+ {id:"w48_8",tag:"work48",q:"Which vocabulary term is NOT among those covered by the Catacomb of Priscilla images?",choices:["Evangelists","Catacomb","Basilica Plan","Orant Figure"],a:2,ex:"Basilica Plan belongs to Santa Sabina's vocabulary set, not the catacomb's."}
+];
+
+const WORK49_Q = [
+ {id:"w49_1",tag:"work49",q:"Where is Santa Sabina located?",choices:["Rome, Italy","Milan, Italy","Constantinople","Ravenna, Italy"],a:0,ex:"Santa Sabina is located in Rome, Italy."},
+ {id:"w49_2",tag:"work49",q:"What is the approximate date of Santa Sabina's construction?",choices:["c. 422–432 C.E.","c. 100–150 C.E.","c. 800–900 C.E.","c. 1200–1300 C.E."],a:0,ex:"Santa Sabina was built c. 422–432 C.E."},
+ {id:"w49_3",tag:"work49",q:"What materials make up Santa Sabina?",choices:["Marble and gold leaf only","Brick, stone, and a wooden roof","Cast iron and glass","Mud brick only"],a:1,ex:"Santa Sabina is built of brick and stone with a wooden roof."},
+ {id:"w49_4",tag:"work49",q:"Santa Sabina is considered an important early example of which church plan?",choices:["Central plan","Basilica (axial) plan","Rotunda plan","Cruciform-only plan"],a:1,ex:"Santa Sabina exemplifies the early Christian basilica (axial) plan."},
+ {id:"w49_5",tag:"work49",q:"The reused Roman architectural elements (such as columns) found inside Santa Sabina are examples of...",choices:["Iconoclasm","Spolia","Ambulatory","Orant figures"],a:1,ex:"Spolia refers to reused architectural pieces placed in a new context."},
+ {id:"w49_6",tag:"work49",q:"Which architectural feature lets light into Santa Sabina's nave from above the side aisles?",choices:["Clerestory windows","Loculi","Narthex","Ambulatory"],a:0,ex:"Clerestory windows sit high on the nave wall to let in light."},
+ {id:"w49_7",tag:"work49",q:"The plain brick exterior of Santa Sabina contrasts with...",choices:["An equally plain interior","A richly decorated, light-filled colonnaded interior","A completely windowless interior","An exterior covered entirely in gold mosaic"],a:1,ex:"Early Christian churches were famously plain outside, but beautiful inside."},
+ {id:"w49_8",tag:"work49",q:"Which vocabulary term describes the principal front, or face, of Santa Sabina?",choices:["Facade","Apse","Nave","Loculi"],a:0,ex:"The facade is a building's principal front."},
+ {id:"w49_9",tag:"work49",q:"In Santa Sabina's plan, where would you find the altar?",choices:["In the narthex","In the apse","In the atrium","In the clerestory"],a:1,ex:"The altar sits in the apse, at the end of the nave."},
+ {id:"w49_10",tag:"work49",q:"Is Santa Sabina a central-plan church with an ambulatory circling the altar?",choices:["Yes — it's a central-plan church with an ambulatory","No — it's a basilica-plan church with a long nave instead","Yes, but only in the crypt","No, it has no floor plan at all"],a:1,ex:"Santa Sabina is a basilica (axial) plan, not a central plan with an ambulatory."}
+];
+
+const EVANGELIST_Q = [
+ {id:"e1",tag:"symbols",q:"Which Evangelist is symbolized by an angel or a man?",choices:["Matthew","Mark","Luke","John"],a:0,ex:"Matthew's symbol is an angel or man."},
+ {id:"e2",tag:"symbols",q:"Which Evangelist is symbolized by a lion?",choices:["Matthew","Mark","Luke","John"],a:1,ex:"Mark's symbol is a lion."},
+ {id:"e3",tag:"symbols",q:"Which Evangelist is symbolized by an ox or calf?",choices:["Matthew","Mark","Luke","John"],a:2,ex:"Luke's symbol is an ox or calf."},
+ {id:"e4",tag:"symbols",q:"Which Evangelist is symbolized by an eagle?",choices:["Matthew","Mark","Luke","John"],a:3,ex:"John's symbol is an eagle."}
+];
+
+const SHAPE_Q = [
+ {id:"s1",tag:"shapes",q:"In church symbolism, a circle (as in a halo or rose window) most often represents...",choices:["Earth and stability","Eternity and God, with no beginning or end","Chaos","The four seasons"],a:1,ex:"Circles symbolize eternity/God — no beginning or end."},
+ {id:"s2",tag:"shapes",q:"A square shape in church design (like an altar table or church base) symbolizes...",choices:["The Trinity","Earth, the material world, and stability","Renewal","Cosmic unity"],a:1,ex:"Squares symbolize earth and stability."},
+ {id:"s3",tag:"shapes",q:"A triangle shape, often found in Gothic arches or icon halos, symbolizes...",choices:["The Trinity / divinity","Earth","Rebirth","Pure decoration with no meaning"],a:0,ex:"Triangles symbolize the Trinity."},
+ {id:"s4",tag:"shapes",q:"The cross shape in a church floor plan symbolizes...",choices:["Salvation and faith","Eternity","Growth","Renewal"],a:0,ex:"The cross symbolizes salvation and faith."},
+ {id:"s5",tag:"shapes",q:"An octagon shape, often used for baptisteries, symbolizes...",choices:["Earth","Renewal and rebirth","The Trinity","Chaos"],a:1,ex:"Octagons symbolize renewal and rebirth (Jesus rose on the 8th day)."},
+ {id:"s6",tag:"shapes",q:"A mandala or rose window design symbolizes...",choices:["Cosmic unity and divine order","Simple decoration","War","Trade routes"],a:0,ex:"Mandalas/rose windows symbolize cosmic unity and divine order."}
+];
+
+const ALL_MCQ = [...VOCAB_Q, ...HISTORY_Q, ...WORK48_Q, ...WORK49_Q, ...EVANGELIST_Q, ...SHAPE_Q];
+
+const SYMBOL_PAIRS = [
+ {name:"Ichthys", meaning:"Greek word for 'fish'; an acrostic for 'Jesus Christ, Son of God, Savior.'"},
+ {name:"Chi Rho (☧)", meaning:"A ligature of the Greek letters Chi (X) and Rho (P); shorthand for 'Christ.'"},
+ {name:"Staurogram", meaning:"A ligature combining the Greek letters Tau (T) and Rho (P); a short way of writing 'stauros' (cross)."},
+ {name:"Alpha & Omega (Α Ω)", meaning:"The first and last letters of the Greek alphabet; from Revelation, 'I am the Alpha and the Omega.'"}
+];
+
+const LABEL_ZONES = [
+ {id:"apse",label:"Apse"},
+ {id:"transept",label:"Transept"},
+ {id:"nave",label:"Nave"},
+ {id:"aisle",label:"Side Aisles"},
+ {id:"narthex",label:"Narthex"},
+ {id:"atrium",label:"Atrium"}
+];
+
+// Flashcard deck: term -> definition style, spanning vocabulary, symbols, history, and the two works
+const VOCAB_DEFS = [
+ {term:"Ambulatory", def:"A passageway that wraps around the apse or altar area of a church.", cat:"Vocabulary"},
+ {term:"Apse", def:"The semicircular endpoint of a church where the altar is located.", cat:"Vocabulary"},
+ {term:"Atrium", def:"An open courtyard located in front of a Christian church.", cat:"Vocabulary"},
+ {term:"Basilica Plan (Axial Plan)", def:"A church plan featuring a long nave, side aisles, and an apse for the altar.", cat:"Vocabulary"},
+ {term:"Catacomb", def:"An underground passageway used for burial.", cat:"Vocabulary"},
+ {term:"Central-Plan Church", def:"A church with a circular plan and the altar placed in the middle.", cat:"Vocabulary"},
+ {term:"Clerestory", def:"The upper 'window story' of a church that lets light into the nave.", cat:"Vocabulary"},
+ {term:"Cubiculum / Cubicula", def:"Small underground rooms within catacombs that served as mortuary chapels.", cat:"Vocabulary"},
+ {term:"Evangelists", def:"The four authors of the Gospels: Matthew, Mark, Luke, and John.", cat:"Vocabulary"},
+ {term:"Facade", def:"The principal front of a building, especially the side facing a street or open space.", cat:"Vocabulary"},
+ {term:"Loculi", def:"Openings carved into catacomb walls to receive the bodies of the dead.", cat:"Vocabulary"},
+ {term:"Narrative Image", def:"An image or series of images used to tell a story.", cat:"Vocabulary"},
+ {term:"Narthex", def:"The part of the atrium closest to the basilica; functions as a vestibule/lobby.", cat:"Vocabulary"},
+ {term:"Nave", def:"The main, central aisle of a church.", cat:"Vocabulary"},
+ {term:"Orant Figure", def:"A figure shown with hands raised in a gesture of prayer.", cat:"Vocabulary"},
+ {term:"Spolia", def:"The reuse of architectural pieces in buildings different from their original context.", cat:"Vocabulary"},
+ {term:"Transept", def:"The aisle of a church that crosses perpendicular to the nave, where clergy originally stood.", cat:"Vocabulary"},
+ {term:"Ichthys", def:"Greek for 'fish'; an acrostic for 'Jesus Christ, Son of God, Savior.' Used in secret by persecuted Christians.", cat:"Symbols"},
+ {term:"Chi Rho (☧)", def:"A ligature of Greek letters Chi (X) and Rho (P); shorthand for 'Christ.'", cat:"Symbols"},
+ {term:"Staurogram", def:"A ligature of Greek letters Tau (T) and Rho (P); short way of writing 'stauros' (cross).", cat:"Symbols"},
+ {term:"Alpha & Omega (Α Ω)", def:"First and last letters of the Greek alphabet; from Revelation, 'I am the Alpha and the Omega.'", cat:"Symbols"},
+ {term:"Matthew's symbol", def:"An angel or a man.", cat:"Symbols"},
+ {term:"Mark's symbol", def:"A lion.", cat:"Symbols"},
+ {term:"Luke's symbol", def:"An ox or calf.", cat:"Symbols"},
+ {term:"John's symbol", def:"An eagle.", cat:"Symbols"},
+ {term:"Edict of Milan (313 C.E.)", def:"Issued by Emperor Constantine; granted religious tolerance across the Roman Empire.", cat:"History"},
+ {term:"Christianity, 100–300 C.E.", def:"Illegal in the Roman Empire; practiced in secret, often in catacombs.", cat:"History"},
+ {term:"Jesus before Constantine", def:"Shown as the humble Good Shepherd — simple robes, shepherd's crook.", cat:"History"},
+ {term:"Jesus after Constantine", def:"Shown as imperial and godly — purple and gold robes, staff of power, crown-like halo.", cat:"History"},
+ {term:"Iconoclasm", def:"The periodic rejection or destruction of religious images by some medieval groups.", cat:"History"},
+ {term:"3 Traits of Medieval Art", def:"Religious expression, court life, and scholarship.", cat:"History"},
+ {term:"Catacomb of Priscilla", def:"Rome, Italy · c. 200–400 C.E. · Excavated tufa and fresco. Features the Good Shepherd fresco and an Orant Figure. Vocabulary: Evangelists, Catacomb, Cubicula, Loculi, Orant Figure, Narrative Image.", cat:"The Two Works"},
+ {term:"Santa Sabina", def:"Rome, Italy · c. 422–432 C.E. · Brick, stone, wooden roof. A key basilica-plan church with spolia columns and clerestory lighting. Vocabulary: Basilica Plan, Ambulatory, Apse, Atrium, Central Plan, Clerestory, Narthex, Nave, Transept, Spolia, Facade.", cat:"The Two Works"}
+];
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pick(arr,n){ return shuffle(arr).slice(0,Math.min(n,arr.length)); }
+function shuffleChoices(q){
+  const idxs=shuffle(q.choices.map((c,i)=>i));
+  const newChoices=idxs.map(i=>q.choices[i]);
+  const newAns=idxs.indexOf(q.a);
+  return {...q, choices:newChoices, a:newAns};
+}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function setTheme(light){
+  document.body.classList.toggle('theme-light', light);
+}
+
+/* =========================================================================
+   GAME STATE
+   ========================================================================= */
+let state = null;
+
+function buildActs(){
+  const act1MCQ = pick([...pick(WORK48_Q,8), ...VOCAB_Q.filter(v=>v.tag==='underground')], 5).map(shuffleChoices);
+  const act2MCQ = pick(HISTORY_Q, 5).map(shuffleChoices);
+  const act3MCQ = pick([...pick(WORK49_Q,10), ...VOCAB_Q.filter(v=>v.tag==='architecture')], 5).map(shuffleChoices);
+  const usedIds = new Set([...act1MCQ, ...act2MCQ, ...act3MCQ].map(q=>q.id));
+  const finalPool = ALL_MCQ.filter(q=>!usedIds.has(q.id));
+  const act4MCQ = pick(finalPool, 10).map(shuffleChoices);
+
+  return [
+    {
+      id:"catacomb", name:"The Catacomb of Priscilla", icon:"⛓️",
+      narrTitle:"Chapter I — Into the Dark",
+      narrText:"You slip through a hidden door beneath Rome and descend into the Catacomb of Priscilla. Torchlight flickers over painted walls — a shepherd among sheep, a figure with arms raised in prayer. Your guide whispers: 'Before you go further, prove you know the signs of our faith.'",
+      steps:[
+        {type:"match", pairs: shuffle(SYMBOL_PAIRS)},
+        ...act1MCQ.map(q=>({type:"mcq", data:q}))
+      ]
+    },
+    {
+      id:"edict", name:"The Edict of Milan", icon:"📜",
+      narrTitle:"Chapter II — Word from the Emperor",
+      narrText:"Years pass in whispers and candlelight. Then, in 313 C.E., a rider arrives with astonishing news: Emperor Constantine has issued the Edict of Milan. Your community can finally step into the light — but first, the elders test what you've learned of this new age.",
+      steps: act2MCQ.map(q=>({type:"mcq", data:q}))
+    },
+    {
+      id:"basilica", name:"Building Santa Sabina", icon:"⛪",
+      narrTitle:"Chapter III — Rising Into the Light",
+      narrText:"With Christianity now legal, your community begins raising a great basilica — Santa Sabina. Master builders hand you a blueprint. 'Plain outside, beautiful within,' they say. 'Label it correctly, and we build it right.'",
+      steps:[
+        {type:"label", zones: shuffle(LABEL_ZONES)},
+        ...act3MCQ.map(q=>({type:"mcq", data:q}))
+      ]
+    },
+    {
+      id:"trial", name:"The Congregation's Trial", icon:"🕯️",
+      narrTitle:"Chapter IV — The Final Trial",
+      narrText:"Santa Sabina stands complete, filled with golden light through its clerestory windows. Before you're welcomed as full keepers of this knowledge, the whole congregation puts you to one last, mixed trial.",
+      steps: act4MCQ.map(q=>({type:"mcq", data:q}))
+    }
+  ];
+}
+
+function startMission(){
+  const nameA = document.getElementById('nameA').value.trim() || "Partner A";
+  const nameB = document.getElementById('nameB').value.trim();
+  state = {
+    mode: nameB ? 'pair':'solo',
+    teamA: nameA, teamB: nameB,
+    turn: 0,
+    acts: buildActs(),
+    actIndex: 0,
+    stepIndex: 0,
+    score: 0,
+    streak: 0,
+    maxStreak: 0,
+    actResults: []
+  };
+  localStorage.setItem('lumen_lastNameA', nameA);
+  if(nameB) localStorage.setItem('lumen_lastNameB', nameB);
+  setTheme(false);
+  runAct(0);
+}
+
+function goTeamSetup(){
+  document.getElementById('nameA').value = localStorage.getItem('lumen_lastNameA')||'';
+  document.getElementById('nameB').value = localStorage.getItem('lumen_lastNameB')||'';
+  showScreen('screen-team');
+}
+
+/* ---------- ACT / STEP FLOW ---------- */
+function runAct(idx){
+  state.actIndex = idx;
+  state.stepIndex = 0;
+  state.actResults[idx] = {name: state.acts[idx].name, correct:0, total:0};
+  setTheme(idx>=2); // light theme once we reach the basilica chapters
+  showNarrative(state.acts[idx]);
+}
+
+function showNarrative(act){
+  document.getElementById('narr-icon').textContent = act.icon;
+  document.getElementById('narr-title').textContent = act.narrTitle;
+  document.getElementById('narr-text').innerHTML = `<p>${act.narrText}</p>`;
+  document.getElementById('narr-continue').onclick = ()=>{ showScreen('screen-play'); renderStep(); };
+  showScreen('screen-narrative');
+}
+
+function updateHUD(){
+  const act = state.acts[state.actIndex];
+  document.getElementById('hud-act').textContent = (state.actIndex+1)+"/"+state.acts.length;
+  document.getElementById('hud-score').textContent = state.score;
+  document.getElementById('hud-streak').textContent = state.streak+" 🔥";
+  const pctAct = Math.round((state.stepIndex/act.steps.length)*100);
+  document.getElementById('progress-fill').style.width = pctAct+"%";
+
+  const banner = document.getElementById('turn-banner');
+  if(state.mode==='pair'){
+    const leader = state.turn%2===0 ? state.teamA : state.teamB;
+    banner.style.display='block';
+    banner.textContent = `🙋 ${leader}'s turn to choose — talk it over together!`;
+  } else {
+    banner.style.display='none';
+  }
+}
+
+function renderStep(){
+  const act = state.acts[state.actIndex];
+  if(state.stepIndex >= act.steps.length){
+    finishAct();
+    return;
+  }
+  updateHUD();
+  const step = act.steps[state.stepIndex];
+  const area = document.getElementById('play-area');
+  if(step.type==='mcq') renderMCQ(step.data, area);
+  else if(step.type==='match') renderMatch(step.pairs, area);
+  else if(step.type==='label') renderLabel(step.zones, area);
+}
+
+function advanceStep(){
+  state.stepIndex++;
+  if(state.mode==='pair') state.turn++;
+  renderStep();
+}
+
+function finishAct(){
+  if(state.actIndex+1 < state.acts.length){
+    runAct(state.actIndex+1);
+  } else {
+    finishGame();
+  }
+}
+
+/* ---------- MCQ RENDERING ---------- */
+function renderMCQ(q, area){
+  const act = state.acts[state.actIndex];
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Chapter ${state.actIndex+1} · Question ${act.steps.slice(0,state.stepIndex+1).filter(s=>s.type==='mcq').length}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="choices" id="choice-list"></div>
+      <div id="explain-holder"></div>
+    </div>`;
+  const list = document.getElementById('choice-list');
+  q.choices.forEach((choice,i)=>{
+    const btn = document.createElement('button');
+    btn.className='choice-btn';
+    btn.textContent = choice;
+    btn.onclick = ()=>answerMCQ(q,i,btn,list);
+    list.appendChild(btn);
+  });
+}
+function answerMCQ(q, i, btn, list){
+  const buttons = Array.from(list.children);
+  buttons.forEach(b=>b.onclick=null);
+  const correct = i===q.a;
+  state.actResults[state.actIndex].total++;
+  if(correct){
+    state.actResults[state.actIndex].correct++;
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    const bonus = Math.min(state.streak*2, 20);
+    state.score += 10 + bonus;
+    btn.classList.add('correct');
+  } else {
+    state.streak = 0;
+    btn.classList.add('wrong');
+    buttons[q.a].classList.add('correct');
+  }
+  buttons.forEach(b=>{ if(b!==btn && b!==buttons[q.a]) b.classList.add('dim'); });
+  const holder = document.getElementById('explain-holder');
+  holder.innerHTML = `
+    <div class="explain-box">
+      <span class="feedback-word ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}</span>
+      <p style="margin:6px 0 0;">${q.ex}</p>
+    </div>
+    <div class="btn-row"><button class="btn gold" id="continue-btn">Continue →</button></div>`;
+  document.getElementById('continue-btn').onclick = advanceStep;
+  updateHUD();
+}
+
+/* ---------- MATCHING MINIGAME ---------- */
+function renderMatch(pairs, area){
+  const names = shuffle(pairs.map(p=>p.name));
+  const meanings = shuffle(pairs.map(p=>p.meaning));
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Chapter ${state.actIndex+1} · Secret Symbols</div>
+      <div class="qtext">Match each secret Christian symbol to its meaning. Tap a symbol, then tap its matching meaning.</div>
+      <div class="match-wrap">
+        <div class="match-col"><h4>Symbol</h4><div id="match-names"></div></div>
+        <div class="match-col"><h4>Meaning</h4><div id="match-meanings"></div></div>
+      </div>
+      <div id="match-continue" style="display:none;" class="btn-row"><button class="btn gold" id="match-continue-btn">Continue →</button></div>
+    </div>`;
+  const namesEl = document.getElementById('match-names');
+  const meaningsEl = document.getElementById('match-meanings');
+  let selectedName = null;
+  let solvedCount = 0;
+  const solved = new Set();
+
+  names.forEach(n=>{
+    const b = document.createElement('button');
+    b.className='match-item';
+    b.textContent = n;
+    b.dataset.name = n;
+    b.onclick = ()=>{
+      if(solved.has(n)) return;
+      document.querySelectorAll('#match-names .match-item').forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected');
+      selectedName = n;
+    };
+    namesEl.appendChild(b);
+  });
+  meanings.forEach(m=>{
+    const b = document.createElement('button');
+    b.className='match-item';
+    b.textContent = m;
+    b.onclick = ()=>{
+      if(!selectedName) { b.classList.add('shake'); setTimeout(()=>b.classList.remove('shake'),300); return; }
+      const pair = pairs.find(p=>p.name===selectedName);
+      state.actResults[state.actIndex].total++;
+      if(pair.meaning === m){
+        state.actResults[state.actIndex].correct++;
+        state.score += 8;
+        b.classList.add('solved'); b.disabled = true;
+        const nameBtn = Array.from(namesEl.children).find(x=>x.dataset.name===selectedName);
+        nameBtn.classList.add('solved'); nameBtn.disabled = true;
+        solved.add(selectedName);
+        solvedCount++;
+        selectedName = null;
+        updateHUD();
+        if(solvedCount===pairs.length){
+          document.getElementById('match-continue').style.display='block';
+          document.getElementById('match-continue-btn').onclick = advanceStep;
+        }
+      } else {
+        b.classList.add('shake'); setTimeout(()=>b.classList.remove('shake'),300);
+        state.streak = 0;
+        updateHUD();
+      }
+    };
+    meaningsEl.appendChild(b);
+  });
+}
+
+/* ---------- LABELING MINIGAME ---------- */
+function renderLabel(zones, area){
+  const chips = shuffle(zones.map(z=>z.label));
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Chapter ${state.actIndex+1} · Basilica Blueprint</div>
+      <div class="qtext">Select a term, then tap the matching part of the church floor plan.</div>
+      <div class="chip-row" id="chip-row"></div>
+      <div class="blueprint">
+        <div class="bp-atrium" data-zone="atrium"></div>
+        <div class="bp-narthex" data-zone="narthex"></div>
+        <div class="bp-nave-row">
+          <div class="bp-aisle" data-zone="aisle"></div>
+          <div class="bp-nave" data-zone="nave"></div>
+          <div class="bp-aisle" data-zone="aisle"></div>
+        </div>
+        <div class="bp-transept" data-zone="transept"></div>
+        <div class="bp-apse" data-zone="apse">⛨ altar</div>
+      </div>
+      <div id="label-continue" style="display:none;" class="btn-row"><button class="btn gold" id="label-continue-btn">Continue →</button></div>
+    </div>`;
+  const chipRow = document.getElementById('chip-row');
+  let selectedChip = null;
+  let solved = 0;
+  const solvedZones = new Set();
+
+  chips.forEach(label=>{
+    const c = document.createElement('button');
+    c.className='chip';
+    c.textContent = label;
+    c.onclick = ()=>{
+      if(c.classList.contains('used')) return;
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+      selectedChip = {label, el:c};
+    };
+    chipRow.appendChild(c);
+  });
+
+  document.querySelectorAll('.blueprint [data-zone]').forEach(zoneEl=>{
+    zoneEl.style.cursor='pointer';
+    zoneEl.addEventListener('click', ()=>{
+      const zoneId = zoneEl.dataset.zone;
+      if(solvedZones.has(zoneId)) return;
+      if(!selectedChip){ zoneEl.classList.add('zone-flash'); setTimeout(()=>zoneEl.classList.remove('zone-flash'),400); return; }
+      const correctZone = zones.find(z=>z.label===selectedChip.label);
+      state.actResults[state.actIndex].total++;
+      if(correctZone && correctZone.id === zoneId){
+        state.actResults[state.actIndex].correct++;
+        state.score += 8;
+        document.querySelectorAll(`.blueprint [data-zone="${zoneId}"]`).forEach(el=>{
+          el.textContent = correctZone.label;
+          el.classList.add('zone-filled');
+        });
+        selectedChip.el.classList.add('used');
+        selectedChip.el.disabled = true;
+        solvedZones.add(zoneId);
+        solved++;
+        selectedChip = null;
+        updateHUD();
+        if(solved===zones.length){
+          document.getElementById('label-continue').style.display='block';
+          document.getElementById('label-continue-btn').onclick = advanceStep;
+        }
+      } else {
+        zoneEl.classList.add('zone-flash'); setTimeout(()=>zoneEl.classList.remove('zone-flash'),400);
+        state.streak = 0;
+        updateHUD();
+      }
+    });
+  });
+}
+
+/* ---------- FINAL SCREEN ---------- */
+function finishGame(){
+  const totalCorrect = state.actResults.reduce((s,a)=>s+a.correct,0);
+  const totalQ = state.actResults.reduce((s,a)=>s+a.total,0);
+  const acc = totalQ ? Math.round((totalCorrect/totalQ)*100) : 0;
+
+  let title, emoji, sub;
+  if(acc>=95){ title="Keeper of the Sacred Flame"; emoji="🔥"; sub="Flawless devotion — you know Late Antiquity inside and out."; }
+  else if(acc>=80){ title="Basilica Architect"; emoji="⛪"; sub="Strong mastery of the catacombs and the church that rose above them."; }
+  else if(acc>=60){ title="Faithful Disciple"; emoji="🕯️"; sub="Solid progress — a bit more review and you'll have it locked in."; }
+  else { title="Novice Catechumen"; emoji="🐟"; sub="A good start on your journey. Visit the Study Hall before you try again."; }
+
+  document.getElementById('final-emoji').textContent = emoji;
+  document.getElementById('final-title').textContent = title;
+  document.getElementById('final-subtitle').textContent = sub;
+  document.getElementById('final-score').textContent = state.score;
+  document.getElementById('final-acc').textContent = acc+"%";
+  document.getElementById('final-streak').textContent = state.maxStreak;
+
+  const breakdown = document.getElementById('final-breakdown');
+  breakdown.innerHTML = state.actResults.map(r=>{
+    const p = r.total ? Math.round((r.correct/r.total)*100) : 0;
+    return `<div class="breakdown-row"><span>${r.name}</span><span>${r.correct}/${r.total} (${p}%)</span></div>`;
+  }).join('');
+
+  const best = parseInt(localStorage.getItem('lumen_highscore')||'0',10);
+  if(state.score > best){ localStorage.setItem('lumen_highscore', state.score); }
+
+  setTheme(true);
+  showScreen('screen-final');
+}
+
+/* =========================================================================
+   STUDY HALL
+   ========================================================================= */
+let studyTab = 'flash';
+let flashDeck = [];
+let flashIndex = 0;
+let flashFilter = 'All';
+let testQueue = [];
+let testIndex = 0;
+let testScore = 0;
+let lightningTimer = null;
+let lightningTimeLeft = 60;
+let lightningScore = 0;
+let lightningQueue = [];
+
+function goStudyHall(){
+  setTheme(true);
+  setStudyTab('flash');
+  showScreen('screen-study');
+}
+
+function setStudyTab(tab){
+  studyTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  if(tab==='flash') renderFlashTab();
+  else if(tab==='test') renderTestTab(true);
+  else renderLightningTab();
+}
+
+/* ---- Flashcards ---- */
+function renderFlashTab(){
+  const cats = ['All','Vocabulary','Symbols','History','The Two Works'];
+  const area = document.getElementById('study-area');
+  area.innerHTML = `
+    <div class="filter-row" id="flash-filters"></div>
+    <div class="flashcard" id="flash-card"></div>
+    <p class="flash-hint">Tap the card to flip it. ${flashDeck.length} cards in this deck.</p>
+    <div class="btn-row">
+      <button class="btn secondary" onclick="flashNav(-1)">← Prev</button>
+      <button class="btn" onclick="flashNav(1)">Next →</button>
+      <button class="btn gold" onclick="shuffleFlash()">🔀 Shuffle</button>
+    </div>`;
+  const fRow = document.getElementById('flash-filters');
+  cats.forEach(c=>{
+    const b = document.createElement('button');
+    b.className = 'filter-chip'+(c===flashFilter?' active':'');
+    b.textContent = c;
+    b.onclick = ()=>{ flashFilter=c; buildFlashDeck(); renderFlashTab(); };
+    fRow.appendChild(b);
+  });
+  buildFlashDeck(true);
+  showFlashCard();
+}
+function buildFlashDeck(keepIndex){
+  const pool = flashFilter==='All' ? VOCAB_DEFS : VOCAB_DEFS.filter(v=>v.cat===flashFilter);
+  flashDeck = shuffle(pool);
+  if(!keepIndex) flashIndex = 0;
+  flashIndex = 0;
+}
+function shuffleFlash(){ flashDeck = shuffle(flashDeck); flashIndex = 0; showFlashCard(); }
+function flashNav(dir){
+  flashIndex = (flashIndex + dir + flashDeck.length) % flashDeck.length;
+  showFlashCard();
+}
+let flashShowingBack = false;
+function showFlashCard(){
+  flashShowingBack = false;
+  const card = document.getElementById('flash-card');
+  const item = flashDeck[flashIndex];
+  if(!item){ card.textContent = "No cards in this category."; return; }
+  card.innerHTML = `<b>${item.term}</b>`;
+  card.onclick = ()=>{
+    flashShowingBack = !flashShowingBack;
+    card.innerHTML = flashShowingBack ? item.def : `<b>${item.term}</b>`;
+  };
+}
+
+/* ---- Practice Test ---- */
+function renderTestTab(fresh){
+  if(fresh){
+    testQueue = shuffle(ALL_MCQ).slice(0,15).map(shuffleChoices);
+    testIndex = 0;
+    testScore = 0;
+  }
+  const area = document.getElementById('study-area');
+  if(testIndex >= testQueue.length){
+    area.innerHTML = `
+      <div class="qcard center">
+        <h3>Practice Test Complete</h3>
+        <p>You scored <b>${testScore} / ${testQueue.length}</b> (${Math.round(testScore/testQueue.length*100)}%).</p>
+        <div class="btn-row center" style="justify-content:center;">
+          <button class="btn" onclick="renderTestTab(true)">🔄 New Practice Test</button>
+        </div>
+      </div>`;
+    return;
+  }
+  const q = testQueue[testIndex];
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Practice Question ${testIndex+1} / ${testQueue.length}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="choices" id="test-choice-list"></div>
+      <div id="test-explain"></div>
+    </div>`;
+  const list = document.getElementById('test-choice-list');
+  q.choices.forEach((choice,i)=>{
+    const b = document.createElement('button');
+    b.className='choice-btn';
+    b.textContent = choice;
+    b.onclick = ()=>{
+      Array.from(list.children).forEach(x=>x.onclick=null);
+      const correct = i===q.a;
+      if(correct){ b.classList.add('correct'); testScore++; }
+      else { b.classList.add('wrong'); list.children[q.a].classList.add('correct'); }
+      Array.from(list.children).forEach((x,idx)=>{ if(idx!==i && idx!==q.a) x.classList.add('dim'); });
+      document.getElementById('test-explain').innerHTML = `
+        <div class="explain-box"><span class="feedback-word ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}</span><p style="margin:6px 0 0;">${q.ex}</p></div>
+        <div class="btn-row"><button class="btn gold" id="test-next-btn">Next →</button></div>`;
+      document.getElementById('test-next-btn').onclick = ()=>{ testIndex++; renderTestTab(false); };
+    };
+    list.appendChild(b);
+  });
+}
+
+/* ---- Lightning Round ---- */
+function renderLightningTab(){
+  const area = document.getElementById('study-area');
+  const best = localStorage.getItem('lumen_lightning_best') || 0;
+  area.innerHTML = `
+    <div class="qcard center">
+      <h3>⚡ 60-Second Lightning Round</h3>
+      <p>Answer as many questions correctly as you can before time runs out. Best score so far: <b>${best}</b></p>
+      <div class="btn-row center" style="justify-content:center;"><button class="btn gold" onclick="startLightning()">Start!</button></div>
+    </div>`;
+}
+function startLightning(){
+  lightningQueue = shuffle(ALL_MCQ).map(shuffleChoices);
+  lightningScore = 0;
+  lightningTimeLeft = 60;
+  let qIdx = 0;
+  const area = document.getElementById('study-area');
+
+  function renderQ(){
+    if(lightningTimeLeft<=0){ endLightning(); return; }
+    if(qIdx>=lightningQueue.length) qIdx=0;
+    const q = lightningQueue[qIdx];
+    area.innerHTML = `
+      <div class="qcard">
+        <div class="qtag"><span class="timer-pill" id="lt-timer">⏱ ${lightningTimeLeft}s</span> &nbsp; Score: <b id="lt-score">${lightningScore}</b></div>
+        <div class="qtext">${q.q}</div>
+        <div class="choices" id="lt-choice-list"></div>
+      </div>`;
+    const list = document.getElementById('lt-choice-list');
+    q.choices.forEach((choice,i)=>{
+      const b = document.createElement('button');
+      b.className='choice-btn';
+      b.textContent = choice;
+      b.onclick = ()=>{
+        if(i===q.a){ b.classList.add('correct'); lightningScore++; }
+        else { b.classList.add('wrong'); }
+        qIdx++;
+        setTimeout(renderQ, 350);
+      };
+      list.appendChild(b);
+    });
+  }
+  renderQ();
+  lightningTimer = setInterval(()=>{
+    lightningTimeLeft--;
+    const t = document.getElementById('lt-timer');
+    if(t) t.textContent = "⏱ "+lightningTimeLeft+"s";
+    if(lightningTimeLeft<=0){ clearInterval(lightningTimer); endLightning(); }
+  },1000);
+}
+function endLightning(){
+  clearInterval(lightningTimer);
+  const best = parseInt(localStorage.getItem('lumen_lightning_best')||'0',10);
+  if(lightningScore>best) localStorage.setItem('lumen_lightning_best', lightningScore);
+  const area = document.getElementById('study-area');
+  area.innerHTML = `
+    <div class="qcard center">
+      <h3>⏱ Time's Up!</h3>
+      <p>You answered <b>${lightningScore}</b> correctly.</p>
+      <div class="btn-row center" style="justify-content:center;">
+        <button class="btn gold" onclick="startLightning()">🔄 Try Again</button>
+      </div>
+    </div>`;
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+(function init(){
+  const best = localStorage.getItem('lumen_highscore');
+  if(best){ document.getElementById('highscore-line').textContent = `🏆 Best mission score so far: ${best}`; }
+})();
+</script>
+</body>
+</html>

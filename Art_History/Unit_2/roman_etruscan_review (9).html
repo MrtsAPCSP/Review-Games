@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>THE VANISHING OF LUCIUS — Roman & Etruscan Villa Mystery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --marble:#EDE7D8; --paper:#F8F3E7; --ink:#241E1A; --ink-soft:#5a5048;
+  --pompeian:#9C2B1F; --pompeian-dark:#732014; --ochre:#C08A28; --ochre-light:#E4B856;
+  --patina:#5E7B6C; --patina-dark:#3F5A4E; --terracotta:#B5583B;
+  --line: rgba(36,30,26,0.14); --shadow: 0 6px 18px rgba(36,30,26,0.14);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{ background:var(--marble); background-image: radial-gradient(circle at 1px 1px, rgba(36,30,26,0.06) 1px, transparent 1.6px);
+  background-size: 14px 14px; color:var(--ink); font-family:'Crimson Pro', serif; font-size:17px; line-height:1.55; }
+h1,h2,h3,.eyebrow{ font-family:'Cinzel', serif; letter-spacing:0.03em; }
+.wrap{ max-width:1000px; margin:0 auto; padding: 0 20px 90px; }
+
+.hero{ position:relative; background: linear-gradient(160deg, #1b1512 0%, var(--pompeian-dark) 55%, var(--terracotta) 100%);
+  color:var(--paper); padding: 46px 20px 40px; overflow:hidden; border-bottom: 6px solid var(--ochre); }
+.hero::before{ content:""; position:absolute; inset:0;
+  background-image: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.05) 0deg 90deg, transparent 90deg 180deg);
+  background-size: 26px 26px; opacity:0.5; mix-blend-mode:overlay; }
+.hero-inner{ max-width:1000px; margin:0 auto; position:relative; z-index:1; }
+.eyebrow{ font-size:12.5px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ochre-light); margin:0 0 10px; }
+.hero h1{ font-size:36px; margin:0 0 6px; font-weight:900; text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+.hero p.sub{ font-style:italic; font-size:17px; max-width:660px; color:#F6E8D6; margin:0 0 18px; }
+
+.rooms-nav{ position:sticky; top:0; z-index:50; background: var(--ink); border-bottom: 3px solid var(--ochre);
+  overflow-x:auto; white-space:nowrap; box-shadow: var(--shadow); }
+.rooms-nav-inner{ max-width:1000px; margin:0 auto; display:flex; }
+.tab-btn{ background:none; border:none; cursor:pointer; color:#cfc4b3; font-family:'Cinzel',serif; font-weight:700;
+  font-size:12px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 13px 11px; border-bottom:3px solid transparent;
+  transition:.15s; display:flex; flex-direction:column; align-items:flex-start; gap:2px; flex-shrink:0; }
+.tab-btn .roomtag{ font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.05em; opacity:0.55; text-transform:none;}
+.tab-btn:hover{ color:#fff; }
+.tab-btn.active{ color:var(--ochre-light); border-bottom-color:var(--ochre); background:rgba(255,255,255,0.03); }
+.tab-btn:focus-visible{ outline:2px solid var(--ochre-light); outline-offset:2px; }
+
+.section{ display:none; padding-top:26px; animation: fadeUp .35s ease; }
+.section.active{ display:block; }
+@keyframes fadeUp{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+@media (prefers-reduced-motion: reduce){ .section{animation:none;} }
+
+.backbtn{ margin-bottom:14px; }
+.room-title{ display:flex; align-items:baseline; gap:14px; margin-bottom:6px; flex-wrap:wrap;}
+.room-title h2{ font-size:27px; margin:0; color:var(--pompeian-dark); }
+.room-title .latin{ font-style:italic; color:var(--ink-soft); font-size:15px;}
+.room-intro{ color:var(--ink-soft); max-width:720px; margin:0 0 22px; font-size:15.5px;}
+
+.card{ background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:18px 20px; box-shadow: var(--shadow); margin-bottom:16px; }
+.card h3{ margin:0 0 8px; font-size:16.5px; color:var(--pompeian-dark); }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.grid4{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+@media (max-width:720px){ .grid2,.grid3,.grid4{ grid-template-columns:1fr; } }
+
+.pill{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.04em;
+  background:var(--ink); color:var(--ochre-light); padding:3px 9px; border-radius:20px; margin-right:6px;}
+.pill.green{ background:var(--patina-dark); color:#e7efe9; }
+.pill.red{ background:var(--pompeian-dark); color:#fbe6df; }
+.pill.gold{ background:var(--ochre); color:#2a1c08; }
+
+/* Villa floorplan front page */
+.villa-plan{ display:grid; grid-template-columns: 1fr 2fr 2fr 1.3fr; grid-template-rows: 90px 90px 90px;
+  grid-template-areas: "entry atrium atrium tabl" "alaeL atrium atrium tabl" "alaeR peri peri tric";
+  gap:8px; margin-bottom:10px; }
+@media (max-width:720px){ .villa-plan{ grid-template-columns:1fr; grid-template-rows:auto; grid-template-areas: "entry" "atrium" "alaeL" "alaeR" "tabl" "peri" "tric"; } }
+.vp-tile{ border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8px; }
+.vp-tile.entry{ grid-area:entry; background:#d8cfb8; border:2px dashed var(--ink); color:var(--ink-soft); font-size:12px; }
+.vp-tile.click{ cursor:pointer; background:var(--paper); border:2px solid var(--line); transition:.15s; }
+.vp-tile.click:hover{ border-color:var(--ochre); background:#f3ead5; transform:translateY(-2px); }
+.vp-tile .vname{ font-family:'Cinzel',serif; font-size:13px; color:var(--pompeian-dark); }
+.vp-tile .vsub{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--ink-soft); margin-top:2px;}
+.vp-atrium{ grid-area:atrium; background:linear-gradient(160deg,#f3ead5,#e9dfc4); border:2px solid var(--ochre); }
+.vp-alaeL{ grid-area:alaeL; } .vp-alaeR{ grid-area:alaeR; } .vp-tabl{ grid-area:tabl; } .vp-peri{ grid-area:peri; background:linear-gradient(160deg,#eaf0ea,#dbe6db); } .vp-tric{ grid-area:tric; }
+
+.beyond-strip{ margin-top:26px; }
+.beyond-strip h4{ font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px;}
+
+.locbtn{ cursor:pointer; text-align:left; border:none; width:100%; background:none; padding:0; }
+.locbtn:hover .card{ border-color:var(--ochre); transform:translateY(-1px); }
+.locbtn .card{ transition:.15s; }
+
+/* Case board */
+.caseboard{ background:var(--ink); color:var(--paper); border-radius:8px; padding:24px; margin-bottom:20px; box-shadow:var(--shadow);}
+.caseboard h3{ color:var(--ochre-light); margin:0 0 4px;}
+.passphrase{ font-family:'JetBrains Mono',monospace; font-size:26px; letter-spacing:0.15em; margin:14px 0; display:flex; gap:4px; flex-wrap:wrap;}
+.pp-letter{ display:inline-block; width:28px; height:36px; border-bottom:3px solid var(--ochre); text-align:center; color:var(--ochre-light); }
+.pp-letter.blank{ color:transparent; border-bottom-color:#584b3f; }
+.case-meta{ display:flex; gap:20px; flex-wrap:wrap; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#cfc4b3; margin-bottom:16px;}
+.room-status-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+.room-status{ font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 10px; border-radius:5px; background:#382d26; color:#cfc4b3;}
+.room-status.done{ background:var(--patina-dark); color:#e7efe9; }
+.case-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+.ending-panel{ background:#22301f; border:2px solid var(--ochre-light); border-radius:8px; padding:20px; margin-top:16px; display:none;}
+.ending-panel.show{ display:block; }
+.ending-panel h3{ color:#e8f0e2;}
+.witness-log{ margin-top:4px; padding-left:0; list-style:none; font-size:13px; color:#cfc4b3; }
+.witness-log li{ padding:6px 0; border-top:1px dashed #4a3d33; }
+.witness-log li:first-child{ border-top:none; }
+.witness-log b{ color:var(--ochre-light); font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; display:block; margin-bottom:2px;}
+.witness-empty{ color:#8b7f70; font-size:13px; font-style:italic; }
+
+.search-scene{ margin-top:4px; }
+.search-prompt{ font-size:14.5px; color:var(--ink-soft); margin-bottom:12px; }
+.search-items{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-bottom:12px; }
+.search-item{ background:var(--marble); border:1.5px solid var(--line); border-radius:6px; padding:14px 10px; text-align:center; cursor:pointer; transition:.15s; }
+.search-item:hover{ border-color:var(--ochre); background:#f3ead5; transform:translateY(-1px); }
+.search-item .sicon{ font-size:26px; display:block; margin-bottom:6px; }
+.search-item .slabel{ font-size:12.5px; color:var(--ink-soft); }
+.search-flavor{ background:var(--ink); color:#e4d9c4; padding:10px 14px; border-radius:6px; font-size:13.5px; margin-top:4px; }
+.next-lead{ background:#2c2420; border-left:4px solid var(--ochre); padding:12px 16px; border-radius:0 6px 6px 0; margin-top:14px; color:#e8dcc4; font-size:14px; }
+.next-lead b{ color:var(--ochre-light); }
+
+.challenge-box{ background:var(--paper); border:2px solid var(--ochre); border-radius:8px; padding:20px 22px; box-shadow:var(--shadow); margin-top:6px;}
+.challenge-locked-tag{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--pompeian-dark); color:#fbe6df; padding:3px 10px; border-radius:20px; margin-bottom:10px;}
+.challenge-solved-tag{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--patina-dark); color:#e7efe9; padding:3px 10px; border-radius:20px; margin-bottom:10px;}
+.fragment-reveal{ font-family:'JetBrains Mono',monospace; font-size:15px; background:var(--ink); color:var(--ochre-light); padding:10px 14px; border-radius:6px; margin-top:10px;}
+
+.grid2 .card p, .grid4 .card p{ font-size:13.5px; }
+.grid3 .card p{ font-size:13.5px; }
+
+.timeline{ display:flex; margin: 22px 0 26px; }
+.tl-stop{ flex:1; text-align:center; position:relative; padding-top:14px; }
+.tl-stop::before{ content:""; position:absolute; top:5px; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--patina),var(--ochre)); }
+.tl-stop:first-child::before{ left:50%; }
+.tl-stop:last-child::before{ right:50%; }
+.tl-dot{ width:16px; height:16px; border-radius:50%; background:var(--paper); border:3px solid var(--ink); margin:0 auto 8px; position:relative; z-index:1; }
+.tl-stop b{ display:block; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink); }
+.tl-stop span{ display:block; font-size:12px; color:var(--ink-soft); margin-top:2px; padding:0 4px;}
+@media (max-width:720px){ .timeline{ flex-wrap:wrap; } .tl-stop{ flex:1 1 45%; margin-bottom:20px;} }
+
+.flash-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin-bottom:20px;}
+.flash{ perspective:1000px; height:126px; cursor:pointer; }
+.flash-inner{ position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d; }
+.flash.flipped .flash-inner{ transform:rotateY(180deg); }
+.flash-face{ position:absolute; inset:0; border-radius:6px; padding:14px; display:flex; flex-direction:column; justify-content:center; backface-visibility:hidden; box-shadow:var(--shadow); border:1px solid var(--line);}
+.flash-front{ background:var(--ink); color:var(--ochre-light); align-items:center; text-align:center; }
+.flash-front span{ font-family:'Cinzel',serif; font-size:16px; letter-spacing:0.05em;}
+.flash-front small{ display:block; margin-top:8px; color:#cfc4b3; font-family:'JetBrains Mono',monospace; font-size:10px;}
+.flash-back{ background:var(--paper); color:var(--ink); transform:rotateY(180deg); font-size:13.5px; }
+.flash-back b{ color:var(--pompeian-dark); font-family:'Cinzel',serif; font-size:12px; display:block; margin-bottom:4px;}
+
+.vault-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:8px;}
+@media (max-width:720px){ .vault-row{ grid-template-columns:repeat(2,1fr); } }
+.vault-card{ background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:12px; text-align:center; box-shadow:var(--shadow); }
+.vault-card svg{ width:100%; height:80px; }
+.vault-card .vname{ font-family:'Cinzel',serif; font-size:12px; margin-top:6px; color:var(--pompeian-dark); }
+.vault-card p{ font-size:12.5px; color:var(--ink-soft); margin:4px 0 0;}
+
+.domus-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:10px; }
+@media (max-width:720px){ .domus-grid{ grid-template-columns:repeat(3,1fr); } }
+.domus-tile{ background:#e9dfc4; border:2px solid var(--ink); border-radius:5px; padding:12px 6px; text-align:center; cursor:pointer; transition:.15s; min-height:64px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.domus-tile:hover{ background:var(--ochre-light); }
+.domus-tile.hit{ background:var(--patina); border-color:var(--patina-dark); color:#fff; }
+.domus-tile.miss{ background:var(--pompeian); border-color:var(--pompeian-dark); color:#fff; }
+.domus-tile .dnum{ font-family:'JetBrains Mono',monospace; font-size:10px; opacity:0.6; }
+.domus-tile .dname{ font-family:'Cinzel',serif; font-size:11px; margin-top:3px; }
+.domus-prompt{ background:var(--ink); color:var(--ochre-light); padding:12px 16px; border-radius:6px; font-size:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;}
+.domus-prompt b{ color:#fff; }
+.streak{ font-family:'JetBrains Mono',monospace; font-size:12px; color:#cfc4b3;}
+
+.compare-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;}
+@media (max-width:720px){ .compare-row{ grid-template-columns:1fr; } }
+.compare-col{ background:var(--paper); border-radius:6px; border:1px solid var(--line); padding:16px; box-shadow:var(--shadow);}
+.compare-col.greek{ border-top:5px solid var(--patina); }
+.compare-col.roman{ border-top:5px solid var(--pompeian); }
+.compare-col h4{ margin:0 0 6px; font-family:'Cinzel',serif; font-size:14px; }
+.compare-col .work{ font-style:italic; color:var(--ink-soft); font-size:13.5px; margin-bottom:8px; display:block;}
+.arrow-mid{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ochre); margin:-4px 0 14px;}
+.style-strip{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+@media (max-width:720px){ .style-strip{ grid-template-columns:repeat(2,1fr); } }
+.style-card{ border-radius:6px; overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--line);}
+.style-swatch{ height:70px; }
+.style-card .txt{ background:var(--paper); padding:10px 12px;}
+.style-card .txt b{ font-family:'Cinzel',serif; font-size:11.5px; color:var(--pompeian-dark); display:block;}
+.style-card .txt p{ font-size:12px; margin:4px 0 0; color:var(--ink-soft);}
+
+.god-card{ border-top:4px solid var(--ochre); }
+.god-card .gname{ font-family:'Cinzel',serif; font-size:15px; color:var(--pompeian-dark); }
+.god-card .gequiv{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--patina-dark); margin:2px 0 6px; display:block;}
+
+.emp-card{ border-top:4px solid var(--pompeian); }
+.emp-card .ename{ font-family:'Cinzel',serif; font-size:15px; color:var(--pompeian-dark); }
+.emp-card .edates{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft); margin:2px 0 6px; display:block;}
+
+.quiz-progress{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin-bottom:6px; display:flex; justify-content:space-between;}
+.quiz-q{ font-size:17.5px; margin:6px 0 16px; font-weight:600; }
+.opt-btn{ display:block; width:100%; text-align:left; background:var(--marble); border:1.5px solid var(--line); border-radius:6px; padding:11px 14px; margin-bottom:9px; font-family:'Crimson Pro',serif; font-size:15px; cursor:pointer; transition:.15s;}
+.opt-btn:hover{ border-color:var(--ochre); background:#f3ead5; }
+.opt-btn.correct{ background:#e4efe6; border-color:var(--patina-dark); }
+.opt-btn.wrong{ background:#f6e2dd; border-color:var(--pompeian); }
+.opt-btn:disabled{ cursor:default; }
+.quiz-explain{ background:var(--ink); color:#f1e6d3; padding:13px 15px; border-radius:6px; font-size:14px; margin-top:6px; display:none;}
+.quiz-explain.show{ display:block; }
+.quiz-explain b{ color:var(--ochre-light);}
+.quiz-nav{ display:flex; justify-content:space-between; margin-top:16px; align-items:center;}
+.btn{ font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; background:var(--pompeian); color:#fff; border:none; padding:10px 18px; border-radius:5px; cursor:pointer;}
+.btn:hover{ background:var(--pompeian-dark); }
+.btn.ghost{ background:none; color:var(--ink-soft); border:1.5px solid var(--line); }
+.btn.gold{ background:var(--ochre); }
+.btn.gold:hover{ background:#a5731f; }
+.btn:disabled{ opacity:0.4; cursor:not-allowed; }
+.score-seal{ width:60px; height:60px; border-radius:50%; background: radial-gradient(circle at 35% 30%, var(--ochre-light), var(--pompeian) 70%); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Cinzel',serif; font-weight:900; font-size:13px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border:2px solid var(--ochre-light);}
+
+.mini-game-label{ display:flex; align-items:center; gap:8px; margin:26px 0 10px;}
+.mini-game-label h3{ margin:0; color:var(--pompeian-dark); font-size:15.5px;}
+
+.note-box{ border-left:4px solid var(--ochre); background:#fbf3e2; padding:12px 16px; border-radius:0 6px 6px 0; font-size:14px; color:var(--ink-soft); margin-bottom:18px;}
+footer.foot{ text-align:center; padding:30px 20px; color:var(--ink-soft); font-size:12.5px; font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">AP Art History · Content Area 2 · Ancient Mediterranean</p>
+    <h1>THE VANISHING OF LUCIUS</h1>
+    <p class="sub">Your patron has disappeared the night before his banquet. He hid the passphrase to the family strongroom behind six rooms of his villa — and only someone who's studied the collection can get it back. Every case scrambles the passphrase and the questions, so play it as many times as you like.</p>
+  </div>
+</div>
+
+<nav class="rooms-nav"><div class="rooms-nav-inner" id="tabBar"></div></nav>
+
+<div class="wrap">
+
+  <!-- FAUCES -->
+  <section class="section" id="sec-fauces">
+    <div class="room-title"><h2>The Fauces</h2><span class="latin">the entrance hall — your briefing</span></div>
+    <p class="room-intro">The household is in chaos. Guests arrive at sundown. Lucius Aemilius Rufus is nowhere to be found, and the steward hands you a note: <em>"Whoever truly knows my collection can find what I've hidden. Search the villa. Prove it room by room."</em> Below is the villa, laid out the way Lucius himself would have walked it.</p>
+
+    <div class="villa-plan">
+      <div class="vp-tile entry"><div class="vname">FAUCES</div><div class="vsub">you are here</div></div>
+      <div class="vp-tile click vp-atrium" onclick="goToRoom('atrium')"><div class="vname">🏛️ ATRIUM</div><div class="vsub">case board</div></div>
+      <div class="vp-tile click vp-alaeL" onclick="goToRoom('alae')"><div class="vname">🪶 ALA</div><div class="vsub">etruscan</div></div>
+      <div class="vp-tile click vp-alaeR" onclick="goToRoom('alae')"><div class="vname">🪶 ALA</div><div class="vsub">etruscan</div></div>
+      <div class="vp-tile click vp-tabl" onclick="goToRoom('tablinum')"><div class="vname">📜 TABLINUM</div><div class="vsub">vocabulary</div></div>
+      <div class="vp-tile click vp-peri" onclick="goToRoom('peristyle')"><div class="vname">🌿 PERISTYLE</div><div class="vsub">greek link</div></div>
+      <div class="vp-tile click vp-tric" onclick="goToRoom('triclinium')"><div class="vname">🍷 TRICLINIUM</div><div class="vsub">painting</div></div>
+    </div>
+
+    <div class="beyond-strip">
+      <h4>Beyond the Villa Walls</h4>
+      <div class="grid4" id="beyondCards"></div>
+    </div>
+
+    <div class="note-box">Click any room in the plan (or the tabs above) to start investigating. Six rooms each hide a fragment of the strongroom passphrase — collect all six and return to the <b>Atrium</b> to open it. <b>Palatine</b> and <b>Review</b> are bonus rooms and don't gate the case.</div>
+  </section>
+
+  <!-- ATRIUM -->
+  <section class="section" id="sec-atrium">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Atrium</h2><span class="latin">the case board</span></div>
+    <p class="room-intro">Track your progress here. Once all six rooms have given up their fragments, open the strongroom.</p>
+    <div class="caseboard">
+      <h3>Case Progress</h3>
+      <div class="passphrase" id="ppDisplay"></div>
+      <div class="case-meta"><span id="caseTimer">Time: 0:00</span><span id="caseStatus">6 rooms remaining</span></div>
+      <div class="room-status-row" id="roomStatusRow"></div>
+      <h3 style="font-size:14px; margin-top:18px;">Witness Testimony</h3>
+      <ul class="witness-log" id="witnessLog"><li class="witness-empty">No one has talked yet — go search a room.</li></ul>
+      <div class="case-actions">
+        <button class="btn gold" id="solveBtn" disabled onclick="attemptSolve()">Open the Strongroom</button>
+        <button class="btn ghost" onclick="newCase()">Start a New Case</button>
+      </div>
+      <div class="ending-panel" id="endingPanel"></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>Essential knowledge, for the record</h3><p>Etruscan and Roman art is grounded in <b>civic ideals and polytheism</b>. Artists <b>accumulated and adapted Greek forms</b> — <b>eclecticism and historicism</b> over invention from scratch.</p></div>
+      <div class="card"><h3>Republic vs. Empire</h3><p><b>Republic (509–27 BCE):</b> veristic busts, wrinkles as gravitas. <b>Empire (27 BCE–410 CE):</b> idealized Greek-derived bodies as propaganda.</p></div>
+    </div>
+    <div class="timeline">
+      <div class="tl-stop"><div class="tl-dot"></div><b>753 BCE</b><span>Founding of Rome</span></div>
+      <div class="tl-stop"><div class="tl-dot"></div><b>509 BCE</b><span>Republic begins</span></div>
+      <div class="tl-stop"><div class="tl-dot"></div><b>27 BCE</b><span>Empire begins</span></div>
+      <div class="tl-stop"><div class="tl-dot"></div><b>c. 80–113 CE</b><span>Colosseum, Trajan's Forum</span></div>
+      <div class="tl-stop"><div class="tl-dot"></div><b>410 CE</b><span>Fall of Rome</span></div>
+    </div>
+  </section>
+
+  <!-- ALAE -->
+  <section class="section" id="sec-alae">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Alae</h2><span class="latin">wings off the atrium — the Etruscan story</span></div>
+    <p class="room-intro">Before Rome, there was Etruria. Lucius kept several old family pieces here — study them before you search.</p>
+    <div class="grid2">
+      <div class="card"><h3>Sarcophagus of the Spouses <span class="pill">terracotta, c. 520 BCE</span></h3><p>Husband and wife reclining as equal partners — unusually high status for a woman in this period.</p></div>
+      <div class="card"><h3>Apollo of Veii <span class="pill">terracotta, c. 510–500 BCE</span></h3><p>A striding rooftop temple statue; Greek Archaic smile, Etruscan material and motion.</p></div>
+      <div class="card"><h3>Tomb of the Triclinium <span class="pill">fresco, c. 470 BCE</span></h3><p>A painted banquet in the afterlife — pleasure, not solemn judgment.</p></div>
+      <div class="card"><h3>Capitoline Wolf <span class="pill">bronze, c. 500–480 BCE</span></h3><p>Lost-wax cast; the twins were added over a thousand years later.</p></div>
+    </div>
+    <div id="challenge-alae"></div>
+  </section>
+
+  <!-- PERISTYLE -->
+  <section class="section" id="sec-peristyle">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Peristyle</h2><span class="latin">the colonnaded garden — a Greek import</span></div>
+    <p class="room-intro">The garden's colonnade is Greek by design. Lucius was proud of how his collection traces Greek ideas into Roman hands.</p>
+    <div class="compare-row">
+      <div class="compare-col greek"><h4>GREEK — Archaic</h4><span class="work">Anavysos Kouros</span><p style="font-size:13.5px">Idealized, generic youth — not a portrait.</p></div>
+      <div class="compare-col greek"><h4>GREEK — Classical</h4><span class="work">Polykleitos, Doryphoros</span><p style="font-size:13.5px">Contrapposto; a mathematical canon of proportions.</p></div>
+    </div>
+    <div class="arrow-mid">▼ Rome keeps the form, changes the purpose ▼</div>
+    <div class="compare-row">
+      <div class="compare-col roman"><h4>ROMAN — Republic</h4><span class="work">Head of a Roman Patrician</span><p style="font-size:13.5px">Veristic — realism as flattery.</p></div>
+      <div class="compare-col roman"><h4>ROMAN — Empire</h4><span class="work">Augustus of Prima Porta</span><p style="font-size:13.5px">Doryphoros's pose, Roman propaganda.</p></div>
+    </div>
+    <div id="challenge-peristyle"></div>
+  </section>
+
+  <!-- TRICLINIUM -->
+  <section class="section" id="sec-triclinium">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Triclinium</h2><span class="latin">the dining room — decor did the talking</span></div>
+    <p class="room-intro">Four wall-painting styles are visible on these walls alone. Lucius loved showing this room off first.</p>
+    <div class="style-strip">
+      <div class="style-card"><div class="style-swatch" style="background:linear-gradient(135deg,#7a5c46,#c9b48c);"></div><div class="txt"><b>First Style</b><p>Imitates marble panels.</p></div></div>
+      <div class="style-card"><div class="style-swatch" style="background:linear-gradient(135deg,#7d3c2c,#3f6b5c);"></div><div class="txt"><b>Second Style</b><p>Illusionistic architecture/vistas.</p></div></div>
+      <div class="style-card"><div class="style-swatch" style="background:linear-gradient(135deg,#1c1a17,#5a1a12);"></div><div class="txt"><b>Third Style</b><p>Flat panels, delicate ornament.</p></div></div>
+      <div class="style-card"><div class="style-swatch" style="background:linear-gradient(135deg,#9c2b1f,#c08a28);"></div><div class="txt"><b>Fourth Style</b><p>Combines all three.</p></div></div>
+    </div>
+    <div id="challenge-triclinium"></div>
+  </section>
+
+  <!-- TABLINUM -->
+  <section class="section" id="sec-tablinum">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Tablinum</h2><span class="latin">the record room</span></div>
+    <p class="room-intro">Lucius kept his household vocabulary tablets here. Flip a few to study, then prove you know the room.</p>
+    <div class="flash-grid" id="flashGrid"></div>
+    <div id="challenge-tablinum"></div>
+  </section>
+
+  <!-- FORUM -->
+  <section class="section" id="sec-forum">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Forum</h2><span class="latin">out in the city — architecture &amp; engineering</span></div>
+    <p class="room-intro">Lucius's real love was building. Roman concrete let architects build shapes the Greeks never attempted.</p>
+    <div class="card"><h3>Building blocks: from arch to dome</h3><div class="vault-row" id="vaultRow"></div></div>
+    <div class="card">
+      <h3>Bonus: Click-the-Room (House of the Vettii)</h3>
+      <p style="font-size:14px">Not required for the case — just extra practice. New target every round.</p>
+      <div class="domus-prompt" id="domusPrompt">Loading…</div>
+      <div class="domus-grid" id="domusGrid"></div>
+      <div style="text-align:right;"><button class="btn ghost" onclick="newDomusGame()">Reshuffle Rooms</button></div>
+    </div>
+    <div id="challenge-forum"></div>
+  </section>
+
+  <!-- CAPITOL: gods & goddesses -->
+  <section class="section" id="sec-capitol">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Capitol</h2><span class="latin">temple hill — the gods Lucius prayed to</span></div>
+    <p class="room-intro">The Capitoline Hill's great temple housed the <b>Capitoline Triad</b> — Jupiter, Juno, and Minerva — in a triple-cella design borrowed straight from <b>Etruscan temple architecture</b>. Roman religion itself is a case study in reception: most Roman gods are Greek gods wearing Latin names.</p>
+    <div class="grid4" id="godsGrid"></div>
+    <div class="note-box">Notice the pattern from the Peristyle room repeating here: Greek content, Roman relabeling. Augustus's cupid (Peristyle room) claiming descent from Venus only makes sense once you know Venus is Rome's version of Aphrodite.</div>
+    <div id="challenge-capitol"></div>
+  </section>
+
+  <!-- PALATINE: emperors (bonus, ungated) -->
+  <section class="section" id="sec-palatine">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>The Palatine</h2><span class="latin">the emperors' hill — bonus, not required for the case</span></div>
+    <p class="room-intro">Your class doesn't dwell on emperor history, but the art you've studied all week was made <em>for</em> these five men. Skim the cards, then try the practice quiz — it never blocks your case progress.</p>
+    <div class="grid3" id="empGrid"></div>
+    <div class="mini-game-label"><h3>🎲 Emperors &amp; Their Monuments</h3><span class="pill green">replayable, ungated</span></div>
+    <div style="margin-bottom:14px;"><button class="btn" onclick="renderEmperorQuiz()">New Randomized Set</button></div>
+    <div class="quiz-box" id="quiz-palatine" style="background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:22px; box-shadow:var(--shadow);"></div>
+  </section>
+
+  <!-- EXTRA REVIEW -->
+  <section class="section" id="sec-review">
+    <button class="btn ghost backbtn" onclick="goToRoom('fauces')">⟵ Villa Map</button>
+    <div class="room-title"><h2>Extra Review</h2><span class="latin">beyond the case — free practice</span></div>
+    <p class="room-intro">No gating, no passphrase — just randomized practice across everything, including gods and emperors. Great for the night before the test.</p>
+    <div class="mini-game-label"><h3>🎲 Everything, Shuffled</h3><span class="pill green">replayable</span></div>
+    <div style="margin-bottom:14px;"><button class="btn" onclick="renderReviewArena()">New Randomized Set</button></div>
+    <div class="quiz-box" id="quiz-arena" style="background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:22px; box-shadow:var(--shadow);"></div>
+  </section>
+
+</div>
+
+<footer class="foot">Unit 2.5 review · Etruscan &amp; Roman art, AP Content Area 2</footer>
+
+<script>
+/* ---------------- TAB SYSTEM ---------------- */
+const rooms = [
+  {id:'fauces', name:'Fauces', tag:'briefing'},
+  {id:'atrium', name:'Atrium', tag:'case board'},
+  {id:'alae', name:'Alae', tag:'etruscan'},
+  {id:'peristyle', name:'Peristyle', tag:'greek link'},
+  {id:'triclinium', name:'Triclinium', tag:'painting'},
+  {id:'tablinum', name:'Tablinum', tag:'vocab'},
+  {id:'forum', name:'Forum', tag:'architecture'},
+  {id:'capitol', name:'Capitol', tag:'gods'},
+  {id:'palatine', name:'Palatine', tag:'emperors'},
+  {id:'review', name:'Review', tag:'free practice'},
+];
+const tabBar = document.getElementById('tabBar');
+rooms.forEach((r,i)=>{
+  const b = document.createElement('button');
+  b.className = 'tab-btn' + (i===0?' active':'');
+  b.setAttribute('data-room', r.id);
+  b.innerHTML = `${r.name}<span class="roomtag">${r.tag}</span>`;
+  b.onclick = () => goToRoom(r.id);
+  tabBar.appendChild(b);
+});
+function goToRoom(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.toggle('active', t.getAttribute('data-room')===id));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+goToRoom('fauces');
+
+const BEYOND = [
+  {id:'forum', icon:'🏟️', name:'Forum', desc:'Architecture &amp; engineering.'},
+  {id:'capitol', icon:'⛰️', name:'Capitol', desc:'Gods &amp; goddesses — 6th fragment.'},
+  {id:'palatine', icon:'👑', name:'Palatine', desc:'Emperors — bonus, no gating.'},
+  {id:'review', icon:'🎲', name:'Review', desc:'Free practice, everything shuffled.'},
+];
+const beyondCards = document.getElementById('beyondCards');
+BEYOND.forEach(l=>{
+  const b = document.createElement('button'); b.className='locbtn';
+  b.innerHTML = `<div class="card"><h3>${l.icon} ${l.name}</h3><p style="color:var(--ink-soft);">${l.desc}</p></div>`;
+  b.onclick = ()=> goToRoom(l.id);
+  beyondCards.appendChild(b);
+});
+
+/* ---------------- UTIL ---------------- */
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pickN(arr,n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+
+/* ---------------- FLASHCARDS ---------------- */
+const vocab = [
+  ["Alae","Open wing-like rooms flanking the atrium, used for extra light and reception space."],
+  ["Atrium","The central open-air courtyard near a Roman house's entrance, often holding the impluvium."],
+  ["Bust","A sculpture of a person's head, shoulders, and upper chest — no full body."],
+  ["Coffer","A recessed decorative panel in a ceiling or dome that reduces weight without weakening it."],
+  ["Cubiculum","A small bedroom or private chamber."],
+  ["Culina","The kitchen."],
+  ["Fauces","The narrow entrance hallway from the street into the atrium."],
+  ["Horror Vacui","'Fear of empty space' — filling every surface with dense ornament or figures."],
+  ["Hortus","A garden, often behind the peristyle."],
+  ["Impluvium","A shallow basin in the atrium floor that catches rainwater from the roof opening above."],
+  ["Mosaic","An image made from small pieces of colored glass, stone, or tile (tesserae) set in mortar."],
+  ["Oculus","A circular opening at the top of a dome, letting in light and reducing structural load."],
+  ["Peristyle","A colonnaded open courtyard or garden, usually toward the rear of the house."],
+  ["Peristylium","The colonnaded garden courtyard — essentially the peristyle itself."],
+  ["Piscina","An ornamental pool or basin, often in the peristyle garden."],
+  ["Tablinum","The reception room/office behind the atrium, where business and family records were kept."],
+  ["Triclinium","The formal dining room, named for the three couches arranged around the table."],
+  ["Veristic","Hyper-realistic — especially in Roman portrait busts that emphasize wrinkles and age as signs of wisdom."],
+];
+const flashGrid = document.getElementById('flashGrid');
+vocab.forEach(([term,def])=>{
+  const c = document.createElement('div'); c.className='flash';
+  c.innerHTML = `<div class="flash-inner">
+    <div class="flash-face flash-front"><span>${term}</span><small>tap to flip</small></div>
+    <div class="flash-face flash-back"><b>${term}</b>${def}</div>
+  </div>`;
+  c.onclick = ()=> c.classList.toggle('flipped');
+  flashGrid.appendChild(c);
+});
+const VOCAB_POOL = vocab.map(([term,def])=>{
+  const others = vocab.filter(v=>v[0]!==term).map(v=>v[0]);
+  return { q:`Which term means: "${def}"`, correct: term, opts:[term, ...pickN(others,3)], ex:`${term} — ${def}` };
+});
+
+/* ---------------- VAULT DIAGRAMS ---------------- */
+const vaults = [
+  {name:"Barrel Vault", d:"A single continuous arch extruded in depth — like a tunnel.",
+   svg:`<svg viewBox="0 0 100 60"><path d="M10 55 L10 30 A40 40 0 0 1 90 30 L90 55" fill="none" stroke="#241E1A" stroke-width="3"/><line x1="10" y1="55" x2="10" y2="15" stroke="#241E1A" stroke-width="3"/><line x1="90" y1="55" x2="90" y2="15" stroke="#241E1A" stroke-width="3"/></svg>`},
+  {name:"Groin Vault", d:"Two barrel vaults crossing at right angles.",
+   svg:`<svg viewBox="0 0 100 60"><path d="M10 50 L50 15 L90 50" fill="none" stroke="#241E1A" stroke-width="2.5"/><path d="M10 50 L50 15" fill="none" stroke="#9C2B1F" stroke-width="2.5"/><path d="M90 50 L50 15" fill="none" stroke="#9C2B1F" stroke-width="2.5"/><line x1="10" y1="50" x2="10" y2="20" stroke="#241E1A" stroke-width="2.5"/><line x1="90" y1="50" x2="90" y2="20" stroke="#241E1A" stroke-width="2.5"/><line x1="50" y1="15" x2="50" y2="0" stroke="#241E1A" stroke-width="2.5"/></svg>`},
+  {name:"Arcade of Vaults", d:"A repeated row of barrel vaults on piers.",
+   svg:`<svg viewBox="0 0 100 60"><g stroke="#241E1A" stroke-width="2" fill="none"><path d="M5 55 L5 30 A12 12 0 0 1 29 30 L29 55"/><path d="M29 55 L29 30 A12 12 0 0 1 53 30 L53 55"/><path d="M53 55 L53 30 A12 12 0 0 1 77 30 L77 55"/><path d="M77 55 L77 30 A12 12 0 0 1 95 32"/></g></svg>`},
+  {name:"Dome", d:"A vault rotated 360° around a central point — capped by an oculus.",
+   svg:`<svg viewBox="0 0 100 60"><path d="M15 55 A35 35 0 0 1 85 55" fill="none" stroke="#241E1A" stroke-width="3"/><ellipse cx="50" cy="24" rx="8" ry="3" fill="none" stroke="#9C2B1F" stroke-width="2"/><line x1="15" y1="55" x2="15" y2="45" stroke="#241E1A" stroke-width="3"/><line x1="85" y1="55" x2="85" y2="45" stroke="#241E1A" stroke-width="3"/></svg>`},
+];
+const vaultRow = document.getElementById('vaultRow');
+vaults.forEach(v=>{
+  const el = document.createElement('div'); el.className='vault-card';
+  el.innerHTML = `${v.svg}<div class="vname">${v.name}</div><p>${v.d}</p>`;
+  vaultRow.appendChild(el);
+});
+
+/* ---------------- DOMUS BONUS GAME ---------------- */
+const domusRooms = [
+  {name:"Fauces", note:"the narrow entrance hallway from the street"},
+  {name:"Atrium", note:"the open central courtyard by the entrance"},
+  {name:"Impluvium", note:"the basin that catches rainwater in the atrium floor"},
+  {name:"Cubiculum", note:"a small private bedroom"},
+  {name:"Alae", note:"the wing-like rooms flanking the atrium"},
+  {name:"Tablinum", note:"the office where the owner met clients and kept records"},
+  {name:"Peristylium", note:"the colonnaded garden courtyard, Greek in origin"},
+  {name:"Piscina", note:"the ornamental pool in the garden courtyard"},
+  {name:"Triclinium", note:"the formal dining room, named for three couches"},
+  {name:"Culina", note:"the kitchen"},
+  {name:"Hortus", note:"the garden behind the peristyle"},
+];
+let domusTarget = null, domusStreak = 0;
+function newDomusGame(){
+  const order = shuffle(domusRooms);
+  const grid = document.getElementById('domusGrid'); grid.innerHTML = '';
+  order.forEach((r,i)=>{
+    const t = document.createElement('div'); t.className='domus-tile';
+    t.innerHTML = `<div class="dnum">${i+1}</div><div class="dname">${r.name}</div>`;
+    t.onclick = ()=> domusGuess(r.name, t);
+    grid.appendChild(t);
+  });
+  domusTarget = domusRooms[Math.floor(Math.random()*domusRooms.length)];
+  document.getElementById('domusPrompt').innerHTML = `Find: <b>${domusTarget.note}</b> <span class="streak">streak: ${domusStreak}</span>`;
+}
+function domusGuess(name, tileEl){
+  document.querySelectorAll('.domus-tile').forEach(t=>t.classList.remove('hit','miss'));
+  if(name === domusTarget.name){ tileEl.classList.add('hit'); domusStreak++; }
+  else { tileEl.classList.add('miss'); domusStreak = 0; }
+  setTimeout(()=>{
+    domusTarget = domusRooms[Math.floor(Math.random()*domusRooms.length)];
+    document.getElementById('domusPrompt').innerHTML = `Find: <b>${domusTarget.note}</b> <span class="streak">streak: ${domusStreak}</span>`;
+    document.querySelectorAll('.domus-tile').forEach(t=>t.classList.remove('hit','miss'));
+  }, 700);
+}
+newDomusGame();
+
+/* ---------------- GODS & EMPERORS REFERENCE CARDS ---------------- */
+const godsList = [
+  {name:"Jupiter", equiv:"= Greek Zeus", domain:"Sky, king of the gods. Worshipped in the Capitoline Triad's central cella."},
+  {name:"Juno", equiv:"= Greek Hera", domain:"Marriage, queen of the gods. Shares the Capitoline Triad temple."},
+  {name:"Minerva", equiv:"= Greek Athena", domain:"Wisdom and craft. The third member of the Capitoline Triad."},
+  {name:"Mars", equiv:"= Greek Ares", domain:"War. Father of Romulus and Remus by tradition."},
+  {name:"Venus", equiv:"= Greek Aphrodite", domain:"Love. Claimed ancestor of the Julian family, including Augustus."},
+  {name:"Neptune", equiv:"= Greek Poseidon", domain:"The sea and earthquakes."},
+  {name:"Mercury", equiv:"= Greek Hermes", domain:"Messengers, trade, and travel."},
+  {name:"Diana", equiv:"= Greek Artemis", domain:"The hunt and the moon."},
+];
+const godsGrid = document.getElementById('godsGrid');
+godsList.forEach(g=>{
+  const c = document.createElement('div'); c.className='card god-card';
+  c.innerHTML = `<span class="gname">${g.name}</span><span class="gequiv">${g.equiv}</span><p style="font-size:13.5px">${g.domain}</p>`;
+  godsGrid.appendChild(c);
+});
+
+const empList = [
+  {name:"Augustus", dates:"r. 27 BCE–14 CE", note:"First emperor. Commissioned Augustus of Prima Porta, fusing Greek idealism with political propaganda."},
+  {name:"Vespasian & Titus", dates:"r. 69–81 CE", note:"Flavian emperors. Began and completed the Colosseum (Flavian Amphitheater)."},
+  {name:"Trajan", dates:"r. 98–117 CE", note:"Empire at its largest extent. Built the Forum of Trajan and Trajan's Column."},
+  {name:"Hadrian", dates:"r. 117–138 CE", note:"Rebuilt the Pantheon into the domed form we know today; also built Hadrian's Wall in Britain."},
+  {name:"Constantine", dates:"r. 306–337 CE", note:"Legalized Christianity; his reign marks the late stretch before Rome's fall in 410 CE."},
+];
+const empGrid = document.getElementById('empGrid');
+empList.forEach(e=>{
+  const c = document.createElement('div'); c.className='card emp-card';
+  c.innerHTML = `<span class="ename">${e.name}</span><span class="edates">${e.dates}</span><p style="font-size:13.5px">${e.note}</p>`;
+  empGrid.appendChild(c);
+});
+
+/* ---------------- QUESTION POOLS ---------------- */
+const ETRUSCAN_POOL = [
+ {q:"On the Sarcophagus of the Spouses, showing husband and wife at equal scale, reclining together, tells us:", correct:"Etruscan women held relatively high social status", opts:["Etruscan women held relatively high social status","The sculptor ran out of stone for a second sarcophagus","Only married couples could be cremated","Etruscans copied this directly from Egyptian art"], ex:"Equal-scale, equal-eye-level treatment of the wife is unusual for the period and reflects real status."},
+ {q:"The Sarcophagus of the Spouses was made from:", correct:"Terracotta, built and fired in separate sections", opts:["Terracotta, built and fired in separate sections","Solid marble carved from one block","Bronze using lost-wax casting","Wood covered in gold leaf"], ex:"Terracotta sarcophagi were built in pieces (kiln size limits) then assembled."},
+ {q:"Apollo of Veii was originally placed:", correct:"On a temple rooftop, since Etruscan temple sculpture decorated the exterior", opts:["On a temple rooftop, since Etruscan temple sculpture decorated the exterior","Inside a tomb chamber","Buried with a specific individual","In the Roman Forum as a war trophy"], ex:"Etruscan temples used terracotta rooftop sculpture rather than pediment sculpture like the Greeks."},
+ {q:"Apollo of Veii's striding pose and smile most directly recall:", correct:"Greek Archaic kouroi", opts:["Greek Archaic kouroi","Egyptian standing pharaoh statues","Roman veristic busts","Assyrian lamassu"], ex:"The 'archaic smile' and forward stride are borrowed from Greek Archaic sculpture, but material and dynamism are Etruscan."},
+ {q:"The Tomb of the Triclinium's banquet fresco suggests Etruscans believed the afterlife was:", correct:"A continuation of life's pleasures — feasting, music, dance", opts:["A continuation of life's pleasures — feasting, music, dance","A solemn judgment before the gods","A cycle of rebirth tied to the sun","Nonexistent — art was purely decorative"], ex:"Compare to Egypt's solemn approach to death — Etruscan tomb art is upbeat by contrast."},
+ {q:"The Capitoline Wolf was made using:", correct:"Lost-wax bronze casting", opts:["Lost-wax bronze casting","Fresco on wet plaster","Encaustic (wax) painting","Marble carving"], ex:"Etruscans were especially skilled bronze workers, using the lost-wax technique."},
+ {q:"The twins suckling beneath the Capitoline Wolf were added:", correct:"Over a thousand years later, in the Renaissance", opts:["Over a thousand years later, in the Renaissance","By the original Etruscan sculptor","During the Roman Republic","By Augustus as propaganda"], ex:"The wolf alone is Etruscan; Romulus and Remus were added much later."},
+ {q:"What did Rome most directly inherit from Etruria (besides art)?", correct:"The arch, engineering know-how, and (by tradition) early kingship", opts:["The arch, engineering know-how, and (by tradition) early kingship","Democracy and the Senate","The Latin alphabet from scratch","Christianity"], ex:"Etruscan engineering and political tradition shaped early Rome before the Republic began in 509 BCE."},
+ {q:"Etruscan temples were typically built from:", correct:"Wood and mud brick, with terracotta roof decoration", opts:["Wood and mud brick, with terracotta roof decoration","Solid marble, like Greek temples","Poured concrete with a coffered dome","Sun-dried mud brick only, with no decoration"], ex:"That's also why so little Etruscan temple architecture survives — the materials weren't durable, unlike the terracotta sculpture that topped them."},
+ {q:"Etruscan sarcophagi and tomb art are known to us mainly through:", correct:"Archaeology and descriptions by outside observers", opts:["Archaeology and descriptions by outside observers","Etruscan literary and legal records","Roman government census documents","Modern DNA analysis alone"], ex:"Very little Etruscan writing survives, unlike the rich Greek and Roman textual record."},
+];
+const GREEK_POOL = [
+ {q:"On Augustus of Prima Porta, the cupid at his feet claims:", correct:"Divine descent from Venus", opts:["Divine descent from Venus","Victory over Egypt","Augustus's love of the sea","A defeated enemy general"], ex:"Venus's son Aeneas was Rome's legendary ancestor — the cupid ties Augustus's bloodline to a goddess."},
+ {q:"Republic-era veristic busts emphasize wrinkles and sagging skin because:", correct:"Age signaled wisdom and moral authority (gravitas)", opts:["Age signaled wisdom and moral authority (gravitas)","Sculptors couldn't idealize faces yet","It was cheaper to carve realistically","Law required exact likenesses"], ex:"Verism flatters by showing a life of service — the opposite of Greek idealization."},
+ {q:"The Alexander Mosaic is best described as:", correct:"A Roman floor-mosaic copy of a lost Greek painting", opts:["A Roman floor-mosaic copy of a lost Greek painting","An original Roman invention with no Greek source","A Greek original excavated in Rome","An Etruscan funerary image"], ex:"A textbook case of Roman 'reception' — same composition, new medium (tesserae), new context (a floor)."},
+ {q:"Augustus of Prima Porta's pose is modeled almost directly on:", correct:"Polykleitos's Doryphoros", opts:["Polykleitos's Doryphoros","The Anavysos Kouros","The Capitoline Wolf","The Ludovisi Sarcophagus"], ex:"Augustus borrows the Doryphoros's contrapposto and idealized body, then adds an individual face and political armor."},
+ {q:"The Anavysos Kouros is best understood as:", correct:"An idealized, generic youth marking a grave — not a portrait of a specific person", opts:["An idealized, generic youth marking a grave — not a portrait of a specific person","A realistic portrait of a named athlete","A political monument to a general","A depiction of a god in human form only"], ex:"Archaic kouroi are idealized types, unlike Roman veristic busts, which are specific individuals."},
+ {q:"The 'canon of proportions' used in the Doryphoros refers to:", correct:"A mathematical system of ideal body ratios", opts:["A mathematical system of ideal body ratios","A list of approved subjects for sculpture","A rule requiring bronze over marble","A set of religious rituals before carving"], ex:"Polykleitos developed proportional ratios meant to represent the 'perfect' human body."},
+ {q:"The biggest shift from Greek to Roman portrait sculpture, broadly, is:", correct:"From idealized 'everyman' types to identity-specific, often political portraits", opts:["From idealized 'everyman' types to identity-specific, often political portraits","From marble to plastic","From standing poses to seated poses only","From male subjects to female subjects only"], ex:"Greek sculpture favored generalized ideal types; Rome increasingly used sculpture for specific, identifiable, often political individuals."},
+ {q:"Which Roman practice most resembles the Alexander Mosaic's relationship to Greek painting?", correct:"Wealthy homeowners commissioning Roman versions of famous Greek artworks in new media", opts:["Wealthy homeowners commissioning Roman versions of famous Greek artworks in new media","Banning all Greek-style imagery in private homes","Melting down Greek statues for coinage","Translating Greek plays into Latin only"], ex:"Reception in Roman art often means literally re-making a famous Greek work in a new material or context."},
+];
+const PAINTING_POOL = [
+ {q:"Pompeian wall painting that imitates marble panels is:", correct:"First Style", opts:["First Style","Second Style","Third Style","Fourth Style"], ex:"First Style tricks the eye into seeing costly marble facing that isn't really there."},
+ {q:"Pompeian wall painting using illusionistic architecture and painted vistas is:", correct:"Second Style", opts:["First Style","Second Style","Third Style","Fourth Style"], ex:"Second Style paints columns and depth to make the wall seem to open into another space."},
+ {q:"Pompeian wall painting with flat color panels and delicate small-scale ornament is:", correct:"Third Style", opts:["First Style","Second Style","Third Style","Fourth Style"], ex:"Third Style drops the illusionism of Second Style for elegant, flat, decorative panels."},
+ {q:"Pompeian wall painting combining framed mythological 'picture windows' within busy fantastical panels is:", correct:"Fourth Style", opts:["First Style","Second Style","Third Style","Fourth Style"], ex:"Fourth Style layers elements of all three earlier styles together."},
+ {q:"A mosaic is made from:", correct:"Small pieces of colored glass, stone, or tile (tesserae) set in mortar", opts:["Small pieces of colored glass, stone, or tile (tesserae) set in mortar","Pigment applied to wet plaster","Wax-based paint fused with heat","Carved and painted terracotta panels"], ex:"Tesserae are the individual pieces that make up a mosaic."},
+ {q:"'Horror Vacui,' seen on the Ludovisi Battle Sarcophagus, means:", correct:"Fear of empty space — every surface filled with dense ornament or figures", opts:["Fear of empty space — every surface filled with dense ornament or figures","Fear of death depicted in art","A specific marble quarry in Italy","A style using only empty, minimal backgrounds"], ex:"The sarcophagus is packed edge-to-edge with struggling bodies, leaving almost no open space."},
+ {q:"The Ludovisi Battle Sarcophagus primarily depicts:", correct:"A chaotic scene of combat between Romans and enemy forces", opts:["A chaotic scene of combat between Romans and enemy forces","A calm banquet scene","A single portrait bust","An architectural floor plan"], ex:"Its dense, overlapping composition of fighting figures is the classic horror vacui example."},
+ {q:"Fresco painting is applied:", correct:"Onto wet plaster, so the pigment bonds as the wall dries", opts:["Onto wet plaster, so the pigment bonds as the wall dries","Onto dry stone with an oil binder","Onto wax that is later heated and fused","Onto fired terracotta panels only"], ex:"True fresco (buon fresco) bonds pigment into the plaster itself as it cures."},
+];
+const ARCHITECTURE_POOL = [
+ {q:"The Pantheon's oculus mainly functions to:", correct:"Let in light and lighten the load at the dome's weakest, highest point", opts:["Let in light and lighten the load at the dome's weakest, highest point","Vent incense smoke, with no structural role","Serve as a purely symbolic void","Allow rain to fully flood the floor"], ex:"Removing material at the dome's apex, plus coffers throughout, makes the unreinforced dome possible."},
+ {q:"A groin vault is formed by:", correct:"Two barrel vaults intersecting at right angles", opts:["Two barrel vaults intersecting at right angles","Stacking three barrel vaults end to end","Rotating a barrel vault 360° around a point","Cutting a dome in half"], ex:"That intersection concentrates weight onto four corner piers, freeing the walls between them."},
+ {q:"The Colosseum's exterior stacks Doric, Ionic, and Corinthian columns mainly to:", correct:"Show off Greek orders decoratively — the vaults do the real structural work", opts:["Show off Greek orders decoratively — the vaults do the real structural work","Support the upper floors structurally","Mark different entrance prices","Copy the Parthenon's exact proportions"], ex:"The columns are applied ornament; the vault-and-arcade system underneath actually carries the load."},
+ {q:"Trajan's Column mainly depicts:", correct:"A narrative of Trajan's military campaigns", opts:["A narrative of Trajan's military campaigns","Scenes from Greek mythology","The founding myth of Rome","Portraits of earlier emperors"], ex:"A continuous spiral relief narrates the Dacian Wars — propaganda in stone."},
+ {q:"Roman concrete (opus caementicium) mattered because it:", correct:"Let architects build large curved forms (vaults, domes) that stone post-and-lintel couldn't achieve", opts:["Let architects build large curved forms (vaults, domes) that stone post-and-lintel couldn't achieve","Was purely decorative and never load-bearing","Was only used for roads, never buildings","Replaced the need for columns entirely"], ex:"Concrete freed Roman architecture from the limits of Greek post-and-lintel construction."},
+ {q:"A barrel vault is best described as:", correct:"A single continuous arch extended in depth, like a tunnel", opts:["A single continuous arch extended in depth, like a tunnel","Two arches crossing at right angles","A dome cut in half","A flat ceiling supported by beams"], ex:"It's the simplest vault type — an arch repeated along a length."},
+ {q:"The Forum of Trajan's strict central axis mainly serves to:", correct:"Guide visitors physically through a story of the emperor's achievements", opts:["Guide visitors physically through a story of the emperor's achievements","Maximize farmland within the city","Follow Etruscan temple layout exactly","Minimize construction costs"], ex:"Roman urban planning could function as propaganda — walking the axis retells Trajan's victories."},
+ {q:"Compared to a Greek temple, the Pantheon's design is unusual because it:", correct:"Attaches a traditional Greek portico to a completely non-Greek concrete rotunda and dome", opts:["Attaches a traditional Greek portico to a completely non-Greek concrete rotunda and dome","Uses only wood, like an Etruscan temple","Has no columns anywhere on the building","Was built entirely underground"], ex:"That mismatch between the familiar Greek front and the radical concrete body behind it is the Pantheon's signature move."},
+];
+const GODS_POOL = [
+ {q:"The Capitoline Triad consists of:", correct:"Jupiter, Juno, and Minerva", opts:["Jupiter, Juno, and Minerva","Mars, Venus, and Neptune","Apollo, Diana, and Mercury","Vulcan, Ceres, and Bacchus"], ex:"These three shared the great temple on the Capitoline Hill, each with their own cella."},
+ {q:"The Capitoline Triad's temple used a triple-cella plan borrowed from:", correct:"Etruscan temple architecture", opts:["Etruscan temple architecture","Egyptian mortuary temples","Greek Doric temples exclusively","Near Eastern ziggurats"], ex:"Even Rome's central state religion shows Etruscan architectural influence."},
+ {q:"Jupiter is the Roman equivalent of the Greek god:", correct:"Zeus", opts:["Zeus","Poseidon","Hades","Apollo"], ex:"Jupiter/Zeus — sky, king of the gods."},
+ {q:"Venus, claimed as an ancestor by Augustus's family, is the Roman equivalent of:", correct:"Aphrodite", opts:["Aphrodite","Athena","Hera","Artemis"], ex:"This is why Augustus of Prima Porta includes a cupid — Venus's son — at his feet."},
+ {q:"Minerva, part of the Capitoline Triad, governs:", correct:"Wisdom and craft", opts:["Wisdom and craft","The sea","The underworld","Love"], ex:"Minerva is the Roman equivalent of Athena."},
+ {q:"Mars, god of war, is closely tied to Rome's founding myth because he is:", correct:"The legendary father of Romulus and Remus", opts:["The legendary father of Romulus and Remus","The builder of the first Roman temple","The Etruscan king who founded Veii","The architect of the Capitoline Hill"], ex:"This links Mars directly to the Capitoline Wolf imagery."},
+ {q:"Roman religion as a whole is a strong example of:", correct:"Reception — Greek gods adapted with Latin names and Roman civic roles", opts:["Reception — Greek gods adapted with Latin names and Roman civic roles","A completely independent belief system with no outside influence","Strict monotheism, unlike Greece","A religion focused only on emperor-worship"], ex:"Just like Greek sculpture, Greek religion was absorbed and re-labeled by Rome."},
+ {q:"Mercury, the messenger god, is the Roman equivalent of:", correct:"Hermes", opts:["Hermes","Dionysus","Hephaestus","Ares"], ex:"Mercury/Hermes — messages, trade, and travel."},
+];
+const EMPEROR_POOL = [
+ {q:"Augustus of Prima Porta was commissioned under which emperor?", correct:"Augustus", opts:["Augustus","Trajan","Hadrian","Constantine"], ex:"Augustus, Rome's first emperor, used this statue as personal propaganda."},
+ {q:"The Colosseum was begun and completed under which dynasty?", correct:"The Flavians (Vespasian and Titus)", opts:["The Flavians (Vespasian and Titus)","The Julio-Claudians","The Severans","The Constantinian dynasty"], ex:"It's formally called the Flavian Amphitheater for this reason."},
+ {q:"The Forum of Trajan and Trajan's Column were built under:", correct:"Trajan", opts:["Trajan","Augustus","Nero","Hadrian"], ex:"Both monuments celebrate Trajan's military campaigns, especially the Dacian Wars."},
+ {q:"The Pantheon's current domed form was built under:", correct:"Hadrian", opts:["Hadrian","Julius Caesar","Trajan","Vespasian"], ex:"Hadrian rebuilt an earlier Pantheon into the coffered, domed rotunda that survives today."},
+ {q:"Which emperor legalized Christianity, shortly before the era covered in this unit ends?", correct:"Constantine", opts:["Constantine","Augustus","Trajan","Titus"], ex:"Constantine's reign (306–337 CE) sits near the end of Rome's timeline before the fall in 410 CE."},
+ {q:"Under the empire (as opposed to the Republic), imperial portraiture generally shifts toward:", correct:"Idealized, youthful, Greek-derived bodies used as propaganda", opts:["Idealized, youthful, Greek-derived bodies used as propaganda","Exaggerated old age and wrinkles in every portrait","Abstract, non-representational forms","Portraits exclusively in mosaic, never sculpture"], ex:"This is the same shift discussed in the Peristyle room, now tied to specific emperors."},
+ {q:"Trajan's Empire, at its height, is generally described as:", correct:"Rome's largest territorial extent", opts:["Rome's largest territorial extent","Smaller than under Augustus","Confined only to the Italian peninsula","Entirely lost to Etruscan reconquest"], ex:"Trajan's military campaigns pushed Roman borders to their greatest size."},
+ {q:"Hadrian is also associated with which large defensive structure?", correct:"Hadrian's Wall in Britain", opts:["Hadrian's Wall in Britain","The Great Wall extension in Gaul","The Aurelian Walls of Rome","The Antonine Aqueduct"], ex:"Hadrian's Wall marked the northern frontier of Roman Britain."},
+];
+
+/* ---------------- SEARCH / DISCOVERY LAYER ---------------- */
+const SEARCH_CONFIG = {
+  alae: {type:'objects', prompt:"Search the Alae for anything Lucius might have hidden.", items:[
+    {icon:'🏺', label:'A cracked amphora', flavor:'Just old wine dregs — nothing else inside.'},
+    {icon:'🧺', label:'A woven basket', flavor:'Old linens, nothing more.'},
+    {icon:'🪞', label:'A bronze mirror', flavor:'Your own tired face stares back.'},
+    {icon:'📯', label:'An oil lamp', flavor:'Cold. Unlit for days.'},
+    {icon:'📜', label:'A loose floor tile', flavor:'LEDGER'},
+  ]},
+  triclinium: {type:'objects', prompt:"Search the dining couches and walls.", items:[
+    {icon:'🍷', label:'A wine cup', flavor:'Dregs only.'},
+    {icon:'🕯️', label:'A burnt-down candle', flavor:'Just wax.'},
+    {icon:'🖼️', label:'A loose corner of fresco', flavor:'Just flaking paint.'},
+    {icon:'🪑', label:'Under a dining couch', flavor:'LEDGER'},
+    {icon:'🍇', label:'A bowl of withered grapes', flavor:'Just fruit, going soft.'},
+  ]},
+  tablinum: {type:'objects', prompt:"Search the record room.", items:[
+    {icon:'🖋️', label:'An inkwell', flavor:'Dry as dust.'},
+    {icon:'📚', label:'A stack of old scrolls', flavor:'Tax records. Deeply boring.'},
+    {icon:'🗃️', label:'A locked chest', flavor:'LEDGER'},
+    {icon:'🪶', label:'A wax tablet', flavor:'Just a grocery list.'},
+    {icon:'🗿', label:'A family portrait bust', flavor:"Someone's stern ancestor, judging you silently."},
+  ]},
+  forum: {type:'objects', prompt:"Search the workshop and drafting tables.", items:[
+    {icon:'📐', label:'A set of drafting tools', flavor:'Just compasses and a straightedge.'},
+    {icon:'🧱', label:'A loose brick sample', flavor:'Ordinary fired clay.'},
+    {icon:'📋', label:'A rolled-up building plan', flavor:'LEDGER'},
+    {icon:'🔨', label:"A mason's hammer", flavor:'Heavy. Not hiding anything.'},
+    {icon:'🏺', label:'A jar of pigment', flavor:'Red ochre, for painted stucco.'},
+  ]},
+  peristyle: {type:'identify', prompt:"Statues line the garden. Which one shows true contrapposto — the innovation Rome borrowed straight from Greece?", items:[
+    {icon:'🗽', label:'Rigid, frontal youth, weight even on both legs', correct:false},
+    {icon:'🚶', label:'Weight shifted onto one leg, hip and shoulder counterbalanced', correct:true},
+    {icon:'🪖', label:'Armored figure, arm raised, addressing troops', correct:false},
+    {icon:'👴', label:'Wrinkled, aged portrait head, no body at all', correct:false},
+  ]},
+  capitol: {type:'identify', prompt:"Three altars sit before you, each carved with a different god's symbol. Which belongs to Jupiter, the Triad's central god?", items:[
+    {icon:'🦉', label:'An owl and a spear', correct:false},
+    {icon:'⚡', label:'A thunderbolt and an eagle', correct:true},
+    {icon:'🦚', label:'A peacock and a diadem', correct:false},
+    {icon:'🐺', label:'A wolf and a spear', correct:false},
+  ]},
+};
+const WITNESS_LINES = {
+  alae: ["The kitchen slave recalls Lucius murmuring about 'the smiling faces from Cerveteri' before he vanished.", "A gardener swears Lucius patted the old wolf statue 'for luck' that morning."],
+  peristyle: ["A guest recalls Lucius comparing his own bald head to 'that spear-carrier from Argos,' laughing.", "The doorkeeper heard Lucius rehearsing a speech about 'inheriting Greece.'"],
+  triclinium: ["A servant found wine spilled across the Second Style fresco — Lucius always got clumsy near it.", "Someone overheard Lucius arguing about which wall style was 'too busy.'"],
+  tablinum: ["The scribe says Lucius spent an hour rewriting the household's vocabulary tablets last night.", "A ledger page is missing — torn out in a hurry."],
+  forum: ["A mason recalls Lucius sketching a dome on a scrap of wax, muttering about 'coffers.'", "Someone saw Lucius pacing the length of an imaginary forum in the garden."],
+  capitol: ["A priest says Lucius made an unusual offering at Jupiter's altar three nights ago.", "The household augur claims to have seen a bad omen near the temple steps."],
+};
+
+/* ---------------- QUIZ ENGINE ---------------- */
+function initQuiz(containerId, pool, count, onComplete){
+  const box = document.getElementById(containerId);
+  let items, qi, score;
+  function start(){ items = pickN(pool, count || pool.length); qi=0; score=0; renderQ(); }
+  function renderQ(){
+    if(qi >= items.length){
+      if(onComplete){ onComplete(score, items.length, start); return; }
+      box.innerHTML = `<div style="text-align:center; padding:14px 0;">
+        <div class="score-seal" style="margin:0 auto 14px;">${score}/${items.length}</div>
+        <h3 style="margin-bottom:6px;">${score===items.length ? "Optime! Perfect round." : score/items.length>=0.7 ? "Solid round." : "Worth another lap."}</h3>
+        <button class="btn" id="playAgain-${containerId}">Play Again</button></div>`;
+      document.getElementById(`playAgain-${containerId}`).onclick = start;
+      return;
+    }
+    const item = items[qi]; const shuffledOpts = shuffle(item.opts);
+    box.innerHTML = `
+      <div class="quiz-progress"><span>Question ${qi+1} of ${items.length}</span><span>Score: ${score}</span></div>
+      <div class="quiz-q">${item.q}</div>
+      <div id="optsWrap-${containerId}"></div>
+      <div class="quiz-explain" id="explain-${containerId}"><b>Why:</b> <span></span></div>
+      <div class="quiz-nav">
+        <button class="btn ghost" id="restart-${containerId}">Restart</button>
+        <button class="btn" id="next-${containerId}" style="display:none">Next →</button>
+      </div>`;
+    const optsWrap = document.getElementById(`optsWrap-${containerId}`);
+    let answered = false;
+    shuffledOpts.forEach(optText=>{
+      const b = document.createElement('button'); b.className='opt-btn'; b.textContent = optText;
+      b.onclick = ()=>{
+        if(answered) return; answered = true;
+        document.querySelectorAll(`#optsWrap-${containerId} .opt-btn`).forEach(bb=>{
+          bb.disabled = true;
+          if(bb.textContent === item.correct) bb.classList.add('correct');
+          else if(bb === b) bb.classList.add('wrong');
+        });
+        if(optText === item.correct) score++;
+        const ex = document.getElementById(`explain-${containerId}`);
+        ex.querySelector('span').textContent = item.ex; ex.classList.add('show');
+        document.getElementById(`next-${containerId}`).style.display='inline-block';
+      };
+      optsWrap.appendChild(b);
+    });
+    document.getElementById(`restart-${containerId}`).onclick = start;
+    document.getElementById(`next-${containerId}`).onclick = ()=>{ qi++; renderQ(); };
+  }
+  start();
+  return { restart: start };
+}
+
+/* ---------------- BONUS QUIZZES ---------------- */
+function renderEmperorQuiz(){ initQuiz('quiz-palatine', EMPEROR_POOL, 6); }
+renderEmperorQuiz();
+
+const MASTER_POOL = [...ETRUSCAN_POOL, ...GREEK_POOL, ...PAINTING_POOL, ...VOCAB_POOL, ...ARCHITECTURE_POOL, ...GODS_POOL, ...EMPEROR_POOL];
+function renderReviewArena(){ initQuiz('quiz-arena', MASTER_POOL, 18); }
+renderReviewArena();
+
+/* ---------------- THE CASE: gated mystery mechanic ---------------- */
+const PASSPHRASES = ["AUGUSTUS","PANTHEON","VERISTIC","ETRUSCAN","PATRICIAN","AQUEDUCT","BASILICA","MOSAIC","PROVENANCE","CAPITOLINE"];
+const CASE_ROOMS = [
+  {key:'alae', pool: ETRUSCAN_POOL, label:'Alae'},
+  {key:'peristyle', pool: GREEK_POOL, label:'Peristyle'},
+  {key:'triclinium', pool: PAINTING_POOL, label:'Triclinium'},
+  {key:'tablinum', pool: VOCAB_POOL, label:'Tablinum'},
+  {key:'forum', pool: ARCHITECTURE_POOL, label:'Forum'},
+  {key:'capitol', pool: GODS_POOL, label:'Capitol'},
+];
+function distributeWord(word, n){
+  const L = word.length, base = Math.floor(L/n), rem = L % n;
+  let chunks = [], idx = 0;
+  for(let i=0;i<n;i++){ const size = base + (i < rem ? 1 : 0); chunks.push(word.slice(idx, idx+size)); idx += size; }
+  return chunks;
+}
+let CASE = { word:'', chunks:{}, solved:{}, searchDone:{}, witnessLog:[], elapsed:0, timerId:null, solvedOpen:false };
+
+function newCase(){
+  CASE.word = PASSPHRASES[Math.floor(Math.random()*PASSPHRASES.length)];
+  const chunks = distributeWord(CASE.word, CASE_ROOMS.length);
+  CASE.chunks = {}; CASE.solved = {}; CASE.searchDone = {};
+  CASE_ROOMS.forEach((r,i)=>{ CASE.chunks[r.key]=chunks[i]; CASE.solved[r.key]=false; CASE.searchDone[r.key]=false; });
+  CASE.elapsed = 0; CASE.solvedOpen = false; CASE.witnessLog = [];
+  clearInterval(CASE.timerId);
+  CASE.timerId = setInterval(()=>{ CASE.elapsed++; updateBoard(); }, 1000);
+  document.getElementById('endingPanel').classList.remove('show');
+  document.getElementById('endingPanel').innerHTML = '';
+  CASE_ROOMS.forEach(r => renderChallenge(r.key, r.pool));
+  updateBoard();
+}
+function updateBoard(){
+  const ppEl = document.getElementById('ppDisplay'); ppEl.innerHTML='';
+  CASE_ROOMS.forEach(r=>{
+    const chunk = CASE.chunks[r.key];
+    for(const ch of chunk){
+      const span = document.createElement('span');
+      span.className = 'pp-letter' + (CASE.solved[r.key] ? '' : ' blank');
+      span.textContent = ch;
+      ppEl.appendChild(span);
+    }
+  });
+  const solvedCount = CASE_ROOMS.filter(r=>CASE.solved[r.key]).length;
+  document.getElementById('caseStatus').textContent = solvedCount===CASE_ROOMS.length ? "All fragments recovered!" : `${CASE_ROOMS.length - solvedCount} room(s) remaining`;
+  const mm = Math.floor(CASE.elapsed/60), ss = String(CASE.elapsed%60).padStart(2,'0');
+  document.getElementById('caseTimer').textContent = `Time: ${mm}:${ss}`;
+  const rowEl = document.getElementById('roomStatusRow'); rowEl.innerHTML='';
+  CASE_ROOMS.forEach(r=>{
+    const s = document.createElement('span'); s.className='room-status' + (CASE.solved[r.key]?' done':'');
+    s.textContent = `${r.label}: ${CASE.solved[r.key] ? '✓ found' : 'locked'}`;
+    rowEl.appendChild(s);
+  });
+  document.getElementById('solveBtn').disabled = solvedCount < CASE_ROOMS.length || CASE.solvedOpen;
+  const logEl = document.getElementById('witnessLog');
+  logEl.innerHTML = CASE.witnessLog.length
+    ? CASE.witnessLog.map(w=>`<li><b>${w.label}</b>${w.line}</li>`).join('')
+    : `<li class="witness-empty">No one has talked yet — go search a room.</li>`;
+}
+function attemptSolve(){
+  clearInterval(CASE.timerId);
+  CASE.solvedOpen = true;
+  const panel = document.getElementById('endingPanel');
+  panel.innerHTML = `<h3>The strongroom clicks open.</h3>
+    <p style="font-size:14.5px; color:#dce7d8;">You speak the word — <b style="color:#fff; letter-spacing:0.1em;">${CASE.word}</b> — and the bolt slides free. Inside, a note from Lucius: he's simply gone ahead to the country villa, confident that whoever solved this deserved the collection's secrets more than his worried guests did. Case closed.</p>
+    <p style="font-size:13px; color:#a9c2a0;">Solved in ${Math.floor(CASE.elapsed/60)}:${String(CASE.elapsed%60).padStart(2,'0')}.</p>
+    <button class="btn gold" onclick="newCase(); goToRoom('atrium');" style="margin-top:8px;">Start a New Case</button>`;
+  panel.classList.add('show');
+  updateBoard();
+}
+function renderChallenge(key, pool){
+  const host = document.getElementById('challenge-'+key);
+  const cfg = SEARCH_CONFIG[key];
+  const roomLabel = (CASE_ROOMS.find(r=>r.key===key)||{}).label || key;
+
+  function draw(){
+    host.innerHTML='';
+    const box = document.createElement('div'); box.className='challenge-box';
+    host.appendChild(box);
+    if(CASE.solved[key]){
+      box.innerHTML = `<span class="challenge-solved-tag">FRAGMENT RECOVERED</span><div class="fragment-reveal">"${CASE.chunks[key]}" — added to the passphrase on the Case Board.</div><div style="margin-top:12px;"><button class="btn ghost" id="regen-${key}">Search Again for Practice</button></div>`;
+      document.getElementById(`regen-${key}`).onclick = ()=>{ runQuiz(true); };
+    } else if(!CASE.searchDone[key]){
+      box.innerHTML = `<span class="challenge-locked-tag">LOCKED — search this room first</span><div class="search-scene" id="search-${key}"></div>`;
+      drawSearch();
+    } else {
+      box.innerHTML = `<span class="challenge-locked-tag">LEDGER FOUND — answer to unlock the fragment</span><div id="qz-${key}"></div>`;
+      runQuiz(false);
+    }
+  }
+
+  function drawSearch(){
+    const scene = document.getElementById(`search-${key}`);
+    const items = shuffle(cfg.items);
+    let ledgerIdx;
+    if(cfg.type === 'objects') ledgerIdx = items.findIndex(it=>it.flavor==='LEDGER');
+    else ledgerIdx = items.findIndex(it=>it.correct===true);
+    scene.innerHTML = `<div class="search-prompt">${cfg.prompt}</div><div class="search-items" id="items-${key}"></div><div id="flavor-${key}"></div>`;
+    const itemsWrap = document.getElementById(`items-${key}`);
+    items.forEach((it, i)=>{
+      const b = document.createElement('div'); b.className='search-item';
+      b.innerHTML = `<span class="sicon">${it.icon}</span><span class="slabel">${it.label}</span>`;
+      b.onclick = ()=>{
+        const flavorBox = document.getElementById(`flavor-${key}`);
+        if(i === ledgerIdx){
+          CASE.searchDone[key] = true;
+          draw();
+        } else {
+          const line = cfg.type==='objects' ? it.flavor : "Not quite — look again.";
+          flavorBox.innerHTML = `<div class="search-flavor">${line}</div>`;
+        }
+      };
+      itemsWrap.appendChild(b);
+    });
+  }
+
+  function nextLeadPanel(){
+    const remaining = CASE_ROOMS.filter(r=>!CASE.solved[r.key]);
+    if(remaining.length === 0){
+      return `<div class="next-lead">That's everyone's testimony gathered. <b>Return to the Atrium</b> to open the strongroom.<br><button class="btn ghost" style="margin-top:8px;" onclick="goToRoom('atrium')">Go to Atrium</button></div>`;
+    }
+    const lead = remaining[Math.floor(Math.random()*remaining.length)];
+    return `<div class="next-lead">A whisper points you toward the <b>${lead.label}</b>.<br><button class="btn ghost" style="margin-top:8px;" onclick="goToRoom('${lead.key}')">Go there</button></div>`;
+  }
+
+  function runQuiz(practiceOnly){
+    if(practiceOnly){
+      const box = document.querySelector(`#challenge-${key} .challenge-box`);
+      box.innerHTML = `<span class="challenge-solved-tag">PRACTICE ROUND</span><div id="qz-${key}"></div>`;
+    }
+    initQuiz(`qz-${key}`, pool, 3, (score, total, restart)=>{
+      const zone = document.getElementById(`qz-${key}`);
+      const passed = score >= 2;
+      if(passed && !practiceOnly && !CASE.solved[key]){
+        CASE.solved[key] = true;
+        const linePool = WITNESS_LINES[key] || [];
+        if(linePool.length) CASE.witnessLog.push({label: roomLabel, line: linePool[Math.floor(Math.random()*linePool.length)]});
+        updateBoard();
+        const zoneAfter = document.getElementById(`qz-${key}`);
+        zoneAfter.innerHTML = `<div style="text-align:center; padding:10px 0;">
+          <div class="score-seal" style="margin:0 auto 12px;">${score}/${total}</div>
+          <h3 style="margin-bottom:6px;">Fragment recovered.</h3>
+          ${nextLeadPanel()}
+          <button class="btn" style="margin-top:14px;" id="continue-${key}">View Fragment</button></div>`;
+        document.getElementById(`continue-${key}`).onclick = draw;
+        return;
+      }
+      zone.innerHTML = `<div style="text-align:center; padding:10px 0;">
+        <div class="score-seal" style="margin:0 auto 12px;">${score}/${total}</div>
+        <h3 style="margin-bottom:6px;">${passed ? "Recovered — but you already had this fragment." : "Not quite — the room keeps its secrets."}</h3>
+        <button class="btn" id="retry-${key}">${practiceOnly ? 'Practice Again' : (passed ? 'Search Again' : 'Try Again (new questions)')}</button>
+        ${practiceOnly ? `<button class="btn ghost" id="done-${key}" style="margin-left:8px;">Back to Fragment</button>` : ''}</div>`;
+      document.getElementById(`retry-${key}`).onclick = ()=> runQuiz(practiceOnly);
+      if(practiceOnly) document.getElementById(`done-${key}`).onclick = draw;
+    });
+  }
+  draw();
+}
+
+newCase();
+</script>
+</body>
+</html>

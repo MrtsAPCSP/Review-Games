@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Lumen Society — Unit 3.2: Byzantine Art</title>
+<style>
+:root{
+  --tufa:#241452;
+  --tufa-deep:#140a2e;
+  --terracotta:#7a3fa0;
+  --terracotta-bright:#9b5cc4;
+  --candle:#e8b93f;
+  --candle-glow:#ffd873;
+  --parchment:#f2e6c9;
+  --parchment-dim:#e8d8ae;
+  --marble:#eef0ee;
+  --marble-dim:#d9dcd6;
+  --gold:#c9972c;
+  --gold-bright:#f0c14b;
+  --maroon:#5c1a1a;
+  --ink:#1f1330;
+  --success:#3f7d4a;
+  --success-bright:#5aa869;
+  --danger:#a33636;
+  --danger-bright:#c94848;
+  --sky:#2a4a5c;
+  --shadow: rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family: Georgia, 'Times New Roman', serif;
+  background: radial-gradient(circle at 50% -10%, #4a2a70 0%, var(--tufa) 45%, var(--tufa-deep) 100%);
+  color: var(--parchment);
+  min-height:100vh;
+  transition: background 1.2s ease;
+  overflow-x:hidden;
+}
+body.theme-light{
+  background: radial-gradient(circle at 50% -10%, #fdf3d9 0%, var(--marble) 55%, #cdd2c8 100%);
+  color: var(--ink);
+}
+.wrap{max-width:900px;margin:0 auto;padding:18px 16px 60px;}
+h1,h2,h3{font-family: 'Palatino Linotype', Georgia, serif; letter-spacing:.5px;}
+.screen{display:none;}
+.screen.active{display:block; animation: fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+button{font-family:inherit; cursor:pointer;}
+.btn{
+  background: linear-gradient(180deg, var(--terracotta-bright), var(--terracotta));
+  color:#fff8ea; border:2px solid #7a3d0f; border-radius:10px;
+  padding:12px 22px; font-size:1rem; font-weight:bold;
+  box-shadow: 0 3px 0 #5c2c0a, 0 6px 12px var(--shadow);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:translateY(1px); box-shadow:0 1px 0 #5c2c0a;}
+.btn.secondary{background: linear-gradient(180deg,#6b6156,#4a4239); border-color:#332e28;}
+.btn.gold{background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-color:#7a5a10; color:#2b1d05;}
+.btn:disabled{opacity:.4; cursor:not-allowed; transform:none;}
+.btn-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;}
+.center{text-align:center;}
+
+/* ---------- TITLE ---------- */
+.candle-icon{font-size:3rem; filter:drop-shadow(0 0 12px var(--candle-glow));}
+.title-card{
+  background: rgba(20,12,6,.55);
+  border:1px solid rgba(230,190,100,.25);
+  border-radius:16px;
+  padding:26px 22px;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.4);
+}
+body.theme-light .title-card{ background:rgba(255,255,255,.65); border-color:rgba(180,150,90,.35); box-shadow:inset 0 0 40px rgba(0,0,0,.06);}
+.eyebrow{
+  text-transform:uppercase; letter-spacing:3px; font-size:.72rem;
+  color:var(--candle-glow); font-weight:bold;
+}
+body.theme-light .eyebrow{color:var(--gold);}
+.title-main{font-size:2.1rem; margin:6px 0 4px; color:var(--parchment);}
+body.theme-light .title-main{color:var(--maroon);}
+.title-sub{font-style:italic; opacity:.85; margin-bottom:18px;}
+.story-box{
+  background: rgba(0,0,0,.25); border-left:4px solid var(--terracotta-bright);
+  padding:14px 16px; border-radius:6px; line-height:1.55; margin:14px 0;
+}
+body.theme-light .story-box{ background: rgba(0,0,0,.04); border-left-color: var(--gold);}
+.mode-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+@media (max-width:600px){.mode-grid{grid-template-columns:1fr;}}
+.mode-card{
+  background:rgba(0,0,0,.28); border:1px solid rgba(230,190,100,.3); border-radius:12px;
+  padding:16px; text-align:left; cursor:pointer; transition:transform .15s, border-color .15s;
+}
+body.theme-light .mode-card{background:rgba(0,0,0,.04); border-color:rgba(150,120,60,.35);}
+.mode-card:hover{transform:translateY(-3px); border-color:var(--candle-glow);}
+.mode-card h3{margin:0 0 6px; color:var(--candle-glow);}
+body.theme-light .mode-card h3{color:var(--gold);}
+.mode-card p{margin:0; font-size:.92rem; opacity:.85; line-height:1.4;}
+
+/* ---------- TEAM SETUP ---------- */
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:.85rem; margin-bottom:5px; opacity:.85;}
+.field input{
+  width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(230,190,100,.4);
+  background:rgba(255,255,255,.08); color:inherit; font-size:1rem;
+}
+body.theme-light .field input{background:rgba(255,255,255,.7); border-color:rgba(150,120,60,.4);}
+
+/* ---------- HUD ---------- */
+.hud{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:rgba(0,0,0,.3); border-radius:12px; padding:10px 14px; margin-bottom:16px;
+  flex-wrap:wrap;
+}
+body.theme-light .hud{background:rgba(0,0,0,.05);}
+.hud-item{font-size:.85rem;}
+.hud-item b{font-size:1.1rem; display:block; color:var(--candle-glow);}
+body.theme-light .hud-item b{color:var(--gold);}
+.progress-track{height:8px; border-radius:6px; background:rgba(255,255,255,.15); overflow:hidden; margin:10px 0 6px;}
+body.theme-light .progress-track{background:rgba(0,0,0,.1);}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--terracotta-bright),var(--candle-glow)); transition:width .4s ease;}
+.turn-banner{
+  text-align:center; font-weight:bold; padding:8px; border-radius:8px; margin-bottom:12px;
+  background: rgba(201,151,44,.18); border:1px dashed var(--gold);
+}
+
+/* ---------- ACT INTRO / TRANSITION ---------- */
+.act-banner{
+  text-align:center; padding:34px 20px; border-radius:16px;
+  background: rgba(0,0,0,.3); border:1px solid rgba(230,190,100,.3);
+}
+body.theme-light .act-banner{background:rgba(0,0,0,.04);}
+.act-icon{font-size:3.4rem;}
+.act-title{font-size:1.6rem; margin:8px 0 2px; color:var(--candle-glow);}
+body.theme-light .act-title{color:var(--maroon);}
+
+/* ---------- QUESTION CARD ---------- */
+.qcard{
+  background:rgba(0,0,0,.28); border-radius:14px; padding:20px; border:1px solid rgba(230,190,100,.25);
+}
+body.theme-light .qcard{background:#fff; border-color:#e0d6b8; box-shadow:0 4px 14px rgba(0,0,0,.06);}
+.qtag{font-size:.72rem; text-transform:uppercase; letter-spacing:2px; color:var(--terracotta-bright); font-weight:bold;}
+.qtext{font-size:1.15rem; line-height:1.5; margin:8px 0 16px;}
+.choices{display:grid; gap:10px;}
+.choice-btn{
+  text-align:left; padding:12px 14px; border-radius:10px; border:2px solid rgba(230,190,100,.35);
+  background:rgba(255,255,255,.05); color:inherit; font-size:.98rem; line-height:1.35;
+}
+body.theme-light .choice-btn{background:#faf7ee; border-color:#ddd0a8;}
+.choice-btn:hover{border-color:var(--candle-glow);}
+.choice-btn.correct{background:rgba(63,125,74,.35); border-color:var(--success-bright);}
+.choice-btn.wrong{background:rgba(163,54,54,.35); border-color:var(--danger-bright);}
+.choice-btn.dim{opacity:.5;}
+.explain-box{
+  margin-top:14px; padding:12px 14px; border-radius:10px; font-size:.92rem; line-height:1.5;
+  background:rgba(0,0,0,.22);
+}
+body.theme-light .explain-box{background:#f3efe0;}
+.feedback-word{font-weight:bold; font-size:1.05rem;}
+.feedback-word.good{color:var(--success-bright);}
+.feedback-word.bad{color:var(--danger-bright);}
+
+/* ---------- MATCHING MINIGAME ---------- */
+.match-wrap{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media (max-width:600px){.match-wrap{grid-template-columns:1fr;}}
+.match-col h4{margin:0 0 8px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; opacity:.7;}
+.match-item{
+  display:block; width:100%; text-align:left; margin-bottom:8px; padding:10px 12px;
+  border-radius:9px; border:2px solid rgba(230,190,100,.35); background:rgba(255,255,255,.05); color:inherit;
+}
+body.theme-light .match-item{background:#faf7ee; border-color:#ddd0a8;}
+.match-item.selected{border-color:var(--candle-glow); box-shadow:0 0 0 2px rgba(232,185,63,.4);}
+.match-item.solved{background:rgba(63,125,74,.3); border-color:var(--success-bright); opacity:.75;}
+.match-item.shake{animation:shake .3s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+/* ---------- BASILICA LABELING ---------- */
+.label-instructions{margin-bottom:10px; font-size:.92rem; opacity:.9;}
+.chip-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+.chip{
+  padding:8px 14px; border-radius:20px; border:2px solid var(--gold); background:rgba(201,151,44,.15);
+  color:inherit; font-size:.88rem; font-weight:bold;
+}
+.chip.selected{background:var(--gold); color:#241811;}
+.chip.used{opacity:.3; border-style:dashed;}
+.blueprint{
+  background: rgba(240,230,200,.08); border-radius:10px; padding:14px; border:1px dashed rgba(230,190,100,.4);
+  max-width:340px; margin:0 auto;
+}
+body.theme-light .blueprint{background:#faf6ea;}
+.bp-atrium{margin:0 auto 6px; width:70%; height:34px; border:2px solid var(--stone,#8a7f6b); border-radius:4px;
+  display:flex; align-items:center; justify-content:center; font-size:.72rem; opacity:.8; background:rgba(255,255,255,.03);}
+.bp-narthex{width:90%; height:26px; margin:0 auto; background:rgba(180,150,90,.25); border:2px solid var(--gold);
+  display:flex; align-items:center; justify-content:center; font-size:.72rem; border-radius:2px;}
+.bp-nave-row{display:flex; width:90%; margin:0 auto; height:130px;}
+.bp-aisle{flex:0.55; background:rgba(180,110,60,.2); border:2px solid var(--terracotta-bright); display:flex; align-items:center; justify-content:center; font-size:.65rem; text-align:center;}
+.bp-nave{flex:1; background:rgba(63,125,74,.15); border:2px solid var(--success-bright); display:flex; align-items:center; justify-content:center; font-size:.72rem;}
+.bp-transept{width:110%; margin:0 -5%; height:34px; background:rgba(92,26,26,.25); border:2px solid var(--maroon); display:flex; align-items:center; justify-content:center; font-size:.7rem;}
+.bp-apse{width:60%; margin:0 auto; height:44px; border-radius:50% 50% 0 0; background:rgba(232,185,63,.25); border:2px solid var(--gold-bright); display:flex; align-items:flex-end; justify-content:center; padding-bottom:4px; font-size:.7rem;}
+.zone-btn{all:unset; cursor:pointer; width:100%; height:100%; display:flex; align-items:inherit; justify-content:inherit;}
+.zone-filled{background:rgba(63,125,74,.5) !important; border-color:var(--success-bright) !important; font-weight:bold;}
+.zone-flash{animation:flashRed .4s;}
+@keyframes flashRed{0%,100%{background:inherit;} 50%{background:rgba(163,54,54,.6) !important;}}
+
+/* ---------- FINAL / SUMMARY ---------- */
+.badge-box{text-align:center; padding:20px;}
+.badge-emoji{font-size:4rem;}
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:18px 0;}
+.stat-card{background:rgba(0,0,0,.25); border-radius:10px; padding:12px; text-align:center;}
+body.theme-light .stat-card{background:rgba(0,0,0,.04);}
+.stat-card b{display:block; font-size:1.4rem; color:var(--candle-glow);}
+body.theme-light .stat-card b{color:var(--gold);}
+.breakdown-row{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.08); font-size:.92rem;}
+body.theme-light .breakdown-row{border-bottom-color:rgba(0,0,0,.08);}
+
+/* ---------- STUDY HALL ---------- */
+.tab-row{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+.tab-btn{padding:8px 16px; border-radius:20px; border:2px solid rgba(230,190,100,.4); background:transparent; color:inherit; font-weight:bold;}
+.tab-btn.active{background:var(--gold); color:#241811; border-color:var(--gold);}
+.filter-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+.filter-chip{padding:5px 12px; border-radius:14px; font-size:.78rem; border:1px solid rgba(230,190,100,.4); background:transparent; color:inherit;}
+.filter-chip.active{background:rgba(201,151,44,.3); border-color:var(--gold);}
+.flashcard{
+  min-height:180px; border-radius:16px; padding:24px; display:flex; align-items:center; justify-content:center;
+  text-align:center; font-size:1.1rem; cursor:pointer; border:2px solid var(--gold);
+  background: linear-gradient(160deg, rgba(201,151,44,.18), rgba(0,0,0,.15));
+  line-height:1.5;
+}
+body.theme-light .flashcard{background: linear-gradient(160deg, #fff8e6, #f6efd8);}
+.flash-hint{text-align:center; font-size:.8rem; opacity:.65; margin-top:8px;}
+.small-note{font-size:.82rem; opacity:.75; margin-top:6px;}
+footer.credit{text-align:center; font-size:.75rem; opacity:.5; margin-top:40px;}
+.timer-pill{
+  display:inline-block; padding:4px 12px; border-radius:14px; background:rgba(163,54,54,.3); font-weight:bold; font-size:.85rem;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ TITLE SCREEN ============ -->
+  <div class="screen active" id="screen-title">
+    <div class="title-card">
+      <div class="candle-icon center">✨</div>
+      <div class="eyebrow center">AP Art History · Unit 3.2</div>
+      <h1 class="title-main center">The Lumen Society</h1>
+      <p class="title-sub center">A continuing mission through Ravenna &amp; Constantinople — Byzantine Art, 500–1400s C.E.</p>
+      <div class="story-box">
+        <p><b>Generations have passed</b> since the Edict of Milan let your Society step into the light. Rome in the West now crumbles — but in the East, a dazzling New Rome rises on the shores of the Bosphorus: Constantinople. Your Society has endured, its keepers now sworn to guard something even more precious than secret symbols — the sacred images themselves.</p>
+        <p>Under Emperor Justinian, church and state become one, and gold-ground mosaics blaze inside soaring domes. But a danger is coming: some will soon say every icon is an idol, and mean to burn them all. Learn the treasures of Byzantium — and be ready to protect them when the fires come.</p>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-card" onclick="goTeamSetup()">
+          <h3>🤝 Paired Mission</h3>
+          <p>Work through the story together as a team. Discuss each question with your partner before choosing — you'll take turns leading the answer.</p>
+        </div>
+        <div class="mode-card" onclick="goStudyHall()">
+          <h3>📖 Study Hall (Solo)</h3>
+          <p>Review at your own pace — anytime, even at home. Flashcards, an untimed practice test, and a 60-second Lightning Round.</p>
+        </div>
+      </div>
+      <p class="small-note center" id="highscore-line"></p>
+    </div>
+  </div>
+
+  <!-- ============ TEAM SETUP ============ -->
+  <div class="screen" id="screen-team">
+    <div class="title-card">
+      <h2>🤝 Reconvene Your Society</h2>
+      <p class="small-note">Enter your names — you'll alternate leading each answer, but talk it through together!</p>
+      <div class="field">
+        <label>Partner A's name</label>
+        <input id="nameA" placeholder="e.g. Theodora" maxlength="20">
+      </div>
+      <div class="field">
+        <label>Partner B's name (leave blank if playing solo)</label>
+        <input id="nameB" placeholder="e.g. Anthemius" maxlength="20">
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="startMission()">Begin the Mission →</button>
+        <button class="btn secondary" onclick="showScreen('screen-title')">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ACT / NARRATIVE TRANSITION ============ -->
+  <div class="screen" id="screen-narrative">
+    <div class="act-banner">
+      <div class="act-icon" id="narr-icon">⛓️</div>
+      <div class="act-title" id="narr-title">Chapter</div>
+      <div class="story-box" style="text-align:left; margin-top:16px;" id="narr-text"></div>
+      <div class="btn-row center" style="justify-content:center;">
+        <button class="btn gold" id="narr-continue">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN PLAY SCREEN ============ -->
+  <div class="screen" id="screen-play">
+    <div class="hud">
+      <div class="hud-item">Chapter<br><b id="hud-act">1/4</b></div>
+      <div class="hud-item">Score<br><b id="hud-score">0</b></div>
+      <div class="hud-item">Streak<br><b id="hud-streak">0 🔥</b></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="turn-banner" id="turn-banner" style="display:none;"></div>
+    <div id="play-area"></div>
+  </div>
+
+  <!-- ============ FINAL SCREEN ============ -->
+  <div class="screen" id="screen-final">
+    <div class="title-card">
+      <div class="badge-box">
+        <div class="badge-emoji" id="final-emoji">🏛️</div>
+        <h2 id="final-title">Mission Complete</h2>
+        <p id="final-subtitle"></p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><b id="final-score">0</b>Total Score</div>
+        <div class="stat-card"><b id="final-acc">0%</b>Accuracy</div>
+        <div class="stat-card"><b id="final-streak">0</b>Best Streak</div>
+      </div>
+      <h3>Chapter Breakdown</h3>
+      <div id="final-breakdown"></div>
+      <div class="btn-row center" style="justify-content:center;">
+        <button class="btn" onclick="startMission()">🔄 Replay (New Path)</button>
+        <button class="btn secondary" onclick="goStudyHall()">📖 Keep Studying</button>
+        <button class="btn secondary" onclick="showScreen('screen-title')">🏠 Main Hall</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STUDY HALL ============ -->
+  <div class="screen" id="screen-study">
+    <div class="title-card">
+      <h2>📖 Study Hall</h2>
+      <p class="small-note">Review anytime — no timer pressure unless you want one. Great for the night before a quiz!</p>
+      <div class="tab-row">
+        <button class="tab-btn active" data-tab="flash" onclick="setStudyTab('flash')">🃏 Flashcards</button>
+        <button class="tab-btn" data-tab="test" onclick="setStudyTab('test')">📝 Practice Test</button>
+        <button class="tab-btn" data-tab="lightning" onclick="setStudyTab('lightning')">⚡ Lightning Round</button>
+      </div>
+      <div id="study-area"></div>
+      <div class="btn-row"><button class="btn secondary" onclick="showScreen('screen-title')">← Back to Main Hall</button></div>
+    </div>
+  </div>
+
+  <footer class="credit">The Lumen Society · Unit 3.2: Byzantine Art · Built for offline classroom &amp; home review</footer>
+</div>
+
+<script>
+/* =========================================================================
+   DATA
+   ========================================================================= */
+
+const VOCAB_Q = [
+ {id:"v1",tag:"manuscript",q:"What is an icon, in Byzantine religious practice?",choices:["A devotional panel or image that reminds the faithful of sacred truths, not meant to be worshipped itself","A type of church floor plan","A tax record kept by the emperor","A style of Roman armor"],a:0,ex:"An icon is an image that acts as a reminder to the faithful — it was not intended to be worshipped as an idol itself."},
+ {id:"v2",tag:"manuscript",q:"What is Iconoclasm?",choices:["A style of mosaic-making","The crisis of images — banning and destroying figural religious art out of fear of idolatry","A term for Byzantine taxation","A type of illuminated manuscript"],a:1,ex:"Iconoclasm is the crisis of images: avoiding and destroying figural imagery out of concern over the worship of idols."},
+ {id:"v3",tag:"manuscript",q:"What is vellum?",choices:["A type of colored glass","Fine parchment made originally from the skin of a calf","A pigment made from crushed gemstones","A style of Byzantine dome"],a:1,ex:"Vellum is fine parchment made originally from calfskin, used for illuminated manuscripts like the Vienna Genesis."},
+ {id:"v4",tag:"manuscript",q:"What does the title 'Theotokos' mean?",choices:["Emperor of the Romans","One who gives birth to Christ","Keeper of the sacred flame","Bishop of Constantinople"],a:1,ex:"Theotokos is Greek for 'one who gives birth to Christ' — a title for the Virgin Mary."},
+ {id:"v5",tag:"manuscript",q:"What was Constantinople called before Constantine refounded it as 'The New Rome' in 324 C.E.?",choices:["Byzantium","Alexandria","Antioch","Ravenna"],a:0,ex:"Constantine founded Constantinople on the site of the older city of Byzantium in 324 C.E."},
+ {id:"v6",tag:"manuscript",q:"Art historians typically divide the Byzantine Empire's art into which three periods?",choices:["Republic, Empire, Collapse","Early, Middle, Late","Pagan, Christian, Islamic","Classical, Gothic, Baroque"],a:1,ex:"Byzantine art is generally divided into Early, Middle, and Late periods."},
+ {id:"v7",tag:"manuscript",q:"Which of the following is NOT one of the typical figural characteristics of Byzantine art?",choices:["Bold black outline","Deep atmospheric perspective and realistic shadow","Symmetrical, iconic composition","Linear patterns on a shallow stage"],a:1,ex:"Byzantine figures favor bold outline, symmetry, linear pattern, and a shallow stage — not deep, naturalistic perspective."},
+ {id:"v8",tag:"manuscript",q:"Vellum was prized for illuminated manuscripts because it was...",choices:["Cheap and disposable","Durable and could hold fine detail and pigment","Transparent like glass","Impossible to write on"],a:1,ex:"Durable calfskin vellum could hold delicate paint and fine detail, ideal for illuminated pages."},
+ {id:"v9",tag:"manuscript",q:"Which statement about icons and idols is TRUE?",choices:["Icons were always intended to be worshipped as gods themselves","Icons were meant only as reminders of faith, though some people worshipped them as idols","Idols and icons are the exact same thing with no distinction","Icons were banned from the very start of Christianity"],a:1,ex:"Icons were meant as reminders, not idols — but the concern that some people worshipped them as idols fueled the Iconoclastic Controversy."},
+ {id:"v10",tag:"manuscript",q:"The golden calf from the story of Moses is often invoked as an example of...",choices:["Proper icon veneration","Idolatry — worshipping an image as if it were a god","A Byzantine architectural feature","An Evangelist symbol"],a:1,ex:"The golden calf is a classic biblical example of idolatry, the fear that fueled the Iconoclastic Controversy."}
+];
+
+const HISTORY_Q = [
+ {id:"h1",tag:"history",q:"In the 200s C.E., Emperor Diocletian split the Roman Empire into what two halves?",choices:["Northern and Southern Empires","Western Roman Empire and Eastern Roman Empire","Greek Empire and Latin Empire","Old Rome and New Carthage"],a:1,ex:"Diocletian split the empire into the Western Roman Empire and the Eastern Roman Empire in the 200s C.E."},
+ {id:"h2",tag:"history",q:"What happened to the Western Roman Empire compared to the East?",choices:["The West prospered while the East failed","Both empires failed equally","The West failed due to numerous issues while the East prospered and became Byzantine","Neither empire survived past 300 C.E."],a:2,ex:"The Western Roman Empire failed due to numerous issues, while the Eastern Roman Empire prospered and became the Byzantine Empire."},
+ {id:"h3",tag:"history",q:"What language and religion characterized the Byzantine (Eastern) half of the empire?",choices:["Latin and Roman Catholicism","Greek and Greek/Eastern Orthodox Christianity","Arabic and Islam","Hebrew and Judaism"],a:1,ex:"The Byzantine East spoke Greek and practiced Greek/Eastern Orthodox Christianity, with its capital at Constantinople."},
+ {id:"h4",tag:"history",q:"Who founded Constantinople in 324 C.E., calling it 'The New Rome'?",choices:["Justinian","Diocletian","Constantine","Anthemius"],a:2,ex:"Constantine founded Constantinople in 324 C.E. as 'The New Rome.'"},
+ {id:"h5",tag:"history",q:"Under Emperor Justinian, church and state law were combined under what principle?",choices:["Democratic election of bishops","A God-given right to rule","Term limits for emperors","Separation of church and state"],a:1,ex:"Justinian combined church and state law, ruling under a God-given right to rule."},
+ {id:"h6",tag:"history",q:"Art created under Emperor Justinian is considered Byzantium's...",choices:["Final decline","First golden age","Only surviving period","Age of iconoclasm"],a:1,ex:"Art under Justinian was considered the first golden age of the Byzantine Empire, rivaling old Rome in power and extent."},
+ {id:"h7",tag:"history",q:"How did Justinian fund his massive campaign of building over 30 churches?",choices:["Trade with China alone","Heavy taxation of his subjects","Selling Byzantine icons abroad","Gold mined in Constantinople"],a:1,ex:"Justinian's extensive church-building program was funded through heavy taxation of his subjects."},
+ {id:"h8",tag:"history",q:"In the 800s C.E., a Byzantine Emperor banned the production of new icons and ordered existing ones destroyed. What is this crisis called?",choices:["The Great Schism","The Iconoclastic Controversy","The Edict of Milan","The Council of Nicaea"],a:1,ex:"The Iconoclastic Controversy (beginning in the 800s C.E.) banned and destroyed icons across the Byzantine Empire."},
+ {id:"h9",tag:"history",q:"Which two other religious traditions may have inspired Byzantine Iconoclasm, since both discourage images of sacred figures for fear of idolatry?",choices:["Judaism and Islam","Hinduism and Buddhism","Zoroastrianism and Manichaeism","Catholicism and Orthodoxy"],a:0,ex:"Judaism and Islam both discourage sacred figural imagery for fear of idolatry, and may have influenced Byzantine Iconoclasm."},
+ {id:"h10",tag:"history",q:"What was the tragic result of the Iconoclastic Controversy for art from the Early Byzantine period (500–726 C.E.)?",choices:["It was all carefully preserved in Rome","Most of it is now completely lost","It was translated into Latin and survives in full","It was hidden and later found perfectly intact"],a:1,ex:"Because so many icons were destroyed, art from the Early Byzantine period (500–726 C.E.) is now almost entirely lost."},
+ {id:"h11",tag:"history",q:"In what year was Iconoclasm repealed and images finally reinstated across the Byzantine Empire?",choices:["313 C.E.","726 C.E.","843 C.E.","1453 C.E."],a:2,ex:"Iconoclasm was repealed in 843 C.E., sparking a creative burst of energy across the Byzantine Empire."},
+ {id:"h12",tag:"history",q:"Medieval art is chiefly concerned with which three traits?",choices:["War, trade, and agriculture","Religious expression, court life, and scholarship","Science, medicine, and law","Music, dance, and theater"],a:1,ex:"Religious expression, court life (royalty), and scholarship drive medieval art."},
+ {id:"h13",tag:"history",q:"Knowledge and learning spread throughout medieval Europe mainly through...",choices:["Printed newspapers","Trade, pilgrimage, and military activity such as the Crusades","Royal decree alone","Isolated monasteries with no outside contact"],a:1,ex:"Trade routes, pilgrimages, and the Crusades carried ideas across medieval Europe."},
+ {id:"h14",tag:"history",q:"Unit 3 (Early Europe & Colonial Americas) spans roughly what time period?",choices:["200–1750 C.E.","1500–1900 C.E.","3000 B.C.E.–200 C.E.","500–800 C.E."],a:0,ex:"This unit covers roughly 200 C.E. to 1750 C.E."},
+ {id:"h15",tag:"history",q:"There is no single, uniform medieval style. Instead, medieval art...",choices:["Is identical across every region and period","Sometimes revives ancient classicism, and elsewhere uses geometric and natural designs","Only ever avoids all classical influence","Was created entirely outside of Europe"],a:1,ex:"Medieval art varies — some periods revive Greek and Roman classicism, while others favor geometric or natural design."}
+];
+
+const WORK50_Q = [
+ {id:"w50_1",tag:"work50",q:"What is the title of Image 50, an early Byzantine illuminated manuscript?",choices:["The Vienna Genesis","The Book of Kells","The Lindisfarne Gospels","The Utrecht Psalter"],a:0,ex:"Image 50 is the Vienna Genesis, an early Byzantine illuminated manuscript."},
+ {id:"w50_2",tag:"work50",q:"What is the approximate date of the Vienna Genesis?",choices:["Early 6th century","Early 2nd century","12th century","Late 9th century"],a:0,ex:"The Vienna Genesis dates to the early 6th century."},
+ {id:"w50_3",tag:"work50",q:"What medium was used to create the Vienna Genesis?",choices:["Fresco on plaster","Paint on vellum/parchment","Mosaic on brick","Encaustic on wood"],a:1,ex:"The Vienna Genesis was painted on vellum (parchment)."},
+ {id:"w50_4",tag:"work50",q:"From what region did the Vienna Genesis's creator likely originate?",choices:["Syria or Palestine","Ravenna, Italy","Britain","North Africa"],a:0,ex:"The Vienna Genesis's creator's origin/location is thought to be Syria or Palestine."},
+ {id:"w50_5",tag:"work50",q:"Which two folios/scenes from the Book of Genesis are featured in the Vienna Genesis?",choices:["Jacob Wrestling the Angel, and Rebecca and Eliezer at the Well","Noah's Ark, and the Tower of Babel","Adam and Eve, and Cain and Abel","The Creation of the World, and the Great Flood"],a:0,ex:"The Vienna Genesis features Jacob Wrestling the Angel and Rebecca and Eliezer at the Well."},
+ {id:"w50_6",tag:"work50",q:"In the biblical story depicted in the Vienna Genesis, what new name does Jacob receive after wrestling through the night?",choices:["Israel","Isaac","Abraham","Moses"],a:0,ex:"After wrestling with the angel/man until daybreak, Jacob is renamed Israel."},
+ {id:"w50_7",tag:"work50",q:"The Vienna Genesis illustrates Scripture directly, telling its stories scene by scene. This approach is an example of what kind of image?",choices:["An Orant image","A Narrative image","An aniconic image","A central-plan image"],a:1,ex:"An image or series of images used to tell a story is a Narrative image, exactly what the Vienna Genesis does."},
+ {id:"w50_8",tag:"work50",q:"Why was vellum an especially fitting material for a richly illustrated manuscript like the Vienna Genesis?",choices:["It was the cheapest possible material available","It was durable and could hold fine painted detail and pigment","It could not be folded into a book","It dissolved in water, so it was easily destroyed"],a:1,ex:"Vellum's durability and smooth surface let artists paint fine, lasting detail — ideal for an illuminated manuscript."}
+];
+
+const WORK51_Q = [
+ {id:"w51_1",tag:"work51",q:"Where is the church of San Vitale located?",choices:["Ravenna, Italy","Rome, Italy","Constantinople","Mount Sinai, Egypt"],a:0,ex:"San Vitale is located in Ravenna, Italy."},
+ {id:"w51_2",tag:"work51",q:"What is the approximate date of San Vitale's construction?",choices:["526–547 C.E.","100–150 C.E.","800–843 C.E.","1200–1300 C.E."],a:0,ex:"San Vitale was built c. 526–547 C.E."},
+ {id:"w51_3",tag:"work51",q:"What materials make up San Vitale?",choices:["Wood and thatch only","Brick, marble, and stone","Cast iron and glass","Mud brick only"],a:1,ex:"San Vitale is built of brick, marble, and stone."},
+ {id:"w51_4",tag:"work51",q:"San Vitale is a key example of what type of church plan?",choices:["Basilica (axial) plan","Central-planned church","Cruciform-only plan","Longitudinal plan"],a:1,ex:"San Vitale is central-planned: a church having a circular plan with the altar in the middle."},
+ {id:"w51_5",tag:"work51",q:"In the mosaic of Justinian and Attendants, what does the emperor carry, emphasizing his role in church ritual?",choices:["A sword","A bowl for the Eucharistic bread","A crown for the Pope","A scroll of Roman law"],a:1,ex:"Justinian is shown carrying a bowl associated with the Eucharist, emphasizing his religious as well as political authority."},
+ {id:"w51_6",tag:"work51",q:"In the companion mosaic, what does Empress Theodora carry?",choices:["A shield","A chalice, the cup used for wine in Christian ceremony","A hunting spear","A map of the empire"],a:1,ex:"Theodora is shown holding a chalice, the vessel that holds wine used in Christian ceremony."},
+ {id:"w51_7",tag:"work51",q:"Why are Justinian and Theodora both shown with halos in these mosaics, despite being secular rulers rather than saints?",choices:["It was simply decorative and meant nothing","To assert their divinely sanctioned authority, blending church and imperial power","Halos were required by Roman law for all portraits","It shows they had both already died"],a:1,ex:"The halos assert that Justinian and Theodora's rule is divinely sanctioned, fusing church and state authority."},
+ {id:"w51_8",tag:"work51",q:"What structural device helps San Vitale's dome transition from its octagonal base?",choices:["A squinch — a straight or arched structure across the interior angle of a tower to carry a dome","A flying buttress","A minaret","A clerestory"],a:0,ex:"A squinch is a straight or arched structure across the interior angle of a square/polygonal tower that helps carry a dome above."},
+ {id:"w51_9",tag:"work51",q:"Which term names the domed, semicircular niche in San Vitale that was richly decorated and held the altar?",choices:["Narthex","Apse","Ambulatory","Naos"],a:1,ex:"The apse is a domed, semicircular niche, richly decorated, that often held the altar."},
+ {id:"w51_10",tag:"work51",q:"Which term names the radiating chapels in San Vitale, generally reached by the ambulatory?",choices:["Exedrae","Apsidal Chapels","Narthex","Sanctuary"],a:1,ex:"Apsidal Chapels are radiating chapels generally reached by the ambulatory."}
+];
+
+const WORK52_Q = [
+ {id:"w52_1",tag:"work52",q:"Who were the two architects of the Hagia Sophia?",choices:["Anthemius of Tralles and Isidorus of Miletus","Justinian and Theodora","Constantine and Diocletian","Michelangelo and Bramante"],a:0,ex:"Hagia Sophia was designed by architects Anthemius of Tralles and Isidorus of Miletus."},
+ {id:"w52_2",tag:"work52",q:"What materials make up the Hagia Sophia?",choices:["Ceramic, stone, and mosaic","Wood and thatch","Cast bronze only","Painted canvas"],a:0,ex:"Hagia Sophia's medium is ceramic, stone, and mosaic."},
+ {id:"w52_3",tag:"work52",q:"Where is the Hagia Sophia located?",choices:["Constantinople (modern-day Istanbul), Turkey","Ravenna, Italy","Rome, Italy","Alexandria, Egypt"],a:0,ex:"Hagia Sophia is located in Constantinople, modern-day Istanbul, Turkey."},
+ {id:"w52_4",tag:"work52",q:"What is the approximate date of the Hagia Sophia's construction?",choices:["532–537 C.E.","200–250 C.E.","843–900 C.E.","1200–1250 C.E."],a:0,ex:"Hagia Sophia was built 532–537 C.E."},
+ {id:"w52_5",tag:"work52",q:"What structural innovation allows Hagia Sophia's massive round dome to rest on a square base?",choices:["Pendentives — concave triangular sections that transition a round dome onto a square base","Flying buttresses","Ribbed vaulting","A hammerbeam roof"],a:0,ex:"Pendentives are concave triangular constructions that transition the space between flat walls and the base of a round dome."},
+ {id:"w52_6",tag:"work52",q:"The Theotokos Mosaic in Hagia Sophia's apse dates to 867 C.E. Why is that date significant?",choices:["It was created shortly after Iconoclasm ended in 843 C.E., part of a burst of creative energy","It was the exact year Hagia Sophia was first built","It marks the fall of Constantinople","It is when the Edict of Milan was issued"],a:0,ex:"867 C.E. comes soon after Iconoclasm was repealed in 843 C.E., part of the renewed burst of image-making that followed."},
+ {id:"w52_7",tag:"work52",q:"The Deësis Mosaic in Hagia Sophia shows Christ flanked by which two figures?",choices:["The Virgin Mary and John the Baptist","Justinian and Theodora","Saints Theodore and George","Two angels only"],a:0,ex:"The Deësis Mosaic shows Christ enthroned between the Virgin Mary and John the Baptist, both gesturing in intercession."},
+ {id:"w52_8",tag:"work52",q:"Hagia Sophia was later converted into a mosque. What tall towers were added around the dome during that period?",choices:["Minarets","Squinches","Clerestories","Campaniles"],a:0,ex:"Four minarets, each 197 feet high, were added when Hagia Sophia became a mosque."},
+ {id:"w52_9",tag:"work52",q:"Which vocabulary term names a vertical support that holds up an arch or a vault, as seen throughout Hagia Sophia's interior?",choices:["Pier","Squinch","Naos","Conch"],a:0,ex:"A pier is a vertical support that holds up an arch or a vault."},
+ {id:"w52_10",tag:"work52",q:"What does the Greek title 'Theotokos,' inscribed near the Virgin in Hagia Sophia's mosaics, literally mean?",choices:["One who gives birth to Christ","Mother of the emperor","Keeper of the golden dome","Queen of Constantinople"],a:0,ex:"Theotokos means 'one who gives birth to Christ' — a central title for the Virgin Mary in Byzantine art."}
+];
+
+const WORK54_Q = [
+ {id:"w54_1",tag:"work54",q:"Where is the icon Virgin (Theotokos) and Child between Saints Theodore and George located?",choices:["Monastery of Saint Catherine, Mount Sinai, Egypt","Hagia Sophia, Constantinople","San Vitale, Ravenna, Italy","The Vatican, Rome"],a:0,ex:"This icon is held at the Monastery of Saint Catherine, Mount Sinai, Egypt."},
+ {id:"w54_2",tag:"work54",q:"What is the approximate date of this icon?",choices:["Sixth or early seventh century","Second century","843 C.E. exactly","Fifteenth century"],a:0,ex:"The icon dates to the sixth or early seventh century."},
+ {id:"w54_3",tag:"work54",q:"What medium was used to create this icon?",choices:["Encaustic on wood","Fresco on plaster","Mosaic on stone","Marble relief"],a:0,ex:"The icon was created using encaustic (pigmented wax) on wood."},
+ {id:"w54_4",tag:"work54",q:"Who flanks the enthroned Theotokos and Child in this icon?",choices:["Saints Theodore and George","Justinian and Theodora","Two unnamed angels only","Anthemius and Isidorus"],a:0,ex:"Saints Theodore and George stand on either side of the enthroned Theotokos and Child."},
+ {id:"w54_5",tag:"work54",q:"What appears in the upper portion of this icon, looking upward toward the hand of God?",choices:["Angels","Roman soldiers","Byzantine emperors","Evangelist symbols"],a:0,ex:"Angels appear above, gazing upward toward the hand of God."},
+ {id:"w54_6",tag:"work54",q:"This icon likely survived the Iconoclastic Controversy because of its remote location. Why does that matter?",choices:["The Mount Sinai monastery was far from Constantinople's imperial reach, so many early icons there escaped destruction","It was hidden underground in a catacomb","It was rebuilt from scratch after 843 C.E.","Iconoclasm never affected icons made of wood"],a:0,ex:"Because the Monastery of Saint Catherine was remote and outside easy imperial control, many of its early icons survived the destruction of the Iconoclastic period."},
+ {id:"w54_7",tag:"work54",q:"As an icon, what was this panel's intended religious function?",choices:["To serve as a legal record of church property","To act as a devotional reminder of sacred figures for the faithful, not to be worshipped as a god itself","To be sold as currency","To mark the boundary of a cemetery"],a:1,ex:"Like all icons, this panel was meant as a devotional reminder of sacred figures — not something to be worshipped in itself."}
+];
+
+const ARCH_Q = [
+ {id:"a1",tag:"architecture",q:"What is a chalice?",choices:["A cup containing wine, used during a Christian service","A plate used to hold bread","A domed niche behind the altar","A vertical support for an arch"],a:0,ex:"A chalice is a cup containing wine, used during a Christian service."},
+ {id:"a2",tag:"architecture",q:"What is a paten?",choices:["A plate, dish, or bowl used to hold the Eucharist at a Christian ceremony","A type of Byzantine crown","A style of mosaic border","A central-plan church"],a:0,ex:"A paten is a plate, dish, or bowl used to hold the Eucharist."},
+ {id:"a3",tag:"architecture",q:"What is a conch, in church architecture?",choices:["A half-dome covering a niche or apse, with a shell-like or ribbed form","A wine cup used in the liturgy","A vertical support for an arch","A type of mosaic pigment"],a:0,ex:"A conch is a half-dome covering a niche or apse, often shell-like or ribbed in form."},
+ {id:"a4",tag:"architecture",q:"What is the naos in a centrally planned Byzantine church?",choices:["The area in which the liturgy is performed","The entrance porch","The passageway around the apse","The reused architectural spolia"],a:0,ex:"The naos (or cella) is the area of a centrally planned church in which the liturgy is performed."},
+ {id:"a5",tag:"architecture",q:"What is a squinch?",choices:["A straight or arched structure across the interior angle of a tower, used to carry a dome above","A rounded window at the top of a dome","A row of columns supporting a roof","A type of Byzantine mosaic tile"],a:0,ex:"A squinch is a straight or arched structure across the interior angle of a square tower to help carry a superstructure such as a dome."},
+ {id:"a6",tag:"architecture",q:"What is a pendentive?",choices:["A concave triangular construction that transitions the space between flat walls and the base of a round dome","A raised platform for the emperor's throne","A type of illuminated manuscript page","A term for reused Roman columns"],a:0,ex:"A pendentive is a construction shaped like a concave triangle that transitions the space between flat walls and the base of a round dome."},
+ {id:"a7",tag:"architecture",q:"What is a pier?",choices:["A vertical support that holds up an arch or a vault","A domed niche for the altar","A courtyard in front of a church","A radiating side chapel"],a:0,ex:"A pier is a vertical support that holds up an arch or a vault."},
+ {id:"a8",tag:"architecture",q:"What defines a central-planned church?",choices:["A church having a circular plan with the altar placed in the middle","A church with a long nave and side aisles ending in an apse","A church built entirely underground","A church with no altar at all"],a:0,ex:"A central-planned church has a circular plan with the altar placed in the middle, as seen at San Vitale."},
+ {id:"a9",tag:"architecture",q:"In a Byzantine central-plan church, what is the narthex?",choices:["A large porch or distinct area at the church's entrance","The altar area","The passageway around the apse","A radiating side chapel"],a:0,ex:"The narthex is a large porch or distinct area at the entrance of Christian churches."},
+ {id:"a10",tag:"architecture",q:"What are exedrae in a church like San Vitale?",choices:["Semicircular areas crowned with a semi-dome, used as places of conversation or as a secondary apse","Underground burial chambers","Reused Roman building fragments","Wine vessels used in the liturgy"],a:0,ex:"Exedrae are semicircular areas crowned with a semi-dome — a place of conversation or a secondary apse (conch)."},
+ {id:"a11",tag:"architecture",q:"What is an ambulatory?",choices:["A passageway around the apse or altar of a church","A type of illuminated manuscript","A cup used to hold the Eucharistic wine","A row of minarets"],a:0,ex:"An ambulatory is a passageway around the apse or altar of a church."},
+ {id:"a12",tag:"architecture",q:"What is the sanctuary of a church?",choices:["The altar or holy place","The entrance porch","A side chapel reached by the ambulatory","A style of Byzantine mosaic"],a:0,ex:"The sanctuary is the altar or holy place of a church."},
+ {id:"a13",tag:"architecture",q:"Both squinches and pendentives solve the same architectural problem. What is it?",choices:["Transitioning a round dome onto a square or polygonal base","Letting light into the nave from above","Reusing old Roman columns in a new building","Supporting a long wooden roof"],a:0,ex:"Both squinches and pendentives are structural devices that allow a round dome to rest on top of a square or polygonal base — squinches bridge the corner with an arch, while pendentives use a curved triangular section."},
+ {id:"a14",tag:"architecture",q:"Which vocabulary term describes the radiating chapels generally reached by a church's ambulatory?",choices:["Apsidal Chapels","Exedrae","Narthex","Conch"],a:0,ex:"Apsidal Chapels are radiating chapels generally reached by the ambulatory."}
+];
+
+const ALL_MCQ = [...VOCAB_Q, ...HISTORY_Q, ...WORK50_Q, ...WORK51_Q, ...WORK52_Q, ...WORK54_Q, ...ARCH_Q];
+
+const MATCH_PAIRS = [
+ {name:"Icon", meaning:"A devotional image meant to remind the faithful of sacred truths — not meant to be worshipped as an idol itself."},
+ {name:"Iconoclasm", meaning:"The crisis of images: banning and destroying figural religious art out of fear of idolatry."},
+ {name:"Vellum", meaning:"Fine parchment made originally from the skin of a calf, used for illuminated manuscripts like the Vienna Genesis."},
+ {name:"Theotokos", meaning:"Greek title meaning 'one who gives birth to Christ' — used for the Virgin Mary."}
+];
+
+const LABEL_ZONES = [
+ {id:"narthex",label:"Narthex"},
+ {id:"exedrae",label:"Exedrae"},
+ {id:"apsidal",label:"Apsidal Chapels"},
+ {id:"ambulatory",label:"Ambulatory"},
+ {id:"sanctuary",label:"Sanctuary"},
+ {id:"apse",label:"Apse"}
+];
+
+// Flashcard deck: term -> definition style, spanning vocabulary, history, and the four works
+const VOCAB_DEFS = [
+ {term:"Icon", def:"A devotional panel depicting a sacred image, meant as a reminder to the faithful — not to be worshipped as an idol itself.", cat:"Vocabulary"},
+ {term:"Iconoclasm", def:"The crisis of images; avoiding and destroying figural imagery out of concern over the worship of idols.", cat:"Vocabulary"},
+ {term:"Vellum", def:"Fine parchment made originally from the skin of a calf.", cat:"Vocabulary"},
+ {term:"Theotokos", def:"Greek for 'one who gives birth to Christ' — a title for the Virgin Mary.", cat:"Vocabulary"},
+ {term:"Chalice", def:"A cup containing wine, used during a Christian service.", cat:"Vocabulary"},
+ {term:"Paten", def:"A plate, dish, or bowl used to hold the Eucharist at a Christian ceremony.", cat:"Vocabulary"},
+ {term:"Conch", def:"A half-dome covering a niche or apse, with a shell-like or ribbed form.", cat:"Vocabulary"},
+ {term:"Naos", def:"(Or Cella) The area of a centrally planned church in which the liturgy is performed.", cat:"Vocabulary"},
+ {term:"Squinch", def:"A straight or arched structure across the interior angle of a square tower, used to carry a superstructure such as a dome.", cat:"Vocabulary"},
+ {term:"Pendentive", def:"A construction shaped like a concave triangle that transitions the space between flat walls and the base of a round dome.", cat:"Vocabulary"},
+ {term:"Pier", def:"A vertical support that holds up an arch or a vault.", cat:"Vocabulary"},
+ {term:"Central-Planned Church", def:"A church having a circular plan with the altar in the middle.", cat:"Vocabulary"},
+ {term:"Narthex", def:"A large porch or distinct area at the entrance of Christian churches.", cat:"Vocabulary"},
+ {term:"Exedrae", def:"Semicircular areas crowned with a semi-dome; a place of conversation or a secondary apse (conch).", cat:"Vocabulary"},
+ {term:"Ambulatory", def:"A passageway around the apse or altar of a church.", cat:"Vocabulary"},
+ {term:"Apse", def:"A domed, semicircular niche, richly decorated, that often held the altar.", cat:"Vocabulary"},
+ {term:"Apsidal Chapels", def:"Radiating chapels generally reached by the ambulatory.", cat:"Vocabulary"},
+ {term:"Sanctuary", def:"The altar or holy place of a church.", cat:"Vocabulary"},
+ {term:"Diocletian's Split (200s C.E.)", def:"Divided the Roman Empire into the Western Roman Empire (which failed) and the Eastern Roman Empire (which prospered as Byzantium).", cat:"History"},
+ {term:"Justinian's Golden Age", def:"Justinian combined church and state law under a God-given right to rule, built over 30 churches funded by heavy taxation, and rivaled old Rome — considered Byzantium's first golden age.", cat:"History"},
+ {term:"The Iconoclastic Controversy", def:"Beginning in the 800s C.E., a Byzantine Emperor banned and destroyed icons, possibly inspired by Judaism or Islam's aniconic traditions. Early Byzantine art (500–726 C.E.) is now almost entirely lost as a result.", cat:"History"},
+ {term:"End of Iconoclasm (843 C.E.)", def:"Iconoclasm was repealed and images were reinstated, sparking a creative burst of energy across the Byzantine Empire.", cat:"History"},
+ {term:"3 Traits of Medieval Art", def:"Religious expression, court life, and scholarship.", cat:"History"},
+ {term:"Byzantine Art Periods", def:"Art historians divide the Byzantine Empire into three periods: Early, Middle, and Late.", cat:"History"},
+ {term:"Vienna Genesis", def:"Early 6th century · Paint on vellum/parchment · Creator's origin: Syria or Palestine; held in Vienna. Features Jacob Wrestling the Angel and Rebecca and Eliezer at the Well — an early Byzantine narrative manuscript.", cat:"The Four Works"},
+ {term:"San Vitale", def:"Ravenna, Italy · 526–547 C.E. · Brick, marble, stone. A central-planned church famous for the Justinian and Attendants and Theodora and Attendants mosaics. Vocabulary: Central-Planned, Squinch, Chalice, Paten, Ambulatory, Conch, Naos.", cat:"The Four Works"},
+ {term:"Hagia Sophia", def:"Constantinople (modern Istanbul), Turkey · 532–537 C.E. · Ceramic, stone, mosaic. Designed by Anthemius of Tralles and Isidorus of Miletus. Features the Theotokos Mosaic (867) and Deësis Mosaic. Vocabulary: Pendentive, Pier, Theotokos.", cat:"The Four Works"},
+ {term:"Virgin (Theotokos) and Child between Saints Theodore and George", def:"Monastery of Saint Catherine, Mount Sinai, Egypt · Sixth or early seventh century · Encaustic on wood. One of the few icons to survive the Iconoclastic Controversy due to its remote location.", cat:"The Four Works"}
+];
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pick(arr,n){ return shuffle(arr).slice(0,Math.min(n,arr.length)); }
+function shuffleChoices(q){
+  const idxs=shuffle(q.choices.map((c,i)=>i));
+  const newChoices=idxs.map(i=>q.choices[i]);
+  const newAns=idxs.indexOf(q.a);
+  return {...q, choices:newChoices, a:newAns};
+}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function setTheme(light){
+  document.body.classList.toggle('theme-light', light);
+}
+
+/* =========================================================================
+   GAME STATE
+   ========================================================================= */
+let state = null;
+
+function buildActs(){
+  const act1MCQ = pick([...pick(WORK50_Q,8), ...VOCAB_Q.filter(v=>v.tag==='manuscript')], 5).map(shuffleChoices);
+  const act2MCQ = pick(HISTORY_Q, 5).map(shuffleChoices);
+  const act3Pool = [...pick(WORK51_Q,10), ...pick(WORK52_Q,10), ...ARCH_Q];
+  const act3MCQ = pick(act3Pool, 5).map(shuffleChoices);
+  const usedIds = new Set([...act1MCQ, ...act2MCQ, ...act3MCQ].map(q=>q.id));
+  const finalPool = ALL_MCQ.filter(q=>!usedIds.has(q.id));
+  const act4MCQ = pick(finalPool, 10).map(shuffleChoices);
+
+  return [
+    {
+      id:"genesis", name:"The Vienna Genesis", icon:"📜",
+      narrTitle:"Chapter I — Light from the East",
+      narrText:"An elder places a heavy book in your hands — the Vienna Genesis, its pages painted in fragile pigment on stretched calfskin. Its pictures tell the old stories: Jacob wrestling through the night, Rebecca offering water at the well. 'Before we trust you with sacred pages,' the elder says, 'prove you understand the words we use to protect them.'",
+      steps:[
+        {type:"match", pairs: shuffle(MATCH_PAIRS)},
+        ...act1MCQ.map(q=>({type:"mcq", data:q}))
+      ]
+    },
+    {
+      id:"justinian", name:"The Age of Justinian", icon:"👑",
+      narrTitle:"Chapter II — The New Rome",
+      narrText:"Word arrives from the palace: a new emperor, Justinian, has taken the throne. He speaks of uniting church and state under one God-given crown, and of building a Rome greater than the old one — this time in gold. Your Society is summoned to prove it understands the age now dawning.",
+      steps: act2MCQ.map(q=>({type:"mcq", data:q}))
+    },
+    {
+      id:"domes", name:"San Vitale & Hagia Sophia", icon:"⛪",
+      narrTitle:"Chapter III — Domes of Gold",
+      narrText:"Justinian commissions churches beyond counting — thirty and more. In Ravenna, mosaics of the Emperor and Empress shimmer across the walls of San Vitale. In Constantinople, architects Anthemius and Isidorus raise an impossible dome over the Hagia Sophia. Master builders hand you a blueprint. 'Label it correctly,' they say, 'and we build it right.'",
+      steps:[
+        {type:"label", zones: shuffle(LABEL_ZONES)},
+        ...act3MCQ.map(q=>({type:"mcq", data:q}))
+      ]
+    },
+    {
+      id:"iconoclasm", name:"The Iconoclastic Controversy", icon:"🕯️",
+      narrTitle:"Chapter IV — The Fires of Iconoclasm",
+      narrText:"Centuries pass. Then, in the 800s, a new emperor declares all icons idols and orders them destroyed. Across the empire, sacred images vanish into ash — including, some fear, an icon of the Theotokos enthroned between Saints Theodore and George. Your Society hides what it can and waits. Only in 843 C.E. does the order come: the icons may return. Before your Society steps back into the light, the whole congregation puts you to one final, mixed trial.",
+      steps: act4MCQ.map(q=>({type:"mcq", data:q}))
+    }
+  ];
+}
+
+function startMission(){
+  const nameA = document.getElementById('nameA').value.trim() || "Partner A";
+  const nameB = document.getElementById('nameB').value.trim();
+  state = {
+    mode: nameB ? 'pair':'solo',
+    teamA: nameA, teamB: nameB,
+    turn: 0,
+    acts: buildActs(),
+    actIndex: 0,
+    stepIndex: 0,
+    score: 0,
+    streak: 0,
+    maxStreak: 0,
+    actResults: []
+  };
+  localStorage.setItem('byz32_lastNameA', nameA);
+  if(nameB) localStorage.setItem('byz32_lastNameB', nameB);
+  setTheme(false);
+  runAct(0);
+}
+
+function goTeamSetup(){
+  document.getElementById('nameA').value = localStorage.getItem('byz32_lastNameA')||'';
+  document.getElementById('nameB').value = localStorage.getItem('byz32_lastNameB')||'';
+  showScreen('screen-team');
+}
+
+/* ---------- ACT / STEP FLOW ---------- */
+function runAct(idx){
+  state.actIndex = idx;
+  state.stepIndex = 0;
+  state.actResults[idx] = {name: state.acts[idx].name, correct:0, total:0};
+  setTheme(idx>=2); // light theme once we reach the basilica chapters
+  showNarrative(state.acts[idx]);
+}
+
+function showNarrative(act){
+  document.getElementById('narr-icon').textContent = act.icon;
+  document.getElementById('narr-title').textContent = act.narrTitle;
+  document.getElementById('narr-text').innerHTML = `<p>${act.narrText}</p>`;
+  document.getElementById('narr-continue').onclick = ()=>{ showScreen('screen-play'); renderStep(); };
+  showScreen('screen-narrative');
+}
+
+function updateHUD(){
+  const act = state.acts[state.actIndex];
+  document.getElementById('hud-act').textContent = (state.actIndex+1)+"/"+state.acts.length;
+  document.getElementById('hud-score').textContent = state.score;
+  document.getElementById('hud-streak').textContent = state.streak+" 🔥";
+  const pctAct = Math.round((state.stepIndex/act.steps.length)*100);
+  document.getElementById('progress-fill').style.width = pctAct+"%";
+
+  const banner = document.getElementById('turn-banner');
+  if(state.mode==='pair'){
+    const leader = state.turn%2===0 ? state.teamA : state.teamB;
+    banner.style.display='block';
+    banner.textContent = `🙋 ${leader}'s turn to choose — talk it over together!`;
+  } else {
+    banner.style.display='none';
+  }
+}
+
+function renderStep(){
+  const act = state.acts[state.actIndex];
+  if(state.stepIndex >= act.steps.length){
+    finishAct();
+    return;
+  }
+  updateHUD();
+  const step = act.steps[state.stepIndex];
+  const area = document.getElementById('play-area');
+  if(step.type==='mcq') renderMCQ(step.data, area);
+  else if(step.type==='match') renderMatch(step.pairs, area);
+  else if(step.type==='label') renderLabel(step.zones, area);
+}
+
+function advanceStep(){
+  state.stepIndex++;
+  if(state.mode==='pair') state.turn++;
+  renderStep();
+}
+
+function finishAct(){
+  if(state.actIndex+1 < state.acts.length){
+    runAct(state.actIndex+1);
+  } else {
+    finishGame();
+  }
+}
+
+/* ---------- MCQ RENDERING ---------- */
+function renderMCQ(q, area){
+  const act = state.acts[state.actIndex];
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Chapter ${state.actIndex+1} · Question ${act.steps.slice(0,state.stepIndex+1).filter(s=>s.type==='mcq').length}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="choices" id="choice-list"></div>
+      <div id="explain-holder"></div>
+    </div>`;
+  const list = document.getElementById('choice-list');
+  q.choices.forEach((choice,i)=>{
+    const btn = document.createElement('button');
+    btn.className='choice-btn';
+    btn.textContent = choice;
+    btn.onclick = ()=>answerMCQ(q,i,btn,list);
+    list.appendChild(btn);
+  });
+}
+function answerMCQ(q, i, btn, list){
+  const buttons = Array.from(list.children);
+  buttons.forEach(b=>b.onclick=null);
+  const correct = i===q.a;
+  state.actResults[state.actIndex].total++;
+  if(correct){
+    state.actResults[state.actIndex].correct++;
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    const bonus = Math.min(state.streak*2, 20);
+    state.score += 10 + bonus;
+    btn.classList.add('correct');
+  } else {
+    state.streak = 0;
+    btn.classList.add('wrong');
+    buttons[q.a].classList.add('correct');
+  }
+  buttons.forEach(b=>{ if(b!==btn && b!==buttons[q.a]) b.classList.add('dim'); });
+  const holder = document.getElementById('explain-holder');
+  holder.innerHTML = `
+    <div class="explain-box">
+      <span class="feedback-word ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}</span>
+      <p style="margin:6px 0 0;">${q.ex}</p>
+    </div>
+    <div class="btn-row"><button class="btn gold" id="continue-btn">Continue →</button></div>`;
+  document.getElementById('continue-btn').onclick = advanceStep;
+  updateHUD();
+}
+
+/* ---------- MATCHING MINIGAME ---------- */
+function renderMatch(pairs, area){
+  const names = shuffle(pairs.map(p=>p.name));
+  const meanings = shuffle(pairs.map(p=>p.meaning));
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Chapter ${state.actIndex+1} · Sacred Vocabulary</div>
+      <div class="qtext">Match each Byzantine term to its meaning. Tap a term, then tap its matching meaning.</div>
+      <div class="match-wrap">
+        <div class="match-col"><h4>Term</h4><div id="match-names"></div></div>
+        <div class="match-col"><h4>Meaning</h4><div id="match-meanings"></div></div>
+      </div>
+      <div id="match-continue" style="display:none;" class="btn-row"><button class="btn gold" id="match-continue-btn">Continue →</button></div>
+    </div>`;
+  const namesEl = document.getElementById('match-names');
+  const meaningsEl = document.getElementById('match-meanings');
+  let selectedName = null;
+  let solvedCount = 0;
+  const solved = new Set();
+
+  names.forEach(n=>{
+    const b = document.createElement('button');
+    b.className='match-item';
+    b.textContent = n;
+    b.dataset.name = n;
+    b.onclick = ()=>{
+      if(solved.has(n)) return;
+      document.querySelectorAll('#match-names .match-item').forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected');
+      selectedName = n;
+    };
+    namesEl.appendChild(b);
+  });
+  meanings.forEach(m=>{
+    const b = document.createElement('button');
+    b.className='match-item';
+    b.textContent = m;
+    b.onclick = ()=>{
+      if(!selectedName) { b.classList.add('shake'); setTimeout(()=>b.classList.remove('shake'),300); return; }
+      const pair = pairs.find(p=>p.name===selectedName);
+      state.actResults[state.actIndex].total++;
+      if(pair.meaning === m){
+        state.actResults[state.actIndex].correct++;
+        state.score += 8;
+        b.classList.add('solved'); b.disabled = true;
+        const nameBtn = Array.from(namesEl.children).find(x=>x.dataset.name===selectedName);
+        nameBtn.classList.add('solved'); nameBtn.disabled = true;
+        solved.add(selectedName);
+        solvedCount++;
+        selectedName = null;
+        updateHUD();
+        if(solvedCount===pairs.length){
+          document.getElementById('match-continue').style.display='block';
+          document.getElementById('match-continue-btn').onclick = advanceStep;
+        }
+      } else {
+        b.classList.add('shake'); setTimeout(()=>b.classList.remove('shake'),300);
+        state.streak = 0;
+        updateHUD();
+      }
+    };
+    meaningsEl.appendChild(b);
+  });
+}
+
+/* ---------- LABELING MINIGAME ---------- */
+function renderLabel(zones, area){
+  const chips = shuffle(zones.map(z=>z.label));
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Chapter ${state.actIndex+1} · San Vitale Blueprint</div>
+      <div class="qtext">Select a term, then tap the matching part of the central-planned church floor plan.</div>
+      <div class="chip-row" id="chip-row"></div>
+      <div class="blueprint">
+        <div class="bp-atrium" data-zone="narthex"></div>
+        <div class="bp-narthex" data-zone="exedrae"></div>
+        <div class="bp-nave-row">
+          <div class="bp-aisle" data-zone="apsidal"></div>
+          <div class="bp-nave" data-zone="ambulatory"></div>
+          <div class="bp-aisle" data-zone="apsidal"></div>
+        </div>
+        <div class="bp-transept" data-zone="sanctuary"></div>
+        <div class="bp-apse" data-zone="apse">✟ altar</div>
+      </div>
+      <div id="label-continue" style="display:none;" class="btn-row"><button class="btn gold" id="label-continue-btn">Continue →</button></div>
+    </div>`;
+  const chipRow = document.getElementById('chip-row');
+  let selectedChip = null;
+  let solved = 0;
+  const solvedZones = new Set();
+
+  chips.forEach(label=>{
+    const c = document.createElement('button');
+    c.className='chip';
+    c.textContent = label;
+    c.onclick = ()=>{
+      if(c.classList.contains('used')) return;
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+      selectedChip = {label, el:c};
+    };
+    chipRow.appendChild(c);
+  });
+
+  document.querySelectorAll('.blueprint [data-zone]').forEach(zoneEl=>{
+    zoneEl.style.cursor='pointer';
+    zoneEl.addEventListener('click', ()=>{
+      const zoneId = zoneEl.dataset.zone;
+      if(solvedZones.has(zoneId)) return;
+      if(!selectedChip){ zoneEl.classList.add('zone-flash'); setTimeout(()=>zoneEl.classList.remove('zone-flash'),400); return; }
+      const correctZone = zones.find(z=>z.label===selectedChip.label);
+      state.actResults[state.actIndex].total++;
+      if(correctZone && correctZone.id === zoneId){
+        state.actResults[state.actIndex].correct++;
+        state.score += 8;
+        document.querySelectorAll(`.blueprint [data-zone="${zoneId}"]`).forEach(el=>{
+          el.textContent = correctZone.label;
+          el.classList.add('zone-filled');
+        });
+        selectedChip.el.classList.add('used');
+        selectedChip.el.disabled = true;
+        solvedZones.add(zoneId);
+        solved++;
+        selectedChip = null;
+        updateHUD();
+        if(solved===zones.length){
+          document.getElementById('label-continue').style.display='block';
+          document.getElementById('label-continue-btn').onclick = advanceStep;
+        }
+      } else {
+        zoneEl.classList.add('zone-flash'); setTimeout(()=>zoneEl.classList.remove('zone-flash'),400);
+        state.streak = 0;
+        updateHUD();
+      }
+    });
+  });
+}
+
+/* ---------- FINAL SCREEN ---------- */
+function finishGame(){
+  const totalCorrect = state.actResults.reduce((s,a)=>s+a.correct,0);
+  const totalQ = state.actResults.reduce((s,a)=>s+a.total,0);
+  const acc = totalQ ? Math.round((totalCorrect/totalQ)*100) : 0;
+
+  let title, emoji, sub;
+  if(acc>=95){ title="Keeper of the Golden Icons"; emoji="🕯️"; sub="Flawless devotion — you know Byzantine art inside and out."; }
+  else if(acc>=80){ title="Builder of Domes"; emoji="⛪"; sub="Strong mastery of Justinian's golden age and the churches that rose within it."; }
+  else if(acc>=60){ title="Faithful Scribe"; emoji="📜"; sub="Solid progress — a bit more review and you'll have it locked in."; }
+  else { title="Novice of the New Rome"; emoji="🐣"; sub="A good start on your journey. Visit the Study Hall before you try again."; }
+
+  document.getElementById('final-emoji').textContent = emoji;
+  document.getElementById('final-title').textContent = title;
+  document.getElementById('final-subtitle').textContent = sub;
+  document.getElementById('final-score').textContent = state.score;
+  document.getElementById('final-acc').textContent = acc+"%";
+  document.getElementById('final-streak').textContent = state.maxStreak;
+
+  const breakdown = document.getElementById('final-breakdown');
+  breakdown.innerHTML = state.actResults.map(r=>{
+    const p = r.total ? Math.round((r.correct/r.total)*100) : 0;
+    return `<div class="breakdown-row"><span>${r.name}</span><span>${r.correct}/${r.total} (${p}%)</span></div>`;
+  }).join('');
+
+  const best = parseInt(localStorage.getItem('byz32_highscore')||'0',10);
+  if(state.score > best){ localStorage.setItem('byz32_highscore', state.score); }
+
+  setTheme(true);
+  showScreen('screen-final');
+}
+
+/* =========================================================================
+   STUDY HALL
+   ========================================================================= */
+let studyTab = 'flash';
+let flashDeck = [];
+let flashIndex = 0;
+let flashFilter = 'All';
+let testQueue = [];
+let testIndex = 0;
+let testScore = 0;
+let lightningTimer = null;
+let lightningTimeLeft = 60;
+let lightningScore = 0;
+let lightningQueue = [];
+
+function goStudyHall(){
+  setTheme(true);
+  setStudyTab('flash');
+  showScreen('screen-study');
+}
+
+function setStudyTab(tab){
+  studyTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  if(tab==='flash') renderFlashTab();
+  else if(tab==='test') renderTestTab(true);
+  else renderLightningTab();
+}
+
+/* ---- Flashcards ---- */
+function renderFlashTab(){
+  const cats = ['All','Vocabulary','History','The Four Works'];
+  const area = document.getElementById('study-area');
+  area.innerHTML = `
+    <div class="filter-row" id="flash-filters"></div>
+    <div class="flashcard" id="flash-card"></div>
+    <p class="flash-hint">Tap the card to flip it. ${flashDeck.length} cards in this deck.</p>
+    <div class="btn-row">
+      <button class="btn secondary" onclick="flashNav(-1)">← Prev</button>
+      <button class="btn" onclick="flashNav(1)">Next →</button>
+      <button class="btn gold" onclick="shuffleFlash()">🔀 Shuffle</button>
+    </div>`;
+  const fRow = document.getElementById('flash-filters');
+  cats.forEach(c=>{
+    const b = document.createElement('button');
+    b.className = 'filter-chip'+(c===flashFilter?' active':'');
+    b.textContent = c;
+    b.onclick = ()=>{ flashFilter=c; buildFlashDeck(); renderFlashTab(); };
+    fRow.appendChild(b);
+  });
+  buildFlashDeck(true);
+  showFlashCard();
+}
+function buildFlashDeck(keepIndex){
+  const pool = flashFilter==='All' ? VOCAB_DEFS : VOCAB_DEFS.filter(v=>v.cat===flashFilter);
+  flashDeck = shuffle(pool);
+  if(!keepIndex) flashIndex = 0;
+  flashIndex = 0;
+}
+function shuffleFlash(){ flashDeck = shuffle(flashDeck); flashIndex = 0; showFlashCard(); }
+function flashNav(dir){
+  flashIndex = (flashIndex + dir + flashDeck.length) % flashDeck.length;
+  showFlashCard();
+}
+let flashShowingBack = false;
+function showFlashCard(){
+  flashShowingBack = false;
+  const card = document.getElementById('flash-card');
+  const item = flashDeck[flashIndex];
+  if(!item){ card.textContent = "No cards in this category."; return; }
+  card.innerHTML = `<b>${item.term}</b>`;
+  card.onclick = ()=>{
+    flashShowingBack = !flashShowingBack;
+    card.innerHTML = flashShowingBack ? item.def : `<b>${item.term}</b>`;
+  };
+}
+
+/* ---- Practice Test ---- */
+function renderTestTab(fresh){
+  if(fresh){
+    testQueue = shuffle(ALL_MCQ).slice(0,15).map(shuffleChoices);
+    testIndex = 0;
+    testScore = 0;
+  }
+  const area = document.getElementById('study-area');
+  if(testIndex >= testQueue.length){
+    area.innerHTML = `
+      <div class="qcard center">
+        <h3>Practice Test Complete</h3>
+        <p>You scored <b>${testScore} / ${testQueue.length}</b> (${Math.round(testScore/testQueue.length*100)}%).</p>
+        <div class="btn-row center" style="justify-content:center;">
+          <button class="btn" onclick="renderTestTab(true)">🔄 New Practice Test</button>
+        </div>
+      </div>`;
+    return;
+  }
+  const q = testQueue[testIndex];
+  area.innerHTML = `
+    <div class="qcard">
+      <div class="qtag">Practice Question ${testIndex+1} / ${testQueue.length}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="choices" id="test-choice-list"></div>
+      <div id="test-explain"></div>
+    </div>`;
+  const list = document.getElementById('test-choice-list');
+  q.choices.forEach((choice,i)=>{
+    const b = document.createElement('button');
+    b.className='choice-btn';
+    b.textContent = choice;
+    b.onclick = ()=>{
+      Array.from(list.children).forEach(x=>x.onclick=null);
+      const correct = i===q.a;
+      if(correct){ b.classList.add('correct'); testScore++; }
+      else { b.classList.add('wrong'); list.children[q.a].classList.add('correct'); }
+      Array.from(list.children).forEach((x,idx)=>{ if(idx!==i && idx!==q.a) x.classList.add('dim'); });
+      document.getElementById('test-explain').innerHTML = `
+        <div class="explain-box"><span class="feedback-word ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}</span><p style="margin:6px 0 0;">${q.ex}</p></div>
+        <div class="btn-row"><button class="btn gold" id="test-next-btn">Next →</button></div>`;
+      document.getElementById('test-next-btn').onclick = ()=>{ testIndex++; renderTestTab(false); };
+    };
+    list.appendChild(b);
+  });
+}
+
+/* ---- Lightning Round ---- */
+function renderLightningTab(){
+  const area = document.getElementById('study-area');
+  const best = localStorage.getItem('byz32_lightning_best') || 0;
+  area.innerHTML = `
+    <div class="qcard center">
+      <h3>⚡ 60-Second Lightning Round</h3>
+      <p>Answer as many questions correctly as you can before time runs out. Best score so far: <b>${best}</b></p>
+      <div class="btn-row center" style="justify-content:center;"><button class="btn gold" onclick="startLightning()">Start!</button></div>
+    </div>`;
+}
+function startLightning(){
+  lightningQueue = shuffle(ALL_MCQ).map(shuffleChoices);
+  lightningScore = 0;
+  lightningTimeLeft = 60;
+  let qIdx = 0;
+  const area = document.getElementById('study-area');
+
+  function renderQ(){
+    if(lightningTimeLeft<=0){ endLightning(); return; }
+    if(qIdx>=lightningQueue.length) qIdx=0;
+    const q = lightningQueue[qIdx];
+    area.innerHTML = `
+      <div class="qcard">
+        <div class="qtag"><span class="timer-pill" id="lt-timer">⏱ ${lightningTimeLeft}s</span> &nbsp; Score: <b id="lt-score">${lightningScore}</b></div>
+        <div class="qtext">${q.q}</div>
+        <div class="choices" id="lt-choice-list"></div>
+      </div>`;
+    const list = document.getElementById('lt-choice-list');
+    q.choices.forEach((choice,i)=>{
+      const b = document.createElement('button');
+      b.className='choice-btn';
+      b.textContent = choice;
+      b.onclick = ()=>{
+        if(i===q.a){ b.classList.add('correct'); lightningScore++; }
+        else { b.classList.add('wrong'); }
+        qIdx++;
+        setTimeout(renderQ, 350);
+      };
+      list.appendChild(b);
+    });
+  }
+  renderQ();
+  lightningTimer = setInterval(()=>{
+    lightningTimeLeft--;
+    const t = document.getElementById('lt-timer');
+    if(t) t.textContent = "⏱ "+lightningTimeLeft+"s";
+    if(lightningTimeLeft<=0){ clearInterval(lightningTimer); endLightning(); }
+  },1000);
+}
+function endLightning(){
+  clearInterval(lightningTimer);
+  const best = parseInt(localStorage.getItem('byz32_lightning_best')||'0',10);
+  if(lightningScore>best) localStorage.setItem('byz32_lightning_best', lightningScore);
+  const area = document.getElementById('study-area');
+  area.innerHTML = `
+    <div class="qcard center">
+      <h3>⏱ Time's Up!</h3>
+      <p>You answered <b>${lightningScore}</b> correctly.</p>
+      <div class="btn-row center" style="justify-content:center;">
+        <button class="btn gold" onclick="startLightning()">🔄 Try Again</button>
+      </div>
+    </div>`;
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+(function init(){
+  const best = localStorage.getItem('byz32_highscore');
+  if(best){ document.getElementById('highscore-line').textContent = `🏆 Best mission score so far: ${best}`; }
+})();
+</script>
+</body>
+</html>

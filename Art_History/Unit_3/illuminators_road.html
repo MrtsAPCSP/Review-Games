@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Illuminator's Road — Unit 3.3 Early Medieval</title>
+<style>
+:root{
+  --parchment:#f0e4c3;
+  --parchment-dark:#e2d0a3;
+  --ink:#2b2013;
+  --ink-soft:#4a3a24;
+  --gold:#b8860b;
+  --gold-bright:#d4af37;
+  --wine:#7a1f2b;
+  --forest:#2f4d2f;
+  --slate:#2c3e50;
+  --sky:#3b5a72;
+  --good:#3d7a3d;
+  --bad:#8b2a2a;
+  --shadow: rgba(43,32,19,0.35);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family: Georgia, 'Times New Roman', serif;
+  color:var(--ink);
+  background:
+    radial-gradient(ellipse 700px 500px at 12% 8%, rgba(255,255,255,0.22), transparent 60%),
+    radial-gradient(circle at 85% 15%, rgba(122,31,43,0.05), transparent 40%),
+    radial-gradient(circle at 20% 85%, rgba(47,77,47,0.05), transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(184,134,11,0.06), transparent 45%),
+    linear-gradient(160deg, var(--parchment), var(--parchment-dark));
+  min-height:100vh;
+  overflow-x:hidden;
+}
+/* ---- illuminated-manuscript decorative system ---- */
+:root{
+  --band-svg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='12'><path d='M0,6 Q10,0 20,6 T40,6' stroke='%23b8860b' stroke-width='2' fill='none'/><path d='M0,6 Q10,12 20,6 T40,6' stroke='%237a1f2b' stroke-width='2' fill='none'/><circle cx='20' cy='6' r='1.6' fill='%232f4d2f'/></svg>");
+  --corner-svg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34'><circle cx='17' cy='17' r='12' fill='none' stroke='%23b8860b' stroke-width='2'/><circle cx='17' cy='17' r='6.5' fill='none' stroke='%237a1f2b' stroke-width='2'/><path d='M4,17 Q17,4 30,17 Q17,30 4,17' fill='none' stroke='%232f4d2f' stroke-width='1.4'/><circle cx='17' cy='17' r='2' fill='%23b8860b'/></svg>");
+}
+.ornate-rule{
+  height:10px; width:64%; max-width:320px; margin:4px auto 14px;
+  background-image:var(--band-svg); background-repeat:repeat-x; background-size:40px 10px;
+  opacity:0.9;
+}
+.colophon-tag{
+  text-align:center; font-style:italic; color:var(--ink-soft); font-size:0.88em; letter-spacing:0.5px;
+  margin-bottom:2px;
+}
+.screen{display:none; padding:18px 14px 40px; max-width:980px; margin:0 auto;}
+.screen.active{display:block; animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+.manuscript-frame{
+  border: 6px solid var(--ink);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0));
+  box-shadow: 0 0 0 3px var(--gold-bright) inset, 0 10px 25px var(--shadow);
+  padding: 26px 22px 22px;
+  position:relative;
+}
+.manuscript-frame::before, .manuscript-frame::after{
+  content:""; position:absolute; left:44px; right:44px; height:11px;
+  background-image:var(--band-svg); background-repeat:repeat-x; background-size:40px 11px;
+  pointer-events:none;
+}
+.manuscript-frame::before{ top:-2px; }
+.manuscript-frame::after{ bottom:-2px; }
+.corner{
+  position:absolute; width:32px; height:32px;
+  background-image:var(--corner-svg); background-size:contain; background-repeat:no-repeat;
+  z-index:2;
+}
+.corner.tl{top:2px; left:2px;}
+.corner.tr{top:2px; right:2px;}
+.corner.bl{bottom:2px; left:2px;}
+.corner.br{bottom:2px; right:2px;}
+
+h1,h2,h3{font-family: Georgia, 'Times New Roman', serif; letter-spacing:0.5px;}
+h1{
+  text-align:center; color:var(--wine); font-size: 1.9em; margin:6px 0 2px;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.4);
+}
+h2{ color:var(--wine); text-shadow:1px 1px 0 rgba(255,255,255,0.35); }
+.subtitle{text-align:center; font-style:italic; color:var(--ink-soft); margin-bottom:14px; font-size:1.05em;}
+.dropcap::first-letter{
+  font-size: 2.9em; float:left; line-height:0.85; padding:2px 9px 2px 6px; margin-right:6px;
+  font-weight:bold; font-family: Georgia, serif; color:#f7ecc8;
+  background: linear-gradient(145deg, var(--wine), #93293a);
+  border:2px solid var(--gold-bright); border-radius:5px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.illum-h::first-letter{
+  font-size:2.2em; float:left; line-height:0.85; padding:2px 7px; margin-right:5px;
+  font-weight:bold; color:#f7ecc8;
+  background: linear-gradient(145deg, var(--forest), #3f6b3f);
+  border:2px solid var(--gold-bright); border-radius:4px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.lore{background:rgba(255,255,255,0.35); border-left:4px solid var(--gold); padding:12px 14px; border-radius:6px; margin:10px 0; line-height:1.5;}
+
+.btn{
+  display:inline-block; padding:10px 18px; margin:6px 4px; border-radius:8px;
+  border:2px solid var(--ink); background:linear-gradient(180deg,#fffbe8,#e9d9a8);
+  color:var(--ink); font-weight:bold; cursor:pointer; font-size:1em;
+  box-shadow: 0 3px 0 var(--ink-soft);
+  transition: transform .08s ease;
+  font-family: Georgia, serif;
+}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:translateY(1px); box-shadow:0 1px 0 var(--ink-soft);}
+.btn.primary{background:linear-gradient(180deg,#e8c76a,var(--gold)); color:#2b2013;}
+.btn.wine{background:linear-gradient(180deg,#a34455,var(--wine)); color:#fff2f2;}
+.btn.forest{background:linear-gradient(180deg,#4c7a4c,var(--forest)); color:#eef7ee;}
+.btn.slate{background:linear-gradient(180deg,#4a627a,var(--slate)); color:#eef3f7;}
+.btn:disabled{opacity:0.45; cursor:not-allowed;}
+.btn.small{padding:6px 10px; font-size:0.85em;}
+
+.center{text-align:center;}
+.row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+.card{background:rgba(255,255,255,0.55); border:2px solid var(--ink-soft); border-radius:10px; padding:16px; margin:10px 0;}
+.card.choice{ cursor:pointer; }
+
+/* Mode select cards */
+.mode-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:10px;}
+@media(min-width:640px){.mode-grid{grid-template-columns:1fr 1fr 1fr;}}
+.mode-card{
+  background:rgba(255,255,255,0.55); border:3px solid var(--ink); border-radius:12px;
+  padding:16px; text-align:center; cursor:pointer; transition:transform .12s;
+}
+.mode-card:hover{transform:translateY(-4px); box-shadow:0 6px 14px var(--shadow);}
+.mode-card .icon{font-size:2.4em;}
+.mode-card h3{margin:6px 0 4px; color:var(--wine);}
+.mode-card p{font-size:0.9em; color:var(--ink-soft); margin:0;}
+
+/* HUD */
+#hud{
+  position:sticky; top:0; z-index:50; background:linear-gradient(180deg, var(--parchment), rgba(240,228,195,0.92));
+  border-bottom:3px solid var(--ink); padding:8px 12px; display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:8px; font-size:0.9em;
+}
+.hud-item{display:flex; align-items:center; gap:6px; font-weight:bold;}
+.pigment-row{display:flex; gap:3px;}
+.pigment-dot{width:12px; height:12px; border-radius:50%; border:1px solid var(--ink); background:#ccc;}
+#turnBanner{
+  text-align:center; font-weight:bold; padding:6px; margin:8px 0; border-radius:8px;
+  background: linear-gradient(90deg, var(--gold-bright), var(--gold)); color:#2b2013; display:none;
+  border:2px solid var(--ink);
+}
+
+/* Map */
+#mapWrap{position:relative; width:100%; max-width:900px; margin:0 auto; }
+#mapSvg{width:100%; height:auto; display:block;}
+.mapnode{cursor:pointer;}
+.mapnode circle.base{ transition: r .15s; }
+.mapnode:hover circle.base{ filter: brightness(1.15); }
+.mapnode.locked{cursor:not-allowed; opacity:0.55;}
+.mapnode.done circle.base{ stroke:var(--good); stroke-width:4; }
+.mapnode.current circle.base{ stroke:var(--gold-bright); stroke-width:5; }
+.mapnode text{font-family:Georgia,serif; font-weight:bold; fill:var(--ink); font-size:13px;}
+.nodelabel{font-size:12px; fill:var(--ink-soft); font-family:Georgia,serif;}
+
+/* Question area */
+.qbox{font-size:1.15em; line-height:1.5; margin-bottom:14px;}
+.options{display:grid; gap:10px;}
+.opt{
+  background:rgba(255,255,255,0.6); border:2px solid var(--ink-soft); border-radius:8px;
+  padding:12px 14px; cursor:pointer; font-size:1em; text-align:left;
+}
+.opt:hover{background:rgba(255,255,255,0.9);}
+.opt.correct{background:#cfe8cf; border-color:var(--good);}
+.opt.incorrect{background:#f0cccc; border-color:var(--bad);}
+.opt.disabled{cursor:default;}
+.feedback{margin-top:12px; padding:10px; border-radius:8px; font-weight:bold;}
+.feedback.good{background:#dcf0dc; color:var(--good); border:2px solid var(--good);}
+.feedback.bad{background:#f6dcdc; color:var(--bad); border:2px solid var(--bad);}
+.explain{font-weight:normal; font-style:italic; display:block; margin-top:4px; color:var(--ink-soft);}
+
+/* Matching */
+.match-wrap{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;}
+@media(max-width:560px){.match-wrap{grid-template-columns:1fr;}}
+.match-col .opt{margin-bottom:8px;}
+.match-col .opt.selected{outline:3px solid var(--gold-bright);}
+.match-col .opt.matched{background:#cfe8cf; border-color:var(--good); cursor:default;}
+
+/* Illumination panel */
+#illumPanel{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; max-width:420px; margin:16px auto;}
+.illum-cell{
+  aspect-ratio:1; border:2px solid var(--ink); border-radius:6px; background:#e9e0c4;
+  display:flex; align-items:center; justify-content:center; font-size:1.4em; transition:.3s;
+}
+.illum-cell.filled{ }
+
+/* Flashcard */
+.flashcard{
+  max-width:520px; margin:16px auto; min-height:220px; border:3px solid var(--ink); border-radius:14px;
+  background:linear-gradient(180deg,#fffbe8,#efe2b8); display:flex; align-items:center; justify-content:center;
+  text-align:center; padding:22px; cursor:pointer; font-size:1.2em; box-shadow:0 6px 14px var(--shadow);
+}
+.flashcard .tag{position:absolute; top:8px; left:12px; font-size:0.7em; color:var(--gold); font-weight:bold;}
+
+table.keytable{width:100%; border-collapse:collapse; margin:10px 0;}
+table.keytable td,table.keytable th{border:1px solid var(--ink-soft); padding:6px 10px; text-align:left;}
+table.keytable th{background:rgba(0,0,0,0.06);}
+
+#timerBar{height:10px; background:#ddd; border-radius:6px; overflow:hidden; margin:8px 0; border:1px solid var(--ink);}
+#timerFill{height:100%; background:linear-gradient(90deg,var(--gold-bright),var(--wine)); width:100%; transition:width 1s linear;}
+
+.statgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0;}
+@media(min-width:600px){.statgrid{grid-template-columns:repeat(4,1fr);}}
+.statbox{background:rgba(255,255,255,0.5); border:2px solid var(--ink-soft); border-radius:8px; padding:10px; text-align:center;}
+.statbox .n{font-size:1.4em; font-weight:bold; color:var(--wine);}
+.statbox .l{font-size:0.8em; color:var(--ink-soft);}
+
+.footerlinks{text-align:center; margin-top:24px; font-size:0.85em; color:var(--ink-soft);}
+.hidden{display:none !important;}
+kbd{background:#eee; border:1px solid #999; border-radius:3px; padding:1px 4px; font-size:0.85em;}
+
+/* page-type tag, mimicking a manuscript's folio label */
+.folio-tag{
+  display:inline-block; margin:0 auto 10px; padding:3px 14px;
+  background:linear-gradient(180deg,#fffbe8,#e9d9a8); border:1.5px solid var(--ink);
+  border-radius:3px; font-size:0.72em; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--ink-soft); box-shadow:1px 1px 0 rgba(0,0,0,0.15);
+}
+.folio-tag-wrap{text-align:center;}
+
+/* portrait niche for waypoint icon, like an evangelist portrait */
+.portrait-niche{
+  width:92px; height:92px; margin:0 auto 8px; border-radius:50%;
+  border:4px solid var(--ink); box-shadow:0 0 0 3px var(--gold-bright), inset 0 0 10px rgba(0,0,0,0.25);
+  display:flex; align-items:center; justify-content:center; font-size:2.3em;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0) 55%);
+}
+
+/* jewel / cloisonné style fill for illumination cells */
+.illum-cell.filled{
+  box-shadow: inset 0 0 7px rgba(0,0,0,0.45), 0 0 5px var(--gold-bright);
+  border-color:var(--gold-bright);
+}
+</style>
+</head>
+<body>
+
+<!-- ============ START SCREEN ============ -->
+<div class="screen active" id="screen-start">
+  <div class="manuscript-frame">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Incipit · Here Begins</span></div>
+    <h1>✒️ The Illuminator's Road</h1>
+    <div class="subtitle">A Scribe's Pilgrimage Through the Making of a Gospel Book — Unit 3.3</div>
+    <div class="ornate-rule"></div>
+    <p class="lore dropcap">Your abbot has chosen you for a sacred labor: to walk the road a manuscript itself must travel before it becomes holy. That road begins in the tannery and the old library, where hide becomes vellum and scribes still argue scroll versus codex. It winds into the hush of the scriptorium, where monks are among the only literate souls left in a fractured world — then past the chaos outside the monastery walls that makes this work so urgent. It leads to the illuminator's desk, where hammered gold and painted interlace share a common language, across the many traditions of medieval Europe, and at last to a finished Gospel book like the one made at Lindisfarne. Gather your companions, and begin.</p>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="startMode('pair')">
+        <div class="icon">🤝</div>
+        <h3>Pilgrim Pair</h3>
+        <p>Two scribes travel together, taking turns answering as the journey unfolds. Best for partner review in class.</p>
+      </div>
+      <div class="mode-card" onclick="startMode('solo')">
+        <div class="icon">🧳</div>
+        <h3>Lone Wanderer</h3>
+        <p>One traveler, one road. Solo playthrough of the full pilgrimage.</p>
+      </div>
+      <div class="mode-card" onclick="showScreen('screen-home')">
+        <div class="icon">🕯️</div>
+        <h3>Study by Candlelight</h3>
+        <p>No journey required — flashcards, a practice test, and a lightning round for review anytime, anywhere (great for home!).</p>
+      </div>
+    </div>
+    <div class="center" style="margin-top:14px;">
+      <button class="btn small" onclick="showScreen('screen-howto')">How does this work?</button>
+      <button class="btn small" onclick="clearScores()">Reset saved scores</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HOW TO ============ -->
+<div class="screen" id="screen-howto">
+  <div class="manuscript-frame">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Prologue · Rubric</span></div>
+    <h2>📖 How the Pilgrimage Works</h2>
+    <ul style="line-height:1.6;">
+      <li>You'll travel the road a Gospel manuscript itself takes to be made, stopping at <b>6 waypoints</b> before a final illumination at the scriptorium.</li>
+      <li>Each waypoint tests a different slice of Unit 3.3: parchment &amp; the codex-vs-scroll debate, the unstable "Dark Ages" world that makes monastic learning so vital, monasteries &amp; scholarship, metalwork motifs &amp; the Merovingian fibula, geography &amp; style across medieval Europe, and the finished Lindisfarne Gospels themselves.</li>
+      <li>Correct answers earn <b>pigment drops</b> 🎨 — these fill in your illuminated manuscript page at the final waypoint. Every playthrough randomizes the questions, so no two pilgrimages are the same.</li>
+      <li><b>Pilgrim Pair</b> mode alternates who answers each question — talk it out before you choose!</li>
+      <li>Random events may strike along the road — a raider band, a lucky find, a wise hermit — so stay alert.</li>
+      <li>Finish the road to illuminate your manuscript page and see your full accuracy report. Then travel it again — the roads shift each time.</li>
+      <li>Want to review outside of class? Use <b>Study by Candlelight</b> anytime — no setup needed.</li>
+    </ul>
+    <div class="center"><button class="btn primary" onclick="showScreen('screen-start')">Back</button></div>
+  </div>
+</div>
+
+<!-- ============ PLAYER SETUP (pair mode) ============ -->
+<div class="screen" id="screen-setup">
+  <div class="manuscript-frame">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Dedication Page</span></div>
+    <h2>🤝 Name Your Scribes</h2>
+    <p class="center">You'll pass the quill back and forth as you travel.</p>
+    <div class="center">
+      <p>Scribe One: <input id="p1name" type="text" value="Scribe A" style="font-size:1em; padding:6px; border:2px solid var(--ink-soft); border-radius:6px;"></p>
+      <p>Scribe Two: <input id="p2name" type="text" value="Scribe B" style="font-size:1em; padding:6px; border:2px solid var(--ink-soft); border-radius:6px;"></p>
+      <button class="btn primary" onclick="beginJourney('pair')">Set Out on the Road →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAP SCREEN ============ -->
+<div class="screen" id="screen-map">
+  <div id="hud">
+    <div class="hud-item">📜 Score: <span id="hudScore">0</span></div>
+    <div class="hud-item">🔥 Streak: <span id="hudStreak">0</span></div>
+    <div class="hud-item">🎨 <span class="pigment-row" id="pigmentRow"></span></div>
+    <div class="hud-item" id="hudTurnWrap" style="display:none;">🖋️ <span id="hudTurn">—</span></div>
+  </div>
+  <div class="manuscript-frame" style="margin-top:12px;">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Carpet Page · The Road</span></div>
+    <h2 class="center" id="mapTitle">The Road to Lindisfarne</h2>
+    <p class="center" id="mapFlavor" style="font-style:italic; color:var(--ink-soft);">Choose your next waypoint.</p>
+    <div id="mapWrap"></div>
+    <div class="center" id="eventArea"></div>
+  </div>
+</div>
+
+<!-- ============ NODE / QUESTION SCREEN ============ -->
+<div class="screen" id="screen-node">
+  <div id="hud2" style="position:sticky; top:0; z-index:50; background:var(--parchment); border-bottom:3px solid var(--ink); padding:8px 12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:0.9em;">
+    <div class="hud-item">📜 Score: <span id="hudScore2">0</span></div>
+    <div class="hud-item">🔥 Streak: <span id="hudStreak2">0</span></div>
+    <div class="hud-item" id="nodeProgWrap">Question <span id="nodeQNum">1</span>/<span id="nodeQTotal">4</span></div>
+  </div>
+  <div id="turnBanner"></div>
+  <div class="manuscript-frame" style="margin-top:10px;">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Portrait Page · Waypoint</span></div>
+    <div class="portrait-niche" id="nodePortrait">✒️</div>
+    <h2 id="nodeTitle" class="center illum-h">Waypoint</h2>
+    <p class="center" id="nodeSubtitle" style="font-style:italic;"></p>
+    <div class="ornate-rule"></div>
+    <div id="questionContainer"></div>
+  </div>
+</div>
+
+<!-- ============ REFLECTION / DISCUSSION CARD ============ -->
+<div class="screen" id="screen-reflect">
+  <div class="manuscript-frame">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Marginalia · A Scribe's Note</span></div>
+    <h2 class="center">💬 A Scribe's Reflection</h2>
+    <p class="lore" id="reflectText"></p>
+    <p class="center" style="font-style:italic;">Discuss this with your fellow traveler before continuing.</p>
+    <div class="center"><button class="btn primary" onclick="afterReflect()">We've discussed it — continue →</button></div>
+  </div>
+</div>
+
+<!-- ============ FINALE ============ -->
+<div class="screen" id="screen-finale">
+  <div id="hud3" style="position:sticky; top:0; z-index:50; background:var(--parchment); border-bottom:3px solid var(--ink); padding:8px 12px; text-align:center; font-weight:bold;">
+    🎨 Illuminating the Manuscript — Final Waypoint
+  </div>
+  <div class="manuscript-frame" style="margin-top:10px;">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Illumination · The Final Leaf</span></div>
+    <h2 class="center illum-h">The Scriptorium at Lindisfarne</h2>
+    <p class="lore" id="finaleIntro"></p>
+    <div id="illumPanel"></div>
+    <div id="finaleContainer"></div>
+  </div>
+</div>
+
+<!-- ============ END SCREEN ============ -->
+<div class="screen" id="screen-end">
+  <div class="manuscript-frame">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Colophon · Here Ends the Work</span></div>
+    <p class="colophon-tag">❈ Here ends the labor of the scribe, finished by candlelight ❈</p>
+    <h2 class="center" id="endTitle">🕊️ The Gospel is Finished</h2>
+    <div class="ornate-rule"></div>
+    <p class="lore" id="endLore"></p>
+    <div class="statgrid" id="endStats"></div>
+    <h3>Accuracy by Waypoint</h3>
+    <table class="keytable" id="endTable"><thead><tr><th>Waypoint</th><th>Correct</th><th>Attempted</th><th>Accuracy</th></tr></thead><tbody></tbody></table>
+    <div class="center" style="margin-top:14px;">
+      <button class="btn primary" onclick="restart()">Walk the Road Again</button>
+      <button class="btn slate" onclick="showScreen('screen-home')">Study by Candlelight</button>
+      <button class="btn" onclick="showScreen('screen-start')">Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HOME STUDY MENU ============ -->
+<div class="screen" id="screen-home">
+  <div class="manuscript-frame">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="folio-tag-wrap"><span class="folio-tag">Private Devotional Leaf</span></div>
+    <h2 class="center">🕯️ Study by Candlelight</h2>
+    <p class="subtitle">Independent review — no partner, no map, just the material.</p>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="startFlashcards()">
+        <div class="icon">🗂️</div><h3>Flashcards</h3><p>Flip through every vocabulary term and work of art at your own pace.</p>
+      </div>
+      <div class="mode-card" onclick="startPracticeTest()">
+        <div class="icon">📝</div><h3>Practice Test</h3><p>20 randomized questions pulled from the entire unit, with instant feedback.</p>
+      </div>
+      <div class="mode-card" onclick="startLightning()">
+        <div class="icon">⚡</div><h3>Lightning Round</h3><p>60 seconds. Rapid-fire questions. How many can you answer?</p>
+      </div>
+    </div>
+    <div class="center" style="margin-top:14px;"><button class="btn" onclick="showScreen('screen-start')">← Main Menu</button></div>
+  </div>
+</div>
+
+<!-- ============ FLASHCARDS ============ -->
+<div class="screen" id="screen-flash">
+  <div class="manuscript-frame">
+    <h2 class="center">🗂️ Flashcards</h2>
+    <p class="center" id="flashProg"></p>
+    <div class="flashcard" id="flashCard" onclick="flipFlash()"></div>
+    <div class="center">
+      <button class="btn" onclick="prevFlash()">← Prev</button>
+      <button class="btn primary" onclick="flipFlash()">Flip</button>
+      <button class="btn" onclick="nextFlash()">Next →</button>
+      <button class="btn forest" onclick="shuffleFlash()">🔀 Shuffle</button>
+    </div>
+    <div class="center"><button class="btn" onclick="showScreen('screen-home')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ============ PRACTICE TEST ============ -->
+<div class="screen" id="screen-practice">
+  <div id="hudP" style="text-align:center; font-weight:bold; padding:8px;">Question <span id="pQNum">1</span>/<span id="pQTotal">20</span> — Score: <span id="pScore">0</span></div>
+  <div class="manuscript-frame">
+    <div id="practiceContainer"></div>
+  </div>
+</div>
+
+<!-- ============ LIGHTNING ============ -->
+<div class="screen" id="screen-lightning">
+  <div class="manuscript-frame">
+    <h2 class="center">⚡ Lightning Round</h2>
+    <div id="timerBar"><div id="timerFill"></div></div>
+    <div class="center" style="font-weight:bold;">Time left: <span id="lightTime">60</span>s &nbsp;|&nbsp; Correct: <span id="lightScore">0</span></div>
+    <div id="lightningContainer"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   THE ILLUMINATOR'S ROAD — Unit 3.3 Early Medieval Review
+   Self-contained, offline, localStorage only.
+   ============================================================ */
+
+/* ---------- Utility ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pick(arr,n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function saveLS(key,val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+function loadLS(key,def){ try{ const v = localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function clearScores(){
+  localStorage.removeItem('illum_highscore');
+  localStorage.removeItem('illum_seen');
+  alert('Saved scores and question rotation history cleared.');
+}
+
+/* ---------- QUESTION BANK ---------- */
+/* Each question: {type:'mc'|'tf', q, options:[...], a:index, exp:string, tags:[nodeKey]} */
+
+const Q_FORGE = [
+  {type:'mc', q:"What is a fibula?", options:["A type of scroll used for record-keeping","A clasp used to fasten a garment","A decorative window in a monastery","A relic box carried by pilgrims"], a:1, exp:"A fibula is a clasp used to fasten a garment — essentially a decorative safety pin."},
+  {type:'mc', q:"The Looped Fibulae you carry were made by which culture?", options:["Byzantine","Hiberno-Saxon","Merovingian","Ottonian"], a:2, exp:"They are Merovingian — a culture of Early Medieval continental Europe."},
+  {type:'mc', q:"What technique ornaments metal by indenting a surface with a hammer?", options:["Cloisonné","Chasing","Filigree","Engraving"], a:1, exp:"Chasing is the technique of ornamenting metal by indenting into a surface with a hammer."},
+  {type:'mc', q:"What is cloisonné?", options:["A woven textile pattern","A technique of inlaid semi-precious stones, popular in Barbarian art","A style of manuscript lettering","A type of monastery roof"], a:1, exp:"Cloisonné is the technique of inlaying semi-precious stones, especially popular in Barbarian (Early Medieval) art."},
+  {type:'mc', q:"What is the primary medium of the Merovingian Looped Fibulae?", options:["Bronze with enamel paint","Silver gilt with filigree and inlaid semi-precious stones","Carved ivory","Gold-leafed wood"], a:1, exp:"The fibulae are silver gilt, with filigree and inlays of semi-precious stones."},
+  {type:'mc', q:"About how tall are the Merovingian Looped Fibulae?", options:["6 inches","2 feet","12 inches","3 inches"], a:0, exp:"They stand about 6 inches high."},
+  {type:'mc', q:"Roughly when were the Merovingian Looped Fibulae created?", options:["mid 3rd century","mid 6th century","late 9th century","early 12th century"], a:1, exp:"They date to the mid 6th century."},
+  {type:'mc', q:"Where are the Merovingian Looped Fibulae currently housed?", options:["The British Museum","The Vatican Museums","Cabinet des Médailles, Paris","The Louvre's Egyptian wing"], a:2, exp:"They are held at the Cabinet des Médailles in Paris."},
+  {type:'tf', q:"Cloisonné inlay work was a technique found only among Merovingian goldsmiths and nowhere else in the period.", options:["True","False"], a:1, exp:"False — cloisonné was popular broadly in Barbarian (Early Medieval) art, not unique to the Merovingians alone."},
+  {type:'mc', q:"The Merovingian dynasty belongs to which broader era of art history?", options:["Early Medieval Europe","High Renaissance","Byzantine","Neolithic"], a:0, exp:"Merovingian culture is part of Early Medieval Europe."},
+];
+
+const Q_WILDS = [
+  {type:'mc', q:"The Medieval period is also commonly known by which two other names?", options:["The Iron Age and the Bronze Age","The Middle Ages and the Dark Ages","The Golden Age and the Silver Age","The Classical Age and the Heroic Age"], a:1, exp:"Medieval = Middle Ages = the \"Dark Ages.\""},
+  {type:'mc', q:"Why do historians call this era the \"Dark Ages\"?", options:["Because it was a genuinely violent, joyless time with no achievements","Because of our lack of knowledge about the period, not necessarily what was actually happening","Because most art from the period used dark pigments","Because the Church suppressed all daylight activity"], a:1, exp:"It's called the \"Dark Ages\" mainly because of our lack of knowledge about it — not necessarily reflecting the reality of the time."},
+  {type:'mc', q:"What generally happened to Roman technological breakthroughs during this period?", options:["They were preserved perfectly by Frankish kings","They were expanded upon rapidly","They were lost or destroyed","They were exported to Byzantium and forgotten in the West only briefly"], a:2, exp:"Many Roman technological breakthroughs were lost or destroyed."},
+  {type:'mc', q:"Which of these groups is described as pushing Europeans to migrate through raids and pillaging?", options:["The Huns, Vikings, Vandals, and other Germanic tribes","The Etruscans and Sumerians","The Minoans and Mycenaeans","The Ptolemies and Seleucids"], a:0, exp:"The Huns, Vikings, Vandals, and other Germanic tribes raided and pillaged villages, pushing Europeans to migrate."},
+  {type:'mc', q:"The term \"Barbarians\" eventually came to describe...", options:["Only the Roman army's enemies in Gaul","Anyone who lived beyond the borders of the Roman Empire","Christian monks who lived in isolation","Any artist working in metal"], a:1, exp:"\"Barbarians\" was used to describe anyone who lived beyond the borders of the Roman Empire."},
+  {type:'mc', q:"Which Frankish king is most notably credited with bringing stability by building new kingdoms and empires?", options:["Justinian", "Charlemagne", "Constantine", "Clovis's grandson Theodoric"], a:1, exp:"Charlemagne is the most notable Frankish king credited with building new kingdoms and empires."},
+  {type:'tf', q:"According to the unit, the Huns were a Scandinavian people.", options:["True","False"], a:1, exp:"False — the Huns were Asian; the Vikings were Scandinavian and the Vandals were Germanic."},
+  {type:'mc', q:"Which pairing correctly matches a group with its origin?", options:["Vikings — Scandinavian","Huns — Germanic","Vandals — Scandinavian","Vikings — Asian"], a:0, exp:"Vikings were Scandinavian. (Huns were Asian; Vandals were Germanic.)"},
+  {type:'mc', q:"Frankish kings rose to build new...", options:["Trade guilds and merchant fleets","Kingdoms and empires","Universities and libraries only","Roman-style senates"], a:1, exp:"Frankish kings rose to build new kingdoms and empires, bringing stability."},
+];
+
+const Q_MONASTERY = [
+  {type:'mc', q:"According to the unit's enduring understandings, medieval art is chiefly concerned with three traits. Which set is correct?", options:["Trade, war, and agriculture","Religious expression, court life, and scholarship","Naturalism, perspective, and proportion","Democracy, philosophy, and athletics"], a:1, exp:"Medieval art is chiefly concerned with religious expression, court life, and scholarship."},
+  {type:'mc', q:"Who were considered among the most educated people of medieval times?", options:["Merchants and traders","Monks and nuns","Blacksmiths","Frankish soldiers"], a:1, exp:"Monks and nuns, who dedicated their lives to religion, education, and art, were among the most educated."},
+  {type:'mc', q:"Monasteries served as centers of...", options:["Military training","Learning","Trade taxation","Metalworking exclusively"], a:1, exp:"Monasteries were centers of learning."},
+  {type:'mc', q:"Knowledge and learning were transmitted throughout Europe through which three means?", options:["Trade, pilgrimage, and military activity (the Crusades)","Taxation, census-taking, and coinage","Marriage alliances, festivals, and games","Shipbuilding, mining, and farming"], a:0, exp:"Knowledge spread through trade, pilgrimage, and military activity — including the Crusades."},
+  {type:'mc', q:"Medieval architecture is mostly what type of building?", options:["Religious (churches)","Government palaces","Marketplaces","Fortified granaries"], a:0, exp:"Medieval architecture is mostly religious — churches, churches, and more churches."},
+  {type:'mc', q:"What term describes moments when medieval religions reject or destroy religious images?", options:["Naturalism","Iconoclasm","Zoomorphism","Cloisonné"], a:1, exp:"Iconoclasm describes the rejection (often destruction) of religious images."},
+  {type:'tf', q:"Medieval painting and sculpture generally embraced highly naturalistic depictions of the human body.", options:["True","False"], a:1, exp:"False — medieval painting and sculpture generally avoided naturalistic depictions."},
+  {type:'mc', q:"Which military campaigns are specifically named as a way knowledge spread across medieval Europe?", options:["The Crusades","The Punic Wars","The Persian Wars","The Trojan War"], a:0, exp:"The Crusades are named as a way military activity spread knowledge and learning."},
+  {type:'mc', q:"Monks and nuns dedicated their lives to which three pursuits, according to the unit?", options:["Religion, education, and art","Politics, war, and trade","Farming, hunting, and building","Music, dance, and theater"], a:0, exp:"They dedicated their lives to religion, education, and \"art.\""},
+  {type:'mc', q:"The study of medieval art recognizes frequent interconnections between which things?", options:["Religions, governments, and artistic influences","Only artistic styles, nothing else","Currency systems alone","Climate and agriculture only"], a:0, exp:"There are frequent interconnections between religions, governments, and artistic influences."},
+];
+
+const Q_SCRIPTORIUM = [
+  {type:'mc', q:"What is a codex?", options:["A scroll stored in a cylindrical box","A manuscript book of folded, sewn sheets framed by two board covers","A single sheet of papyrus","A stone tablet inscribed with religious text"], a:1, exp:"A codex is a book of folded sheets sewn along one edge and framed by two board covers."},
+  {type:'mc', q:"What key advantage did the codex have over the scroll?", options:["It was cheaper to produce with no skill required","It was far more resilient — less flammable and easier to protect — and more portable","It required no writing surface at all","It could only be read by priests"], a:1, exp:"The codex, made of resilient animal hide, was a huge improvement over papyrus or scrolls, which were highly flammable and easily destroyed."},
+  {type:'mc', q:"What were scrolls originally made from in antiquity?", options:["Papyrus","Vellum only","Woven linen","Bronze sheeting"], a:0, exp:"Scrolls were initially made from papyrus."},
+  {type:'mc', q:"What were papyrus scrolls stored in?", options:["Wooden chests called arca","Cylindrical boxes called capsae","Leather satchels called codices","Clay urns"], a:1, exp:"Scrolls were stored in cylindrical boxes called capsae."},
+  {type:'mc', q:"What ultimately limited the usefulness of the scroll format, despite its long popularity?", options:["Its bulkiness limited portability","It could not be read in Latin","It required gold leaf to function","It was banned by early Christians"], a:0, exp:"The bulkiness of the scroll limited its portability."},
+  {type:'mc', q:"What is vellum?", options:["A type of ink made from oak galls","Fine parchment made originally from the skin of a calf","A gold-leaf gilding technique","A woven wool textile"], a:1, exp:"Vellum is fine parchment made originally from calfskin."},
+  {type:'mc', q:"The codex format gained popularity in the fourth century especially with...", options:["Roman senators","Early Christians","Viking traders","Byzantine emperors exclusively"], a:1, exp:"The codex format gained popularity with early Christians in the fourth century."},
+  {type:'mc', q:"What did monks and scribes primarily copy when producing Bible manuscripts?", options:["Contemporary folk tales and local literature","Great works of ancient literature, most notably the Bible","Personal diaries of nobles","Legal codes of the Roman Senate"], a:1, exp:"Scribes copied great works of ancient literature, most notably the Bible."},
+  {type:'tf', q:"Even though the text of a copied Bible manuscript stayed the same, the illustrations accompanying it could vary slightly between copies.", options:["True","False"], a:0, exp:"True — the text remained the same, but illustrations could be slightly altered."},
+  {type:'tf', q:"Medieval scribes kept detailed written records of contemporary literature and folk tales alongside the Bible.", options:["True","False"], a:1, exp:"False — there are no records of contemporary literature or folk tales; scribes focused on copying ancient texts, especially the Bible."},
+];
+
+const Q_CROSSING = [
+  {type:'mc', q:"The Merovingian fibulae come from which broad artistic region?", options:["Continental Early Medieval Europe (Frankish territory)","Britain","North Africa","The Byzantine capital"], a:0, exp:"The Merovingians were based in continental Early Medieval Europe (Frankish territory, modern France/Germany)."},
+  {type:'mc', q:"The Lindisfarne Gospels were produced by which culture?", options:["Merovingian","Byzantine","Hiberno-Saxon","Ottonian"], a:2, exp:"The Lindisfarne Gospels are a Hiberno-Saxon work."},
+  {type:'mc', q:"Where is the monastery of Lindisfarne located?", options:["An island off the coast of northern England","Southern France","Central Italy","The Nile Delta"], a:0, exp:"Lindisfarne is located in England."},
+  {type:'tf', q:"There is one single, uniform \"medieval style\" used across all of Europe during this era.", options:["True","False"], a:1, exp:"False — there is no uniform medieval style; approaches vary by period and place."},
+  {type:'mc', q:"According to the unit, different medieval periods draw on which two broad approaches?", options:["Reviving ancient classicism (Greek/Roman) OR using geometric and natural designs","Only strict realism","Only religious abstraction with no geometry","Only portraiture of rulers"], a:0, exp:"Some periods revive ancient classicism; others use geometric and natural designs."},
+  {type:'mc', q:"Medieval artists were influenced by contemporaries elsewhere in Europe as well as by...", options:["Ancient traditions","Only their local patrons","Modern printing techniques","Nothing outside their own workshop"], a:0, exp:"Medieval artists were influenced by contemporaries in other parts of Europe, as well as ancient traditions."},
+  {type:'mc', q:"Medieval art is studied according to which three organizing factors?", options:["Geographic placement, styles, and traditions","Only the artist's name","Only the material used","Only the patron's wealth"], a:0, exp:"Medieval art is studied according to geographic placement, styles, and traditions."},
+  {type:'mc', q:"Which list correctly includes styles/periods within the broader Medieval era named in this unit?", options:["Late Antique/Early Christian, Byzantine, Islamic, Early Medieval, Romanesque, Gothic","Only Gothic and Baroque","Only Renaissance and Neoclassical","Minoan, Mycenaean, and Cycladic"], a:0, exp:"The Medieval period as studied here includes Late Antique & Early Christian, Byzantine, Islamic, Early Medieval, Romanesque, and Gothic."},
+  {type:'tf', q:"The unit's enduring understanding states there are NO interconnections between religions, governments, and artistic influences in medieval art.", options:["True","False"], a:1, exp:"False — there ARE frequent interconnections between religions, governments, and artistic influences."},
+];
+
+const Q_LINDISFARNE = [
+  {type:'mc', q:"Who created the Lindisfarne Gospels?", options:["Eadfrith, Bishop of Lindisfarne","Charlemagne","An anonymous Roman workshop","Pope Gregory the Great"], a:0, exp:"Eadfrith, Bishop of Lindisfarne, is credited as the artist."},
+  {type:'mc', q:"About when were the Lindisfarne Gospels created?", options:["c. 200-250","c. 698-721","c. 1200-1250","c. 50-75"], a:1, exp:"They date to roughly 698-721 C.E."},
+  {type:'mc', q:"What medium was used to create the Lindisfarne Gospels?", options:["Manuscript, paint on vellum","Fresco on plaster","Mosaic tile","Carved marble relief"], a:0, exp:"They are a manuscript, painted on vellum."},
+  {type:'mc', q:"What is \"animal style\" in medieval art?", options:["Painting realistic animals in natural settings","A medieval art form where animals are depicted in a stylized and complicated pattern","Carving animal statues in the round","Using only animal-hair brushes"], a:1, exp:"Animal style depicts animals in a stylized, complicated pattern."},
+  {type:'mc', q:"What does \"zoomorphic\" mean?", options:["Having elements of animal shapes","Belonging to the Byzantine court","Related to Roman construction","Painted only in gold"], a:0, exp:"Zoomorphic means having elements of animal shapes."},
+  {type:'mc', q:"What is an incipit page?", options:["A blank page left for later additions","A page featuring the introductory words or opening phrase of a text, often elaborately decorated","A page listing the scribe's name","The final page of a manuscript"], a:1, exp:"An incipit page features the introductory words or opening phrase of the text."},
+  {type:'mc', q:"What best describes a carpet page like the one in the Lindisfarne Gospels?", options:["A fully decorative, non-figural page of geometric/interlace pattern, often preceding a Gospel","A page showing a portrait of the patron","A page with only plain text and no decoration","A page depicting a battle scene"], a:0, exp:"A carpet page is a full page of geometric interlace decoration, resembling a textile, often placed before a Gospel section."},
+  {type:'mc', q:"Which folio shows an Evangelist seated, writing, accompanied by his symbol?", options:["The Cross-Carpet Page","The Evangelist Portrait page","The colophon","The book cover"], a:1, exp:"The Evangelist Portrait page shows the Evangelist (here, Luke) seated and writing, with his symbol nearby."},
+  {type:'mc', q:"Which folio features an elaborately decorated large initial letter opening the Gospel text?", options:["The Incipit Page","The Cross-Carpet Page","The colophon","The binding"], a:0, exp:"The Incipit Page features the large decorated opening letter and words of the text."},
+  {type:'tf', q:"The Lindisfarne Gospels are generally attributed to a single artist rather than a large anonymous workshop.", options:["True","False"], a:0, exp:"True — the work is attributed to Eadfrith, Bishop of Lindisfarne."},
+  {type:'mc', q:"Which Evangelist symbol is correctly matched?", options:["Matthew — Angel/Man","Mark — Ox","Luke — Eagle","John — Lion"], a:0, exp:"Matthew is symbolized by the Angel (or Man). (Mark = Lion, Luke = Ox, John = Eagle.)"},
+  {type:'mc', q:"Which Evangelist is symbolized by the Ox?", options:["Matthew","Mark","Luke","John"], a:2, exp:"Luke is symbolized by the Ox."},
+  {type:'mc', q:"Which Evangelist is symbolized by the Eagle?", options:["Matthew","Mark","Luke","John"], a:3, exp:"John is symbolized by the Eagle."},
+  {type:'mc', q:"Which Evangelist is symbolized by the Lion?", options:["Matthew","Mark","Luke","John"], a:1, exp:"Mark is symbolized by the Lion."},
+];
+
+/* ---------- Matching pools ---------- */
+const MATCH_VOCAB = [
+  ["Fibula","A clasp used to fasten a garment"],
+  ["Cloisonné","Technique of inlaid semi-precious stones, popular in Barbarian art"],
+  ["Chasing","Ornamenting metal by indenting a surface with a hammer"],
+  ["Codex","A book of folded, sewn sheets framed by two board covers"],
+  ["Vellum","Fine parchment made from calfskin"],
+  ["Zoomorphic","Having elements of animal shapes"],
+  ["Animal Style","Animals depicted in a stylized, complicated pattern"],
+  ["Barbarians","Anyone who lived beyond the borders of the Roman Empire"],
+  ["Iconoclasm","The rejection or destruction of religious images"],
+  ["Monasteries","Centers of learning in medieval Europe"],
+];
+const MATCH_SYMBOLS = [
+  ["Matthew","Angel / Man"],
+  ["Mark","Lion"],
+  ["Luke","Ox"],
+  ["John","Eagle"],
+];
+const MATCH_PAGES = [
+  ["Evangelist Portrait Page","Shows the Evangelist seated, writing, with his symbol"],
+  ["Incipit Page","Features the decorated opening words of the Gospel text"],
+  ["Cross-Carpet Page","A full page of geometric interlace, resembling a textile"],
+];
+
+/* ---------- Reflection prompts (discussion, not scored) ---------- */
+const REFLECTIONS = {
+  forge: "Look closely at the cloisonné and filigree of the Merovingian fibula. Its inlaid stones and interlace share a visual language with the painted interlace you'll find in manuscripts like the Lindisfarne Gospels. Discuss: why might goldsmiths working in metal and monks painting on vellum have reached for the same decorative style, even though their materials were completely different?",
+  lindisfarne: "Examine the artistic techniques used in the Lindisfarne Gospels — the interlace patterns, the animal style, the careful lettering. What do these choices suggest about the cultural and religious importance of the manuscript to the people who made and used it?"
+};
+
+/* ---------- Random flavor events ---------- */
+const EVENTS = [
+  {icon:"🌩️", text:"A sudden storm forces you to shelter. You lose no ground, but the road ahead feels longer."},
+  {icon:"🐦", text:"A raven circles overhead — some call it an omen, others just a bird. Either way, press on."},
+  {icon:"🕯️", text:"A hermit shares a warm meal and a bit of gossip about the abbey ahead. You feel steadied."},
+  {icon:"⚔️", text:"Raiders were spotted near the last village. You keep to the tree line and move quickly."},
+  {icon:"📯", text:"A merchant's horn echoes in the distance — a trade caravan, not a threat. You relax, slightly."},
+  {icon:"🌾", text:"A quiet field of barley. Nothing happens. Sometimes the road is just... the road."},
+  {icon:"🔔", text:"Distant monastery bells ring the hour. Scholars somewhere are already at work."},
+];
+
+/* ============ MAP / NODE CONFIG ============ */
+const NODES = [
+  {key:'scriptorium', title:"The Parchment Yard & Old Library", subtitle:"From hide to vellum, and the old debate of scroll vs. codex", icon:"📦", pool:Q_SCRIPTORIUM, x:80, y:330},
+  {key:'wilds', title:"Why the Work Matters", subtitle:"Barbarians, the \"Dark Ages,\" and a world hungry for stability", icon:"🌩️", pool:Q_WILDS, x:230, y:210},
+  {key:'monastery', title:"The Monastery Scriptorium", subtitle:"Scholarship, learning, and the enduring traits of medieval art", icon:"⛪", pool:Q_MONASTERY, x:400, y:300},
+  {key:'forge', title:"The Illuminator's Desk", subtitle:"Metalwork, cloisonné, and the motifs that decorate a page", icon:"🎨", pool:Q_FORGE, x:560, y:190, reflect:'forge'},
+  {key:'crossing', title:"Mapping the Traditions", subtitle:"Geography and style across medieval Europe", icon:"🗺️", pool:Q_CROSSING, x:700, y:300},
+  {key:'lindisfarne', title:"Lindisfarne's Finished Gospel", subtitle:"The Gospels, Eadfrith, and the Evangelists", icon:"📖", pool:Q_LINDISFARNE, x:830, y:200, reflect:'lindisfarne'},
+];
+
+/* ============ GAME STATE ============ */
+let state = {
+  mode:'solo', // 'pair' | 'solo'
+  players:['Traveler'],
+  turnIndex:0,
+  scoreByPlayer:{},
+  score:0,
+  streak:0,
+  pigments:[],
+  currentNodeKey:null,
+  nodeQuestions:{}, // key -> array of question objects for this run
+  nodeResults:{}, // key -> {correct, attempted}
+  nodesDone:[],
+  qIndexInNode:0,
+  awaitingReflectContinueTo:null,
+};
+
+const PIGMENT_COLORS = ['#b8860b','#7a1f2b','#2f4d2f','#3b5a72'];
+
+function initRun(){
+  state.score=0; state.streak=0; state.pigments=[];
+  state.currentNodeKey=null; state.nodeQuestions={}; state.nodeResults={};
+  state.nodesDone=[]; state.qIndexInNode=0;
+  state.turnIndex=0;
+  state.scoreByPlayer={};
+  state.players.forEach(p=>state.scoreByPlayer[p]=0);
+  NODES.forEach(n=>{
+    state.nodeQuestions[n.key] = pick(n.pool, Math.min(5, n.pool.length)).map(q=>({...q, options: shuffleOptions(q)}));
+    state.nodeResults[n.key] = {correct:0, attempted:0};
+  });
+}
+function shuffleOptions(q){
+  // returns shuffled options array + adjusted answer index tracked separately via mapping
+  const idxs = q.options.map((_,i)=>i);
+  const shuffled = shuffle(idxs);
+  const newOptions = shuffled.map(i=>q.options[i]);
+  const newAnswer = shuffled.indexOf(q.a);
+  q._options = newOptions;
+  q._answer = newAnswer;
+  return newOptions;
+}
+
+function startMode(mode){
+  state.mode = mode;
+  if(mode==='pair'){ showScreen('screen-setup'); }
+  else { state.players=['Traveler']; beginJourney('solo'); }
+}
+function beginJourney(mode){
+  if(mode==='pair'){
+    const n1 = document.getElementById('p1name').value.trim() || 'Scribe A';
+    const n2 = document.getElementById('p2name').value.trim() || 'Scribe B';
+    state.players=[n1,n2];
+  }
+  initRun();
+  renderMap();
+  showScreen('screen-map');
+}
+function restart(){ initRun(); renderMap(); showScreen('screen-map'); }
+
+/* ============ HUD ============ */
+function updateHud(){
+  ['hudScore','hudScore2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=state.score; });
+  ['hudStreak','hudStreak2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=state.streak; });
+  const pr = document.getElementById('pigmentRow');
+  if(pr){
+    pr.innerHTML='';
+    state.pigments.slice(-24).forEach(c=>{
+      const d=document.createElement('span'); d.className='pigment-dot'; d.style.background=c; pr.appendChild(d);
+    });
+  }
+  const turnWrap = document.getElementById('hudTurnWrap');
+  if(turnWrap){
+    if(state.mode==='pair'){ turnWrap.style.display='flex'; document.getElementById('hudTurn').textContent = state.players[state.turnIndex]; }
+    else { turnWrap.style.display='none'; }
+  }
+}
+
+/* ============ MAP RENDER ============ */
+function renderMap(){
+  updateHud();
+  const wrap = document.getElementById('mapWrap');
+  const w=900,h=420;
+  let svg = `<svg id="mapSvg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+  // background terrain flourishes
+  svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#e9dcb4" opacity="0.35" rx="14"/>`;
+  svg += `<rect x="6" y="6" width="${w-12}" height="${h-12}" fill="none" stroke="#b8860b" stroke-width="2" opacity="0.5" rx="10"/>`;
+  svg += `<path d="M0,${h-40} Q150,${h-90} 300,${h-40} T600,${h-40} T${w},${h-60}" stroke="#3b5a72" stroke-width="18" fill="none" opacity="0.25"/>`;
+  // path line connecting nodes
+  let pathD = `M${NODES[0].x},${NODES[0].y}`;
+  for(let i=1;i<NODES.length;i++){ pathD += ` Q${(NODES[i-1].x+NODES[i].x)/2},${Math.min(NODES[i-1].y,NODES[i].y)-40} ${NODES[i].x},${NODES[i].y}`; }
+  svg += `<path d="${pathD}" stroke="#7a5c2e" stroke-width="4" stroke-dasharray="10,8" fill="none" opacity="0.6"/>`;
+  // finale node position
+  const finaleX = 880, finaleY = 360;
+  svg += `<line x1="${NODES[NODES.length-1].x}" y1="${NODES[NODES.length-1].y}" x2="${finaleX}" y2="${finaleY}" stroke="#7a5c2e" stroke-width="4" stroke-dasharray="10,8" opacity="0.6"/>`;
+
+  NODES.forEach((n,i)=>{
+    const done = state.nodesDone.includes(n.key);
+    const unlocked = i===0 || state.nodesDone.includes(NODES[i-1].key);
+    const isCurrent = unlocked && !done;
+    let cls='mapnode';
+    if(!unlocked) cls+=' locked'; else if(done) cls+=' done'; else if(isCurrent) cls+=' current';
+    svg += `<g class="${cls}" onclick="${unlocked?`enterNode('${n.key}')`:''}">
+      <circle class="base" cx="${n.x}" cy="${n.y}" r="34" fill="${done?'#cfe8cf':(unlocked?'#f0e4c3':'#d9d0b8')}" stroke="#2b2013" stroke-width="2.5"/>
+      <text x="${n.x}" y="${n.y+8}" text-anchor="middle" font-size="26">${done?'✅':n.icon}</text>
+      <text class="nodelabel" x="${n.x}" y="${n.y+56}" text-anchor="middle">${n.title}</text>
+    </g>`;
+  });
+  const allDone = state.nodesDone.length===NODES.length;
+  svg += `<g class="mapnode ${allDone?'current':'locked'}" onclick="${allDone?`goFinale()`:''}">
+    <circle class="base" cx="${finaleX}" cy="${finaleY}" r="38" fill="${allDone?'#f6e6a0':'#d9d0b8'}" stroke="#2b2013" stroke-width="3"/>
+    <text x="${finaleX}" y="${finaleY+8}" text-anchor="middle" font-size="28">🎨</text>
+    <text class="nodelabel" x="${finaleX}" y="${finaleY+58}" text-anchor="middle">Illumination</text>
+  </g>`;
+  svg += `</svg>`;
+  wrap.innerHTML = svg;
+
+  document.getElementById('mapFlavor').textContent = allDone
+    ? "All waypoints traveled. The final light awaits at the scriptorium."
+    : "Click a glowing waypoint to continue your journey.";
+
+  // random flavor event occasionally
+  const eventArea = document.getElementById('eventArea');
+  if(state.nodesDone.length>0 && Math.random()<0.6){
+    const e = EVENTS[Math.floor(Math.random()*EVENTS.length)];
+    eventArea.innerHTML = `<div class="lore" style="margin-top:10px;">${e.icon} ${e.text}</div>`;
+  } else { eventArea.innerHTML=''; }
+}
+
+/* ============ NODE / QUESTION FLOW ============ */
+function enterNode(key){
+  state.currentNodeKey = key;
+  state.qIndexInNode = 0;
+  const node = NODES.find(n=>n.key===key);
+  const nIdx = NODES.findIndex(n=>n.key===key);
+  document.getElementById('nodeTitle').textContent = node.title;
+  document.getElementById('nodeSubtitle').textContent = node.subtitle;
+  const niche = document.getElementById('nodePortrait');
+  const color = PIGMENT_COLORS[nIdx % PIGMENT_COLORS.length];
+  niche.style.background = `radial-gradient(circle at 35% 30%, #fff8e0, ${color})`;
+  niche.textContent = node.icon;
+  showScreen('screen-node');
+  renderQuestion();
+}
+function currentQuestions(){ return state.nodeQuestions[state.currentNodeKey]; }
+
+function renderTurnBanner(){
+  const banner = document.getElementById('turnBanner');
+  if(state.mode==='pair'){
+    banner.style.display='block';
+    banner.textContent = `🖋️ ${state.players[state.turnIndex]}'s turn to answer`;
+  } else {
+    banner.style.display='none';
+  }
+}
+
+function renderQuestion(){
+  updateHud();
+  const qs = currentQuestions();
+  document.getElementById('nodeQNum').textContent = state.qIndexInNode+1;
+  document.getElementById('nodeQTotal').textContent = qs.length;
+  renderTurnBanner();
+  const q = qs[state.qIndexInNode];
+  const container = document.getElementById('questionContainer');
+  let html = `<div class="qbox">${q.q}</div><div class="options" id="optWrap">`;
+  q._options.forEach((opt,i)=>{
+    html += `<div class="opt" data-i="${i}" onclick="answerQuestion(${i})">${opt}</div>`;
+  });
+  html += `</div><div id="fbArea"></div>`;
+  container.innerHTML = html;
+}
+
+function answerQuestion(i){
+  const qs = currentQuestions();
+  const q = qs[state.qIndexInNode];
+  const opts = document.querySelectorAll('#optWrap .opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  opts.forEach(o=>o.onclick=null);
+  const correct = i===q._answer;
+  const res = state.nodeResults[state.currentNodeKey];
+  res.attempted++;
+  if(correct){
+    res.correct++;
+    state.score += 10 + state.streak*2;
+    state.streak++;
+    const color = PIGMENT_COLORS[Math.floor(Math.random()*PIGMENT_COLORS.length)];
+    state.pigments.push(color);
+    if(state.mode==='pair'){ state.scoreByPlayer[state.players[state.turnIndex]]++; }
+    opts[i].classList.add('correct');
+  } else {
+    state.streak=0;
+    opts[i].classList.add('incorrect');
+    opts[q._answer].classList.add('correct');
+  }
+  document.getElementById('fbArea').innerHTML = `<div class="feedback ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}<span class="explain">${q.exp}</span></div>
+    <div class="center" style="margin-top:10px;"><button class="btn primary" onclick="nextQuestionInNode()">Continue →</button></div>`;
+  updateHud();
+}
+
+function nextQuestionInNode(){
+  if(state.mode==='pair'){ state.turnIndex = (state.turnIndex+1) % state.players.length; }
+  const qs = currentQuestions();
+  state.qIndexInNode++;
+  if(state.qIndexInNode >= qs.length){
+    finishNode();
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishNode(){
+  const node = NODES.find(n=>n.key===state.currentNodeKey);
+  if(!state.nodesDone.includes(node.key)) state.nodesDone.push(node.key);
+  if(node.reflect){
+    state.awaitingReflectContinueTo = 'screen-map';
+    document.getElementById('reflectText').textContent = REFLECTIONS[node.reflect];
+    showScreen('screen-reflect');
+  } else {
+    renderMap();
+    showScreen('screen-map');
+  }
+}
+function afterReflect(){
+  renderMap();
+  showScreen(state.awaitingReflectContinueTo || 'screen-map');
+}
+
+/* ============ FINALE ============ */
+let finaleState = {tasks:[], taskIndex:0, filled:0, total:16};
+
+function goFinale(){
+  showScreen('screen-finale');
+  document.getElementById('finaleIntro').textContent = "The scriptorium is warm with candlelight. Every waypoint you answered correctly gave you pigment. Now it's time to letter and illuminate the final Gospel page — answer these last trials, and the page will fill in before your eyes.";
+  // build illum panel
+  finaleState.total = 16;
+  finaleState.filled = 0;
+  const panel = document.getElementById('illumPanel');
+  panel.innerHTML='';
+  for(let i=0;i<finaleState.total;i++){
+    const c = document.createElement('div'); c.className='illum-cell'; c.id='cell-'+i;
+    panel.appendChild(c);
+  }
+  // build finale task list: 3 matching games + mixed review questions
+  const mixedPool = [].concat(Q_FORGE,Q_WILDS,Q_MONASTERY,Q_SCRIPTORIUM,Q_CROSSING,Q_LINDISFARNE);
+  const mixedQs = pick(mixedPool, 10).map(q=>({...q, options:shuffleOptions(q)}));
+  finaleState.tasks = [
+    {kind:'match', title:"Match each term to its meaning", pairs: pick(MATCH_VOCAB,6)},
+    {kind:'match', title:"Match each Evangelist to his symbol", pairs: MATCH_SYMBOLS.slice()},
+    {kind:'match', title:"Match each manuscript page to its description", pairs: MATCH_PAGES.slice()},
+  ].concat(mixedQs.map(q=>({kind:'q', q})));
+  finaleState.taskIndex=0;
+  renderFinaleTask();
+}
+
+function fillCell(n){
+  for(let k=0;k<n;k++){
+    if(finaleState.filled >= finaleState.total) return;
+    const cell = document.getElementById('cell-'+finaleState.filled);
+    if(cell){
+      const color = PIGMENT_COLORS[finaleState.filled % PIGMENT_COLORS.length];
+      cell.style.backgroundColor = color;
+      cell.style.backgroundImage = 'radial-gradient(circle at 30% 28%, rgba(255,255,255,0.65), transparent 55%), radial-gradient(circle at 72% 75%, rgba(0,0,0,0.28), transparent 55%)';
+      cell.classList.add('filled');
+      cell.textContent = ['✦','❋','✺','✤'][finaleState.filled%4];
+    }
+    finaleState.filled++;
+  }
+}
+
+function renderFinaleTask(){
+  const container = document.getElementById('finaleContainer');
+  if(finaleState.taskIndex >= finaleState.tasks.length){
+    container.innerHTML = `<div class="center"><h3>🌟 The page is complete!</h3><button class="btn primary" onclick="goEnd()">See your pilgrimage results →</button></div>`;
+    return;
+  }
+  const task = finaleState.tasks[finaleState.taskIndex];
+  if(task.kind==='match'){
+    renderMatchTask(task, container);
+  } else {
+    renderFinaleQuestion(task.q, container);
+  }
+}
+
+function renderMatchTask(task, container){
+  const left = shuffle(task.pairs.map((p,i)=>({text:p[0], i})));
+  const right = shuffle(task.pairs.map((p,i)=>({text:p[1], i})));
+  let matched = 0;
+  let selectedLeft = null;
+  let html = `<h3 class="center">${task.title}</h3><div class="match-wrap"><div class="match-col" id="matchLeft"></div><div class="match-col" id="matchRight"></div></div><div id="matchFb" class="center" style="margin-top:8px;"></div>`;
+  container.innerHTML = html;
+  const leftEl = document.getElementById('matchLeft');
+  const rightEl = document.getElementById('matchRight');
+  left.forEach(item=>{
+    const d = document.createElement('div'); d.className='opt'; d.textContent=item.text; d.dataset.idx=item.i;
+    d.onclick=()=>{
+      if(d.classList.contains('matched')) return;
+      document.querySelectorAll('#matchLeft .opt').forEach(o=>o.classList.remove('selected'));
+      d.classList.add('selected'); selectedLeft = d;
+    };
+    leftEl.appendChild(d);
+  });
+  right.forEach(item=>{
+    const d = document.createElement('div'); d.className='opt'; d.textContent=item.text; d.dataset.idx=item.i;
+    d.onclick=()=>{
+      if(d.classList.contains('matched') || !selectedLeft) return;
+      if(String(selectedLeft.dataset.idx)===String(item.i)){
+        selectedLeft.classList.add('matched'); selectedLeft.classList.remove('selected');
+        d.classList.add('matched');
+        matched++;
+        state.score += 8;
+        fillCell(1);
+        selectedLeft=null;
+        document.getElementById('matchFb').innerHTML = `<span style="color:var(--good); font-weight:bold;">✅ Matched!</span>`;
+        if(matched>=task.pairs.length){
+          document.getElementById('matchFb').innerHTML += `<div class="center" style="margin-top:10px;"><button class="btn primary" onclick="advanceFinale()">Continue →</button></div>`;
+        }
+      } else {
+        d.classList.add('incorrect');
+        state.streak=0;
+        setTimeout(()=>{ d.classList.remove('incorrect'); if(selectedLeft) selectedLeft.classList.remove('selected'); selectedLeft=null; },500);
+        document.getElementById('matchFb').innerHTML = `<span style="color:var(--bad); font-weight:bold;">❌ Not a match — try again.</span>`;
+      }
+    };
+    rightEl.appendChild(d);
+  });
+}
+
+function renderFinaleQuestion(q, container){
+  let html = `<div class="qbox">${q.q}</div><div class="options" id="fOptWrap">`;
+  q._options.forEach((opt,i)=>{ html += `<div class="opt" data-i="${i}" onclick="answerFinaleQ(${i})">${opt}</div>`; });
+  html += `</div><div id="fFb"></div>`;
+  container.innerHTML = html;
+}
+function answerFinaleQ(i){
+  const task = finaleState.tasks[finaleState.taskIndex];
+  const q = task.q;
+  const opts = document.querySelectorAll('#fOptWrap .opt');
+  opts.forEach(o=>{o.onclick=null; o.classList.add('disabled');});
+  const correct = i===q._answer;
+  if(correct){ state.score += 10+state.streak*2; state.streak++; fillCell(1); opts[i].classList.add('correct'); }
+  else { state.streak=0; opts[i].classList.add('incorrect'); opts[q._answer].classList.add('correct'); }
+  document.getElementById('fFb').innerHTML = `<div class="feedback ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}<span class="explain">${q.exp}</span></div>
+    <div class="center" style="margin-top:10px;"><button class="btn primary" onclick="advanceFinale()">Continue →</button></div>`;
+}
+function advanceFinale(){
+  finaleState.taskIndex++;
+  renderFinaleTask();
+}
+
+/* ============ END SCREEN ============ */
+function goEnd(){
+  const hs = loadLS('illum_highscore', 0);
+  if(state.score > hs) saveLS('illum_highscore', state.score);
+  document.getElementById('endLore').textContent = "The final leaf is illuminated and set to dry by candlelight. You have walked the manuscript's own pilgrimage — from raw hide to sacred page — and helped preserve learning in a fractured world. This Gospel book will outlive you, carried and read by others long after your work here is done.";
+  const statgrid = document.getElementById('endStats');
+  let statsHtml = `
+    <div class="statbox"><div class="n">${state.score}</div><div class="l">Final Score</div></div>
+    <div class="statbox"><div class="n">${Math.max(state.score, loadLS('illum_highscore',0))}</div><div class="l">Best Score (saved)</div></div>
+    <div class="statbox"><div class="n">${finaleState.filled}/${finaleState.total}</div><div class="l">Manuscript Illuminated</div></div>`;
+  if(state.mode==='pair'){
+    state.players.forEach(p=>{
+      statsHtml += `<div class="statbox"><div class="n">${state.scoreByPlayer[p]}</div><div class="l">${p}'s Correct Answers</div></div>`;
+    });
+  }
+  statgrid.innerHTML = statsHtml;
+  const tbody = document.querySelector('#endTable tbody');
+  tbody.innerHTML='';
+  NODES.forEach(n=>{
+    const r = state.nodeResults[n.key];
+    const pct = r.attempted? Math.round(100*r.correct/r.attempted)+'%' : '—';
+    tbody.innerHTML += `<tr><td>${n.icon} ${n.title}</td><td>${r.correct}</td><td>${r.attempted}</td><td>${pct}</td></tr>`;
+  });
+  showScreen('screen-end');
+}
+
+/* ============================================================
+   HOME STUDY: Flashcards, Practice Test, Lightning Round
+   ============================================================ */
+const ALL_TERMS = [
+  ["Fibula","A clasp used to fasten a garment."],
+  ["Cloisonné","A metalworking technique of inlaid semi-precious stones, popular in Barbarian art."],
+  ["Chasing","Ornamenting metal by indenting into a surface with a hammer."],
+  ["Codex","A manuscript book of folded, sewn sheets framed by two board covers, made of resilient animal hide."],
+  ["Scrolls","The principal literary format of antiquity, originally made from papyrus and stored in capsae; bulky and hard to transport."],
+  ["Vellum","Fine parchment made originally from the skin of a calf."],
+  ["Animal Style","A medieval art form where animals are depicted in a stylized and complicated pattern."],
+  ["Zoomorphic","Having elements of animal shapes."],
+  ["Barbarians","A term eventually used to describe anyone who lived beyond the borders of the Roman Empire."],
+  ["Monasteries","Centers of learning where monks and nuns — among the most educated people of the era — dedicated their lives to religion, education, and art."],
+  ["Bible Manuscripts","Copies of ancient literature, especially the Bible, made by monks and scribes; text stayed the same but illustrations could vary."],
+  ["Iconoclasm","The rejection or destruction of religious images."],
+  ["Incipit Page","A manuscript page featuring the elaborately decorated introductory words of a text."],
+  ["Carpet Page","A full decorative, non-figural page of geometric interlace pattern, resembling a textile."],
+  ["Evangelist Portrait Page","A manuscript page showing an Evangelist seated and writing, with his symbol."],
+];
+const ALL_WORKS = [
+  ["Image 53 — Merovingian Looped Fibula", "Culture: Merovingian (Early Medieval Europe). Medium: Metalwork — silver gilt, filigree, inlays of semi-precious stones. Size: 6\" high. Date: mid 6th century. Location: Cabinet des Médailles, Paris. Vocab: Fibula, Cloisonné, Chasing."],
+  ["Image 55 — Lindisfarne Gospels (Evangelist Portrait, Incipit Page, Cross-Carpet Page)", "Artist: Eadfrith, Bishop of Lindisfarne. Culture: Hiberno-Saxon (Early Medieval Europe). Medium: Manuscript, paint on vellum. Date: c. 698–721. Origin: Lindisfarne, England. Vocab: Animal Style, Vellum, Zoomorphic."],
+  ["The Four Evangelists & Symbols", "Matthew = Angel/Man, Mark = Lion, Luke = Ox, John = Eagle. Mnemonic: A-L-O-E."],
+];
+
+let flashDeck = [];
+let flashIndex = 0;
+let flashFlipped = false;
+
+function buildFlashDeck(){
+  flashDeck = shuffle(ALL_TERMS.concat(ALL_WORKS));
+  flashIndex = 0; flashFlipped=false;
+}
+function startFlashcards(){ buildFlashDeck(); renderFlash(); showScreen('screen-flash'); }
+function renderFlash(){
+  document.getElementById('flashProg').textContent = `Card ${flashIndex+1} of ${flashDeck.length}`;
+  const [term,def] = flashDeck[flashIndex];
+  const el = document.getElementById('flashCard');
+  el.innerHTML = flashFlipped ? `<div><em>${def}</em></div>` : `<div><b>${term}</b><br><span style="font-size:0.8em; color:var(--ink-soft);">(tap to flip)</span></div>`;
+}
+function flipFlash(){ flashFlipped=!flashFlipped; renderFlash(); }
+function nextFlash(){ flashFlipped=false; flashIndex=(flashIndex+1)%flashDeck.length; renderFlash(); }
+function prevFlash(){ flashFlipped=false; flashIndex=(flashIndex-1+flashDeck.length)%flashDeck.length; renderFlash(); }
+function shuffleFlash(){ buildFlashDeck(); renderFlash(); }
+
+/* ---- Practice Test ---- */
+let practiceQs = []; let practiceIndex=0; let practiceScore=0;
+function startPracticeTest(){
+  const mixedPool = [].concat(Q_FORGE,Q_WILDS,Q_MONASTERY,Q_SCRIPTORIUM,Q_CROSSING,Q_LINDISFARNE);
+  practiceQs = pick(mixedPool, Math.min(20, mixedPool.length)).map(q=>({...q, options:shuffleOptions(q)}));
+  practiceIndex=0; practiceScore=0;
+  showScreen('screen-practice');
+  renderPractice();
+}
+function renderPractice(){
+  document.getElementById('pQNum').textContent = practiceIndex+1;
+  document.getElementById('pQTotal').textContent = practiceQs.length;
+  document.getElementById('pScore').textContent = practiceScore;
+  const q = practiceQs[practiceIndex];
+  const container = document.getElementById('practiceContainer');
+  let html = `<div class="qbox">${q.q}</div><div class="options" id="pOptWrap">`;
+  q._options.forEach((opt,i)=>{ html += `<div class="opt" data-i="${i}" onclick="answerPractice(${i})">${opt}</div>`; });
+  html += `</div><div id="pFb"></div>`;
+  container.innerHTML = html;
+}
+function answerPractice(i){
+  const q = practiceQs[practiceIndex];
+  const opts = document.querySelectorAll('#pOptWrap .opt');
+  opts.forEach(o=>{o.onclick=null; o.classList.add('disabled');});
+  const correct = i===q._answer;
+  if(correct){ practiceScore++; opts[i].classList.add('correct'); } else { opts[i].classList.add('incorrect'); opts[q._answer].classList.add('correct'); }
+  const isLast = practiceIndex===practiceQs.length-1;
+  document.getElementById('pFb').innerHTML = `<div class="feedback ${correct?'good':'bad'}">${correct?'✅ Correct!':'❌ Not quite.'}<span class="explain">${q.exp}</span></div>
+    <div class="center" style="margin-top:10px;"><button class="btn primary" onclick="${isLast?'finishPractice()':'nextPractice()'}">${isLast?'See results →':'Continue →'}</button></div>`;
+}
+function nextPractice(){ practiceIndex++; renderPractice(); }
+function finishPractice(){
+  document.getElementById('practiceContainer').innerHTML = `<div class="center">
+    <h2>📝 Practice Test Complete</h2>
+    <div class="statbox" style="display:inline-block; min-width:180px;"><div class="n">${practiceScore}/${practiceQs.length}</div><div class="l">Correct</div></div>
+    <p><button class="btn primary" onclick="startPracticeTest()">Take Another</button>
+    <button class="btn" onclick="showScreen('screen-home')">← Back</button></p>
+  </div>`;
+}
+
+/* ---- Lightning Round ---- */
+let lightPool=[]; let lightScore=0; let lightTimeLeft=60; let lightTimer=null;
+function startLightning(){
+  lightPool = shuffle([].concat(Q_FORGE,Q_WILDS,Q_MONASTERY,Q_SCRIPTORIUM,Q_CROSSING,Q_LINDISFARNE)).map(q=>({...q, options:shuffleOptions(q)}));
+  lightScore=0; lightTimeLeft=60;
+  document.getElementById('lightScore').textContent=0;
+  document.getElementById('lightTime').textContent=60;
+  document.getElementById('timerFill').style.width='100%';
+  showScreen('screen-lightning');
+  renderLightning();
+  if(lightTimer) clearInterval(lightTimer);
+  lightTimer = setInterval(()=>{
+    lightTimeLeft--;
+    document.getElementById('lightTime').textContent = lightTimeLeft;
+    document.getElementById('timerFill').style.width = (lightTimeLeft/60*100)+'%';
+    if(lightTimeLeft<=0){ clearInterval(lightTimer); endLightning(); }
+  },1000);
+}
+let lightIdx=0;
+function renderLightning(){
+  if(lightIdx>=lightPool.length){ lightIdx=0; lightPool = shuffle(lightPool); }
+  const q = lightPool[lightIdx];
+  const container = document.getElementById('lightningContainer');
+  let html = `<div class="qbox">${q.q}</div><div class="options" id="lOptWrap">`;
+  q._options.forEach((opt,i)=>{ html += `<div class="opt" data-i="${i}" onclick="answerLightning(${i})">${opt}</div>`; });
+  html += `</div>`;
+  container.innerHTML = html;
+}
+function answerLightning(i){
+  const q = lightPool[lightIdx];
+  if(i===q._answer){ lightScore++; document.getElementById('lightScore').textContent = lightScore; }
+  lightIdx++;
+  if(lightTimeLeft>0) renderLightning();
+}
+function endLightning(){
+  document.getElementById('lightningContainer').innerHTML = `<div class="center">
+    <h2>⚡ Time's Up!</h2>
+    <div class="statbox" style="display:inline-block; min-width:180px;"><div class="n">${lightScore}</div><div class="l">Correct Answers</div></div>
+    <p><button class="btn primary" onclick="startLightning()">Go Again</button>
+    <button class="btn" onclick="showScreen('screen-home')">← Back</button></p>
+  </div>`;
+}
+
+/* ============ INIT ============ */
+window.addEventListener('DOMContentLoaded', ()=>{
+  // nothing required yet; screens start on screen-start
+});
+</script>
+</body>
+</html>

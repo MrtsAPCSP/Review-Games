@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Lux Nova: The Cathedral Builders' Guild</title>
+<style>
+  :root{
+    --stone-950:#12141c;
+    --stone-900:#1a1e2b;
+    --stone-800:#242a3c;
+    --stone-700:#323a52;
+    --stone-600:#4a5478;
+    --stone-500:#6b7699;
+    --parchment:#f2e8d5;
+    --parchment-dim:#d9cba8;
+    --gold:#d4af37;
+    --gold-bright:#f0c94a;
+    --ruby:#a4243b;
+    --ruby-bright:#d13b56;
+    --cobalt:#1e4d9b;
+    --cobalt-bright:#2f6fd6;
+    --emerald:#1c6e5c;
+    --emerald-bright:#2a9d80;
+    --amethyst:#5b3a8e;
+    --good:#3fbf7f;
+    --bad:#e0555f;
+    --radius:14px;
+    --shadow: 0 8px 30px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:Georgia,'Palatino Linotype','Book Antiqua',serif;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(212,175,55,0.06), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(163,36,59,0.08), transparent 45%),
+      linear-gradient(180deg, var(--stone-950), var(--stone-900) 60%, var(--stone-950));
+    color:var(--parchment);
+    min-height:100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #app{max-width:1080px;margin:0 auto;padding:18px 16px 60px;}
+  h1,h2,h3{font-family:'Trajan Pro',Georgia,'Palatino Linotype',serif;letter-spacing:0.5px;margin:0 0 8px;}
+  h1{font-size:1.9rem;color:var(--gold-bright);}
+  h2{font-size:1.4rem;color:var(--gold);}
+  h3{font-size:1.1rem;color:var(--parchment);}
+  p{line-height:1.55;color:var(--parchment-dim);}
+  .sans{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+  button{font-family:inherit;cursor:pointer;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    color:#251c05;font-weight:700;border:none;border-radius:10px;
+    padding:13px 22px;font-size:1rem;box-shadow:0 4px 14px rgba(212,175,55,0.35);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(212,175,55,0.45);}
+  .btn:active{transform:translateY(1px);}
+  .btn.secondary{
+    background:linear-gradient(180deg,var(--stone-700),var(--stone-800));
+    color:var(--parchment);box-shadow:none;border:1px solid var(--stone-600);
+  }
+  .btn.ghost{background:transparent;border:1px solid var(--stone-600);color:var(--parchment-dim);box-shadow:none;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .card{
+    background:linear-gradient(180deg, var(--stone-800), var(--stone-900));
+    border:1px solid var(--stone-700);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow:var(--shadow);
+  }
+  .arch-frame{
+    position:relative;
+    border-top-left-radius:90px;border-top-right-radius:90px;
+    border:2px solid var(--gold);
+    background:linear-gradient(180deg, rgba(212,175,55,0.06), transparent 40%), var(--stone-900);
+    padding:26px 24px;
+  }
+  .center{text-align:center;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row.center{justify-content:center;}
+  .row.between{justify-content:space-between;align-items:center;}
+  .pill{
+    display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;
+    background:var(--stone-700);color:var(--parchment-dim);font-family:system-ui,sans-serif;letter-spacing:.4px;
+  }
+  .pill.gold{background:rgba(212,175,55,0.18);color:var(--gold-bright);border:1px solid var(--gold);}
+  .pill.good{background:rgba(63,191,127,0.15);color:var(--good);border:1px solid var(--good);}
+  .pill.bad{background:rgba(224,85,95,0.15);color:var(--bad);border:1px solid var(--bad);}
+  .hud{
+    position:sticky;top:0;z-index:50;
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(18,20,28,0.92);backdrop-filter:blur(4px);
+    border:1px solid var(--stone-700);border-radius:12px;
+    padding:9px 16px;margin-bottom:16px;font-family:system-ui,sans-serif;font-size:0.85rem;
+    gap:10px;flex-wrap:wrap;
+  }
+  .hud .stat{color:var(--parchment-dim);}
+  .hud .stat b{color:var(--gold-bright);}
+  .stone-divider{height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:18px 0;opacity:.5;}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulseGood{0%{box-shadow:0 0 0 0 rgba(63,191,127,0.6);}70%{box-shadow:0 0 0 14px rgba(63,191,127,0);}100%{box-shadow:0 0 0 0 rgba(63,191,127,0);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .shake{animation:shake .3s ease;}
+  .pulse-good{animation:pulseGood .8s ease;}
+
+  /* Mode / journey cards */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr;}.grid3{grid-template-columns:1fr;}}
+  .mode-card{
+    background:var(--stone-800);border:1px solid var(--stone-700);border-radius:var(--radius);
+    padding:18px;cursor:pointer;transition:.15s;text-align:left;
+  }
+  .mode-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .mode-card .icon{font-size:1.8rem;}
+
+  .journey-map{display:flex;flex-direction:column;gap:10px;}
+  .journey-node{
+    display:flex;align-items:center;gap:14px;background:var(--stone-800);
+    border:1px solid var(--stone-700);border-radius:12px;padding:14px 16px;cursor:pointer;
+    transition:.15s;position:relative;
+  }
+  .journey-node:hover{border-color:var(--gold);}
+  .journey-node.locked{opacity:.45;cursor:not-allowed;}
+  .journey-node.done{border-color:var(--good);}
+  .journey-node .num{
+    width:38px;height:38px;border-radius:50%;background:var(--stone-700);color:var(--parchment);
+    display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-family:system-ui,sans-serif;
+  }
+  .journey-node.done .num{background:var(--good);color:#0a1e14;}
+  .journey-node .info{flex:1;}
+  .journey-node .info .place{font-size:0.72rem;color:var(--gold);letter-spacing:1px;text-transform:uppercase;font-family:system-ui,sans-serif;}
+  .journey-connector{width:2px;height:14px;background:var(--stone-600);margin-left:33px;}
+
+  /* Hotspot builder */
+  .hotspot-wrap{position:relative;width:100%;max-width:680px;margin:0 auto;}
+  .hotspot-wrap svg{width:100%;display:block;}
+  .hotspot{cursor:pointer;transition:.15s;}
+  .hotspot circle{fill:rgba(212,175,55,0.35);stroke:var(--gold);stroke-width:2;}
+  .hotspot:hover circle{fill:rgba(212,175,55,0.6);}
+  .hotspot.correct circle{fill:rgba(63,191,127,0.55);stroke:var(--good);}
+  .hotspot.wrong circle{fill:rgba(224,85,95,0.6);stroke:var(--bad);}
+  .hotspot text{fill:var(--stone-950);font-size:13px;font-weight:700;font-family:system-ui,sans-serif;pointer-events:none;}
+  .term-bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center;}
+  .term-chip{
+    background:var(--stone-700);color:var(--parchment);border:1px solid var(--stone-600);
+    border-radius:8px;padding:8px 14px;font-size:0.9rem;font-family:system-ui,sans-serif;
+  }
+  .term-chip.selected{background:var(--gold);color:#251c05;border-color:var(--gold-bright);font-weight:700;}
+  .term-chip.used{opacity:.25;text-decoration:line-through;pointer-events:none;}
+  .def-callout{
+    background:rgba(212,175,55,0.08);border:1px solid var(--gold);border-radius:10px;
+    padding:12px 14px;margin-top:12px;font-size:0.92rem;color:var(--parchment);min-height:20px;
+  }
+  .progress-bar-outer{height:10px;background:var(--stone-700);border-radius:6px;overflow:hidden;margin-top:6px;}
+  .progress-bar-inner{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));transition:width .3s ease;}
+
+  /* Quiz */
+  .quiz-choice{
+    display:block;width:100%;text-align:left;background:var(--stone-800);border:1px solid var(--stone-600);
+    color:var(--parchment);border-radius:10px;padding:13px 16px;margin-bottom:10px;font-size:0.98rem;
+    font-family:system-ui,sans-serif;transition:.12s;
+  }
+  .quiz-choice:hover{border-color:var(--gold);background:var(--stone-700);}
+  .quiz-choice.correct{background:rgba(63,191,127,0.18);border-color:var(--good);}
+  .quiz-choice.wrong{background:rgba(224,85,95,0.18);border-color:var(--bad);}
+  .quiz-choice:disabled{cursor:default;}
+  .quiz-progress{display:flex;gap:5px;margin-bottom:14px;}
+  .quiz-progress .dot{flex:1;height:6px;border-radius:3px;background:var(--stone-700);}
+  .quiz-progress .dot.answered-correct{background:var(--good);}
+  .quiz-progress .dot.answered-wrong{background:var(--bad);}
+  .quiz-progress .dot.current{background:var(--gold);}
+
+  /* Sort game */
+  .sort-zone{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  @media(max-width:600px){.sort-zone{grid-template-columns:1fr;}}
+  .sort-bin{
+    min-height:220px;border:2px dashed var(--stone-600);border-radius:12px;padding:12px;
+    background:rgba(255,255,255,0.02);
+  }
+  .sort-bin.romanesque{border-color:var(--stone-600);}
+  .sort-bin.gothic{border-color:var(--gold);}
+  .sort-bin h4{margin:0 0 10px;font-family:system-ui,sans-serif;text-align:center;letter-spacing:1px;font-size:0.85rem;text-transform:uppercase;}
+  .sort-card-stack{display:flex;flex-direction:column;gap:8px;}
+  .sort-card{
+    background:var(--stone-800);border:1px solid var(--stone-600);border-radius:8px;padding:10px 12px;
+    font-size:0.9rem;font-family:system-ui,sans-serif;
+  }
+
+  /* Flashcards (study hall) */
+  .flip-card{
+    width:100%;max-width:520px;margin:14px auto;height:220px;position:relative;cursor:pointer;
+    perspective:1000px;
+  }
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-face{
+    position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;
+    border:1px solid var(--gold);font-family:system-ui,sans-serif;
+  }
+  .flip-front{background:linear-gradient(160deg,var(--stone-800),var(--stone-900));font-size:1.5rem;color:var(--gold-bright);font-weight:700;}
+  .flip-back{background:linear-gradient(160deg,var(--cobalt),var(--stone-900));transform:rotateY(180deg);font-size:1.02rem;color:var(--parchment);}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;}
+  .filter-chip{
+    background:var(--stone-800);border:1px solid var(--stone-600);color:var(--parchment-dim);
+    border-radius:20px;padding:6px 14px;font-size:0.8rem;font-family:system-ui,sans-serif;
+  }
+  .filter-chip.active{background:var(--gold);color:#251c05;border-color:var(--gold-bright);font-weight:700;}
+
+  .timer-badge{
+    font-family:system-ui,sans-serif;font-weight:700;font-size:1.1rem;color:var(--ruby-bright);
+  }
+  .timer-badge.low{color:var(--bad);animation:pulseGood 1s infinite;}
+
+  .narrative-box{
+    background:rgba(0,0,0,0.2);border-left:3px solid var(--gold);padding:14px 18px;border-radius:6px;
+    font-style:italic;color:var(--parchment-dim);margin-bottom:16px;
+  }
+  .glossary-list{max-height:420px;overflow-y:auto;padding-right:6px;}
+  .glossary-item{border-bottom:1px solid var(--stone-700);padding:10px 0;font-family:system-ui,sans-serif;}
+  .glossary-item b{color:var(--gold-bright);}
+  .glossary-item span{color:var(--parchment-dim);font-size:0.9rem;}
+
+  .breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--stone-700);font-family:system-ui,sans-serif;font-size:0.92rem;}
+  .rank-badge{
+    display:inline-block;padding:8px 18px;border-radius:30px;font-weight:700;font-family:system-ui,sans-serif;
+    background:linear-gradient(90deg,var(--gold),var(--gold-bright));color:#251c05;
+  }
+  a.link-btn{text-decoration:none;}
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--stone-600);border-radius:4px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   LUX NOVA: THE CATHEDRAL BUILDERS' GUILD
+   AP Art History — Unit 3.5 Gothic Review Game
+   ============================================================ */
+
+/* ---------- UTILITIES ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function sample(arr,n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+function el(html){ const d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
+function fmtTime(s){ const m=Math.floor(s/60); const sec=s%60; return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec; }
+
+const STORAGE_KEY = 'luxnova_progress_v1';
+function loadSave(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function writeSave(data){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+}
+function getSave(){
+  let s = loadSave();
+  if(!s){
+    s = { completedChapters: {}, highScores: {}, guildRank: 'Novice Apprentice', totalStarsEver:0 };
+    writeSave(s);
+  }
+  return s;
+}
+function updateSave(mutator){
+  const s = getSave();
+  mutator(s);
+  writeSave(s);
+  return s;
+}
+
+/* ============================================================
+   CONTENT DATA — pulled from AH Unit 3.5 Gothic materials
+   ============================================================ */
+
+// --- Interior Cutaway hotspots (12 core architecture terms) ---
+const CUTAWAY = [
+  {id:'pinnacle', term:'Pinnacle', x:865, y:470, r:26,
+    def:"A pointed ornament crowning a pier or buttress. Its weight helps drive the flying buttress's thrust safely down into the ground (think of it as the cathedral's stone 'party hat')."},
+  {id:'flyingbuttress', term:'Flying Buttress', x:790, y:330, r:30,
+    def:"A stone arch and pier reaching from an outer pillar to the upper wall, catching the outward thrust of the vault and channeling it to the ground — also resists wind-shear. Chartres was the first to use this system so extensively."},
+  {id:'vaultingweb', term:'Vaulting Web', x:430, y:135, r:26,
+    def:"The thin stone panels that fill the spaces between the ribs of a vault, forming the actual ceiling surface between the ribs."},
+  {id:'diagonalribs', term:'Diagonal Ribs', x:520, y:112, r:24,
+    def:"Ribs that cross a vault bay on the diagonal, forming the X-shaped stone skeleton of a rib vault — you can see the pointed arch in three dimensions where they meet."},
+  {id:'transverserib', term:'Transverse Rib', x:500, y:88, r:22,
+    def:"A rib running straight across the nave, marking the boundary between one bay and the next."},
+  {id:'springing', term:'Springing', x:328, y:203, r:22,
+    def:"The point where an arch or vault rib begins to curve upward from its supporting pier — this is where the wall 'becomes' the vault."},
+  {id:'clerestory', term:'Clerestory', x:560, y:270, r:28,
+    def:"The upper level of the nave wall, pierced with windows that rise above the aisle roofs to flood the nave with colored light — this is Suger's Lux Nova in action."},
+  {id:'oculus', term:'Oculus', x:500, y:206, r:16,
+    def:"A small round window or opening, often set within tracery or a gable, letting in an extra beam of light."},
+  {id:'lancet', term:'Lancet', x:420, y:280, r:22,
+    def:"A tall, narrow window topped with a pointed arch, almost always filled with stained glass."},
+  {id:'triforium', term:'Triforium', x:560, y:392, r:26,
+    def:"A narrow gallery or arcaded passage between the nave arcade below and the clerestory above — a decorative 'in-between' story."},
+  {id:'navearcade', term:'Nave Arcade', x:520, y:522, r:28,
+    def:"The row of arches carried on piers that separates the nave from the side aisles at ground level — the level worshippers actually walked through."},
+  {id:'compoundpier', term:'Compound Pier with Responds', x:322, y:520, r:26,
+    def:"A pier built from a cluster of attached shafts (responds) that visually continue upward, unbroken, into the ribs of the vault above — the eye is pulled straight to heaven."}
+];
+
+// --- Façade / exterior & plan-view hotspots (10 more terms) ---
+const FACADE = [
+  {id:'rosewindow', term:'Rose Window', x:500, y:330, r:34,
+    def:"A circular window filled with stained glass, placed at the end of a transept or on a church's façade. Chartres has three: West, North, and South."},
+  {id:'tracery', term:'Tracery', x:500, y:330, r:16,
+    def:"The ornamental stonework that holds the stained glass in place within a window — the 'skeleton' inside the rose or lancet."},
+  {id:'spire', term:'Spire / Steeple', x:222, y:118, r:24,
+    def:"A tall, pointed tower rising from a church, often marking the crossing or the west front — one more way Gothic architecture reaches toward heaven."},
+  {id:'trefoil', term:'Trefoil', x:500, y:452, r:16,
+    def:"A three-lobed ornamental motif resembling a three-leafed plant — common in Gothic tracery, carving, and window openings."},
+  {id:'narthex', term:'Narthex', x:500, y:610, r:24,
+    def:"An entrance vestibule or lobby at the west end of a church — the space you pass through before entering the nave proper."},
+  {id:'stringcourse', term:'Stringcourse', x:500, y:486, r:14,
+    def:"A raised horizontal band of stone that runs across a building's façade, visually dividing it into levels."},
+  {id:'archivolt', term:'Archivolt', x:500, y:552, r:18,
+    def:"A series of concentric decorative moldings that frame an arch, especially over a portal doorway."},
+  {id:'jamb', term:'Jamb', x:432, y:598, r:16,
+    def:"The vertical side post of a doorway or portal — at Chartres, the Royal Portal jambs are covered in rows of elongated carved figures."},
+  {id:'transept', term:'Transept', x:128, y:612, r:20,
+    def:"The aisle that crosses the nave at a right angle, giving the church its cross-shaped (cruciform) plan. This is where the North and South Rose Windows sit at Chartres."},
+  {id:'bay', term:'Bay', x:96, y:660, r:14,
+    def:"A single vertical unit of a church's structure, defined by a set of piers/columns and repeated down the length of the nave — like a repeating module."}
+];
+
+// --- Full glossary (Study Hall) — combines above + the 4 non-architecture works ---
+const GLOSSARY = [
+  ...CUTAWAY.map(h=>({term:h.term, def:h.def, cat:'Architecture: Structure'})),
+  ...FACADE.map(h=>({term:h.term, def:h.def, cat:'Architecture: Façade & Décor'})),
+  {term:'Cathedral', def:"A church that houses the cathedra (Latin for 'seat'), the throne of a bishop — making it the principal church of a diocese.", cat:'Architecture: Structure'},
+  {term:'Rib Vault', def:"A vault in which diagonal ribs form a web-like skeleton that partially carries the weight of the stone ceiling, first perfected at the end of the Romanesque period.", cat:'Architecture: Structure'},
+  {term:'Moralized Bible (Bible Moralisée)', def:"An illuminated manuscript that pairs Old and New Testament stories side by side with commentary, teaching moral lessons through parallel imagery.", cat:'Other Gothic Works'},
+  {term:'Pietà', def:"A painting or sculpture showing the dead body of Christ lying across the lap of a grieving Virgin Mary.", cat:'Other Gothic Works'},
+  {term:'Haggadah', def:"A Jewish text — the word means 'narration' — that fulfills the obligation to retell the story of the Exodus from Egypt during Passover.", cat:'Other Gothic Works'},
+  {term:'Passover', def:"An eight-day Jewish festival commemorating the Exodus from Egypt, named for the angel of death 'passing over' homes marked with lamb's blood.", cat:'Other Gothic Works'}
+];
+
+// --- Romanesque vs. Gothic sorting bank ---
+const SORT_ITEMS = [
+  {text:"Massive, drum-like columns", answer:'romanesque'},
+  {text:"Thick walls with small windows and dark interiors", answer:'romanesque'},
+  {text:"Round arches", answer:'romanesque'},
+  {text:"Columns feel like fortress walls holding up the roof", answer:'romanesque'},
+  {text:"Pointed arches that relieve thrust on other structural elements", answer:'gothic'},
+  {text:"Flying buttresses carry the roof's outward force to piers outside the building", answer:'gothic'},
+  {text:"Slender columns that continue upward, becoming part of the vault ribs", answer:'gothic'},
+  {text:"Large stained-glass windows flood the nave with colored light", answer:'gothic'},
+  {text:"Rib vaults meeting overhead in a pointed, web-like pattern", answer:'gothic'},
+  {text:"The pointed arch was likely borrowed from Islamic architecture seen in Spain", answer:'gothic'},
+  {text:"Abbot Suger's belief that 'the presence of light = the presence of God' drove this style's windows", answer:'gothic'},
+  {text:"Named 'Gothic' as an insult by Giorgio Vasari, comparing it to a 'barbaric' tribe", answer:'gothic'},
+  {text:"Interior feels cave-like and heavy", answer:'romanesque'},
+  {text:"Rose windows and soaring, overwhelming interior spaces", answer:'gothic'}
+];
+
+// --- Historical background quiz bank ---
+const HISTORY_BANK = [
+  q("Who coined the term 'Gothic' as an insult in the 16th century?", ["Giorgio Vasari","Abbot Suger","Giotto di Bondone","Pseudo-Dionysius"], 0,
+    "Giorgio Vasari compared the style to the Goths — a 'barbaric' tribe not known for great architecture."),
+  q("The word 'Gothic' originally insulted the style by comparing it to which group?", ["The Vikings","The Goths","The Romans","The Moors"], 1,
+    "The Goths (5th–8th century) were seen as a barbaric tribe with no great architectural achievements."),
+  q("Which abbot championed the idea that architectural light reveals God's presence?", ["Abbot Suger of St. Denis","Enrico Scrovegni","Pope Boniface VIII","Louis IX"], 0,
+    "Abbot Suger of St. Denis pushed for churches filled with light, inspired by Pseudo-Dionysius."),
+  q("Suger's light-filled philosophy was drawn from the writings of...", ["Aristotle","Pseudo-Dionysius","Augustine","Vasari"], 1,
+    "Suger studied Pseudo-Dionysius, who argued that the presence of light equals the presence of God."),
+  q("What Latin phrase describes the 'new light' Gothic architects pursued?", ["Ars Nova","Lux Nova","Pax Romana","Sola Fide"], 1,
+    "Lux Nova — 'new light' — captures the Gothic obsession with flooding interiors with colored light."),
+  q("Before Gothic innovations, Romanesque church interiors were generally...", ["Bright and airy","Dark","Painted entirely white","Open-air"], 1,
+    "Romanesque churches were dark; Gothic architecture was developed specifically to bring light inside."),
+  q("What are the two key features that define the Gothic style?", ["Round arch & mosaic","Pointed arch & stained glass","Flat roof & fresco","Dome & marble"], 1,
+    "The pointed arch and stained glass are the two defining Gothic features."),
+  q("Where did the pointed arch likely originate before French Gothic architects adopted it?", ["Ancient Rome","Islamic architecture in Spain","Byzantine Constantinople","Ancient Egypt"], 1,
+    "The pointed arch was likely borrowed from Islamic architecture seen in Spain at the time."),
+  q("What structural advantage did the pointed arch have over the round Romanesque arch?", ["It was cheaper to build","It relieved thrust/stress, allowing slenderer supports","It required no foundation","It let architects skip the vault entirely"], 1,
+    "The pointed arch relieved some of the thrust, reducing stress on other structural elements."),
+  q("In Gothic churches (unlike Romanesque), the column...", ["Stops at the top of the arcade","Continues all the way up, becoming part of the vault","Is removed entirely","Is replaced by a wooden post"], 1,
+    "In Gothic architecture the column continues all the way to the roof, becoming part of the vault."),
+  q("What is a 'bay' in cathedral architecture?", ["A side chapel","The space between posts, columns, or buttresses along the building's length","A stained-glass technique","A type of choir stall"], 1,
+    "A bay is a vertical section/repeating unit along the length of the building."),
+  q("Gothic architecture first flourished in an era of peace and prosperity centered around which city?", ["Rome","Paris","Avignon","Padua"], 1,
+    "Centralized monarchy and prosperity around Paris fueled the birth of Gothic architecture."),
+  q("Which THREE crucial events mark the Late Gothic period?", ["Renaissance, Reformation, Enlightenment","Hundred Years' War, Babylonian Captivity, Black Death","Crusades, Iconoclasm, Schism","Norman Conquest, Magna Carta, Black Death"], 1,
+    "The Hundred Years' War, the Babylonian Captivity of the papacy, and the Black Death defined Late Gothic Europe."),
+  q("During the Hundred Years' War (1337–1453), which two countries fought?", ["Spain and Portugal","France and England","Italy and Germany","England and Scotland"], 1,
+    "France and England fought for over a century, leaving both countries poor and ruined."),
+  q("What was the 'Babylonian Captivity' of the Church (1304–1377)?", ["Jews were exiled from France","The papacy relocated from Rome to Avignon, France","The Pope was captured by Vikings","Cathedrals were converted into fortresses"], 1,
+    "French popes moved the church's headquarters from Rome to Avignon, causing a major spiritual crisis with rival popes."),
+  q("Roughly what fraction of Europe's population died in the Black Death (1348)?", ["One-tenth","One-third","Two-thirds","Nearly all"], 1,
+    "About one-third of Europe's population died, widely believed at the time to be a punishment from God."),
+  q("What effect did the Black Death have on art and architecture?", ["It sped up construction","It brought art and architecture nearly to a standstill","It had no effect","It caused a shift to metalwork only"], 1,
+    "The devastation of the Black Death caused art and architectural production to nearly halt."),
+  q("What shape is the ground plan of a typical Gothic cathedral?", ["Circular","Cruciform (cross-shaped)","Square","Triangular"], 1,
+    "Gothic cathedrals use a cruciform, axial/basilica plan.")
+];
+
+// --- Chapter question banks for the four non-architecture works ---
+const MORALIZED_BIBLE_BANK = [
+  q("What is the primary purpose of a Moralized Bible (Bible Moralisée)?", ["To replace the standard Bible entirely","To pair Old and New Testament stories with moral commentary through image and text","To record royal genealogies","To document construction of cathedrals"], 1,
+    "A Moralized Bible parallels Old and New Testament stories with illustrations, text, and commentary to teach moral lessons."),
+  q("What materials were used to create the Moralized Bible shown in this unit?", ["Oil paint on canvas","Ink, tempera, and gold leaf on vellum","Fresco on plaster","Egg tempera on wood panel"], 1,
+    "It's an illuminated manuscript made with ink, tempera, and gold leaf on vellum."),
+  q("Approximately when was this Moralized Bible created?", ["c. 1000–1010 CE","c. 1226–1234 CE","c. 1400–1410 CE","c. 800–810 CE"], 1,
+    "The Moralized Bible dates to c. 1226–1234 CE, in Gothic Europe."),
+  q("Which French king is shown on one page alongside Blanche of Castile?", ["Louis IX","Charlemagne","Philip Augustus","Charles V"], 0,
+    "The page shows Blanche of Castile and King Louis IX of France."),
+  q("What was Blanche of Castile's relationship to Louis IX?", ["His wife","His mother, who acted as regent","His sister","His daughter"], 1,
+    "Blanche of Castile was Louis IX's mother and served as regent."),
+  q("On the Apocalypse page, what does the winepress symbolize according to the commentary?", ["Heaven","Hell","The Church","The royal court"], 1,
+    "The commentary explains that the great winepress signifies hell."),
+  q("In the Apocalypse illustration, who pours grapes into the winepress?", ["An angel","Christ, shown with a cruciform halo","A demon","King Louis IX"], 1,
+    "Christ, identifiable by his cruciform halo, pours grapes from the basket on his back into the winepress."),
+  q("What creatures are shown herding the damned into the hellmouth?", ["Angels","Demons","Soldiers","Priests"], 1,
+    "Demons herd the damned into a hellmouth — literally the jaws of hell."),
+  q("Which corrupt figure is identifiable among the damned by his mitre?", ["A king","A bishop","A knight","A merchant"], 1,
+    "A corrupt bishop is identified in the scene of hell by his mitre (special hat)."),
+  q("The page depicting Jewish men turning away from Christian priests reflects what troubling historical reality?", ["A celebration of religious diversity","Antisemitic messaging that promoted hate toward Jews in the later Middle Ages","A record of interfaith cooperation","A depiction of a trade agreement"], 1,
+    "This page tried to convince Christian readers that Jews had 'turned away' from God — antisemitic messaging that fueled real persecution in the period. It's important context for understanding medieval art critically."),
+  q("What Bible verse describes seven angels holding the seven last plagues?", ["Genesis 1:1","Revelation 15:1","Psalm 23:1","Matthew 5:1"], 1,
+    "Revelation 15:1 describes the seven angels with the seven last plagues, shown facing Christ.")
+];
+
+const ROTTGEN_PIETA_BANK = [
+  q("Where was the Röttgen Pietà created?", ["Chartres, France","The Rhineland, Germany","Padua, Italy","Avignon, France"], 1,
+    "The Röttgen Pietà comes from the Rhineland region of Germany."),
+  q("Approximately when was the Röttgen Pietà made?", ["ca. 1000–1025","ca. 1300–1325","ca. 1500–1525","ca. 700–725"], 1,
+    "It dates to roughly 1300–1325 CE."),
+  q("What material is the Röttgen Pietà made of?", ["Marble","Painted wood","Bronze","Ivory"], 1,
+    "It is carved and painted wood, about 2'10.5\" high."),
+  q("Define 'Pietà.'", ["A portrait of a king","Christ's dead body lying across the lap of the grieving Virgin Mary","A scene of the Last Supper","A depiction of the Annunciation"], 1,
+    "A Pietà shows the crucified Christ lying on his mother Mary's lap."),
+  q("What distinguishes the emotional tone of German Gothic sculpture like the Röttgen Pietà?", ["Cool, restrained classicism","Heightened, almost exaggerated emotional and physical intensity","Bright cheerful color palettes","Complete lack of religious content"], 1,
+    "German Gothic sculpture pushes emotional and physical intensity — exaggerated wounds, contorted grief — to evoke visceral empathy in the viewer."),
+  q("Where is the Röttgen Pietà located today?", ["The British Library","Rheinisches Landesmuseum, Bonn","The Louvre","The Vatican Museums"], 1,
+    "It's held at the Rheinisches Landesmuseum in Bonn."),
+  q("Why are Christ's wounds exaggerated in scale on the Röttgen Pietà?", ["To show medical accuracy","To intensify the viewer's devotional, empathetic response to his suffering","Because the sculptor made an error","To depict a specific historical injury"], 1,
+    "The exaggeration is intentional — it's meant to deepen the viewer's emotional and spiritual connection to Christ's suffering."),
+  q("The Röttgen Pietà belongs to which regional tradition?", ["French Gothic","German Gothic","Italian Gothic","Spanish Gothic"], 1,
+    "It represents German Gothic sculpture, distinct in style from French Gothic elegance."),
+  q("What is the primary emotional focus of the Pietà as an art form?", ["Triumph and celebration","Grief, suffering, and compassion","Political power","Scientific observation"], 1,
+    "A Pietà centers on maternal grief and the suffering/compassion themes surrounding Christ's death."),
+  q("Small-scale devotional images like the Röttgen Pietà were primarily meant for...", ["Public parades","Private contemplation and prayer","Trade and sale","Battle standards"], 1,
+    "These intensely emotional devotional images were meant to inspire private prayer and contemplation.")
+];
+
+const ARENA_CHAPEL_BANK = [
+  q("Who painted the frescoes of the Arena (Scrovegni) Chapel?", ["Giotto di Bondone","Abbot Suger","Cimabue","Duccio"], 0,
+    "Giotto di Bondone painted the chapel's fresco cycle."),
+  q("In what city and country is the Arena Chapel located?", ["Rome, Italy","Padua, Italy","Florence, Italy","Avignon, France"], 1,
+    "The Arena (Scrovegni) Chapel is in Padua, Italy."),
+  q("When was the Arena Chapel painted?", ["1105–1106","1305–1306","1505–1506","805–806"], 1,
+    "Giotto painted it 1305–1306 CE."),
+  q("Who commissioned the Arena Chapel?", ["Pope Boniface VIII","Enrico Scrovegni","King Louis IX","Blanche of Castile"], 1,
+    "Enrico Scrovegni commissioned the chapel."),
+  q("Why did Enrico Scrovegni commission the chapel?", ["To celebrate a military victory","As an act of atonement (his father was a notorious moneylender)","As a wedding gift","To honor a saint's birthday"], 1,
+    "Scrovegni built the chapel as atonement, since usury/moneylending was considered a serious sin — his father was a well-known usurer."),
+  q("Which two frescoes are highlighted in this unit?", ["The Last Supper and The Annunciation","Lamentation and Last Judgment","The Nativity and The Crucifixion","The Baptism and The Ascension"], 1,
+    "The Lamentation and Last Judgment frescoes are the two highlighted works."),
+  q("What medium was used to paint the Arena Chapel?", ["Oil on canvas","Fresco","Tempera on wood panel","Mosaic"], 1,
+    "The chapel's paintings are frescoes — pigment applied to wet plaster."),
+  q("What stylistic innovation makes Giotto's work a bridge toward the Renaissance?", ["Flat, two-dimensional figures with no emotion","Greater naturalism, weighty three-dimensional figures, and believable emotional narrative","Exclusive use of geometric abstraction","Complete absence of human figures"], 1,
+    "Giotto's naturalism, sense of volume, and emotional storytelling anticipate Renaissance painting."),
+  q("What is the general subject of the Last Judgment fresco?", ["Christ's birth","Christ judging souls, with heaven and hell shown","A wedding feast","The building of the chapel"], 1,
+    "The Last Judgment depicts Christ in judgment over souls destined for heaven or hell."),
+  q("What emotion is most emphasized in the Lamentation fresco?", ["Joy and celebration","Grief and mourning over the dead Christ","Anger and vengeance","Indifference"], 1,
+    "The Lamentation focuses on the collective grief of mourners around Christ's body.")
+];
+
+const GOLDEN_HAGGADAH_BANK = [
+  q("What culture produced the Golden Haggadah?", ["Christian","Jewish","Islamic","Byzantine"], 1,
+    "The Golden Haggadah is a Jewish manuscript."),
+  q("Approximately when was the Golden Haggadah created?", ["c. 1320","c. 1120","c. 1520","c. 920"], 0,
+    "It dates to around 1320 CE, during the Gothic period."),
+  q("What medium is the Golden Haggadah?", ["Fresco","Manuscript illumination, paint on vellum","Carved wood","Stained glass"], 1,
+    "It's a manuscript illumination — paint on vellum."),
+  q("Where is the Golden Haggadah housed today?", ["The Vatican Museums","The British Library","The Louvre","Rheinisches Landesmuseum"], 1,
+    "The Golden Haggadah is now held at the British Library."),
+  q("What does the word 'Haggadah' mean?", ["'Celebration'","'Narration'","'Liberation'","'Covenant'"], 1,
+    "Haggadah means 'narration' — it fulfills the obligation to retell the Exodus story."),
+  q("What does 'Passover' commemorate?", ["The building of the Temple","The Exodus of the Jews from Egypt","The crossing of the Alps","The founding of Rome"], 1,
+    "Passover commemorates the Exodus, when the angel of death 'passed over' homes marked with lamb's blood."),
+  q("Which three scene-groups are highlighted from the Golden Haggadah in this unit?", ["Creation, Flood, Covenant","Plagues of Egypt, Liberation, Preparation for Passover","Nativity, Crucifixion, Resurrection","Coronation, Battle, Feast"], 1,
+    "The unit highlights Plagues of Egypt, Liberation, and Preparation for Passover pages."),
+  q("On the Plagues of Egypt page, which two plagues appear in the top corners?", ["Locusts and darkness","Boils (top left) and frogs (top right)","Hail and fire","Blood and thunder"], 1,
+    "Boils appear top left, and frogs sprouting everywhere appear top right."),
+  q("In the Liberation scene, who leads the Israelites safely across the parted waters?", ["Aaron","Moses","Miriam","Pharaoh"], 1,
+    "Moses leads his followers safely across the parted waters."),
+  q("In the Preparation for Passover page, which two ritual foods are being distributed?", ["Wine and bread","Matzoh and Haroset","Lamb and honey","Figs and dates"], 1,
+    "The master of the house orders the distribution of Matzoh (unleavened bread) and Haroset (a sweet fruit-and-nut paste)."),
+  q("Which figure holds a timbrel (tambourine) and dances in the Liberation scene?", ["Miriam, Moses' sister","Blanche of Castile","The Pharaoh's daughter","An unnamed angel"], 0,
+    "Miriam, Moses' sister, holds a timbrel and dances with other maidens.")
+];
+
+function q(question, choices, answerIndex, explanation){
+  return {question, choices, answerIndex, explanation};
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  mode: null,          // 'guild' | 'solo' | 'study' | 'speed'
+  roles: {p1:'Master Mason', p2:'Illuminator-Scholar'},
+  chapterOrder: ['storm','bones','face','bible','pieta','chapel','haggadah','boss'],
+  currentChapter: null,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  chapterResults: {}, // chapterId -> {correct, total}
+  runStartTime: null
+};
+
+const CHAPTER_META = {
+  storm:  {title:"The Gathering Storm", place:"Somewhere in Medieval France", icon:"⛈", type:"sort"},
+  bones:  {title:"Bones of the Cathedral", place:"Chartres, France", icon:"⛪", type:"hotspot", set:CUTAWAY, image:'cutaway'},
+  face:   {title:"Face of God's House", place:"Chartres, France", icon:"🏛", type:"hotspot", set:FACADE, image:'facade'},
+  bible:  {title:"The Illuminator's Atelier", place:"Paris, France", icon:"📖", type:"quiz", bank:MORALIZED_BIBLE_BANK},
+  pieta:  {title:"Grief in the Rhineland", place:"Rhineland, Germany", icon:"✝", type:"quiz", bank:ROTTGEN_PIETA_BANK},
+  chapel: {title:"Giotto's Chapel", place:"Padua, Italy", icon:"🎨", type:"quiz", bank:ARENA_CHAPEL_BANK},
+  haggadah:{title:"The Passover Scroll", place:"A Jewish Community, Gothic Europe", icon:"📜", type:"quiz", bank:GOLDEN_HAGGADAH_BANK},
+  boss:   {title:"Consecration Day", place:"Chartres, France", icon:"👑", type:"boss"}
+};
+
+/* ============================================================
+   RENDER: ROOT
+   ============================================================ */
+const app = document.getElementById('app');
+
+function renderTitle(){
+  app.innerHTML = '';
+  app.appendChild(el(`
+    <div class="fade-in">
+      <div class="arch-frame center">
+        <div style="font-size:3rem;">⛪</div>
+        <h1>Lux Nova</h1>
+        <h3 class="sans" style="color:var(--parchment-dim);font-weight:400;letter-spacing:2px;">THE CATHEDRAL BUILDERS' GUILD</h3>
+        <div class="stone-divider"></div>
+        <div class="narrative-box" style="text-align:left;">
+          "I am Abbot Suger of St. Denis. For too long, God's houses have stood dark and heavy — cave-like tombs of stone.
+          I have read Pseudo-Dionysius, and I know this to be true: <b style="color:var(--gold-bright);">the presence of light is the presence of God.</b>
+          I need builders — apprentices willing to learn every rib, every rose, every rule of this new style the fools in Rome
+          will one day mockingly call 'Gothic.' Will you take up the mason's chisel and the illuminator's brush?
+          Chartres will not raise itself, and the light will not enter on its own."
+        </div>
+        <button class="btn" id="beginBtn">Begin Your Apprenticeship →</button>
+      </div>
+      <div class="stone-divider"></div>
+      <p class="sans center" style="font-size:0.85rem;">AP Art History · Unit 3.5: Gothic Art · Works 60–64</p>
+    </div>
+  `));
+  document.getElementById('beginBtn').onclick = renderModeSelect;
+}
+
+function renderModeSelect(){
+  app.innerHTML='';
+  const wrap = el(`<div class="fade-in">
+    <h2 class="center">Choose Your Path</h2>
+    <p class="center">How will you take up the guild's work today?</p>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="mode-card" id="m-guild">
+        <div class="icon">🤝</div>
+        <h3>Guild Challenge</h3>
+        <p class="sans" style="font-size:0.9rem;">For pairs. Split the work between a <b style="color:var(--gold);">Master Mason</b> (architecture) and an <b style="color:var(--gold);">Illuminator-Scholar</b> (manuscripts, sculpture, fresco) — then unite for the final Consecration.</p>
+      </div>
+      <div class="mode-card" id="m-solo">
+        <div class="icon">🕯</div>
+        <h3>Solo Apprentice</h3>
+        <p class="sans" style="font-size:0.9rem;">Work the whole guild journey yourself. Great for take-home review — your progress is saved automatically so you can continue later.</p>
+      </div>
+      <div class="mode-card" id="m-study">
+        <div class="icon">📚</div>
+        <h3>Study Hall</h3>
+        <p class="sans" style="font-size:0.9rem;">No pressure, no timer. Flip through flashcards for all Gothic vocabulary, filterable by category, plus an untimed practice quiz.</p>
+      </div>
+      <div class="mode-card" id="m-speed">
+        <div class="icon">⚡</div>
+        <h3>Night Before Speed Round</h3>
+        <p class="sans" style="font-size:0.9rem;">A rapid, randomized 90-second quiz pulling from everything. Replay endlessly — the questions rotate every time.</p>
+      </div>
+    </div>
+    <div class="center" style="margin-top:20px;">
+      <button class="btn ghost sans" id="resetProgress">Reset saved progress</button>
+    </div>
+  </div>`);
+  app.appendChild(wrap);
+  document.getElementById('m-guild').onclick = ()=>{ state.mode='guild'; renderJourneyMap(); };
+  document.getElementById('m-solo').onclick = ()=>{ state.mode='solo'; renderJourneyMap(); };
+  document.getElementById('m-study').onclick = ()=>{ state.mode='study'; renderStudyHall(); };
+  document.getElementById('m-speed').onclick = ()=>{ state.mode='speed'; renderSpeedRound(); };
+  document.getElementById('resetProgress').onclick = ()=>{
+    if(confirm('This clears saved chapter progress and high scores on this device. Continue?')){
+      localStorage.removeItem(STORAGE_KEY);
+      alert('Progress reset.');
+    }
+  };
+}
+
+/* ============================================================
+   JOURNEY MAP
+   ============================================================ */
+function renderJourneyMap(){
+  app.innerHTML='';
+  const save = getSave();
+  const modeLabel = state.mode==='guild' ? 'Guild Challenge (Paired)' : 'Solo Apprentice';
+  const header = el(`
+    <div class="hud">
+      <div class="stat sans">Path: <b>${modeLabel}</b></div>
+      <div class="stat sans">Score: <b id="hudScore">${state.score}</b></div>
+      <div class="stat sans">Streak: <b id="hudStreak">${state.streak}</b> 🔥</div>
+      <button class="btn ghost sans" id="backToModes" style="padding:7px 12px;font-size:0.8rem;">← Change Mode</button>
+    </div>`);
+  app.appendChild(header);
+  document.getElementById('backToModes').onclick = renderModeSelect;
+
+  const map = el(`<div class="fade-in"><div class="card">
+    <h2>The Guild's Journey</h2>
+    <p class="sans" style="font-size:0.9rem;">Travel from Chartres to Paris, the Rhineland, Padua, and back — mastering every element of Gothic art along the way. Complete a stop to unlock the next; ★ marks stops you've already mastered on this device.</p>
+    <div class="stone-divider"></div>
+    <div class="journey-map" id="journeyList"></div>
+  </div></div>`);
+  app.appendChild(map);
+
+  const list = document.getElementById('journeyList');
+  state.chapterOrder.forEach((cid, idx)=>{
+    const meta = CHAPTER_META[cid];
+    const done = save.completedChapters[cid];
+    const prevDone = idx===0 ? true : save.completedChapters[state.chapterOrder[idx-1]];
+    const locked = !prevDone && !done && cid!=='boss' ? false : false; // allow free navigation but flag recommendation
+    const isBoss = cid==='boss';
+    const bossLocked = isBoss && !state.chapterOrder.slice(0,-1).every(c=>save.completedChapters[c]);
+    const node = el(`
+      <div class="journey-node ${bossLocked?'locked':''} ${done?'done':''}" data-cid="${cid}">
+        <div class="num">${done? '★' : (idx+1)}</div>
+        <div class="info">
+          <div class="place sans">${meta.place}</div>
+          <div style="font-weight:700;">${meta.icon} ${meta.title}</div>
+        </div>
+        <div class="pill ${done?'good':'gold'}">${bossLocked ? 'Locked — finish the journey first' : (done ? 'Mastered' : 'Enter')}</div>
+      </div>
+    `);
+    if(!bossLocked){
+      node.onclick = ()=> startChapter(cid);
+    }
+    list.appendChild(node);
+    if(idx < state.chapterOrder.length-1){
+      list.appendChild(el(`<div class="journey-connector"></div>`));
+    }
+  });
+}
+
+function startChapter(cid){
+  state.currentChapter = cid;
+  const meta = CHAPTER_META[cid];
+  if(meta.type==='sort') renderSortChapter(cid);
+  else if(meta.type==='hotspot') renderHotspotChapter(cid);
+  else if(meta.type==='quiz') renderQuizChapter(cid);
+  else if(meta.type==='boss') renderBossChapter(cid);
+}
+
+function chapterComplete(cid, correct, total){
+  state.chapterResults[cid] = {correct, total};
+  updateSave(s=>{
+    s.completedChapters[cid] = true;
+    const pct = Math.round((correct/total)*100);
+    if(!s.highScores[cid] || pct > s.highScores[cid]) s.highScores[cid] = pct;
+    s.totalStarsEver = (s.totalStarsEver||0) + 1;
+  });
+}
+
+function renderHud(extraRight){
+  return `<div class="hud">
+    <div class="stat sans">Score: <b id="hudScore">${state.score}</b></div>
+    <div class="stat sans">Streak: <b id="hudStreak">${state.streak}</b> 🔥 (best ${state.bestStreak})</div>
+    ${extraRight || '<button class="btn ghost sans" id="backToMap" style="padding:7px 12px;font-size:0.8rem;">← Guild Map</button>'}
+  </div>`;
+}
+function wireBackToMap(){
+  const b = document.getElementById('backToMap');
+  if(b) b.onclick = renderJourneyMap;
+}
+
+function bumpScore(correct){
+  if(correct){
+    state.score += 10 + Math.min(state.streak*2, 20);
+    state.streak += 1;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+  } else {
+    state.streak = 0;
+  }
+  const sEl = document.getElementById('hudScore');
+  const stEl = document.getElementById('hudStreak');
+  if(sEl) sEl.textContent = state.score;
+  if(stEl) stEl.textContent = state.streak;
+}
+
+/* ============================================================
+   CHAPTER 0: ROMANESQUE VS GOTHIC SORT
+   ============================================================ */
+function renderSortChapter(cid){
+  app.innerHTML='';
+  app.appendChild(el(renderHud()));
+  wireBackToMap();
+
+  const items = sample(SORT_ITEMS, SORT_ITEMS.length); // full set, shuffled order each time
+  let idx = 0;
+  let correctCount = 0;
+
+  const wrap = el(`<div class="fade-in card">
+    <h2>⛈ The Gathering Storm</h2>
+    <div class="narrative-box">
+      Before you can build, you must know what you're building <i>away from</i>. Sort each feature: does it belong to the old
+      Romanesque world, or the new Gothic vision Abbot Suger is chasing?
+    </div>
+    <div class="pill gold sans" id="sortCounter">Feature 1 of ${items.length}</div>
+    <div style="margin:16px 0;">
+      <div class="card" id="currentFeature" style="text-align:center;font-size:1.05rem;font-weight:700;border:1px solid var(--gold);"></div>
+    </div>
+    <div class="sort-zone">
+      <div class="sort-bin romanesque" id="binRomanesque"><h4 class="sans">Romanesque</h4></div>
+      <div class="sort-bin gothic" id="binGothic"><h4 class="sans">Gothic</h4></div>
+    </div>
+  </div>`);
+  app.appendChild(wrap);
+
+  function showItem(){
+    if(idx >= items.length){
+      finishSort();
+      return;
+    }
+    document.getElementById('sortCounter').textContent = `Feature ${idx+1} of ${items.length}`;
+    document.getElementById('currentFeature').textContent = items[idx].text;
+  }
+
+  function handleSort(choice){
+    const item = items[idx];
+    const correct = choice === item.answer;
+    if(correct) correctCount++;
+    bumpScore(correct);
+    const box = document.getElementById('currentFeature');
+    box.style.borderColor = correct ? 'var(--good)' : 'var(--bad)';
+    box.classList.add(correct? 'pulse-good':'shake');
+    setTimeout(()=>{
+      box.classList.remove('pulse-good','shake');
+      box.style.borderColor='var(--gold)';
+      idx++;
+      showItem();
+    }, 550);
+  }
+
+  document.getElementById('binRomanesque').addEventListener('click', ()=>handleSort('romanesque'));
+  document.getElementById('binGothic').addEventListener('click', ()=>handleSort('gothic'));
+  showItem();
+
+  function finishSort(){
+    chapterComplete(cid, correctCount, items.length);
+    renderChapterResults(cid, correctCount, items.length,
+      "You can now tell the old world from the new. Time to raise some stone.");
+  }
+}
+
+/* ============================================================
+   CHAPTERS 1 & 2: HOTSPOT CATHEDRAL BUILDER
+   ============================================================ */
+function renderHotspotChapter(cid){
+  app.innerHTML='';
+  app.appendChild(el(renderHud()));
+  wireBackToMap();
+  const meta = CHAPTER_META[cid];
+  const items = shuffle(meta.set);
+  let selectedTerm = null;
+  let placedCount = 0;
+  let correctCount = 0;
+  let attempts = 0;
+  const remainingTerms = new Set(items.map(i=>i.term));
+
+  const introText = cid==='bones'
+    ? "Abbot Suger hands you the mason's plans. Every rib, every pier, every window has a name — and every name has a place. Tap a term below, then tap the matching point on the cathedral's skeleton."
+    : "The walls stand; now the façade must speak. Tap a term, then tap the matching point on Chartres's face — from spire to portal.";
+
+  const wrap = el(`<div class="fade-in card">
+    <h2>${meta.icon} ${meta.title}</h2>
+    <div class="narrative-box">${introText}</div>
+    <div class="row between sans" style="margin-bottom:6px;">
+      <span>Pieces placed: <b id="placedCount">0</b> / ${items.length}</span>
+      <span>Accuracy: <b id="accCount">—</b></span>
+    </div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progBar" style="width:0%"></div></div>
+    <div class="hotspot-wrap" id="svgHost"></div>
+    <div class="def-callout" id="defCallout">Select a term from the word bank, then tap its spot on the diagram.</div>
+    <div class="term-bank" id="termBank"></div>
+  </div>`);
+  app.appendChild(wrap);
+
+  document.getElementById('svgHost').appendChild(buildSVG(cid, items));
+
+  const bank = document.getElementById('termBank');
+  shuffle(items).forEach(item=>{
+    const chip = el(`<button class="term-chip sans" data-term="${item.term}">${item.term}</button>`);
+    chip.onclick = ()=>{
+      if(chip.classList.contains('used')) return;
+      document.querySelectorAll('.term-chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedTerm = item.term;
+      document.getElementById('defCallout').textContent = `Selected: "${item.term}" — now tap its spot on the diagram.`;
+    };
+    bank.appendChild(chip);
+  });
+
+  document.querySelectorAll('.hotspot').forEach(hs=>{
+    hs.addEventListener('click', ()=>{
+      if(!selectedTerm){
+        document.getElementById('defCallout').textContent = "Pick a term from the word bank first, then tap a spot.";
+        return;
+      }
+      const hid = hs.getAttribute('data-id');
+      const item = items.find(i=>i.id===hid);
+      if(hs.classList.contains('correct')) return; // already solved
+      attempts++;
+      if(item.term === selectedTerm){
+        hs.classList.add('correct');
+        hs.classList.add('pulse-good');
+        correctCount++; placedCount++;
+        bumpScore(true);
+        document.getElementById('defCallout').innerHTML = `<b style="color:var(--good);">✓ ${item.term}:</b> ${item.def}`;
+        const chip = document.querySelector(`.term-chip[data-term="${CSS.escape(item.term)}"]`);
+        if(chip){ chip.classList.add('used'); }
+        selectedTerm = null;
+        document.getElementById('placedCount').textContent = placedCount;
+        document.getElementById('accCount').textContent = Math.round((correctCount/attempts)*100)+'%';
+        document.getElementById('progBar').style.width = Math.round((placedCount/items.length)*100)+'%';
+        if(placedCount===items.length){
+          setTimeout(()=>{
+            chapterComplete(cid, correctCount, attempts);
+            renderChapterResults(cid, correctCount, attempts,
+              cid==='bones' ? "The bones of the cathedral now stand. Next, we dress the façade." : "Chartres's face is complete. The Guild awaits your next commission.");
+          }, 900);
+        }
+      } else {
+        hs.classList.add('wrong');
+        hs.classList.add('shake');
+        bumpScore(false);
+        document.getElementById('defCallout').innerHTML = `<b style="color:var(--bad);">Not quite.</b> "${selectedTerm}" doesn't belong there — look again, or try another spot.`;
+        setTimeout(()=>{ hs.classList.remove('wrong','shake'); }, 500);
+      }
+      document.getElementById('accCount').textContent = attempts? Math.round((correctCount/attempts)*100)+'%' : '—';
+    });
+  });
+}
+
+function buildSVG(cid, items){
+  // Build an original schematic diagram (not a reproduction of any specific photograph/artwork).
+  let bodyMarkup = '';
+  if(cid==='bones'){
+    bodyMarkup = `
+      <rect x="60" y="0" width="940" height="650" fill="#141726"/>
+      <!-- ground -->
+      <line x1="60" y1="600" x2="1000" y2="600" stroke="#4a5478" stroke-width="3"/>
+      <!-- piers -->
+      <rect x="300" y="150" width="40" height="450" fill="#2d3348" stroke="#6b7699" stroke-width="1.5"/>
+      <rect x="660" y="150" width="40" height="450" fill="#2d3348" stroke="#6b7699" stroke-width="1.5"/>
+      <line x1="310" y1="170" x2="310" y2="590" stroke="#4a5478" stroke-width="1"/>
+      <line x1="330" y1="170" x2="330" y2="590" stroke="#4a5478" stroke-width="1"/>
+      <!-- nave arcade pointed arch -->
+      <path d="M 340 480 Q 500 340 660 480" fill="none" stroke="#d4af37" stroke-width="4"/>
+      <!-- triforium band -->
+      <rect x="340" y="350" width="320" height="80" fill="none" stroke="#6b7699" stroke-width="2" stroke-dasharray="4 4"/>
+      <path d="M 360 430 Q 420 360 480 430" fill="none" stroke="#6b7699" stroke-width="2"/>
+      <path d="M 480 430 Q 540 360 600 430" fill="none" stroke="#6b7699" stroke-width="2"/>
+      <path d="M 540 430 Q 600 360 660 430" fill="none" stroke="#6b7699" stroke-width="2"/>
+      <!-- clerestory lancets -->
+      <rect x="365" y="240" width="70" height="110" rx="35" fill="#2f6fd6" opacity="0.35" stroke="#2f6fd6" stroke-width="2"/>
+      <rect x="565" y="240" width="70" height="110" rx="35" fill="#2f6fd6" opacity="0.35" stroke="#2f6fd6" stroke-width="2"/>
+      <circle cx="500" cy="215" r="20" fill="#f0c94a" opacity="0.35" stroke="#f0c94a" stroke-width="2"/>
+      <!-- vault: pointed arch outline + diagonal ribs + web panels -->
+      <path d="M 320 205 Q 500 60 680 205" fill="none" stroke="#d4af37" stroke-width="4"/>
+      <path d="M 320 205 L 500 120" stroke="#a4243b" stroke-width="2.5"/>
+      <path d="M 680 205 L 500 120" stroke="#a4243b" stroke-width="2.5"/>
+      <path d="M 500 120 L 500 90" stroke="#a4243b" stroke-width="2.5"/>
+      <path d="M 320 205 Q 410 150 500 120" fill="rgba(255,255,255,0.03)" stroke="none"/>
+      <!-- exterior flying buttress + pinnacle -->
+      <line x1="800" y1="255" x2="700" y2="150" stroke="#6b7699" stroke-width="3"/>
+      <line x1="800" y1="255" x2="880" y2="540" stroke="#6b7699" stroke-width="3"/>
+      <rect x="860" y="500" width="40" height="90" fill="#2d3348" stroke="#6b7699" stroke-width="1.5"/>
+      <polygon points="860,500 900,500 880,455" fill="#4a5478" stroke="#6b7699" stroke-width="1.5"/>
+    `;
+  } else {
+    bodyMarkup = `
+      <rect x="0" y="0" width="1000" height="700" fill="#141726"/>
+      <!-- ground -->
+      <line x1="0" y1="660" x2="1000" y2="660" stroke="#4a5478" stroke-width="3"/>
+      <!-- towers -->
+      <rect x="150" y="140" width="150" height="510" fill="#2d3348" stroke="#6b7699" stroke-width="1.5"/>
+      <rect x="700" y="140" width="150" height="510" fill="#2d3348" stroke="#6b7699" stroke-width="1.5"/>
+      <polygon points="150,140 300,140 225,60" fill="#4a5478" stroke="#6b7699" stroke-width="1.5"/>
+      <polygon points="700,140 850,140 775,60" fill="#4a5478" stroke="#6b7699" stroke-width="1.5"/>
+      <!-- central body -->
+      <rect x="300" y="200" width="400" height="450" fill="#1e2233" stroke="#6b7699" stroke-width="1.5"/>
+      <!-- rose window + tracery -->
+      <circle cx="500" cy="330" r="80" fill="#2f6fd6" opacity="0.3" stroke="#f0c94a" stroke-width="3"/>
+      <line x1="500" y1="250" x2="500" y2="410" stroke="#f0c94a" stroke-width="1.5"/>
+      <line x1="420" y1="330" x2="580" y2="330" stroke="#f0c94a" stroke-width="1.5"/>
+      <line x1="443" y1="273" x2="557" y2="387" stroke="#f0c94a" stroke-width="1"/>
+      <line x1="557" y1="273" x2="443" y2="387" stroke="#f0c94a" stroke-width="1"/>
+      <!-- trefoil motif -->
+      <circle cx="485" cy="452" r="8" fill="#a4243b" opacity="0.6"/>
+      <circle cx="500" cy="440" r="8" fill="#a4243b" opacity="0.6"/>
+      <circle cx="515" cy="452" r="8" fill="#a4243b" opacity="0.6"/>
+      <!-- stringcourse -->
+      <line x1="300" y1="486" x2="700" y2="486" stroke="#d4af37" stroke-width="3"/>
+      <!-- portals: archivolt + jamb -->
+      <path d="M 400 610 Q 500 500 600 610" fill="none" stroke="#d4af37" stroke-width="6"/>
+      <path d="M 415 610 Q 500 515 585 610" fill="none" stroke="#6b7699" stroke-width="3"/>
+      <line x1="418" y1="600" x2="418" y2="655" stroke="#a4243b" stroke-width="5"/>
+      <line x1="445" y1="605" x2="445" y2="655" stroke="#a4243b" stroke-width="5"/>
+      <rect x="460" y="590" width="80" height="70" fill="#12141c"/>
+      <!-- plan-view inset bottom-left: cruciform + bay ticks -->
+      <g transform="translate(20,540)">
+        <rect x="0" y="30" width="180" height="30" fill="#2d3348" stroke="#6b7699"/>
+        <rect x="80" y="0" width="30" height="90" fill="#2d3348" stroke="#6b7699"/>
+        <line x1="20" y1="30" x2="20" y2="60" stroke="#4a5478"/>
+        <line x1="50" y1="30" x2="50" y2="60" stroke="#4a5478"/>
+        <line x1="140" y1="30" x2="140" y2="60" stroke="#4a5478"/>
+        <line x1="170" y1="30" x2="170" y2="60" stroke="#4a5478"/>
+      </g>
+    `;
+  }
+  const viewBox = cid==='bones' ? '0 0 1000 650' : '0 0 1000 700';
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS,'svg');
+  svg.setAttribute('viewBox', viewBox);
+  svg.innerHTML = bodyMarkup;
+  items.forEach(item=>{
+    const g = document.createElementNS(svgNS,'g');
+    g.setAttribute('class','hotspot');
+    g.setAttribute('data-id', item.id);
+    const c = document.createElementNS(svgNS,'circle');
+    c.setAttribute('cx', item.x); c.setAttribute('cy', item.y); c.setAttribute('r', item.r);
+    const t = document.createElementNS(svgNS,'text');
+    t.setAttribute('x', item.x); t.setAttribute('y', item.y+4); t.setAttribute('text-anchor','middle');
+    t.textContent = '?';
+    g.appendChild(c); g.appendChild(t);
+    svg.appendChild(g);
+  });
+  return svg;
+}
+
+/* ============================================================
+   CHAPTERS 3-6: QUIZ CHAPTERS (Moralized Bible / Pietà / Chapel / Haggadah)
+   ============================================================ */
+function renderQuizChapter(cid){
+  const meta = CHAPTER_META[cid];
+  const bank = sample(meta.bank, Math.min(8, meta.bank.length));
+  runQuizFlow(cid, meta, bank, false);
+}
+
+function runQuizFlow(cid, meta, questions, isBoss, timeLimit){
+  app.innerHTML='';
+  let timerInterval = null;
+  let timeLeft = timeLimit || null;
+  const extraRight = timeLimit ? `<span class="timer-badge sans" id="timerBadge">⏱ ${fmtTime(timeLeft)}</span>` : null;
+  app.appendChild(el(renderHud(extraRight)));
+  if(!timeLimit) wireBackToMap();
+
+  let idx = 0, correctCount = 0;
+  const shuffledQs = questions.map(orig=>{
+    const order = shuffle(orig.choices.map((c,i)=>i));
+    return {
+      question: orig.question,
+      choices: order.map(i=>orig.choices[i]),
+      answerIndex: order.indexOf(orig.answerIndex),
+      explanation: orig.explanation
+    };
+  });
+
+  const introMap = {
+    bible: "The scriptorium is quiet except for scratching quills. Prove you understand what the Moralized Bible teaches — and warns against.",
+    pieta: "The Rhineland air is cold, and the carved wood before you aches with grief. Show the guild you understand German Gothic devotion.",
+    chapel: "Giotto's brush has painted grief and judgment onto plaster. Step into his chapel and prove you understand his innovation.",
+    haggadah: "Turn the vellum pages carefully — this Haggadah has told the Passover story for centuries. Show you understand it.",
+  };
+
+  const wrap = el(`<div class="fade-in card">
+    <h2>${meta.icon} ${meta.title}</h2>
+    ${introMap[cid] ? `<div class="narrative-box">${introMap[cid]}</div>` : ''}
+    <div class="quiz-progress" id="quizProgress"></div>
+    <h3 id="qText" class="sans" style="font-size:1.08rem;"></h3>
+    <div id="qChoices"></div>
+  </div>`);
+  app.appendChild(wrap);
+
+  const progressWrap = document.getElementById('quizProgress');
+  shuffledQs.forEach(()=>progressWrap.appendChild(el(`<div class="dot"></div>`)));
+
+  function updateProgressDots(){
+    const dots = progressWrap.children;
+    for(let i=0;i<dots.length;i++){
+      dots[i].className = 'dot';
+      if(i<idx) dots[i].classList.add(state._dotResults && state._dotResults[i] ? 'answered-correct' : 'answered-wrong');
+      if(i===idx) dots[i].classList.add('current');
+    }
+  }
+  state._dotResults = [];
+
+  function showQuestion(){
+    if(idx >= shuffledQs.length){
+      finish();
+      return;
+    }
+    updateProgressDots();
+    const qq = shuffledQs[idx];
+    document.getElementById('qText').textContent = `Q${idx+1}. ${qq.question}`;
+    const cWrap = document.getElementById('qChoices');
+    cWrap.innerHTML='';
+    qq.choices.forEach((choice, ci)=>{
+      const b = el(`<button class="quiz-choice">${choice}</button>`);
+      b.onclick = ()=> answer(ci);
+      cWrap.appendChild(b);
+    });
+  }
+
+  function answer(ci){
+    const qq = shuffledQs[idx];
+    const buttons = document.querySelectorAll('.quiz-choice');
+    buttons.forEach(b=>b.disabled=true);
+    const correct = ci === qq.answerIndex;
+    buttons[ci].classList.add(correct?'correct':'wrong');
+    if(!correct) buttons[qq.answerIndex].classList.add('correct');
+    state._dotResults[idx] = correct;
+    if(correct) correctCount++;
+    bumpScore(correct);
+    const explain = el(`<div class="def-callout">${qq.explanation}</div>`);
+    document.getElementById('qChoices').appendChild(explain);
+    const nextBtn = el(`<button class="btn" style="margin-top:14px;">${idx+1<shuffledQs.length? 'Next →':'Finish →'}</button>`);
+    document.getElementById('qChoices').appendChild(nextBtn);
+    nextBtn.onclick = ()=>{ idx++; showQuestion(); };
+  }
+
+  function finish(){
+    if(timerInterval) clearInterval(timerInterval);
+    if(isBoss){
+      renderBossResults(correctCount, shuffledQs.length);
+    } else {
+      chapterComplete(cid, correctCount, shuffledQs.length);
+      const closingMap = {
+        bible: "The scriptorium's lessons are yours now — including its hardest ones.",
+        pieta: "You carry the Rhineland's grief and its craft with you.",
+        chapel: "Giotto's innovations are now part of your own eye.",
+        haggadah: "The story of liberation is now one you can tell yourself."
+      };
+      renderChapterResults(cid, correctCount, shuffledQs.length, closingMap[cid] || "Well done.");
+    }
+  }
+
+  if(timeLimit){
+    timerInterval = setInterval(()=>{
+      timeLeft--;
+      const badge = document.getElementById('timerBadge');
+      if(badge){
+        badge.textContent = '⏱ ' + fmtTime(Math.max(timeLeft,0));
+        if(timeLeft<=15) badge.classList.add('low');
+      }
+      if(timeLeft<=0){
+        clearInterval(timerInterval);
+        finish();
+      }
+    },1000);
+  }
+
+  showQuestion();
+}
+
+/* ============================================================
+   CHAPTER RESULTS (per-stop)
+   ============================================================ */
+function renderChapterResults(cid, correct, total, closingLine){
+  const meta = CHAPTER_META[cid];
+  const pct = Math.round((correct/total)*100);
+  app.innerHTML='';
+  app.appendChild(el(renderHud()));
+  wireBackToMap();
+  const stars = pct>=90?'★★★':pct>=70?'★★☆':pct>=50?'★☆☆':'☆☆☆';
+  app.appendChild(el(`<div class="fade-in card center">
+    <div style="font-size:2.4rem;">${meta.icon}</div>
+    <h2>${meta.title} — Complete</h2>
+    <div class="pill gold" style="font-size:1.1rem;padding:8px 20px;margin:10px 0;">${correct} / ${total} correct (${pct}%)</div>
+    <div style="font-size:1.6rem;letter-spacing:4px;color:var(--gold-bright);">${stars}</div>
+    <p style="margin-top:14px;">${closingLine}</p>
+    <div class="row center" style="margin-top:18px;">
+      <button class="btn" id="toMap">Return to Guild Map</button>
+      <button class="btn secondary sans" id="retryChapter">Retry This Stop</button>
+    </div>
+  </div></div>`));
+  document.getElementById('toMap').onclick = renderJourneyMap;
+  document.getElementById('retryChapter').onclick = ()=> startChapter(cid);
+}
+
+/* ============================================================
+   BOSS CHAPTER: CONSECRATION DAY
+   ============================================================ */
+function renderBossChapter(cid){
+  const allBanks = [...MORALIZED_BIBLE_BANK, ...ROTTGEN_PIETA_BANK, ...ARENA_CHAPEL_BANK, ...GOLDEN_HAGGADAH_BANK, ...HISTORY_BANK];
+  const bossQs = sample(allBanks, 15);
+  const meta = CHAPTER_META[cid];
+  app.innerHTML='';
+  app.appendChild(el(renderHud()));
+  wireBackToMap();
+  const intro = el(`<div class="fade-in card center">
+    <div style="font-size:2.4rem;">👑</div>
+    <h2>Consecration Day</h2>
+    <div class="narrative-box" style="text-align:left;">
+      "Today, we consecrate what you have built. Fifteen questions stand between you and the guild's highest honor — drawn from
+      every corner of your training: the vault, the façade, the scriptorium, the Rhineland, Padua, and the Passover story.
+      Answer well, and Chartres's light is truly yours." — Abbot Suger
+    </div>
+    <button class="btn" id="startBoss">Begin the Consecration →</button>
+  </div></div>`);
+  app.appendChild(intro);
+  document.getElementById('startBoss').onclick = ()=>{
+    runQuizFlow(cid, meta, bossQs, true);
+  };
+}
+
+function renderBossResults(correct, total){
+  const pct = Math.round((correct/total)*100);
+  let rank = 'Novice Apprentice';
+  if(pct>=90) rank='Master Builder of Lux Nova';
+  else if(pct>=75) rank='Journeyman Architect';
+  else if(pct>=60) rank='Guild Illuminator';
+  else if(pct>=40) rank='Apprentice Mason';
+  updateSave(s=>{ s.guildRank = rank; if(!s.highScores.boss || pct>s.highScores.boss) s.highScores.boss=pct; s.completedChapters.boss=true; });
+
+  app.innerHTML='';
+  app.appendChild(el(renderHud()));
+  wireBackToMap();
+  const rows = state.chapterOrder.filter(c=>c!=='boss').map(c=>{
+    const r = state.chapterResults[c];
+    const meta = CHAPTER_META[c];
+    if(!r) return `<div class="breakdown-row"><span>${meta.icon} ${meta.title}</span><span class="pill">not attempted this session</span></div>`;
+    const p = Math.round((r.correct/r.total)*100);
+    return `<div class="breakdown-row"><span>${meta.icon} ${meta.title}</span><span class="pill ${p>=70?'good':''}">${r.correct}/${r.total} (${p}%)</span></div>`;
+  }).join('');
+
+  app.appendChild(el(`<div class="fade-in card center">
+    <div style="font-size:2.6rem;">🔔</div>
+    <h2>The Cathedral is Consecrated</h2>
+    <div class="pill gold" style="font-size:1.15rem;padding:8px 22px;margin:8px 0;">${correct} / ${total} correct (${pct}%)</div>
+    <div class="rank-badge">${rank}</div>
+    <div class="stone-divider"></div>
+    <h3 class="sans" style="text-align:left;">Session Breakdown</h3>
+    <div style="text-align:left;">${rows}</div>
+    <div class="row center" style="margin-top:20px;">
+      <button class="btn" id="toMap2">Return to Guild Map</button>
+      <button class="btn secondary sans" id="playAgain">Rebuild the Cathedral Again</button>
+    </div>
+    <p class="sans" style="font-size:0.8rem;margin-top:14px;color:var(--stone-500);">Your rank is saved on this device. Every replay pulls a fresh, randomized set of questions.</p>
+  </div></div>`));
+  document.getElementById('toMap2').onclick = renderJourneyMap;
+  document.getElementById('playAgain').onclick = ()=>{
+    state.score=0; state.streak=0; state.chapterResults={};
+    renderJourneyMap();
+  };
+}
+
+/* ============================================================
+   STUDY HALL (take-home, untimed)
+   ============================================================ */
+function renderStudyHall(){
+  app.innerHTML='';
+  app.appendChild(el(`<div class="hud"><div class="stat sans">Study Hall — untimed, no pressure</div>
+    <button class="btn ghost sans" id="backToModes2" style="padding:7px 12px;font-size:0.8rem;">← Change Mode</button></div>`));
+  document.getElementById('backToModes2').onclick = renderModeSelect;
+
+  const categories = ['All', ...Array.from(new Set(GLOSSARY.map(g=>g.cat)))];
+  let activeCat = 'All';
+  let cardIdx = 0;
+  let deck = shuffle(GLOSSARY);
+
+  const wrap = el(`<div class="fade-in card">
+    <h2>📚 Study Hall</h2>
+    <p class="sans" style="font-size:0.9rem;">Flip through Gothic vocabulary at your own pace, or jump into an untimed practice quiz below. Perfect for reviewing at home before a test.</p>
+    <div class="filter-row" id="catFilters"></div>
+    <div class="flip-card" id="flipCard">
+      <div class="flip-inner">
+        <div class="flip-face flip-front" id="flipFront"></div>
+        <div class="flip-face flip-back" id="flipBack"></div>
+      </div>
+    </div>
+    <div class="row center sans">
+      <button class="btn secondary" id="prevCard">← Prev</button>
+      <span class="pill" id="cardCounter"></span>
+      <button class="btn secondary" id="nextCard">Next →</button>
+      <button class="btn secondary" id="shuffleCards">🔀 Shuffle</button>
+    </div>
+    <div class="stone-divider"></div>
+    <div class="center">
+      <button class="btn" id="startPractice">Start Untimed Practice Quiz →</button>
+    </div>
+  </div>`);
+  app.appendChild(wrap);
+
+  const filterRow = document.getElementById('catFilters');
+  categories.forEach(cat=>{
+    const chip = el(`<button class="filter-chip ${cat==='All'?'active':''}">${cat}</button>`);
+    chip.onclick = ()=>{
+      activeCat = cat;
+      document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      deck = shuffle(cat==='All' ? GLOSSARY : GLOSSARY.filter(g=>g.cat===cat));
+      cardIdx = 0;
+      showCard();
+    };
+    filterRow.appendChild(chip);
+  });
+
+  const flipCard = document.getElementById('flipCard');
+  flipCard.onclick = ()=> flipCard.classList.toggle('flipped');
+
+  function showCard(){
+    flipCard.classList.remove('flipped');
+    const item = deck[cardIdx];
+    document.getElementById('flipFront').textContent = item.term;
+    document.getElementById('flipBack').textContent = item.def;
+    document.getElementById('cardCounter').textContent = `${cardIdx+1} / ${deck.length}`;
+  }
+  document.getElementById('prevCard').onclick = ()=>{ cardIdx = (cardIdx-1+deck.length)%deck.length; showCard(); };
+  document.getElementById('nextCard').onclick = ()=>{ cardIdx = (cardIdx+1)%deck.length; showCard(); };
+  document.getElementById('shuffleCards').onclick = ()=>{ deck = shuffle(deck); cardIdx=0; showCard(); };
+  showCard();
+
+  document.getElementById('startPractice').onclick = renderStudyPractice;
+}
+
+function renderStudyPractice(){
+  // Build a matching-style MC quiz straight from the glossary, untimed, huge pool
+  const pool = shuffle(GLOSSARY).slice(0, 15).map(item=>{
+    const wrongs = sample(GLOSSARY.filter(g=>g.term!==item.term), 3).map(g=>g.def);
+    const choices = shuffle([item.def, ...wrongs]);
+    return q(`What does "${item.term}" mean?`, choices, choices.indexOf(item.def), `${item.term}: ${item.def}`);
+  });
+  runQuizFlow('study', {title:'Study Hall Practice', icon:'📚'}, pool, false);
+  // Override finish behavior: since 'study' isn't in chapterOrder, chapterComplete just harmlessly records it.
+}
+
+/* ============================================================
+   NIGHT BEFORE SPEED ROUND
+   ============================================================ */
+function renderSpeedRound(){
+  app.innerHTML='';
+  app.appendChild(el(`<div class="hud"><div class="stat sans">⚡ Night Before Speed Round — 90 seconds, endless replay</div>
+    <button class="btn ghost sans" id="backToModes3" style="padding:7px 12px;font-size:0.8rem;">← Change Mode</button></div>`));
+  document.getElementById('backToModes3').onclick = renderModeSelect;
+
+  const save = getSave();
+  const best = save.highScores.speedround || 0;
+
+  app.appendChild(el(`<div class="fade-in card center">
+    <div style="font-size:2.4rem;">⚡</div>
+    <h2>Night Before Speed Round</h2>
+    <p>Rapid-fire questions from every corner of Unit 3.5 — architecture vocab, Chartres, the Moralized Bible, the Röttgen Pietà,
+    the Arena Chapel, and the Golden Haggadah. You have <b>90 seconds</b>. Answer as many as you can. Replay as many times as you like —
+    the questions rotate every round.</p>
+    <div class="pill gold">Best correct-answer score on this device: ${best}</div>
+    <button class="btn" id="startSpeed" style="margin-top:16px;">Start the Clock →</button>
+  </div></div>`));
+
+  document.getElementById('startSpeed').onclick = ()=>{
+    const allBanks = [...MORALIZED_BIBLE_BANK, ...ROTTGEN_PIETA_BANK, ...ARENA_CHAPEL_BANK, ...GOLDEN_HAGGADAH_BANK, ...HISTORY_BANK,
+      ...GLOSSARY.map(item=>{
+        const wrongs = sample(GLOSSARY.filter(g=>g.term!==item.term), 3).map(g=>g.def);
+        const choices = shuffle([item.def, ...wrongs]);
+        return q(`What does "${item.term}" mean?`, choices, choices.indexOf(item.def), `${item.term}: ${item.def}`);
+      })
+    ];
+    const speedQs = sample(allBanks, 30);
+    runSpeedQuiz(speedQs, 90);
+  };
+}
+
+function runSpeedQuiz(questions, seconds){
+  app.innerHTML='';
+  let idx=0, correct=0, timeLeft=seconds;
+  const shuffledQs = questions.map(orig=>{
+    const order = shuffle(orig.choices.map((c,i)=>i));
+    return {question:orig.question, choices:order.map(i=>orig.choices[i]), answerIndex:order.indexOf(orig.answerIndex)};
+  });
+
+  app.appendChild(el(`<div class="hud">
+    <div class="stat sans">Correct: <b id="speedCorrect">0</b></div>
+    <span class="timer-badge sans" id="speedTimer">⏱ ${fmtTime(timeLeft)}</span>
+  </div>`));
+
+  const wrap = el(`<div class="fade-in card">
+    <h3 class="sans" id="speedQText" style="font-size:1.1rem;"></h3>
+    <div id="speedChoices"></div>
+  </div>`);
+  app.appendChild(wrap);
+
+  function showQ(){
+    if(idx>=shuffledQs.length || timeLeft<=0){ finishSpeed(); return; }
+    const qq = shuffledQs[idx];
+    document.getElementById('speedQText').textContent = qq.question;
+    const cWrap = document.getElementById('speedChoices');
+    cWrap.innerHTML='';
+    qq.choices.forEach((c,ci)=>{
+      const b = el(`<button class="quiz-choice">${c}</button>`);
+      b.onclick = ()=>{
+        if(timeLeft<=0) return;
+        const isCorrect = ci===qq.answerIndex;
+        b.classList.add(isCorrect?'correct':'wrong');
+        if(isCorrect){ correct++; document.getElementById('speedCorrect').textContent = correct; }
+        setTimeout(()=>{ idx++; showQ(); }, 220);
+        document.querySelectorAll('#speedChoices .quiz-choice').forEach(x=>x.disabled=true);
+      };
+      cWrap.appendChild(b);
+    });
+  }
+
+  const timerInt = setInterval(()=>{
+    timeLeft--;
+    const badge = document.getElementById('speedTimer');
+    if(badge){ badge.textContent = '⏱ ' + fmtTime(Math.max(timeLeft,0)); if(timeLeft<=15) badge.classList.add('low'); }
+    if(timeLeft<=0){ clearInterval(timerInt); finishSpeed(); }
+  },1000);
+
+  function finishSpeed(){
+    clearInterval(timerInt);
+    updateSave(s=>{ if(!s.highScores.speedround || correct>s.highScores.speedround) s.highScores.speedround = correct; });
+    app.innerHTML='';
+    app.appendChild(el(`<div class="fade-in card center">
+      <div style="font-size:2.4rem;">⚡</div>
+      <h2>Time's Up!</h2>
+      <div class="pill gold" style="font-size:1.15rem;padding:8px 20px;">You answered <b>${correct}</b> correctly.</div>
+      <div class="row center" style="margin-top:18px;">
+        <button class="btn" id="speedAgain">Run It Again</button>
+        <button class="btn secondary sans" id="speedHome">Back to Modes</button>
+      </div>
+    </div></div>`));
+    document.getElementById('speedAgain').onclick = renderSpeedRound;
+    document.getElementById('speedHome').onclick = renderModeSelect;
+  }
+
+  showQ();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderTitle();
+</script>
+</body>
+</html>

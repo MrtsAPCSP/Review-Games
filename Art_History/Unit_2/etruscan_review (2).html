@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Etruscan Art — Study Room</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Crimson+Pro:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#1f1a15;
+  --panel:#2c2420;
+  --panel-light:#382d27;
+  --parchment:#e9dcb8;
+  --parchment-dim:#d8c89f;
+  --terracotta:#b5603c;
+  --terracotta-dim:#8a4a30;
+  --fresco-red:#9c3b2e;
+  --patina:#5f7a63;
+  --ink:#241d16;
+  --gold:#c9a227;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(181,96,60,0.10), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(95,122,99,0.08), transparent 45%);
+  font-family:'Crimson Pro', serif;
+  color:var(--parchment);
+  min-height:100vh;
+  padding:28px 16px 60px;
+}
+
+.wrap{max-width:900px;margin:0 auto;}
+
+/* ---------- header ---------- */
+.checker-strip{
+  height:14px;
+  background-image: repeating-linear-gradient(45deg, var(--fresco-red) 0 10px, var(--terracotta-dim) 10px 20px);
+  border-radius:3px;
+  opacity:0.85;
+  margin-bottom:18px;
+}
+header{
+  text-align:center;
+  margin-bottom:22px;
+}
+header h1{
+  font-family:'Cinzel', serif;
+  font-weight:700;
+  letter-spacing:2px;
+  font-size:clamp(1.6rem,4vw,2.5rem);
+  color:var(--parchment);
+  margin:0 0 6px;
+  text-shadow:0 2px 0 rgba(0,0,0,0.4);
+}
+header p{
+  font-size:0.95rem;
+  color:var(--parchment-dim);
+  margin:0;
+  letter-spacing:0.5px;
+}
+header .dates{
+  font-family:'Cinzel', serif;
+  color:var(--gold);
+  font-size:0.8rem;
+  letter-spacing:3px;
+  margin-top:6px;
+}
+
+/* ---------- nav ---------- */
+nav{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-bottom:26px;
+  flex-wrap:wrap;
+}
+nav button{
+  font-family:'Cinzel', serif;
+  background:var(--panel);
+  color:var(--parchment-dim);
+  border:1px solid var(--terracotta-dim);
+  padding:10px 20px;
+  font-size:0.78rem;
+  letter-spacing:1.5px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all .2s;
+}
+nav button:hover{color:var(--parchment); border-color:var(--terracotta);}
+nav button.active{
+  background:var(--terracotta);
+  color:var(--ink);
+  border-color:var(--terracotta);
+}
+
+section.view{display:none;}
+section.view.active{display:block; animation:fadein .35s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---------- niche panel (shared card look) ---------- */
+.niche{
+  background:var(--panel);
+  border:1px solid var(--terracotta-dim);
+  border-radius:8px;
+  position:relative;
+  overflow:hidden;
+}
+.niche::before{
+  content:"";
+  display:block;
+  height:8px;
+  background-image: repeating-linear-gradient(45deg, var(--fresco-red) 0 8px, var(--parchment-dim) 8px 16px);
+  opacity:0.5;
+}
+
+/* ---------- FLASHCARDS ---------- */
+.deck-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:var(--parchment-dim);
+  font-size:0.85rem;
+  margin-bottom:10px;
+  padding:0 6px;
+}
+.pots{display:flex; gap:5px;}
+.pot{width:9px;height:9px;border-radius:2px 2px 5px 5px;background:var(--panel-light); border:1px solid var(--terracotta-dim);}
+.pot.done{background:var(--terracotta);}
+
+.flip-stage{perspective:1400px; margin-bottom:18px;}
+.card{
+  min-height:280px;
+  border-radius:8px;
+  cursor:pointer;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,.2,.2,1);
+}
+.card.flipped{transform:rotateY(180deg);}
+.face{
+  position:absolute; inset:0;
+  backface-visibility:hidden;
+  border-radius:8px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  border:1px solid var(--terracotta-dim);
+}
+.face.front{
+  background:linear-gradient(160deg, var(--panel), var(--panel-light));
+}
+.face.back{
+  background:var(--parchment);
+  color:var(--ink);
+  transform:rotateY(180deg);
+}
+.face .tag{
+  font-family:'Cinzel', serif;
+  font-size:0.7rem;
+  letter-spacing:2px;
+  color:var(--gold);
+  margin-bottom:10px;
+}
+.face.back .tag{color:var(--fresco-red);}
+.face .content{font-size:1.15rem; line-height:1.5;}
+.face.front .content{font-family:'Cinzel', serif; font-size:1.35rem; letter-spacing:0.5px;}
+.face .hint{
+  position:absolute; bottom:14px; right:18px;
+  font-size:0.72rem; color:var(--parchment-dim); letter-spacing:1px;
+}
+.face.back .hint{color:var(--terracotta-dim);}
+
+.deck-controls{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.deck-controls button{
+  font-family:'Cinzel', serif;
+  font-size:0.75rem;
+  letter-spacing:1.5px;
+  padding:9px 18px;
+  border-radius:4px;
+  border:1px solid var(--terracotta-dim);
+  background:var(--panel);
+  color:var(--parchment);
+  cursor:pointer;
+}
+.deck-controls button:hover{border-color:var(--terracotta); color:var(--terracotta);}
+.deck-controls button.primary{background:var(--terracotta); color:var(--ink); border-color:var(--terracotta);}
+
+.filter-row{display:flex; gap:8px; justify-content:center; margin-bottom:16px; flex-wrap:wrap;}
+.filter-row button{
+  font-size:0.7rem; letter-spacing:1px; padding:6px 12px; border-radius:20px;
+  border:1px solid var(--patina); background:transparent; color:var(--parchment-dim); cursor:pointer;
+  font-family:'Crimson Pro', serif;
+}
+.filter-row button.active{background:var(--patina); color:var(--ink); border-color:var(--patina);}
+
+/* ---------- GODS MATCH ---------- */
+.match-wrap{display:flex; gap:22px; justify-content:center; margin-bottom:16px; flex-wrap:wrap;}
+.match-col{flex:1; min-width:220px; max-width:280px; display:flex; flex-direction:column; gap:8px;}
+.match-col h3{
+  font-family:'Cinzel', serif; font-size:0.85rem; letter-spacing:2px; text-align:center;
+  color:var(--gold); margin:0 0 6px;
+}
+.match-item{
+  background:var(--panel);
+  border:1px solid var(--terracotta-dim);
+  border-radius:5px;
+  padding:12px 14px;
+  cursor:pointer;
+  font-size:1rem;
+  text-align:center;
+  transition:all .15s;
+  user-select:none;
+}
+.match-item:hover{border-color:var(--terracotta);}
+.match-item.selected{background:var(--terracotta); color:var(--ink); border-color:var(--terracotta);}
+.match-item.correct{background:var(--patina); color:var(--ink); border-color:var(--patina); cursor:default;}
+.match-item.wrong{background:var(--fresco-red); color:var(--parchment); border-color:var(--fresco-red);}
+.match-status{text-align:center; color:var(--parchment-dim); margin-bottom:14px; font-size:0.9rem;}
+
+/* ---------- QUIZ ---------- */
+.quiz-progress{
+  display:flex; justify-content:space-between; align-items:center;
+  color:var(--parchment-dim); font-size:0.85rem; margin-bottom:14px;
+}
+.quiz-card{
+  background:var(--panel);
+  border:1px solid var(--terracotta-dim);
+  border-radius:8px;
+  padding:26px;
+}
+.quiz-card .qtext{
+  font-size:1.2rem;
+  margin-bottom:20px;
+  line-height:1.5;
+}
+.opt{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:var(--panel-light);
+  border:1px solid var(--terracotta-dim);
+  color:var(--parchment);
+  padding:12px 16px;
+  border-radius:5px;
+  margin-bottom:10px;
+  cursor:pointer;
+  font-size:1rem;
+  font-family:'Crimson Pro', serif;
+  transition:all .15s;
+}
+.opt:hover{border-color:var(--terracotta);}
+.opt.correct{background:var(--patina); color:var(--ink); border-color:var(--patina);}
+.opt.wrong{background:var(--fresco-red); color:var(--parchment); border-color:var(--fresco-red);}
+.opt:disabled{cursor:default;}
+.quiz-next{
+  margin-top:8px;
+  font-family:'Cinzel', serif;
+  font-size:0.78rem; letter-spacing:1.5px;
+  padding:9px 20px;
+  border-radius:4px;
+  border:1px solid var(--gold);
+  background:var(--gold);
+  color:var(--ink);
+  cursor:pointer;
+  display:none;
+}
+.quiz-result{
+  text-align:center;
+  padding:30px 10px;
+}
+.quiz-result .score{
+  font-family:'Cinzel', serif;
+  font-size:2.4rem;
+  color:var(--gold);
+  margin-bottom:6px;
+}
+.quiz-result p{color:var(--parchment-dim);}
+
+footer{
+  text-align:center;
+  color:var(--terracotta-dim);
+  font-size:0.75rem;
+  margin-top:40px;
+  letter-spacing:1px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="checker-strip"></div>
+  <header>
+    <h1>Etruscan Art Study Room</h1>
+    <p>Rasenna &middot; known through archaeology &middot; a distinct civilization before Rome</p>
+    <div class="dates">1000 BCE — 270 BCE</div>
+  </header>
+
+  <nav>
+    <button data-view="flash" class="active">Flashcards</button>
+    <button data-view="gods">Match the Gods</button>
+    <button data-view="quiz">Quiz</button>
+  </nav>
+
+  <!-- FLASHCARDS -->
+  <section class="view active" id="view-flash">
+    <div class="filter-row" id="filterRow"></div>
+    <div class="deck-meta">
+      <span id="cardCount">Card 1 of 1</span>
+      <div class="pots" id="potRow"></div>
+    </div>
+    <div class="flip-stage">
+      <div class="card" id="card">
+        <div class="face front">
+          <div class="tag">TAP TO REVEAL</div>
+          <div class="content" id="frontText"></div>
+          <div class="hint">click card</div>
+        </div>
+        <div class="face back">
+          <div class="tag">ANSWER</div>
+          <div class="content" id="backText"></div>
+          <div class="hint">click to flip back</div>
+        </div>
+      </div>
+    </div>
+    <div class="deck-controls">
+      <button id="prevBtn">&larr; Prev</button>
+      <button id="shuffleBtn">Shuffle</button>
+      <button id="nextBtn" class="primary">Next &rarr;</button>
+    </div>
+  </section>
+
+  <!-- GODS MATCH -->
+  <section class="view" id="view-gods">
+    <div class="match-status" id="matchStatus">Match each Etruscan god to its Greek and Roman equivalent. Score: <span id="matchScore">0</span> / 6</div>
+    <div class="match-wrap">
+      <div class="match-col" id="colEtruscan"><h3>Etruscan</h3></div>
+      <div class="match-col" id="colGreek"><h3>Greek</h3></div>
+      <div class="match-col" id="colRoman"><h3>Roman</h3></div>
+    </div>
+    <div class="deck-controls">
+      <button id="resetMatchBtn" class="primary">Reset Board</button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="view" id="view-quiz">
+    <div class="quiz-progress">
+      <span id="quizPos">Question 1 of 12</span>
+      <span id="quizScoreLive">Score: 0</span>
+    </div>
+    <div class="quiz-card" id="quizCard"></div>
+    <div class="quiz-result" id="quizResult" style="display:none;"></div>
+  </section>
+
+  <footer>UNIT 2.4 &middot; ETRUSCAN ART &middot; for review only</footer>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const cards = [
+  {cat:"vocab", front:"Fresco", back:"Applying water-based paint onto freshly plastered wall, so the pigment bonds directly with the plaster as it dries — durable and long-lasting. Used throughout Etruscan tomb paintings."},
+  {cat:"vocab", front:"Triclinium", back:"A dining arrangement with couches on three sides for reclining while eating. Gives its name to the famous Etruscan tomb."},
+  {cat:"vocab", front:"Necropolis", back:"A large burial area — literally \"city of the dead.\" Where most of what we know about Etruscan art comes from."},
+  {cat:"vocab", front:"Terracotta", back:"Hard ceramic clay used for building or for pottery and sculpture — the primary material of Etruscan sculpture, since they avoided marble."},
+  {cat:"work", front:"Sarcophagus of the Spouses — basics", back:"Cerveteri, Italy, ca. 520 BCE. Painted terracotta, about 3'9\" x 6'7\". Now in the Museo Nazionale di Villa Giulia, Rome."},
+  {cat:"work", front:"Sarcophagus of the Spouses — content", back:"A husband and wife recline together on a banquet couch, as if sharing a meal in the afterlife. Their equal, affectionate portrayal reflects the notably high status of Etruscan women."},
+  {cat:"work", front:"Sarcophagus of the Spouses — style", back:"Archaic-style almond eyes and \"Archaic smile,\" similar to Greek Archaic sculpture, but the reclining banquet pose and warmth between the couple is distinctly Etruscan."},
+  {cat:"work", front:"Temple of Minerva, Veii — basics", back:"Near Rome, in Veii. c. 510–500 BCE. Original temple built of wood, mud brick, or tufa (volcanic rock); the Apollo sculpture on top is terracotta, by master sculptor Vulca."},
+  {cat:"work", front:"Temple of Minerva, Veii — plan", back:"Has a TRIPLE CELLA (three inner chambers) and columns only across the front porch — unlike Greek temples, which are surrounded by columns on all sides and built of stone."},
+  {cat:"work", front:"Temple of Minerva, Veii — sculpture placement", back:"Sculptures (like the Apollo) sit along the ROOFLINE, not tucked into a pediment the way Greek temple sculpture is."},
+  {cat:"work", front:"Tomb of the Triclinium — basics", back:"Italy, Etruscan, c. 480–470 BCE. Made of tufa with fresco painting."},
+  {cat:"work", front:"Tomb of the Triclinium — content", back:"Painted banquet and dancing scenes cover the walls beneath a checkerboard-patterned ceiling. Function was funerary — imagining the afterlife as an eternal celebration."},
+  {cat:"context", front:"Who were the Etruscans (self / Roman / Greek names)?", back:"They called themselves Rasenna. Romans called them Tusci or Etrusci. Greeks called them Tyrrhenians (hence \"Tyrrhenian Sea\")."},
+  {cat:"context", front:"Etruscans vs. Romans — relationship", back:"Etruscans lived in Italy before Rome and are NOT \"pre-Romans\" — a separate language and culture. Rome was first ruled by Etruscan kings, then later conquered Etruria."},
+  {cat:"context", front:"Why do we know so little about Etruscan art?", back:"Their literary tradition is mostly lost, Rome destroyed many of their monuments, and Etruscan buildings were made of wood and mud brick rather than durable stone. Etruscan art is known primarily through archaeology."},
+  {cat:"context", front:"Status of Etruscan women", back:"Higher status than in Greece or Rome: could attend banquets, kept their own names, owned property independently, and were literate — inscriptions appear on mirrors and toiletry items."},
+  {cat:"context", front:"General Etruscan art traits", back:"Pantheon of gods honored in large civic/religious buildings; buildings of wood & mud brick; funerary frescoes; sculpture in terracotta, stucco, bronze (no nudity); some similarity to Greek Archaic art."},
+];
+
+const godTriples = [
+  ["Tinia","Zeus","Jupiter"],
+  ["Uni","Hera","Juno"],
+  ["Menrva","Athena","Minerva"],
+  ["Apulu","Apollo","Apollo"],
+  ["Artumes","Artemis","Diana"],
+  ["Hercle","Herakles","Hercules"],
+];
+
+const quizBank = [
+  {q:"What material is the Sarcophagus of the Spouses made from?", options:["Marble","Painted terracotta","Bronze","Tufa"], answer:1},
+  {q:"Where was the Sarcophagus of the Spouses found?", options:["Veii","Cerveteri","Tarquinia","Rome"], answer:1},
+  {q:"About what date is the Sarcophagus of the Spouses?", options:["ca. 520 BCE","ca. 1200 BCE","ca. 100 CE","ca. 750 BCE"], answer:0},
+  {q:"Where is the Sarcophagus of the Spouses now located?", options:["The Louvre","British Museum","Museo Nazionale di Villa Giulia, Rome","Vatican Museums"], answer:2},
+  {q:"What does the pose of the couple on the Sarcophagus of the Spouses suggest?", options:["Mourning and separation","Punishment in the afterlife","Shared status, reclining together as at a banquet","A military triumph"], answer:2},
+  {q:"The facial style of the Sarcophagus of the Spouses (almond eyes, faint smile) resembles which tradition?", options:["Egyptian Old Kingdom","Greek Archaic","Roman Republican verism","Neo-Assyrian relief"], answer:1},
+  {q:"Who was the master sculptor associated with the Apollo of Veii?", options:["Vulca","Phidias","Myron","Polykleitos"], answer:0},
+  {q:"What is a defining feature of the Temple of Minerva's floor plan?", options:["A single round cella","Triple cella","No cella at all","Columns on all four sides"], answer:1},
+  {q:"Where were sculptures typically placed on an Etruscan temple?", options:["Inside the pediment","Underground in the crypt","Along the roofline","On the temple steps"], answer:2},
+  {q:"What are Etruscan temples commonly built from (unlike Greek stone temples)?", options:["Marble and granite","Wood, mud brick, or tufa","Solid gold","Fired brick only"], answer:1},
+  {q:"Where was the Temple of Minerva located?", options:["Veii, near Rome","Athens","Cerveteri","Pompeii"], answer:0},
+  {q:"Roughly when was the Temple of Minerva and its Apollo sculpture made?", options:["c. 510–500 BCE","c. 1000 BCE","c. 300 CE","c. 50 BCE"], answer:0},
+  {q:"What material is the Apollo of Veii sculpture made from?", options:["Bronze","Terracotta","Marble","Wood"], answer:1},
+  {q:"Greek temples differ from Etruscan temples in that Greek temples...", options:["Have no columns at all","Are surrounded by columns on all sides and built of stone","Are always painted red","Have triple cellas"], answer:1},
+  {q:"What is the medium of the Tomb of the Triclinium?", options:["Fresco on marble","Tufa and fresco","Oil paint on wood panel","Mosaic tile"], answer:1},
+  {q:"Roughly when was the Tomb of the Triclinium painted?", options:["c. 480–470 BCE","c. 1500 BCE","c. 200 CE","c. 750 BCE"], answer:0},
+  {q:"What is depicted on the walls of the Tomb of the Triclinium?", options:["Battle scenes","Banqueting and dancing figures","Portraits of Roman emperors","Farming scenes"], answer:1},
+  {q:"What pattern decorates the ceiling of the Tomb of the Triclinium?", options:["Checkerboard","Solid gold leaf","Spiral vines only","Blank whitewash"], answer:0},
+  {q:"Why does the Tomb of the Triclinium show a banquet scene?", options:["It was a real dining hall for the living","It imagines the afterlife as an ongoing celebration","It depicts a wedding ceremony","It shows a religious sacrifice"], answer:1},
+  {q:"What does 'necropolis' literally mean?", options:["City of the gods","City of the dead","Sacred hill","Royal tomb"], answer:1},
+  {q:"A triclinium is best described as...", options:["A three-headed statue","A dining arrangement with couches on three sides","A type of Etruscan column","A burial urn"], answer:1},
+  {q:"Fresco is best defined as...", options:["Carving into wet clay","Water-based paint applied to fresh wet plaster","Gold leaf applied to stone","Painting with wax and pigment on wood"], answer:1},
+  {q:"Terracotta is best defined as...", options:["Hard ceramic clay used for building or pottery","A type of volcanic glass","Polished white marble","A woven textile"], answer:0},
+  {q:"What did the Etruscans call themselves?", options:["Tusci","Tyrrhenians","Rasenna","Latins"], answer:2},
+  {q:"What did the Romans call the Etruscans?", options:["Rasenna","Tyrrhenians","Tusci or Etrusci","Sabines"], answer:2},
+  {q:"What did the Greeks call the Etruscans?", options:["Tyrrhenians","Rasenna","Latins","Umbrians"], answer:0},
+  {q:"Which region is named after the Etruscans?", options:["Sicily","Tuscany","Sardinia","Campania"], answer:1},
+  {q:"Which statement correctly describes the Etruscan-Roman relationship?", options:["Etruscans were simply early Romans","Rome was first ruled by Etruscan kings, then conquered Etruria","Etruscans and Romans never interacted","Etruscans conquered Rome permanently"], answer:1},
+  {q:"Which of these was true of Etruscan women, unlike their Greek counterparts?", options:["They could not own property","They kept their own names, attended banquets, and owned property","They were forbidden to be literate","They had no legal status"], answer:1},
+  {q:"Why is Etruscan art harder to reconstruct than Greek or Roman art?", options:["It never existed in large quantities","Their literary tradition is mostly lost and Rome destroyed many monuments","It was all buried in volcanic ash","No archaeological excavation has occurred"], answer:1},
+  {q:"Etruscan art is known primarily through which source?", options:["Surviving literature","Archaeology","Roman textbooks","Oral tradition passed to modern Italy"], answer:1},
+  {q:"What is the Etruscan name for the god the Greeks called Zeus and Romans called Jupiter?", options:["Tinia","Uni","Menrva","Apulu"], answer:0},
+  {q:"What is the Etruscan name for the god the Greeks called Athena and Romans called Minerva?", options:["Artumes","Menrva","Hercle","Uni"], answer:1},
+  {q:"What is the Etruscan name for the god the Greeks called Hera and Romans called Juno?", options:["Uni","Tinia","Apulu","Hercle"], answer:0},
+  {q:"What is the Etruscan name for the god the Greeks called Artemis and Romans called Diana?", options:["Menrva","Artumes","Apulu","Tinia"], answer:1},
+  {q:"What is the Etruscan name for the god the Greeks called Herakles and Romans called Hercules?", options:["Hercle","Apulu","Tinia","Uni"], answer:0},
+  {q:"What material were Etruscan sculptures typically made from, avoiding marble?", options:["Terracotta, stucco, and bronze","Cast iron","Solid gold","Wax only"], answer:0},
+  {q:"Which statement about Etruscan sculpture is true?", options:["It regularly depicted nudity, like Greek art","It generally avoided nudity, unlike Greek sculpture","It was made only of ivory","It never depicted the human figure"], answer:1},
+  {q:"What time span does Unit 2.4: Etruscan Art cover?", options:["1000 BCE – 270 BCE","3500 BCE – 1000 BCE","270 BCE – 300 CE","500 CE – 1000 CE"], answer:0},
+  {q:"How many works of art make up the Etruscan section of this unit?", options:["3","10","36","1"], answer:0},
+];
+
+/* ================= FLASHCARDS ================= */
+let filtered = cards.slice();
+let idx = 0;
+let flipped = false;
+
+const filterRow = document.getElementById('filterRow');
+const filters = [["all","All"],["vocab","Vocab"],["work","3 Works"],["context","Context"]];
+filters.forEach(([key,label],i)=>{
+  const b = document.createElement('button');
+  b.textContent = label;
+  if(i===0) b.classList.add('active');
+  b.addEventListener('click', ()=>{
+    filterRow.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    filtered = key==="all" ? cards.slice() : cards.filter(c=>c.cat===key);
+    idx = 0; flipped=false;
+    renderCard();
+  });
+  filterRow.appendChild(b);
+});
+
+const cardEl = document.getElementById('card');
+const frontText = document.getElementById('frontText');
+const backText = document.getElementById('backText');
+const cardCount = document.getElementById('cardCount');
+const potRow = document.getElementById('potRow');
+
+function renderCard(){
+  if(filtered.length===0) return;
+  const c = filtered[idx];
+  frontText.textContent = c.front;
+  backText.textContent = c.back;
+  cardEl.classList.toggle('flipped', flipped);
+  cardCount.textContent = `Card ${idx+1} of ${filtered.length}`;
+  potRow.innerHTML = "";
+  filtered.forEach((_,i)=>{
+    const p = document.createElement('div');
+    p.className = 'pot' + (i<=idx ? ' done':'');
+    potRow.appendChild(p);
+  });
+}
+cardEl.addEventListener('click', ()=>{ flipped=!flipped; cardEl.classList.toggle('flipped', flipped); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  idx = (idx+1) % filtered.length; flipped=false; renderCard();
+});
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  idx = (idx-1+filtered.length) % filtered.length; flipped=false; renderCard();
+});
+document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+  for(let i=filtered.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [filtered[i],filtered[j]] = [filtered[j],filtered[i]];
+  }
+  idx=0; flipped=false; renderCard();
+});
+renderCard();
+
+/* ================= GODS MATCH ================= */
+let matchScore = 0;
+let selEtr = null, selOther = null;
+let solved = new Set();
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function buildMatch(){
+  matchScore = 0; selEtr=null; selOther=null; solved = new Set();
+  document.getElementById('matchScore').textContent = "0";
+  const colE = document.getElementById('colEtruscan');
+  const colG = document.getElementById('colGreek');
+  const colR = document.getElementById('colRoman');
+  colE.innerHTML = '<h3>Etruscan</h3>';
+  colG.innerHTML = '<h3>Greek</h3>';
+  colR.innerHTML = '<h3>Roman</h3>';
+
+  const etrOrder = shuffleArr(godTriples.map(t=>t[0]));
+  const greekOrder = shuffleArr(godTriples.map(t=>t[1]));
+  const romanOrder = shuffleArr(godTriples.map(t=>t[2]));
+
+  etrOrder.forEach(name=>{
+    const d = document.createElement('div');
+    d.className='match-item'; d.textContent=name; d.dataset.name=name; d.dataset.side='etr';
+    d.addEventListener('click', ()=>onMatchClick(d));
+    colE.appendChild(d);
+  });
+  greekOrder.forEach(name=>{
+    const d = document.createElement('div');
+    d.className='match-item'; d.textContent=name; d.dataset.name=name; d.dataset.side='greek';
+    d.addEventListener('click', ()=>onMatchClick(d));
+    colG.appendChild(d);
+  });
+  romanOrder.forEach(name=>{
+    const d = document.createElement('div');
+    d.className='match-item'; d.textContent=name; d.dataset.name=name; d.dataset.side='roman';
+    d.addEventListener('click', ()=>onMatchClick(d));
+    colR.appendChild(d);
+  });
+}
+
+function tripleFor(name, side){
+  return godTriples.find(t => (side==='etr'&&t[0]===name)||(side==='greek'&&t[1]===name)||(side==='roman'&&t[2]===name));
+}
+
+function onMatchClick(el){
+  if(el.classList.contains('correct')) return;
+  const side = el.dataset.side;
+  if(side==='etr'){
+    if(selEtr) selEtr.classList.remove('selected');
+    selEtr = el; el.classList.add('selected');
+  } else {
+    if(selOther) selOther.classList.remove('selected');
+    selOther = el; el.classList.add('selected');
+  }
+  if(selEtr && selOther){
+    const t1 = tripleFor(selEtr.dataset.name,'etr');
+    const isRight = t1 && (t1[1]===selOther.dataset.name || t1[2]===selOther.dataset.name);
+    if(isRight){
+      selEtr.classList.remove('selected'); selOther.classList.remove('selected');
+      selEtr.classList.add('correct'); selOther.classList.add('correct');
+      matchScore++;
+      document.getElementById('matchScore').textContent = matchScore;
+      selEtr=null; selOther=null;
+      if(matchScore===6){
+        document.getElementById('matchStatus').innerHTML = "All matched! The Etruscan pantheon lines up with Greek and Roman gods. Score: <span id='matchScore'>6</span> / 6";
+      }
+    } else {
+      const a=selEtr, b=selOther;
+      a.classList.add('wrong'); b.classList.add('wrong');
+      setTimeout(()=>{
+        a.classList.remove('selected','wrong');
+        b.classList.remove('selected','wrong');
+      }, 500);
+      selEtr=null; selOther=null;
+    }
+  }
+}
+document.getElementById('resetMatchBtn').addEventListener('click', buildMatch);
+buildMatch();
+
+/* ================= QUIZ ================= */
+let quizOrder = [];
+let qi = 0;
+let qScore = 0;
+
+const QUIZ_LENGTH = 12;
+
+function startQuiz(){
+  quizOrder = shuffleArr(quizBank).slice(0, QUIZ_LENGTH);
+  qi = 0; qScore = 0;
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('quizCard').style.display='block';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const item = quizOrder[qi];
+  document.getElementById('quizPos').textContent = `Question ${qi+1} of ${quizOrder.length}`;
+  document.getElementById('quizScoreLive').textContent = `Score: ${qScore}`;
+  const card = document.getElementById('quizCard');
+  card.innerHTML = '';
+  const qt = document.createElement('div');
+  qt.className='qtext'; qt.textContent = item.q;
+  card.appendChild(qt);
+  item.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='opt'; b.textContent = opt;
+    b.addEventListener('click', ()=>{
+      const allOpts = card.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.disabled=true);
+      if(i===item.answer){
+        b.classList.add('correct');
+        qScore++;
+        document.getElementById('quizScoreLive').textContent = `Score: ${qScore}`;
+      } else {
+        b.classList.add('wrong');
+        allOpts[item.answer].classList.add('correct');
+      }
+      nextBtn.style.display='inline-block';
+    });
+    card.appendChild(b);
+  });
+  const nextBtn = document.createElement('button');
+  nextBtn.className='quiz-next';
+  nextBtn.textContent = (qi===quizOrder.length-1) ? "See Results" : "Next Question →";
+  nextBtn.addEventListener('click', ()=>{
+    qi++;
+    if(qi < quizOrder.length){ renderQuestion(); }
+    else { showResult(); }
+  });
+  card.appendChild(nextBtn);
+}
+
+function showResult(){
+  document.getElementById('quizCard').style.display='none';
+  const res = document.getElementById('quizResult');
+  res.style.display='block';
+  const pct = Math.round((qScore/quizOrder.length)*100);
+  let msg = "Solid grasp of the material.";
+  if(pct===100) msg = "Perfect — you know this unit cold.";
+  else if(pct<50) msg = "Worth another pass through the flashcards.";
+  res.innerHTML = `
+    <div class="score">${qScore} / ${quizOrder.length}</div>
+    <p>${pct}% correct — ${msg}</p>
+    <div class="deck-controls"><button class="primary" id="retryQuiz">Retry Quiz</button></div>
+  `;
+  document.getElementById('retryQuiz').addEventListener('click', startQuiz);
+}
+
+/* ================= NAV ================= */
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('section.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    if(btn.dataset.view==='quiz' && quizOrder.length===0) startQuiz();
+  });
+});
+</script>
+</body>
+</html>

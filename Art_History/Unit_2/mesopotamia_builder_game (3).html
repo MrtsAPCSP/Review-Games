@@ -1,0 +1,1336 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap');
+
+:root{
+  --ink:#1B1917;
+  --ink2:#242220;
+  --lapis:#41609C;
+  --clay:#A9633C;
+  --clay-lt:#D0925F;
+  --sand:#E7DCC3;
+  --basalt:#201E1B;
+  --gold:#C39A3E;
+  --gold-lt:#E4C878;
+  --gold-dk:#8E6E24;
+  --bone:#F3EEE1;
+  --good:#5C8C74;
+  --bad:#9B4B3E;
+}
+
+*{box-sizing:border-box;}
+#meso-root{
+  font-family:'Inter',sans-serif;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(228,200,120,.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 0%, #2B2825 0%, var(--ink) 45%, #100F0D 100%);
+  color:var(--bone);
+  border-radius:6px;
+  padding:26px 20px 30px;
+  max-width:980px;
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+  min-height:560px;
+  box-shadow:0 30px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04);
+}
+#meso-root::before{
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0px, transparent 1px, transparent 3px);
+  pointer-events:none;
+}
+.screen{display:none;position:relative;z-index:1;}
+.screen.active{display:block; animation:fadeUp .5s ease both;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+h1.title{
+  font-family:'Fraunces',serif; font-weight:600; font-optical-sizing:auto;
+  font-size:clamp(26px,4.2vw,40px);
+  letter-spacing:.2px;
+  text-align:center;
+  margin:6px 0 0;
+  color:var(--bone);
+  position:relative;
+  padding-bottom:16px;
+}
+h1.title::after{
+  content:"";
+  position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+  width:64px; height:2px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.subtitle{text-align:center; color:var(--sand); font-size:13.5px; letter-spacing:.8px; text-transform:uppercase; margin:14px 0 22px; opacity:.75; font-weight:500;}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:2px; text-transform:uppercase; color:var(--gold-lt); opacity:.85;}
+
+.card{
+  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.01));
+  border:1px solid rgba(195,154,62,.16);
+  border-radius:8px;
+  padding:20px;
+  box-shadow:0 16px 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.mode-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:18px 0;}
+@media (max-width:720px){.mode-grid{grid-template-columns:1fr;}}
+.mode-btn{
+  cursor:pointer; text-align:left; padding:19px 17px; border-radius:8px; position:relative;
+  border:1px solid rgba(195,154,62,.20);
+  background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.008));
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  color:var(--bone);
+  box-shadow:0 10px 22px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.mode-btn::before, .mode-btn::after{
+  content:""; position:absolute; width:14px; height:14px; opacity:0; transition:opacity .2s ease;
+  border-color:var(--gold-lt);
+}
+.mode-btn::before{top:6px; left:6px; border-top:1.5px solid; border-left:1.5px solid;}
+.mode-btn::after{bottom:6px; right:6px; border-bottom:1.5px solid; border-right:1.5px solid;}
+.mode-btn:hover{transform:translateY(-2px); border-color:rgba(195,154,62,.5); box-shadow:0 16px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);}
+.mode-btn:hover::before, .mode-btn:hover::after{opacity:.7;}
+.mode-btn.selected{border-color:var(--gold); box-shadow:0 0 0 1px rgba(195,154,62,.5), 0 16px 30px rgba(0,0,0,.4);}
+.mode-btn.selected::before, .mode-btn.selected::after{opacity:1;}
+.mode-btn .mtitle{font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:var(--gold-lt); margin-bottom:7px; display:block;}
+.mode-btn .mdesc{font-size:13px; color:var(--sand); line-height:1.5; opacity:.9;}
+
+label.field-label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:1.4px; color:var(--gold-lt); opacity:.85; margin:16px 0 7px; font-family:'IBM Plex Mono',monospace;}
+input[type=text], select{
+  width:100%; padding:11px 13px; border-radius:6px; border:1px solid rgba(195,154,62,.22);
+  background:rgba(0,0,0,.28); color:var(--bone); font-family:'Inter',sans-serif; font-size:14px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35);
+}
+input[type=text]:focus{outline:none; border-color:var(--gold);}
+.row-inline{display:flex; gap:12px; flex-wrap:wrap;}
+.row-inline > div{flex:1; min-width:160px;}
+
+.chip-group{display:flex; gap:8px; flex-wrap:wrap;}
+.chip{
+  padding:8px 15px; border-radius:5px; border:1px solid rgba(195,154,62,.25);
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px; cursor:pointer; background:rgba(255,255,255,.03); color:var(--bone);
+  transition:transform .12s ease, background .15s ease;
+}
+.chip:hover{border-color:var(--gold);}
+.chip:active{transform:translateY(1px);}
+.chip.selected{background:linear-gradient(180deg,var(--gold-lt),var(--gold)); color:#241a05; border-color:var(--gold); font-weight:700; box-shadow:0 3px 8px rgba(0,0,0,.3);}
+
+.primary-btn{
+  display:block; width:100%; margin-top:22px; padding:14px 18px; border:none; border-radius:6px;
+  background:linear-gradient(180deg, var(--gold-lt), var(--gold) 55%, var(--gold-dk));
+  color:#241a05; font-family:'Fraunces',serif; font-weight:600; font-size:16px; letter-spacing:.2px;
+  cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 -3px 0 rgba(0,0,0,.18) inset, 0 10px 20px rgba(0,0,0,.35);
+  transition:transform .1s ease, box-shadow .1s ease;
+}
+.primary-btn:hover{filter:brightness(1.04);}
+.primary-btn:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(255,255,255,.3) inset, 0 -1px 0 rgba(0,0,0,.18) inset, 0 4px 10px rgba(0,0,0,.3);}
+.primary-btn:disabled{opacity:.35; cursor:not-allowed; filter:none;}
+.ghost-btn{
+  padding:10px 17px; border-radius:6px; border:1px solid rgba(195,154,62,.3);
+  background:rgba(255,255,255,.02); color:var(--bone); font-family:'Inter',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+  transition:transform .1s ease, border-color .15s ease, background .15s ease;
+}
+.ghost-btn:hover{border-color:var(--gold); color:var(--gold-lt); background:rgba(195,154,62,.08);}
+.ghost-btn:active{transform:translateY(1px);}
+
+.best-line{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--sand); text-align:center; margin-top:10px; line-height:1.6; opacity:.85;}
+
+/* STORY OVERLAY */
+.story-overlay{
+  position:absolute; inset:0; z-index:80; display:none;
+  align-items:center; justify-content:center; padding:24px;
+  background:radial-gradient(ellipse 70% 50% at 50% 40%, rgba(40,34,22,.55), rgba(6,5,4,.94));
+  border-radius:6px;
+  backdrop-filter:blur(3px);
+}
+.story-overlay.show{display:flex; animation:fadeUp .4s ease both;}
+.story-card{
+  max-width:480px; width:100%; text-align:center; padding:30px 28px;
+  border-radius:8px; border:1px solid rgba(195,154,62,.35);
+  background:linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+  box-shadow:0 25px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.story-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold-lt); margin-bottom:12px; opacity:.85;}
+.story-glyph{font-size:30px; margin-bottom:12px; color:var(--gold); opacity:.9;}
+.story-text{font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:16.5px; line-height:1.7; color:var(--bone); margin-bottom:20px;}
+
+/* GAME SCREEN */
+.top-bar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;}
+.timer-box{
+  font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:24px; padding:9px 18px;
+  background:linear-gradient(180deg, #171513, #201d1a);
+  border-radius:6px; border:1px solid rgba(195,154,62,.28); min-width:112px; text-align:center;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.5), inset 0 -1px 0 rgba(255,255,255,.03);
+  color:var(--gold-lt); letter-spacing:1px;
+  transition:box-shadow .3s ease, color .3s ease;
+}
+.timer-box.low{color:#E8977E; box-shadow:inset 0 2px 6px rgba(0,0,0,.5), 0 0 16px rgba(155,75,62,.55); animation:pulse 1.1s infinite;}
+@keyframes pulse{50%{box-shadow:inset 0 2px 6px rgba(0,0,0,.5), 0 0 4px rgba(155,75,62,.2);}}
+.turn-label{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--sand); text-transform:uppercase; letter-spacing:1.4px; opacity:.85;}
+
+.panels{display:flex; gap:16px; flex-wrap:wrap;}
+.panel{
+  flex:1; min-width:280px; border-radius:8px; padding:16px; position:relative; overflow:hidden;
+  background:linear-gradient(160deg, rgba(255,255,255,0.04), rgba(255,255,255,0.008));
+  border:1px solid rgba(195,154,62,.18);
+  box-shadow:0 14px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+  transition:border-color .3s, box-shadow .3s;
+}
+.panel::before{
+  content:""; position:absolute; top:-40%; left:10%; width:80%; height:60%;
+  background:radial-gradient(ellipse, rgba(228,200,120,0), rgba(228,200,120,0) 60%);
+  opacity:0; transition:opacity .5s ease; pointer-events:none;
+}
+.panel.active-turn{border-color:rgba(195,154,62,.55); box-shadow:0 14px 34px rgba(0,0,0,.4), 0 0 0 1px rgba(195,154,62,.3), inset 0 1px 0 rgba(255,255,255,.05);}
+.panel.active-turn::before{opacity:1; background:radial-gradient(ellipse, rgba(228,200,120,.14), rgba(228,200,120,0) 65%);}
+.panel .pname{font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--gold-lt); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;}
+.panel .pname span:last-child{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--sand); font-weight:500;}
+.panel .progress-outer{height:6px; background:rgba(0,0,0,.4); border-radius:4px; overflow:hidden; margin-bottom:12px; box-shadow:inset 0 1px 3px rgba(0,0,0,.4); position:relative; z-index:1;}
+.panel .progress-inner{height:100%; background:linear-gradient(90deg,var(--clay),var(--gold-lt)); width:0%; transition:width .5s ease; box-shadow:0 0 8px rgba(228,200,120,.4);}
+.skyline{width:100%; height:auto; display:block; background:linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.28)); border-radius:6px; box-shadow:inset 0 2px 10px rgba(0,0,0,.35); position:relative; z-index:1;}
+.piece{opacity:0; transform:translateY(14px); transition:opacity .55s ease, transform .55s ease;}
+.piece.built{opacity:1; transform:translateY(0);}
+
+.era-picker{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.era-btn{
+  flex:1; min-width:120px; padding:10px 10px; border-radius:6px; border:1px solid rgba(195,154,62,.22);
+  background:rgba(255,255,255,.03); color:var(--bone); cursor:pointer; text-align:center; font-size:11.5px;
+  font-family:'IBM Plex Mono',monospace; letter-spacing:.3px;
+  box-shadow:0 4px 10px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.03);
+  transition:transform .1s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.era-btn b{display:block; font-family:'Fraunces',serif; font-weight:600; font-size:13.5px; color:var(--gold-lt); margin-bottom:3px;}
+.era-btn:disabled{opacity:.28; cursor:not-allowed; box-shadow:none;}
+.era-btn:not(:disabled):hover{border-color:var(--gold); box-shadow:0 6px 14px rgba(0,0,0,.3);}
+.era-btn:not(:disabled):active{transform:translateY(1px);}
+
+.qcard{margin-top:18px; padding:20px; border-radius:8px; background:linear-gradient(160deg, rgba(0,0,0,.22), rgba(0,0,0,.32)); border:1px solid rgba(195,154,62,.2); box-shadow:0 16px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);}
+.qmeta{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--gold-lt); text-transform:uppercase; letter-spacing:1.6px; margin-bottom:10px; opacity:.85;}
+.qtext{font-family:'Fraunces',serif; font-weight:500; font-size:18px; margin-bottom:16px; line-height:1.45;}
+.qtimer-outer{height:5px; background:rgba(255,255,255,.08); border-radius:3px; margin-bottom:16px; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,.4);}
+.qtimer-inner{height:100%; background:var(--gold); width:100%; transition:width .2s linear, background .3s;}
+.choices{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+@media (max-width:600px){.choices{grid-template-columns:1fr;}}
+.choice-btn{
+  text-align:left; padding:13px 15px; border-radius:6px; border:1px solid rgba(195,154,62,.18);
+  background:rgba(255,255,255,.025); color:var(--bone); cursor:pointer; font-size:14px; font-family:'Inter',sans-serif;
+  box-shadow:0 3px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.03);
+  transition:border-color .15s, background .15s, transform .1s;
+}
+.choice-btn:hover:not(:disabled){border-color:var(--gold); background:rgba(195,154,62,.09);}
+.choice-btn:not(:disabled):active{transform:translateY(1px);}
+.choice-btn:disabled{cursor:default;}
+.choice-btn.correct{border-color:var(--good); background:rgba(92,140,116,.20); box-shadow:0 0 0 1px rgba(92,140,116,.4);}
+.choice-btn.incorrect{border-color:var(--bad); background:rgba(155,75,62,.20); box-shadow:0 0 0 1px rgba(155,75,62,.4);}
+
+.feedback{margin-top:16px; padding:13px 15px; border-radius:6px; font-size:14px; line-height:1.55;}
+.feedback.good{background:rgba(92,140,116,.14); border:1px solid rgba(92,140,116,.4);}
+.feedback.bad{background:rgba(155,75,62,.14); border:1px solid rgba(155,75,62,.4);}
+.continue-btn{margin-top:12px;}
+
+.end-title{font-family:'Fraunces',serif; font-weight:600; font-size:27px; text-align:center; color:var(--gold-lt); margin-bottom:10px; position:relative; padding-bottom:14px;}
+.end-title::after{content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:48px; height:2px; background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+.end-sub{font-family:'Fraunces',serif; font-style:italic; text-align:center; color:var(--sand); font-size:14.5px; line-height:1.6; margin-bottom:22px; opacity:.92;}
+.missed-list{max-height:260px; overflow-y:auto; margin-top:10px; padding-right:6px;}
+.missed-item{padding:12px 0; border-bottom:1px solid rgba(195,154,62,.12); font-size:13px;}
+.missed-item:last-child{border-bottom:none;}
+.missed-item .mq{font-weight:600; margin-bottom:4px; font-family:'Inter',sans-serif;}
+.missed-item .ma{color:var(--good); font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.3px; text-transform:uppercase;}
+.missed-item .mn{color:var(--sand); opacity:.85; font-family:'Fraunces',serif; font-style:italic; margin-top:3px; display:block;}
+.end-actions{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;}
+.end-actions button{flex:1;}
+.footnote{font-size:11px; color:var(--sand); opacity:.55; text-align:center; margin-top:18px; line-height:1.5;}
+
+/* SEAL TRACKER (co-op mode) */
+.seal-tracker{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; justify-content:center;}
+.seal-icon{
+  display:flex; flex-direction:column; align-items:center; gap:6px; width:80px; padding:8px 4px;
+  color:rgba(231,220,195,.25); transition:color .5s ease, transform .4s ease;
+}
+.seal-icon .seal-svg{width:42px; height:42px; filter:drop-shadow(0 3px 6px rgba(0,0,0,.4));}
+.seal-icon .seal-label{font-family:'IBM Plex Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.4px; color:inherit; text-align:center; line-height:1.3;}
+.seal-icon.unlocked{color:var(--gold-lt); transform:scale(1.08);}
+.seal-icon.unlocked .seal-svg{filter:drop-shadow(0 0 10px rgba(228,200,120,.5));}
+</style>
+
+
+<div id="meso-root">
+
+  <!-- START SCREEN -->
+  <div class="screen active" id="screen-start">
+    <div class="eyebrow" style="text-align:center; display:block;">AP Art History · Content Area 2</div>
+    <h1 class="title">The Sandstorm of Forgetting</h1>
+    <div class="subtitle">Outrun the storm — rebuild Sumer → Babylon → Assyria → Persia from memory</div>
+
+    <div class="mode-grid">
+      <div class="mode-btn" data-mode="coop">
+        <span class="mtitle">🗝️ The Six Seals — Pair Challenge</span>
+        <span class="mdesc">Built for class time. Two Keepers, one Archive: work through six chambers together, no clock pressure — with bonus vaults to unlock if you finish early.</span>
+      </div>
+      <div class="mode-btn" data-mode="solo">
+        <span class="mtitle">⛏ Solo Speedrun</span>
+        <span class="mdesc">Nisaba has chosen you alone. Race the storm — every correct answer raises another stone, every mistake costs 8 seconds. Beat your own best time.</span>
+      </div>
+      <div class="mode-btn" data-mode="study">
+        <span class="mtitle">📜 Study Mode</span>
+        <span class="mdesc">No storm, no clock — just the full question bank, shuffled, with an explanation after every answer. Good for a quiet review pass anytime.</span>
+      </div>
+    </div>
+
+    <div class="card" id="setup-card" style="display:none;">
+      <div id="setup-fields"></div>
+      <button class="primary-btn" id="start-btn">Begin</button>
+    </div>
+
+    <div id="best-and-board"></div>
+    <div class="footnote">Covers: 16 vocab terms · the 6 core works (White Temple &amp; Ziggurat, Votive Figures, Standard of Ur, Law Code Stele of Hammurabi, Lamassu, Apadana) · culture timeline &amp; geography · Near Eastern stylistic traits.</div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="screen-game">
+    <div class="story-overlay" id="story-overlay">
+      <div class="story-card">
+        <div class="story-glyph" id="story-glyph">𒀭</div>
+        <div class="story-eyebrow" id="story-eyebrow">Chronicle</div>
+        <div class="story-text" id="story-text">—</div>
+        <button class="primary-btn" id="story-continue-btn">Continue</button>
+      </div>
+    </div>
+    <div class="top-bar">
+      <div class="turn-label" id="turn-label">—</div>
+      <div class="timer-box" id="timer-box">00:00</div>
+      <button class="ghost-btn" id="quit-btn">End &amp; score</button>
+    </div>
+
+    <div class="panels" id="panels"></div>
+    <div class="seal-tracker" id="seal-tracker" style="display:none;"></div>
+
+    <div class="qcard" id="qcard" style="display:none;">
+      <div class="qmeta" id="qmeta">—</div>
+      <div class="qtext" id="qtext">—</div>
+      <div class="qtimer-outer" id="qtimer-outer"><div class="qtimer-inner" id="qtimer-inner"></div></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback" style="display:none;"></div>
+      <button class="ghost-btn" id="hint-btn" style="display:none; margin-top:12px;">🕯️ Ask the Elders for a hint</button>
+      <div class="best-line" id="hint-line" style="display:none; margin-top:8px; text-align:left;"></div>
+      <button class="primary-btn continue-btn" id="continue-btn" style="display:none;">Continue</button>
+    </div>
+
+    <div class="qcard discussion-card" id="discussion-card" style="display:none;">
+      <div class="qmeta" id="disc-meta">—</div>
+      <div class="qtext" id="disc-prompt">—</div>
+      <button class="ghost-btn" id="disc-reveal-btn">We've talked it through — reveal a model answer</button>
+      <div class="feedback good" id="disc-model" style="display:none;"></div>
+      <button class="primary-btn" id="disc-continue-btn" style="display:none; margin-top:12px;">Continue</button>
+    </div>
+
+    <div class="card" id="vault-menu" style="display:none;"></div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="screen" id="screen-end">
+    <div class="end-title" id="end-title">Result</div>
+    <div class="end-sub" id="end-sub"></div>
+    <div class="card" id="missed-card">
+      <div class="eyebrow">Missed along the way — worth a second look</div>
+      <div class="missed-list" id="missed-list"></div>
+    </div>
+    <div class="end-actions">
+      <button class="ghost-btn" id="again-btn">Play again</button>
+      <button class="ghost-btn" id="menu-btn">Change mode</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const root = document.getElementById('meso-root');
+  const $ = id => document.getElementById(id);
+
+  /* ---------------- QUESTION BANK ---------------- */
+  const BANK = {
+    sumerian: [
+      {q:"What is a \"cella\"?", c:["Main room of a temple where the god is housed","An outer defensive wall","A ramp leading up a ziggurat","A type of cuneiform tablet"], a:0, n:"The cella housed the cult statue of the god at the heart of a temple like the White Temple."},
+      {q:"A \"ziggurat\" is best described as:", c:["A single-story mud-brick house","A pyramid-like stepped structure with terraces at each level","A freestanding votive statue","A carved gateway guardian figure"], a:1, n:"Ziggurats rose in stages, each level set back from the one below, with a temple at the summit."},
+      {q:"The \"Fertile Crescent\" refers to:", c:["A desert region with no rivers","A semicircular area of fertile land around the Tigris and Euphrates","A mountain range in Persia","The Nile delta region"], a:1, n:"The Fertile Crescent stretches from the Persian Gulf up through Mesopotamia toward Israel."},
+      {q:"The White Temple and Ziggurat is located at:", c:["Nineveh","Babylon","Uruk (modern Warka)","Persepolis"], a:2, n:"Uruk, modern Warka in Iraq, was one of the earliest Sumerian city-states."},
+      {q:"The White Temple and Ziggurat was built primarily from:", c:["Limestone","Basalt","Mud brick","Marble"], a:2, n:"Mud brick was the dominant building material across ancient Mesopotamia."},
+      {q:"\"Votive\" describes an object that is:", c:["Bought at a market","Offered in fulfillment of a vow or pledge","Used only for cooking","Reserved exclusively for royalty"], a:1, n:"The Statues of Votive Figures were left in temples as stand-ins for worshippers, eyes fixed on the gods."},
+      {q:"\"Hierarchy of scale\" means:", c:["Figures are drawn at actual size","A person's importance is shown through the size of their representation","Objects are arranged chronologically","Scale models were built before construction"], a:1, n:"Bigger figures = more important — seen clearly on the Standard of Ur."},
+      {q:"\"Free-standing sculpture\" is:", c:["Carved into a wall","Painted rather than carved","Sculpted fully in the round, viewable from all sides","Found only inside temples"], a:2, n:"Unlike relief sculpture, free-standing works like the votive figures can be walked around."},
+      {q:"The Statues of Votive Figures were found at the Square Temple in:", c:["Eshnunna (modern Tell Asmar)","Ur","Susa","Persepolis"], a:0, n:"They were excavated at Eshnunna, in modern Tell Asmar, Iraq."},
+      {q:"\"Negative space\" refers to:", c:["Areas painted black","The empty space around or within a figure, such as gaps between the legs or arms","Underground burial chambers","Unfinished, uncarved stone"], a:1, n:"Negative space is the void the sculptor leaves — it shapes how we read the figure's silhouette."},
+      {q:"The Standard of Ur's two sides represent:", c:["Life and death","War and Peace","Sun and Moon","Gods and mortals"], a:1, n:"One side depicts a military campaign; the other, a banquet celebrating prosperity."},
+      {q:"A \"register\" in art is:", c:["A list of artists","A horizontal band, often stacked with others, used to tell a narrative story","A type of stylus","A measurement of relief depth"], a:1, n:"The Standard of Ur uses three stacked registers on each side to narrate its story."},
+      {q:"The \"ground line\" is:", c:["The horizon in a landscape painting","The baseline upon which figures stand","The foundation of a ziggurat","A boundary between city-states"], a:1, n:"Each register on the Standard of Ur has its own ground line for the figures within it."},
+      {q:"The Standard of Ur is made of wood inlaid with:", c:["Gold and silver","Shell, lapis lazuli, and red limestone","Ivory and ebony","Terracotta and bronze"], a:1, n:"Lapis lazuli, prized and imported from far away, gives the Standard its deep blue background."}
+    ],
+    babylonian: [
+      {q:"Babylonian art (this stele) dates to approximately:", c:["3500–2340 BCE","1792–1750 BCE","883–612 BCE","559–331 BCE"], a:1, n:"Hammurabi's reign, and this stele, fall around 1792–1750 BCE."},
+      {q:"On the Law Code Stele, Hammurabi receives the law from:", c:["Marduk","Shamash, the sun god","Ishtar","Anu"], a:1, n:"Shamash, god of justice and the sun, hands Hammurabi the rod and ring of kingship."},
+      {q:"A \"stele\" is:", c:["A stone slab used to mark a grave or site","A wedge-shaped writing tool","A domed roof form","A type of column capital"], a:0, n:"Steles were freestanding stone markers, often inscribed, set up in public view."},
+      {q:"\"Cuneiform\" is:", c:["A painting technique","A system of writing formed with wedge-shaped strokes","A style of jewelry","A method of firing pottery"], a:1, n:"Scribes pressed a stylus into clay (or carved stone) to form these wedge-shaped signs."},
+      {q:"A \"stylus\" is:", c:["A ceremonial dagger","A writing utensil","A decorative column","A measuring tool"], a:1, n:"The stylus, often reed or bone, was used to press cuneiform signs into wet clay."},
+      {q:"The Law Code Stele of Hammurabi is carved from:", c:["Limestone","Basalt","Marble","Sandstone"], a:1, n:"Basalt's hardness and dark color gave the stele a monumental, durable presence."},
+      {q:"\"Relief sculpture\" is defined as:", c:["Sculpture that projects from a flat background","Sculpture completely in the round","A sunken carving with no depth","A sculpture made only of clay"], a:0, n:"Relief keeps a connection to its background slab, unlike free-standing sculpture."},
+      {q:"A very shallow relief sculpture is called:", c:["Haut-relief","Bas-relief","Sunk relief","Intaglio"], a:1, n:"\"Bas-relief\" (low relief) barely projects from the surface."},
+      {q:"Babylonian art, like Sumerian and Assyrian art, originates in modern-day:", c:["Iran","Turkey","Iraq","Syria"], a:2, n:"Sumer, Babylon, and Assyria were all centered in what is now Iraq."},
+      {q:"Hammurabi appears in a US Supreme Court frieze alongside which other lawgiver?", c:["Solomon","Moses","Justinian","Confucius"], a:1, n:"A famous frieze in the Supreme Court building pairs Hammurabi with Moses among history's great lawgivers."},
+      {q:"The cuneiform text on Hammurabi's stele is written in:", c:["Sumerian","Akkadian","Aramaic","Elamite"], a:1, n:"Akkadian was the court language of Babylon under Hammurabi."}
+    ],
+    assyrian: [
+      {q:"Neo-Assyrian art dates to approximately:", c:["3500–2340 BCE","1792–1750 BCE","883–612 BCE","559–331 BCE"], a:2, n:"The Neo-Assyrian period runs roughly 883–612 BCE."},
+      {q:"\"In situ\" means:", c:["Recently discovered","In its original place","Restored by modern conservators","Made of stone"], a:1, n:"A work \"in situ\" still stands (or stood) where it was originally placed."},
+      {q:"A \"lamassu\" is:", c:["A winged, human-headed bull that guards Assyrian gateways","A Persian column capital","A Babylonian law code","A Sumerian priest-king"], a:0, n:"Lamassu combined a bull's or lion's body, eagle's wings, and a human head."},
+      {q:"The Lamassu from Sargon II's citadel was carved from:", c:["Basalt","Limestone","Granite","Mud brick"], a:1, n:"This colossal guardian, over 13 feet tall, was carved from limestone."},
+      {q:"This Lamassu comes from the citadel of Sargon II at:", c:["Uruk","Susa","Dur Sharrukin (modern Khorsabad)","Persepolis"], a:2, n:"Dur Sharrukin, modern Khorsabad in Iraq, was Sargon II's purpose-built capital."},
+      {q:"Lamassu figures guarded palace gateways mainly to:", c:["Store grain","Serve as protective, guardian figures","Mark property boundaries","Represent conquered enemies"], a:1, n:"Placed in pairs at entrances, lamassu warded off evil and projected royal power."},
+      {q:"A lamassu is famous for appearing to have how many legs, combining its frontal and profile views?", c:["3","4","5","6"], a:2, n:"Sculptors added an extra leg so the figure reads correctly as both a 4-legged animal from the side and a standing guardian from the front."},
+      {q:"Which of these was NOT a common Near Eastern stylistic trait?", c:["Frontal sculpture","Animal-human hybrids","Nude figures glorifying the body","Strict profile in engravings"], a:2, n:"Unlike later Greek art, Near Eastern art generally avoided nudity — it was considered debasing."},
+      {q:"The Assyrian empire was centered in modern-day:", c:["Iran","Iraq","Egypt","Turkey"], a:1, n:"Like Sumer and Babylon before it, Assyria was centered in what is now Iraq."},
+      {q:"The material most associated with Mesopotamian temples and ziggurats generally is:", c:["Marble","Mud brick","Granite","Bronze"], a:1, n:"Stone was scarce in the river valleys of Mesopotamia, so mud brick was the default building material."}
+    ],
+    persian: [
+      {q:"Persian (Achaemenid) art, like the Apadana, dates to approximately:", c:["3500–2340 BCE","1792–1750 BCE","883–612 BCE","559–331 BCE"], a:3, n:"The Persian Empire flourished roughly 559–331 BCE."},
+      {q:"Persian art is associated with modern-day:", c:["Iraq","Iran","Syria","Turkey"], a:1, n:"Unlike Sumer, Babylon, and Assyria (all in modern Iraq), Persia corresponds to modern Iran."},
+      {q:"An \"apadana\" is:", c:["A Persian burial mound","An audience hall in a Persian palace","A defensive watchtower","A type of relief carving"], a:1, n:"The Apadana at Persepolis was where the king received visitors and tribute."},
+      {q:"A \"capital,\" architecturally, is:", c:["The base of a column","The top element of a column","A type of stele","A ceremonial doorway"], a:1, n:"Persepolis's capitals were famously carved as double-headed bulls."},
+      {q:"The Audience Hall (Apadana) of Darius and Xerxes is located at:", c:["Babylon","Nineveh","Persepolis","Susa"], a:2, n:"Persepolis, in modern Iran, was the ceremonial capital of the Achaemenid Persian Empire."},
+      {q:"The Apadana was constructed primarily from:", c:["Marble","Mud brick with limestone facing","Granite blocks","Wood and thatch"], a:1, n:"As in earlier Mesopotamian building, mud brick formed the core, faced with stone."},
+      {q:"Reliefs at Persepolis showing many ethnic groups bringing tribute reflect the empire's:", c:["Isolationism","Tolerant rule over many conquered, diverse peoples","Religious fanaticism","Rejection of foreign art"], a:1, n:"Persepolis was called the \"Gate of All Lands\" — its reliefs celebrate the empire's diversity."},
+      {q:"After conquering Persia, Alexander the Great:", c:["Destroyed all Persian art","Respectfully buried the last Persian emperor, Darius III","Ignored Persian culture entirely","Converted to Zoroastrianism"], a:1, n:"Alexander's respectful treatment of Darius III shows his admiration for Persian civilization."},
+      {q:"The columns of the Apadana were topped with capitals shaped like:", c:["Lotus flowers","Double-headed bulls","Winged lions","Human faces"], a:1, n:"These distinctive capitals could support massive wooden roof beams."},
+      {q:"Persepolis was sometimes nicknamed:", c:["\"City of the Sun\"","\"Gate of All Lands\"","\"Cradle of Civilization\"","\"Eternal City\""], a:1, n:"The name reflects the many subject peoples represented arriving with tribute in its reliefs."}
+    ]
+  };
+  const ERA_ORDER = ["sumerian","babylonian","assyrian","persian"];
+  const ERA_LABEL = {sumerian:"Sumerian", babylonian:"Babylonian", assyrian:"Assyrian", persian:"Persian"};
+  const PIECES_PER_ERA = {sumerian:4, babylonian:3, assyrian:3, persian:4};
+  const TOTAL_PIECES = 14;
+
+  /* ---------------- STORY ---------------- */
+  const STORY = {
+    intro: {
+      solo: "A sandstorm is rolling in from the western desert, swallowing everything it touches. Nisaba, goddess of writing and keeper of the gods' records, has pulled you out of time itself: rebuild the great works of the Fertile Crescent from memory before the storm erases them for good. Every question you answer correctly becomes another brick, another carved stone, another rescued monument.",
+      coop: "Long ago, Nisaba split her Archive's master seal into six fragments and hid one inside each of the six great works — deliberately, so that no single thief could ever piece it back together alone. Only two Keepers, working side by side and checking each other's memory against the stone, can recover all six before the storm swallows the Archive whole. You are those two Keepers."
+    },
+    eraComplete: {
+      sumerian: "The White Temple gleams atop its ziggurat once more — Uruk is safe. Centuries rush by in an instant: downstream, a king named Hammurabi is carving new laws into stone. The storm is already moving toward Babylon.",
+      babylonian: "Hammurabi's code stands tall again, its cuneiform lines catching torchlight. But armies are massing to the north — Assyria is rising, and colossal guardians are taking their posts at the gates.",
+      assyrian: "The lamassu lock their stone eyes on the horizon, guarding what you've rebuilt. Far to the east, on a high plain in Persia, columns are being raised for a king who calls his palace the Gate of All Lands.",
+      persian: "The last column locks into place beneath its double-headed bull. From Sumer to Persia, the Fertile Crescent remembers itself again."
+    },
+    outroWin: "Nisaba's voice fills the air: \"You have outrun the storm. What was almost forgotten will now outlast you.\" The chronicle is complete.",
+    outroPartial: "The storm catches up before the last stones are set. Some of the chronicle survives — the rest waits for another scribe brave enough to try again.",
+    coopChamberDone: {
+      ziggurat: "The first fragment locks into place with a sound like a temple door swinging open after a thousand years. One seal recovered.",
+      votive: "The fragment settles among the votive figures' folded hands, as if they'd been guarding it the whole time. Another seal recovered.",
+      standard: "Lapis lazuli catches the torchlight as the fragment slides into its hiding place inside the Standard. Another seal recovered.",
+      hammurabi: "The fragment was carved right into the law itself, hidden in plain sight beneath a king's outstretched hand. Another seal recovered.",
+      lamassu: "The lamassu's stone eyes seem to blink as the fragment is drawn from beneath its wings. Another seal recovered."
+    },
+    coopFinale: "The final fragment rises from beneath a bull-capital column, and for the first time in centuries, all six pieces exist in the same place at the same time. They pull together with a sound like a held breath finally released. Nisaba's voice fills the Archive: \"Two minds, six seals, one memory restored. You have done what no thief alone ever could.\""
+  };
+  let storyResumeFn = null;
+  function showStory(text, opts){
+    opts = opts || {};
+    $('story-eyebrow').textContent = opts.eyebrow || 'Chronicle';
+    $('story-glyph').textContent = opts.glyph || '𒀭';
+    $('story-text').textContent = text;
+    $('story-overlay').classList.add('show');
+    pauseTimers();
+    storyResumeFn = opts.onContinue || function(){};
+  }
+  function hideStory(){
+    $('story-overlay').classList.remove('show');
+    resumeTimers();
+    const fn = storyResumeFn; storyResumeFn = null;
+    if(fn) fn();
+  }
+  $('story-continue-btn').addEventListener('click', hideStory);
+  function pauseTimers(){
+    if(S.solo.tickTimer){ clearInterval(S.solo.tickTimer); S.solo.tickTimer = null; S.solo._pausedAt = Date.now(); }
+    if(S.coop && S.coop.tickTimer){ clearInterval(S.coop.tickTimer); S.coop.tickTimer = null; S.coop.pausedAt = Date.now(); }
+  }
+  function resumeTimers(){
+    if(S.mode==='solo' && S.solo.running && !S.solo.tickTimer){
+      if(S.solo._pausedAt){ S.solo.startTs += (Date.now() - S.solo._pausedAt); S.solo._pausedAt = null; }
+      S.solo.tickTimer = setInterval(tickSolo, 250);
+    }
+    if(S.mode==='coop' && S.coop && !S.coop.tickTimer && !S.gameOver){
+      if(S.coop.pausedAt){ S.coop.startTs += (Date.now() - S.coop.pausedAt); S.coop.pausedAt = null; }
+      S.coop.tickTimer = setInterval(tickCoop, 500);
+    }
+  }
+
+  /* ---------------- STATE ---------------- */
+  let S = {
+    mode: null,
+    players: [], // {name, built:{era:count}, wrong:0, order:[{era,idx}]}
+    turn: 0,
+    qTimer: null,
+    qSecondsLeft: 20,
+    solo: {elapsed:0, penalty:0, running:false, startTs:0, tickTimer:null, finished:false},
+    coop: null,
+    studyQueue: [],
+    studyIndex: 0,
+    currentQ: null,
+    currentEra: null,
+    answered: false,
+    justCompletedEra: null,
+    gameOver: false,
+    missed: [] // {q, correct, note}
+  };
+
+  /* ---------------- START SCREEN ---------------- */
+  document.querySelectorAll('.mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      S.mode = btn.dataset.mode;
+      renderSetup();
+    });
+  });
+
+  function renderSetup(){
+    $('setup-card').style.display = 'block';
+    const f = $('setup-fields');
+    if(S.mode==='solo'){
+      f.innerHTML = `
+        <label class="field-label">Your name</label>
+        <input type="text" id="p1-name" placeholder="e.g. Team Ziggurat" maxlength="18">
+        <div id="best-line" class="best-line"></div>
+      `;
+      loadBestTime();
+    } else if(S.mode==='coop'){
+      f.innerHTML = `
+        <label class="field-label">Name your pair (optional)</label>
+        <input type="text" id="p1-name" placeholder="e.g. The Reed &amp; The Ring" maxlength="24">
+        <div class="best-line" style="margin-top:12px; text-align:left;">Grab your workbook or notes — a few chambers will point you back to them. No clock pressure: work through it together at your own pace.</div>
+      `;
+      $('best-and-board').innerHTML = '';
+    } else if(S.mode==='study'){
+      f.innerHTML = `<div style="font-size:13px; color:var(--sand); line-height:1.5;">
+        Every question in the bank, shuffled, one at a time. No timer, no scoring pressure — just correct answers and quick explanations. Good for a quiet review pass before a test, in this class or any other Mesopotamia unit.
+      </div>`;
+      $('best-and-board').innerHTML = '';
+    }
+  }
+
+  $('start-btn').addEventListener('click', startGame);
+
+  function resetGameUI(){
+    $('panels').style.display = '';
+    $('panels').classList.remove('solo-mode');
+    const epw = $('era-picker-wrap'); if(epw) epw.remove();
+    $('qcard').style.display = 'none';
+    $('discussion-card').style.display = 'none';
+    $('seal-tracker').style.display = 'none';
+    $('vault-menu').style.display = 'none';
+    $('hint-btn').style.display = 'none';
+    $('hint-line').style.display = 'none';
+    const mc = $('missed-card'); if(mc) mc.style.display = 'block';
+    $('timer-box').style.display = 'inline-block';
+  }
+
+  function startGame(){
+    resetGameUI();
+    if(S.mode==='solo'){
+      const n1 = ($('p1-name') && $('p1-name').value.trim()) || 'Player 1';
+      S.players = [freshPlayer(n1)];
+      S.turn = 0;
+      S.missed = [];
+      S.gameOver = false;
+      showScreen('game');
+      buildPanels();
+      renderEraPicker();
+      $('turn-label').textContent = 'The storm gathers…';
+      showStory(STORY.intro.solo, {eyebrow:'The Chronicle Begins', onContinue: function(){
+        S.solo = {elapsed:0, penalty:0, running:true, startTs:Date.now(), tickTimer:null, finished:false};
+        S.solo.tickTimer = setInterval(tickSolo, 250);
+        $('turn-label').textContent = 'Racing the storm — build all 14 pieces!';
+      }});
+    } else if(S.mode==='coop'){
+      const teamName = ($('p1-name') && $('p1-name').value.trim()) || 'Two Keepers';
+      S.missed = [];
+      S.gameOver = false;
+      showScreen('game');
+      $('timer-box').style.display = 'inline-block';
+      $('timer-box').classList.remove('low');
+      $('timer-box').textContent = '0:00';
+      $('quit-btn').textContent = 'End for today';
+      buildSealTracker();
+      startCoop(teamName);
+    } else if(S.mode==='study'){
+      let all = [];
+      ERA_ORDER.forEach(era=> BANK[era].forEach(q=> all.push(Object.assign({era}, q))));
+      shuffle(all);
+      S.studyQueue = all;
+      S.studyIndex = 0;
+      S.missed = [];
+      S.gameOver = false;
+      showScreen('game');
+      $('panels').innerHTML = '';
+      $('turn-label').textContent = 'Study Mode';
+      $('timer-box').style.display = 'none';
+      $('quit-btn').textContent = 'End & review';
+      askStudyQuestion();
+    }
+  }
+
+  function freshPlayer(name){
+    const built = {};
+    ERA_ORDER.forEach(e=> built[e]=0);
+    return {name, built, wrong:0, used:{sumerian:new Set(), babylonian:new Set(), assyrian:new Set(), persian:new Set()}};
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    return arr;
+  }
+
+  function showScreen(name){
+    ['start','game','end'].forEach(s=>{
+      $('screen-'+s).classList.toggle('active', s===name);
+    });
+    if(name==='game'){ $('timer-box').style.display='inline-block'; $('quit-btn').textContent='End & score'; }
+  }
+
+  /* ---------------- PERSONAL BEST TIME ----------------
+     Uses window.storage when it's available (inside Claude.ai it persists
+     across sessions). If this file has been downloaded and opened on its
+     own, window.storage won't exist — we fall back to an in-memory best
+     that still works for repeat runs in the same browser tab. */
+  let sessionBestSeconds = null;
+  function storageAvailable(){
+    return typeof window!=='undefined' && !!window.storage && typeof window.storage.get==='function';
+  }
+  async function loadBestTime(){
+    if(storageAvailable()){
+      try{
+        const r = await window.storage.get('meso_best_time', false);
+        if(r && r.value){
+          const t = JSON.parse(r.value);
+          $('best-line').textContent = `Your personal best: ${fmtTime(t.seconds)}`;
+          return;
+        }
+        $('best-line').textContent = 'No personal best yet — go set one!';
+        return;
+      }catch(e){ /* fall through to local */ }
+    }
+    $('best-line').textContent = sessionBestSeconds!==null
+      ? `Best this session: ${fmtTime(sessionBestSeconds)} (saved only while this tab stays open)`
+      : 'No time set yet this session — go set one!';
+  }
+  async function saveBestTimeIfBetter(seconds){
+    if(storageAvailable()){
+      try{
+        let best = null;
+        const r = await window.storage.get('meso_best_time', false);
+        if(r&&r.value) best = JSON.parse(r.value).seconds;
+        if(best===null || seconds < best){
+          await window.storage.set('meso_best_time', JSON.stringify({seconds}), false);
+          return true;
+        }
+        return false;
+      }catch(e){ /* fall through to local */ }
+    }
+    if(sessionBestSeconds===null || seconds < sessionBestSeconds){
+      sessionBestSeconds = seconds;
+      return true;
+    }
+    return false;
+  }
+  function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  function fmtTime(sec){
+    sec = Math.max(0, Math.round(sec));
+    const m = Math.floor(sec/60), s = sec%60;
+    return `${m}:${s.toString().padStart(2,'0')}`;
+  }
+
+  /* ---------------- SVG SKYLINE PIECES ---------------- */
+  function pieceSVG(playerKey, era, idx){
+    const id = `${playerKey}-${era}-${idx}`;
+    const stone = `url(#${playerKey}-stoneGrad)`;
+    const bronze = `url(#${playerKey}-bronzeGrad)`;
+    const basalt = `url(#${playerKey}-basaltGrad)`;
+    const stroke = 'rgba(20,16,10,.35)';
+    if(era==='sumerian'){
+      if(idx===0) return `<g class="piece" id="${id}"><polygon points="30,190 160,190 140,150 50,150" fill="${stone}" stroke="${stroke}" stroke-width="1"/></g>`;
+      if(idx===1) return `<g class="piece" id="${id}"><polygon points="55,150 135,150 120,115 70,115" fill="${stone}" stroke="${stroke}" stroke-width="1"/></g>`;
+      if(idx===2) return `<g class="piece" id="${id}"><rect x="80" y="90" width="30" height="25" fill="${stone}" stroke="${stroke}" stroke-width="1"/><polygon points="75,90 120,90 97,72" fill="${bronze}" stroke="${stroke}" stroke-width="1"/></g>`;
+      if(idx===3) return `<g class="piece" id="${id}"><circle cx="18" cy="182" r="6" fill="var(--lapis)" stroke="${stroke}" stroke-width="1"/><circle cx="30" cy="184" r="5" fill="${bronze}" stroke="${stroke}" stroke-width="1"/><circle cx="42" cy="182" r="6" fill="var(--lapis)" stroke="${stroke}" stroke-width="1"/><rect x="8" y="192" width="42" height="4" fill="${bronze}"/></g>`;
+    }
+    if(era==='babylonian'){
+      const ox=195;
+      if(idx===0) return `<g class="piece" id="${id}"><rect x="${ox+30}" y="112" width="30" height="78" rx="14" fill="${basalt}" stroke="${stroke}" stroke-width="1"/></g>`;
+      if(idx===1) return `<g class="piece" id="${id}"><rect x="${ox+36}" y="122" width="18" height="26" rx="3" fill="${stone}" stroke="${stroke}" stroke-width="1"/><line x1="${ox+40}" y1="135" x2="${ox+46}" y2="135" stroke="var(--basalt)" stroke-width="2"/><line x1="${ox+48}" y1="130" x2="${ox+48}" y2="140" stroke="var(--basalt)" stroke-width="2"/></g>`;
+      if(idx===2) return `<g class="piece" id="${id}">${[0,1,2,3,4].map(i=>`<line x1="${ox+34+i*6}" y1="176" x2="${ox+34+i*6}" y2="186" stroke="var(--gold-lt)" stroke-width="2"/>`).join('')}</g>`;
+    }
+    if(era==='assyrian'){
+      const ox=325;
+      if(idx===0) return `<g class="piece" id="${id}"><ellipse cx="${ox+35}" cy="165" rx="26" ry="20" fill="${stone}" stroke="${stroke}" stroke-width="1"/><circle cx="${ox+16}" cy="140" r="11" fill="${stone}" stroke="${stroke}" stroke-width="1"/><polygon points="${ox+30},150 ${ox+60},128 ${ox+55},150" fill="${bronze}" stroke="${stroke}" stroke-width="1"/></g>`;
+      if(idx===1) return `<g class="piece" id="${id}"><ellipse cx="${ox+105}" cy="165" rx="26" ry="20" fill="${stone}" stroke="${stroke}" stroke-width="1"/><circle cx="${ox+124}" cy="140" r="11" fill="${stone}" stroke="${stroke}" stroke-width="1"/><polygon points="${ox+110},150 ${ox+80},128 ${ox+85},150" fill="${bronze}" stroke="${stroke}" stroke-width="1"/></g>`;
+      if(idx===2) return `<g class="piece" id="${id}"><rect x="${ox+55}" y="120" width="30" height="16" fill="${basalt}" stroke="${stroke}" stroke-width="1"/></g>`;
+    }
+    if(era==='persian'){
+      const ox=480;
+      const col = (cx)=>`<rect x="${cx}" y="120" width="10" height="70" fill="${stone}" stroke="${stroke}" stroke-width="1"/>${[0,1,2,3].map(i=>`<line x1="${cx+2+i*2.2}" y1="120" x2="${cx+2+i*2.2}" y2="190" stroke="rgba(20,16,10,.2)" stroke-width="1"/>`).join('')}<path d="M ${cx-4} 120 q 7 -10 9 0 q 2 -10 9 0 z" fill="${bronze}" stroke="${stroke}" stroke-width="1"/>`;
+      if(idx===0) return `<g class="piece" id="${id}">${col(ox+18)}</g>`;
+      if(idx===1) return `<g class="piece" id="${id}">${col(ox+58)}</g>`;
+      if(idx===2) return `<g class="piece" id="${id}">${col(ox+98)}</g>`;
+      if(idx===3) return `<g class="piece" id="${id}">${[0,1,2,3].map(i=>`<rect x="${ox+8+i*7}" y="${186-i*4}" width="7" height="${4+i*4}" fill="${stone}" stroke="${stroke}" stroke-width="1"/>`).join('')}</g>`;
+    }
+    return '';
+  }
+
+  function skylineSVG(playerKey){
+    let inner = '';
+    ERA_ORDER.forEach(era=>{
+      for(let i=0;i<PIECES_PER_ERA[era];i++) inner += pieceSVG(playerKey, era, i);
+    });
+    return `<svg class="skyline" viewBox="0 0 640 200" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <linearGradient id="${playerKey}-stoneGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--sand)"/>
+          <stop offset="1" stop-color="var(--clay)"/>
+        </linearGradient>
+        <linearGradient id="${playerKey}-bronzeGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--gold-lt)"/>
+          <stop offset="1" stop-color="var(--gold-dk)"/>
+        </linearGradient>
+        <linearGradient id="${playerKey}-basaltGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3E3830"/>
+          <stop offset="1" stop-color="var(--basalt)"/>
+        </linearGradient>
+        <radialGradient id="${playerKey}-spot" cx="0.5" cy="0" r="0.8">
+          <stop offset="0" stop-color="rgba(228,200,120,.16)"/>
+          <stop offset="1" stop-color="rgba(228,200,120,0)"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="320" cy="0" rx="360" ry="150" fill="url(#${playerKey}-spot)"/>
+      <line x1="0" y1="190" x2="640" y2="190" stroke="rgba(195,154,62,.3)" stroke-width="1.5"/>
+      ${inner}
+    </svg>`;
+  }
+
+  function buildPanels(){
+    const wrap = $('panels');
+    wrap.innerHTML = '';
+    S.players.forEach((p, i)=>{
+      const key = i===0?'a':'b';
+      const div = document.createElement('div');
+      div.className = 'panel' + (i===0?' active-turn':'');
+      div.id = 'panel-'+key;
+      div.innerHTML = `
+        <div class="pname"><span>${escapeHtml(p.name)}</span><span id="score-${key}">0 / ${TOTAL_PIECES}</span></div>
+        <div class="progress-outer"><div class="progress-inner" id="progress-${key}"></div></div>
+        ${skylineSVG(key)}
+      `;
+      wrap.appendChild(div);
+    });
+    if(S.mode==='solo') $('panels').classList.add('solo-mode');
+  }
+
+  function playerKey(i){ return i===0?'a':'b'; }
+
+  function refreshPanel(i){
+    const p = S.players[i];
+    const key = playerKey(i);
+    const total = Object.values(p.built).reduce((a,b)=>a+b,0);
+    $('score-'+key).textContent = `${total} / ${TOTAL_PIECES}`;
+    $('progress-'+key).style.width = (total/TOTAL_PIECES*100)+'%';
+  }
+
+  /* ---------------- ERA PICKER & TURN FLOW ---------------- */
+  function renderEraPicker(){
+    let html = '<div class="era-picker">';
+    ERA_ORDER.forEach(era=>{
+      const p = S.players[S.turn];
+      const remaining = PIECES_PER_ERA[era] - p.built[era];
+      const done = remaining<=0;
+      html += `<button class="era-btn" data-era="${era}" ${done?'disabled':''}>
+        <b>${ERA_LABEL[era]}</b>${done?'Complete ✓':remaining+' piece'+(remaining===1?'':'s')+' left'}
+      </button>`;
+    });
+    html += '</div>';
+    // insert picker right after panels, before qcard
+    let existing = $('era-picker-wrap');
+    if(existing) existing.remove();
+    const wrap = document.createElement('div');
+    wrap.id = 'era-picker-wrap';
+    wrap.innerHTML = html;
+    $('panels').insertAdjacentElement('afterend', wrap);
+    wrap.querySelectorAll('.era-btn').forEach(b=>{
+      b.addEventListener('click', ()=> askEraQuestion(b.dataset.era));
+    });
+  }
+
+  function tickSolo(){
+    if(!S.solo.running) return;
+    const now = Date.now();
+    const elapsed = (now - S.solo.startTs)/1000 + S.solo.penalty;
+    $('timer-box').textContent = fmtTime(elapsed);
+  }
+
+  /* ---------------- ASKING QUESTIONS ---------------- */
+  function askEraQuestion(era){
+    const p = S.players[S.turn];
+    if(p.built[era] >= PIECES_PER_ERA[era]) return;
+    let pool = BANK[era].map((q,idx)=>({...q, era, bankIdx:idx}));
+    let unused = pool.filter(q=>!p.used[era].has(q.bankIdx));
+    if(unused.length===0){ p.used[era].clear(); unused = pool; }
+    const chosen = unused[Math.floor(Math.random()*unused.length)];
+    p.used[era].add(chosen.bankIdx);
+    S.currentQ = chosen;
+    S.currentEra = era;
+    S.answered = false;
+    renderQuestion(chosen, true);
+  }
+
+  function askStudyQuestion(){
+    if(S.studyIndex >= S.studyQueue.length){ endGame(); return; }
+    S.currentQ = S.studyQueue[S.studyIndex];
+    S.currentEra = S.currentQ.era;
+    S.answered = false;
+    renderQuestion(S.currentQ, false);
+  }
+
+  /* ================= SIX SEALS — CO-OP MODE ================= */
+
+  const WORKS = [
+    { key:'ziggurat', label:'White Temple & Ziggurat', era:'Sumerian', workbookImg:12,
+      clue:"This work rises in stacked mud-brick tiers above the plain, a stairway built for a god, with a small shrine hidden at its summit where only priests could enter.",
+      revealNote:"Built around 3200–3000 BCE at Uruk (modern Warka), Iraq — one of the very first monumental structures in art history.",
+      hint1:"It's the oldest of the six works here, and it's a building, not a sculpture.",
+      vocabPool:['Ziggurat','Cella','Fertile Crescent'],
+      judgment:"The White Temple and Ziggurat were important religious structures in ancient Mesopotamia. Analyze the architectural features of the temple and ziggurat. How do these structures reflect the beliefs and values of the society that built them?",
+      modelAnswer:"The ziggurat's stepped form lifted its cella closer to the heavens, while restricting the summit to priests reflected how access to the divine was carefully controlled. The enormous labor invested in mud-brick construction shows a society organized enough to marshal large workforces for religious purposes." },
+    { key:'votive', label:'Statues of Votive Figures', era:'Sumerian', workbookImg:14,
+      clue:"A cluster of wide-eyed figures, hands clasped at their chests, carved to stand forever inside a temple — stand-ins for worshippers who could not always be there in person.",
+      revealNote:"Carved around 2700 BCE and excavated at Eshnunna (modern Tell Asmar), Iraq.",
+      hint1:"Look closely at the eyes — they're famously oversized on purpose.",
+      vocabPool:['Votive','Free-Standing Sculpture','Negative Space','Hierarchy of Scale'],
+      judgment:"Votive figures were often found in temple complexes. Discuss the possible purposes and functions of these statues within the religious context. How might they have served as a connection between the human and divine realms?",
+      modelAnswer:"Their oversized, ever-open eyes suggest they were meant to gaze at the gods on a worshipper's behalf even when that person was absent, functioning as a permanent stand-in prayer. Placing many such figures together in a temple suggests a community continuously represented before its gods." },
+    { key:'standard', label:'Standard of Ur', era:'Sumerian', workbookImg:16,
+      clue:"A small wooden box inlaid with shell and deep blue stone, telling two very different stories on its two long sides — one of soldiers, one of feasting.",
+      revealNote:"Made around 2600 BCE, found in the Royal Cemetery at Ur (modern Tell Muqayyar), Iraq.",
+      hint1:"It has a \"War Side\" and a \"Peace Side.\"",
+      vocabPool:['Register','Ground Line','Hierarchy of Scale'],
+      judgment:"The Standard of Ur is a significant artifact from ancient Mesopotamia. Analyze the narrative depicted on the War Side of the Standard of Ur. What does it reveal about the military, social hierarchy, and cultural values of the society it represents?",
+      modelAnswer:"The War Side's registers move from chariots and infantry at the bottom to a large, centrally placed ruler-figure at the top, using hierarchy of scale to show that military success elevated and legitimized the king. The layered registers turn a single event into a structured narrative." },
+    { key:'hammurabi', label:'Law Code Stele of Hammurabi', era:'Babylonian', workbookImg:19,
+      clue:"A tall black stone, carved at the top with a king receiving a rod and ring from a seated god, and covered below with hundreds of lines of tiny wedge-shaped writing.",
+      revealNote:"Carved around 1780 BCE, originally from Susa, Iran, now in the Louvre.",
+      hint1:"It's covered in cuneiform, and it's basalt, not limestone.",
+      vocabPool:['Stele','Relief Sculpture','Cuneiform','Stylus'],
+      judgment:"Explore the hierarchy and power dynamics depicted in the stele. How does Hammurabi's portrayal of himself as a ruler influence the perception of his authority and the legitimacy of his laws?",
+      modelAnswer:"By showing himself receiving the rod and ring directly from Shamash, Hammurabi frames his laws as divinely sanctioned rather than his own invention. Placing his image above hundreds of lines of legal text physically anchors the law in his royal, god-approved authority." },
+    { key:'lamassu', label:'Lamassu', era:'Assyrian', workbookImg:25,
+      clue:"A colossal guardian with the body of a bull, the wings of an eagle, and the bearded face of a man, once stationed at a palace gateway to ward off enemies both human and unseen.",
+      revealNote:"Carved around 720–705 BCE for the citadel of Sargon II at Dur Sharrukin (modern Khorsabad), Iraq.",
+      hint1:"Count the legs from the front and from the side — that's a famous trick of this piece.",
+      vocabPool:['Lamassu','In Situ'],
+      judgment:"Lamassu sculptures were commonly found in Assyrian art and architecture. Examine the symbolism and cultural significance of the lamassu. How do the hybrid characteristics of the sculpture reflect the beliefs and religious practices of the ancient Assyrians?",
+      modelAnswer:"Combining a bull's strength, an eagle's wings, and a human's intelligence into one guardian suggests the Assyrians valued a fusion of physical power and watchful awareness at their most vulnerable points — palace gates. Placing these hybrids at thresholds reflects a belief that boundaries needed supernatural protection." },
+    { key:'apadana', label:'Apadana (Audience Hall)', era:'Persian', workbookImg:30,
+      clue:"A vast columned hall built to receive visitors from every corner of an empire, its staircases carved with long processions of tribute-bearers.",
+      revealNote:"Built c. 520–465 BCE at Persepolis, Iran, for Darius and Xerxes.",
+      hint1:"Its columns are topped with a very distinctive double-animal capital.",
+      vocabPool:['Apadana','Capital','Relief Sculpture'],
+      judgment:"The Audience Hall (Apadana) was a significant architectural structure in ancient Persia. Analyze the design and layout of the Apadana. How does it reflect the political power and ideology of the Persian Empire?",
+      modelAnswer:"A hall large enough to receive delegations from across the empire, decorated with reliefs of many different peoples bringing tribute, visually asserts that the king's authority extended over a vast and diverse population. The columned openness suggests a deliberate performance of accessibility and grandeur together." }
+  ];
+
+  const ALL_VOCAB = {
+    'Ziggurat': {def:"A pyramid-like stepped structure with terraces at each level, topped by a temple.", riddles:["I rise from the plain in stacked, retreating stages, each terrace smaller than the one below, carrying a god's house to the sky. What am I?"]},
+    'Cella': {def:"The main room of a temple where the god was believed to dwell.", riddles:["I am the innermost, hidden room at the summit of a temple — the one chamber where the god was believed to live. What am I?"]},
+    'Fertile Crescent': {def:"A semicircular area of fertile land around the Tigris and Euphrates rivers.", riddles:["I am no single place but a great sweep of green between two rivers, curved like a new moon from the Gulf toward the sea. What am I?"]},
+    'Votive': {def:"Offered in fulfillment of a vow or pledge.", riddles:["I was carved not to be admired, but to stand in for a worshipper, eyes wide open, forever watching the god on their behalf. What kind of object am I?"]},
+    'Free-Standing Sculpture': {def:"Sculpture completely in the round, viewable from all sides.", riddles:["Walk all the way around me and you'll find a back as finished as my front — unlike my cousins carved flat against a wall. What kind of sculpture am I?"]},
+    'Negative Space': {def:"The empty space around or within a figure, left on purpose by the sculptor.", riddles:["I am not stone at all — I am the gap between a figure's crossed arms, the emptiness a sculptor leaves on purpose. What am I?"]},
+    'Hierarchy of Scale': {def:"A system where a person's importance is shown through the size of their representation.", riddles:["In my world, the biggest figure isn't the tallest person — it's the most important one. What principle am I?"]},
+    'Register': {def:"A horizontal band, often stacked with others, used to tell a narrative story.", riddles:["I am a band, stacked above or below my siblings, and together we tell a story one row at a time. What am I?"]},
+    'Ground Line': {def:"The baseline upon which figures stand.", riddles:["I am the invisible floor each register stands on — without me, every figure would float. What am I?"]},
+    'Stele': {def:"A stone slab used to mark a grave or site, often inscribed.", riddles:["I am a slab of stone, planted upright in the earth, meant to be read by everyone who passes. What am I?"]},
+    'Relief Sculpture': {def:"Sculpture that projects from, but stays connected to, a flat background.", riddles:["I never fully leave my background — I rise from it, connected, never standing free. What kind of sculpture am I?"]},
+    'Cuneiform': {def:"A system of writing formed with wedge-shaped strokes.", riddles:["My marks look like wedges pressed into wet clay or carved stone — I am not a picture, I am writing. What am I?"]},
+    'Stylus': {def:"A writing utensil, often reed or bone, used to press cuneiform into clay.", riddles:["I am the reed or bone pressed into clay to leave wedge-shaped marks behind. What tool am I?"]},
+    'Lamassu': {def:"A colossal, winged, human-headed bull that guarded Assyrian palace gateways.", riddles:["I have the body of a bull, the wings of an eagle, and the head of a man, and I never leave my post at the gate. What am I?"]},
+    'In Situ': {def:"Still standing in its original location.", riddles:["I describe a work still standing exactly where it was first placed, thousands of years ago — nowhere else. What term am I?"]},
+    'Apadana': {def:"An audience hall in a Persian palace.", riddles:["I am the great hall where a Persian king received guests from every corner of his empire. What room am I?"]},
+    'Capital': {def:"The top element of a column.", riddles:["I sit at the very top of a column, sometimes carved into the shape of two bulls back to back. What architectural element am I?"]}
+  };
+
+  const VAULT_CARTO = [
+    {q:"The \"Fertile Crescent\" refers to:", c:["A desert region with no rivers","A semicircular area of fertile land around the Tigris and Euphrates","A mountain range in Persia","The Nile delta region"], a:1, n:"The Fertile Crescent stretches from the Persian Gulf up through Mesopotamia toward Israel."},
+    {q:"Babylonian art, like Sumerian and Assyrian art, originates in modern-day:", c:["Iran","Turkey","Iraq","Syria"], a:2, n:"Sumer, Babylon, and Assyria were all centered in what is now Iraq."},
+    {q:"Neo-Assyrian art dates to approximately:", c:["3500–2340 BCE","1792–1750 BCE","883–612 BCE","559–331 BCE"], a:2, n:"The Neo-Assyrian period runs roughly 883–612 BCE."},
+    {q:"Persian art is associated with modern-day:", c:["Iraq","Iran","Syria","Turkey"], a:1, n:"Unlike Sumer, Babylon, and Assyria (all in modern Iraq), Persia corresponds to modern Iran."},
+    {q:"Which culture in this unit came first?", c:["Sumerian","Babylonian","Assyrian","Persian"], a:0, n:"Sumerian civilization (c. 3500 BCE) predates the other three by well over a thousand years."},
+    {q:"Roughly how many centuries passed between the height of Sumerian civilization and the rise of the Persian Empire?", c:["About 1 century","About 5 centuries","Nearly 30 centuries","About 300 years"], a:2, n:"From roughly 3500 BCE to 559 BCE is close to 3,000 years — nearly 30 centuries."},
+    {q:"The Tigris and Euphrates rivers both flow through which region?", c:["The Nile Delta","The Fertile Crescent","The Aegean coast","The Anatolian plateau"], a:1, n:"These two rivers are the defining feature of the Fertile Crescent."},
+    {q:"Which of the four cultures in this unit was NOT centered in modern-day Iraq?", c:["Sumerian","Babylonian","Assyrian","Persian"], a:3, n:"Persian art corresponds to modern Iran; the other three are all in modern Iraq."}
+  ];
+
+  function currentWork(){ return WORKS[S.coop.order[S.coop.idx]]; }
+
+  function sealIconSVG(key){
+    const shapes = {
+      ziggurat: `<polygon points="6,50 58,50 46,30 18,30" fill="currentColor"/><polygon points="20,30 44,30 38,16 26,16" fill="currentColor"/>`,
+      votive: `<circle cx="32" cy="20" r="9" fill="currentColor"/><polygon points="20,52 44,52 40,28 24,28" fill="currentColor"/>`,
+      standard: `<rect x="10" y="22" width="44" height="24" rx="2" fill="currentColor"/><polygon points="10,22 54,22 32,8" fill="currentColor" opacity=".7"/>`,
+      hammurabi: `<rect x="24" y="10" width="16" height="42" rx="8" fill="currentColor"/>`,
+      lamassu: `<ellipse cx="32" cy="36" rx="20" ry="14" fill="currentColor"/><circle cx="18" cy="20" r="8" fill="currentColor"/><polygon points="26,26 50,14 46,28" fill="currentColor" opacity=".7"/>`,
+      apadana: `<rect x="14" y="14" width="7" height="40" fill="currentColor"/><rect x="29" y="14" width="7" height="40" fill="currentColor"/><rect x="44" y="14" width="7" height="40" fill="currentColor"/>`
+    };
+    return `<svg viewBox="0 0 64 64" class="seal-svg">${shapes[key]||''}</svg>`;
+  }
+
+  function buildSealTracker(){
+    const wrap = $('seal-tracker');
+    wrap.style.display = 'flex';
+    wrap.innerHTML = WORKS.map(w=>`
+      <div class="seal-icon" id="seal-${w.key}" title="${escapeHtml(w.label)}">
+        ${sealIconSVG(w.key)}
+        <span class="seal-label">${escapeHtml(w.label.split(' ')[0])}</span>
+      </div>`).join('');
+  }
+
+  function markSealUnlocked(key){
+    const el = document.getElementById('seal-'+key);
+    if(el) el.classList.add('unlocked');
+    S.coop.sealsUnlocked = (S.coop.sealsUnlocked||0) + 1;
+  }
+
+  function showHint(text){
+    const el = $('hint-line');
+    el.style.display = 'block';
+    el.textContent = '🕯️ ' + text;
+  }
+
+  function tickCoop(){
+    if(!S.coop || S.coop.pausedAt) return;
+    S.coop.elapsedSeconds = (Date.now() - S.coop.startTs)/1000;
+    $('timer-box').textContent = fmtTime(S.coop.elapsedSeconds);
+  }
+
+  function startCoop(teamName){
+    if(S.coop && S.coop.tickTimer) clearInterval(S.coop.tickTimer);
+    S.coop = {
+      order: shuffle(WORKS.map((w,i)=>i)),
+      idx: 0,
+      step: 1,
+      usedTerms: new Set(),
+      elapsedSeconds: 0,
+      tickTimer: null,
+      startTs: Date.now(),
+      pausedAt: null,
+      sealsUnlocked: 0,
+      vaultsDone: {carto:false, linguist:false},
+      teamName
+    };
+    $('turn-label').textContent = 'Two Keepers, one Archive…';
+    S.coop.tickTimer = setInterval(tickCoop, 500);
+    showStory(STORY.intro.coop, {eyebrow:'Two Keepers, One Seal', onContinue: renderCoopChamberStep1});
+  }
+
+  function renderCoopChamberStep1(){
+    const w = currentWork();
+    S.coop.step = 1;
+    $('discussion-card').style.display = 'none';
+    $('qcard').style.display = 'block';
+    $('qtimer-outer').style.display = 'none';
+    $('hint-line').style.display = 'none';
+    $('hint-btn').style.display = 'inline-block';
+    $('hint-btn').onclick = ()=> showHint(w.hint1);
+    $('turn-label').textContent = `Chamber ${S.coop.idx+1} of ${WORKS.length} · Step 1 of 3 — Read the Stone`;
+    $('qmeta').textContent = `Unidentified relic · check Image #${w.workbookImg} in your workbook for a closer look`;
+    $('qtext').textContent = w.clue;
+    $('feedback').style.display = 'none';
+    $('continue-btn').style.display = 'none';
+
+    const decoys = shuffle(WORKS.filter(x=>x.key!==w.key).map(x=>x.label)).slice(0,3);
+    const options = shuffle([w.label, ...decoys]);
+    const choicesEl = $('choices');
+    choicesEl.innerHTML = '';
+    options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', ()=>{
+        if(opt===w.label){
+          document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+          btn.classList.add('correct');
+          const fb = $('feedback'); fb.style.display='block'; fb.className='feedback good';
+          fb.textContent = `✓ It's the ${w.label}. ${w.revealNote}`;
+          $('continue-btn').style.display = 'block';
+          $('continue-btn').onclick = renderCoopChamberStep2;
+        } else {
+          btn.classList.add('incorrect'); btn.disabled = true;
+          const fb = $('feedback'); fb.style.display='block'; fb.className='feedback bad';
+          fb.textContent = 'Not quite — talk it over and try one of the others.';
+        }
+      });
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function renderCoopChamberStep2(){
+    const w = currentWork();
+    S.coop.step = 2;
+    const term = w.vocabPool[Math.floor(Math.random()*w.vocabPool.length)];
+    S.coop.usedTerms.add(term);
+    const entry = ALL_VOCAB[term];
+    const riddle = entry.riddles[Math.floor(Math.random()*entry.riddles.length)];
+    const decoys = shuffle(Object.keys(ALL_VOCAB).filter(t=>t!==term)).slice(0,3);
+    const options = shuffle([term, ...decoys]);
+
+    $('hint-line').style.display = 'none';
+    $('hint-btn').style.display = 'inline-block';
+    $('hint-btn').onclick = ()=> showHint('Flip to your vocabulary list — this term appears on the card for this artwork.');
+    $('turn-label').textContent = `Chamber ${S.coop.idx+1} of ${WORKS.length} · Step 2 of 3 — Decode the Ledger`;
+    $('qmeta').textContent = 'Riddle of the Seal-Shards';
+    $('qtext').textContent = riddle;
+    $('feedback').style.display = 'none';
+    $('continue-btn').style.display = 'none';
+
+    const choicesEl = $('choices');
+    choicesEl.innerHTML = '';
+    options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', ()=>{
+        if(opt===term){
+          document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+          btn.classList.add('correct');
+          const fb = $('feedback'); fb.style.display='block'; fb.className='feedback good';
+          fb.textContent = `✓ ${term} — ${entry.def}`;
+          $('continue-btn').style.display = 'block';
+          $('continue-btn').onclick = renderCoopChamberStep3;
+        } else {
+          btn.classList.add('incorrect'); btn.disabled = true;
+          const fb = $('feedback'); fb.style.display='block'; fb.className='feedback bad';
+          fb.textContent = "That's a real term, just not this one — talk it through and try again.";
+        }
+      });
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function renderCoopChamberStep3(){
+    const w = currentWork();
+    S.coop.step = 3;
+    $('qcard').style.display = 'none';
+    $('discussion-card').style.display = 'block';
+    $('turn-label').textContent = `Chamber ${S.coop.idx+1} of ${WORKS.length} · Step 3 of 3 — The Keepers' Judgment`;
+    $('disc-meta').textContent = `${w.label} · discuss together, then reveal`;
+    $('disc-prompt').textContent = w.judgment;
+    $('disc-model').style.display = 'none';
+    $('disc-continue-btn').style.display = 'none';
+    $('disc-reveal-btn').style.display = 'block';
+    $('disc-reveal-btn').onclick = ()=>{
+      $('disc-model').style.display = 'block';
+      $('disc-model').innerHTML = `<strong>One strong answer:</strong> ${escapeHtml(w.modelAnswer)}`;
+      $('disc-reveal-btn').style.display = 'none';
+      $('disc-continue-btn').style.display = 'block';
+    };
+    $('disc-continue-btn').onclick = completeChamber;
+  }
+
+  function completeChamber(){
+    const w = currentWork();
+    markSealUnlocked(w.key);
+    const isLast = S.coop.idx >= WORKS.length-1;
+    $('discussion-card').style.display = 'none';
+    const flavor = isLast ? STORY.coopFinale : STORY.coopChamberDone[w.key];
+    showStory(flavor, {eyebrow: isLast ? 'The Archive Opens' : (w.label+' — Seal Recovered'), onContinue: function(){
+      if(isLast){ showVaultMenu(); }
+      else { S.coop.idx++; renderCoopChamberStep1(); }
+    }});
+  }
+
+  function renderMCQ(meta, text, choices, correctIdx, note, onCorrect){
+    $('qmeta').textContent = meta;
+    $('qtext').textContent = text;
+    $('feedback').style.display = 'none';
+    $('continue-btn').style.display = 'none';
+    const order = shuffle(choices.map((c,i)=>i));
+    const choicesEl = $('choices');
+    choicesEl.innerHTML = '';
+    order.forEach(i=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choices[i];
+      btn.addEventListener('click', ()=>{
+        if(i===correctIdx){
+          document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+          btn.classList.add('correct');
+          const fb = $('feedback'); fb.style.display='block'; fb.className='feedback good';
+          fb.textContent = '✓ ' + note;
+          $('continue-btn').style.display = 'block';
+          $('continue-btn').onclick = onCorrect;
+        } else {
+          btn.classList.add('incorrect'); btn.disabled = true;
+          const fb = $('feedback'); fb.style.display='block'; fb.className='feedback bad';
+          fb.textContent = 'Not quite — try another.';
+        }
+      });
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function showVaultMenu(bannerMsg){
+    $('qcard').style.display = 'none';
+    $('discussion-card').style.display = 'none';
+    $('vault-menu').style.display = 'block';
+    $('turn-label').textContent = 'The Archive Opens';
+    const cartoDone = S.coop.vaultsDone.carto;
+    const lingDone = S.coop.vaultsDone.linguist;
+    $('vault-menu').innerHTML = `
+      ${bannerMsg ? `<div class="feedback good" style="margin-bottom:16px;">${escapeHtml(bannerMsg)}</div>` : ''}
+      <div class="eyebrow" style="margin-bottom:10px;">All six seals are set. Anyone still going can keep digging — entirely optional.</div>
+      <div class="mode-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="mode-btn" id="vault-carto-btn"><span class="mtitle">🧭 Cartographer's Vault${cartoDone?' ✓':''}</span><span class="mdesc">Quick-fire geography &amp; timeline — which culture, when, where.</span></div>
+        <div class="mode-btn" id="vault-ling-btn"><span class="mtitle">📚 Linguist's Vault${lingDone?' ✓':''}</span><span class="mdesc">Riddles for every vocabulary term your chambers didn't use.</span></div>
+      </div>
+      <button class="ghost-btn" id="vault-finish-btn" style="margin-top:16px; width:100%;">We're finished for today</button>
+    `;
+    $('vault-carto-btn').onclick = ()=>{ S.coop.vaultsDone.carto = true; startCartoVault(); };
+    $('vault-ling-btn').onclick = ()=>{ S.coop.vaultsDone.linguist = true; startLinguistVault(); };
+    $('vault-finish-btn').onclick = finishCoop;
+  }
+
+  function startCartoVault(){
+    $('vault-menu').style.display = 'none';
+    $('qcard').style.display = 'block';
+    $('qtimer-outer').style.display = 'none';
+    $('hint-btn').style.display = 'none';
+    $('hint-line').style.display = 'none';
+    const items = shuffle([...VAULT_CARTO]);
+    let i = 0;
+    function step(){
+      if(i>=items.length){ showVaultMenu("Cartographer's Vault cleared!"); return; }
+      const it = items[i];
+      renderMCQ(`The Cartographer's Vault · ${i+1}/${items.length}`, it.q, it.c, it.a, it.n, ()=>{ i++; step(); });
+    }
+    step();
+  }
+
+  function startLinguistVault(){
+    $('vault-menu').style.display = 'none';
+    $('qcard').style.display = 'block';
+    $('qtimer-outer').style.display = 'none';
+    $('hint-btn').style.display = 'none';
+    $('hint-line').style.display = 'none';
+    let leftover = Object.keys(ALL_VOCAB).filter(t=>!S.coop.usedTerms.has(t));
+    if(leftover.length===0) leftover = Object.keys(ALL_VOCAB);
+    leftover = shuffle(leftover);
+    let i = 0;
+    function step(){
+      if(i>=leftover.length){ showVaultMenu("Linguist's Vault cleared!"); return; }
+      const term = leftover[i];
+      const entry = ALL_VOCAB[term];
+      const riddle = entry.riddles[Math.floor(Math.random()*entry.riddles.length)];
+      const decoys = shuffle(Object.keys(ALL_VOCAB).filter(t=>t!==term)).slice(0,3);
+      const options = shuffle([term, ...decoys]);
+      const correctIdx = options.indexOf(term);
+      renderMCQ(`The Linguist's Vault · ${i+1}/${leftover.length}`, riddle, options, correctIdx, `${term} — ${entry.def}`, ()=>{ i++; step(); });
+    }
+    step();
+  }
+
+  function finishCoop(){
+    if(S.coop && S.coop.tickTimer) clearInterval(S.coop.tickTimer);
+    S.gameOver = true;
+    showScreen('end');
+    const sealsCount = (S.coop && S.coop.sealsUnlocked) || 0;
+    const mins = S.coop ? Math.floor(S.coop.elapsedSeconds/60) : 0;
+    $('end-title').textContent = sealsCount>=6 ? 'The Archive Remembers' : 'Called for Today';
+    let sub;
+    if(sealsCount>=6){
+      sub = `Six seals recovered${mins>=1 ? ' in about '+mins+' minute'+(mins===1?'':'s') : ''}.`;
+    } else {
+      sub = `${sealsCount} of 6 seals recovered before time was called — the rest of the Archive will still be there next time.`;
+    }
+    if(S.coop && (S.coop.vaultsDone.carto || S.coop.vaultsDone.linguist)){
+      sub += ' The vaults beyond held a few more secrets you uncovered along the way.';
+    }
+    $('end-sub').textContent = sub;
+    const mc = $('missed-card'); if(mc) mc.style.display = 'none';
+  }
+
+  /* ================= END SIX SEALS ================= */
+
+  function renderQuestion(q, timed){
+    $('qcard').style.display = 'block';
+    $('qmeta').textContent = (S.mode==='study'
+      ? `Question ${S.studyIndex+1} of ${S.studyQueue.length} · ${ERA_LABEL[q.era]}`
+      : `${ERA_LABEL[q.era]} — ${S.players[S.turn].name}`);
+    $('qtext').textContent = q.q;
+    $('feedback').style.display = 'none';
+    $('continue-btn').style.display = 'none';
+
+    const choicesEl = $('choices');
+    choicesEl.innerHTML = '';
+    const order = q.c.map((c,i)=>i);
+    order.forEach(i=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = q.c[i];
+      btn.addEventListener('click', ()=> handleAnswer(i===q.a, i, q));
+      choicesEl.appendChild(btn);
+    });
+
+    if(timed){
+      $('qtimer-outer').style.display = 'block';
+      S.qSecondsLeft = 20;
+      updateQTimerBar();
+      if(S.qTimer) clearInterval(S.qTimer);
+      S.qTimer = setInterval(()=>{
+        S.qSecondsLeft -= 0.2;
+        updateQTimerBar();
+        if(S.qSecondsLeft<=0){
+          clearInterval(S.qTimer);
+          if(!S.answered) handleAnswer(false, -1, q);
+        }
+      }, 200);
+    } else {
+      $('qtimer-outer').style.display = 'none';
+    }
+  }
+
+  function updateQTimerBar(){
+    const pct = Math.max(0, S.qSecondsLeft/20*100);
+    const bar = $('qtimer-inner');
+    bar.style.width = pct+'%';
+    bar.style.background = pct<25 ? 'var(--bad)' : (pct<55 ? 'var(--clay-lt)' : 'var(--gold)');
+  }
+
+  function handleAnswer(isCorrect, chosenIdx, q){
+    if(S.answered) return;
+    S.answered = true;
+    if(S.qTimer) clearInterval(S.qTimer);
+
+    document.querySelectorAll('.choice-btn').forEach((btn,i)=>{
+      btn.disabled = true;
+      if(i===q.a) btn.classList.add('correct');
+      else if(i===chosenIdx) btn.classList.add('incorrect');
+    });
+
+    const fb = $('feedback');
+    fb.style.display = 'block';
+    fb.className = 'feedback ' + (isCorrect ? 'good' : 'bad');
+    fb.textContent = (isCorrect ? '✓ Correct — ' : (chosenIdx===-1 ? '⏱ Time\'s up — ' : '✗ Not quite — ')) + q.n;
+    $('continue-btn').style.display = 'block';
+
+    if(!isCorrect){
+      S.missed.push({q:q.q, correct:q.c[q.a], note:q.n});
+    }
+
+    S.justCompletedEra = null;
+    if(S.mode!=='study'){
+      const p = S.players[S.turn];
+      if(isCorrect){
+        const idx = p.built[S.currentEra];
+        p.built[S.currentEra] = idx+1;
+        const key = playerKey(S.turn);
+        const el = document.getElementById(`${key}-${S.currentEra}-${idx}`);
+        if(el) requestAnimationFrame(()=> el.classList.add('built'));
+        refreshPanel(S.turn);
+        if(idx+1 === PIECES_PER_ERA[S.currentEra]) S.justCompletedEra = S.currentEra;
+      } else {
+        p.wrong++;
+        if(S.mode==='solo'){ S.solo.penalty += 8; }
+      }
+    }
+
+    $('continue-btn').onclick = onContinue;
+  }
+
+  function onContinue(){
+    $('qcard').style.display = 'none';
+    if(S.mode==='study'){
+      S.studyIndex++;
+      askStudyQuestion();
+      return;
+    }
+    const p = S.players[S.turn];
+    const total = Object.values(p.built).reduce((a,b)=>a+b,0);
+    const justCompletedEra = S.justCompletedEra;
+    S.justCompletedEra = null;
+
+    function proceedAfterStory(){
+      if(total >= TOTAL_PIECES){
+        endGame();
+        return;
+      }
+      renderEraPicker();
+    }
+
+    if(justCompletedEra){
+      showStory(STORY.eraComplete[justCompletedEra], {eyebrow: ERA_LABEL[justCompletedEra]+' Rebuilt', onContinue: proceedAfterStory});
+    } else {
+      proceedAfterStory();
+    }
+  }
+
+  /* ---------------- END GAME ---------------- */
+  $('quit-btn').addEventListener('click', ()=>{
+    if(S.mode==='coop') finishCoop(); else endGame();
+  });
+
+  async function endGame(){
+    S.gameOver = true;
+    if(S.solo.tickTimer) clearInterval(S.solo.tickTimer);
+    S.solo.running = false;
+    showScreen('end');
+    const mc = $('missed-card'); if(mc) mc.style.display = 'block';
+
+    if(S.mode==='study'){
+      $('end-title').textContent = 'Review complete';
+      $('end-sub').textContent = `You went through ${S.studyQueue.length} questions.`;
+    } else if(S.mode==='solo'){
+      const totalBuilt = Object.values(S.players[0].built).reduce((a,b)=>a+b,0);
+      const finalSeconds = (Date.now()-S.solo.startTs)/1000 + S.solo.penalty;
+      if(totalBuilt>=TOTAL_PIECES){
+        const improved = await saveBestTimeIfBetter(finalSeconds);
+        $('end-title').textContent = 'Empire complete!';
+        $('end-sub').innerHTML = `${STORY.outroWin}<br><br>Final time: ${fmtTime(finalSeconds)} (incl. ${S.players[0].wrong} penalt${S.players[0].wrong===1?'y':'ies'} × 8s)` + (improved ? ' — new best! 🏛' : '');
+      } else {
+        $('end-title').textContent = 'The storm arrives';
+        $('end-sub').innerHTML = `${STORY.outroPartial}<br><br>You built ${totalBuilt} of ${TOTAL_PIECES} pieces.`;
+      }
+    }
+
+    const list = $('missed-list');
+    if(S.missed.length===0){
+      list.innerHTML = `<div style="font-size:13px; color:var(--sand); padding:8px 0;">Perfect run — nothing missed!</div>`;
+    } else {
+      list.innerHTML = S.missed.map(m=>`
+        <div class="missed-item">
+          <div class="mq">${escapeHtml(m.q)}</div>
+          <div class="ma">Correct answer: ${escapeHtml(m.correct)}</div>
+          <div class="mn">${escapeHtml(m.note)}</div>
+        </div>`).join('');
+    }
+  }
+
+  $('again-btn').addEventListener('click', startGame);
+  $('menu-btn').addEventListener('click', ()=>{
+    S.gameOver = true;
+    showScreen('start');
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
+    $('setup-card').style.display='none';
+    $('best-and-board').innerHTML='';
+    $('story-overlay').classList.remove('show');
+    if(S.solo.tickTimer) clearInterval(S.solo.tickTimer);
+    if(S.coop && S.coop.tickTimer) clearInterval(S.coop.tickTimer);
+    if(S.qTimer) clearInterval(S.qTimer);
+  });
+
+})();
+</script>

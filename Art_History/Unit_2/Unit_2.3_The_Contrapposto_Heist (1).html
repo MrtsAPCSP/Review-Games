@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Contrapposto Heist — Unit 2.3 Case Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papyrus:#EDE4D3;
+  --papyrus-dark:#DED0AE;
+  --paper-edge:#C9B98C;
+  --ink:#211A13;
+  --ink-soft:#4A4038;
+  --terracotta:#B5502E;
+  --terracotta-dark:#8A3B1E;
+  --terracotta-light:#D97A52;
+  --marble:#A9A296;
+  --marble-light:#E7E2D6;
+  --laurel:#5C6B47;
+  --laurel-dark:#414D31;
+  --wax:#9C2B1F;
+  --gold:#C9A227;
+  --gold-light:#E6C158;
+  --shadow: 0 8px 24px rgba(33,26,19,0.18);
+  --shadow-sm: 0 3px 10px rgba(33,26,19,0.14);
+  --radius: 10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background: var(--papyrus);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(181,80,46,0.05), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(92,107,71,0.06), transparent 40%);
+  font-family:'Inter',sans-serif;
+  color: var(--ink);
+  min-height:100vh;
+}
+.stamp-font{font-family:'Space Mono',monospace;}
+h1,h2,h3,.display{font-family:'Cinzel',serif;}
+#app{max-width:1000px;margin:0 auto;padding:18px 18px 60px;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+button:focus-visible, [tabindex]:focus-visible, a:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+.sr-only{position:absolute;left:-9999px;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 4px 18px;border-bottom:3px solid var(--ink);
+  margin-bottom:22px;
+}
+.topbar .brand{display:flex;align-items:center;gap:12px;}
+.topbar .brand .seal{
+  width:44px;height:44px;border-radius:50%;background:var(--terracotta);
+  display:flex;align-items:center;justify-content:center;color:var(--papyrus);
+  font-family:'Cinzel',serif;font-weight:900;font-size:20px;border:2px solid var(--ink);
+  flex-shrink:0;
+}
+.topbar .brand h1{font-size:1.05rem;margin:0;letter-spacing:.5px;line-height:1.15;}
+.topbar .brand .kicker{font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:1.5px;color:var(--terracotta-dark);text-transform:uppercase;}
+.topbar nav button{
+  font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:.5px;
+  color:var(--ink-soft);padding:8px 12px;border-radius:6px;text-transform:uppercase;
+}
+.topbar nav button:hover{background:rgba(33,26,19,0.06);}
+.topbar nav button.active{background:var(--ink);color:var(--papyrus);}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 22px;border-radius:8px;font-weight:700;font-size:.92rem;
+  background:var(--ink);color:var(--papyrus);box-shadow:var(--shadow-sm);
+  transition:transform .1s ease;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn.primary{background:var(--terracotta);}
+.btn.gold{background:var(--gold);color:var(--ink);}
+.btn.laurel{background:var(--laurel);color:var(--papyrus);}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border:2px solid var(--ink);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center;}
+
+/* ---------- Hub / Corkboard ---------- */
+.corkboard{
+  background: linear-gradient(180deg, #C9B98C, #BBA876);
+  border-radius: 14px;
+  padding: 28px 22px 34px;
+  box-shadow: inset 0 0 0 3px rgba(33,26,19,0.15), var(--shadow);
+  position:relative;
+  margin-bottom:28px;
+}
+.corkboard::before{
+  content:"";position:absolute;inset:0;border-radius:14px;
+  background-image: radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px);
+  background-size: 9px 9px; opacity:.5; pointer-events:none;
+}
+.hero-line{
+  text-align:center;margin-bottom:26px;position:relative;z-index:1;
+}
+.hero-line .eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:2px;color:var(--wax);text-transform:uppercase;}
+.hero-line h2{font-size:1.7rem;margin:6px 0 8px;color:var(--ink);}
+.hero-line p{max-width:560px;margin:0 auto;color:var(--ink-soft);font-size:.95rem;line-height:1.5;}
+
+.thread{
+  position:relative;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+  margin-top:6px;z-index:1;
+}
+.thread::before{
+  content:"";position:absolute;top:34px;left:6%;right:6%;height:3px;
+  background:repeating-linear-gradient(90deg, var(--wax) 0 10px, transparent 10px 16px);
+  z-index:0;
+}
+.folder{
+  position:relative;z-index:1;
+  background:var(--papyrus);
+  border-radius:6px;
+  padding:16px 12px 14px;
+  box-shadow:var(--shadow-sm);
+  border:2px solid var(--ink);
+  text-align:left;
+  transition:transform .12s ease;
+  display:flex;flex-direction:column;gap:8px;min-height:170px;
+}
+.folder:hover{transform:translateY(-4px) rotate(-0.5deg);}
+.folder .pin{
+  width:16px;height:16px;border-radius:50%;background:var(--wax);
+  position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  box-shadow:0 2px 3px rgba(0,0,0,.4);border:2px solid #6e1a11;
+}
+.folder .num{
+  font-family:'Space Mono',monospace;font-size:.68rem;color:var(--terracotta-dark);letter-spacing:1px;
+}
+.folder .icon{font-size:1.6rem;}
+.folder h3{font-size:.98rem;margin:0;line-height:1.25;}
+.folder .sub{font-size:.74rem;color:var(--ink-soft);line-height:1.3;}
+.folder .stamp{
+  margin-top:auto;align-self:flex-start;
+  font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;
+  padding:3px 8px;border-radius:20px;letter-spacing:.5px;
+}
+.stamp.bronze{background:#CD8B4E;color:#3a2410;}
+.stamp.silver{background:#C7CDD6;color:#2a2f36;}
+.stamp.gold{background:var(--gold-light);color:#3a2b04;}
+.stamp.new{background:var(--marble-light);color:var(--ink-soft);}
+
+.extra-row{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;position:relative;z-index:1;}
+.extra-card{
+  flex:1;min-width:220px;background:rgba(255,255,255,0.5);border:2px dashed var(--ink);
+  border-radius:8px;padding:14px 14px;
+}
+.extra-card h4{margin:0 0 4px;font-size:.85rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:1px;color:var(--terracotta-dark);}
+.extra-card p{margin:0 0 10px;font-size:.85rem;color:var(--ink-soft);line-height:1.4;}
+
+/* ---------- Case screen ---------- */
+.case-header{
+  display:flex;align-items:center;gap:14px;margin-bottom:6px;
+}
+.case-header .icon-badge{
+  width:52px;height:52px;border-radius:10px;background:var(--ink);color:var(--papyrus);
+  display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;
+}
+.case-header h2{margin:0;font-size:1.4rem;}
+.case-header .sub{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--terracotta-dark);letter-spacing:1px;text-transform:uppercase;}
+.progress-dots{display:flex;gap:6px;margin:16px 0 22px;}
+.progress-dots span{width:26px;height:6px;border-radius:4px;background:var(--marble);}
+.progress-dots span.done{background:var(--laurel);}
+.progress-dots span.current{background:var(--terracotta);}
+
+.card{
+  background:var(--marble-light);
+  border-radius:var(--radius);
+  border:2px solid var(--ink);
+  padding:24px;
+  box-shadow:var(--shadow-sm);
+  margin-bottom:18px;
+}
+.card h3{margin-top:0;}
+.activity-label{
+  font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--terracotta-dark);margin-bottom:10px;display:block;
+}
+
+/* ---------- Flashcards ---------- */
+.flashwrap{display:flex;flex-direction:column;align-items:center;gap:16px;}
+.flashcount{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--ink-soft);}
+.flashcard{
+  width:100%;max-width:480px;min-height:190px;
+  background:var(--papyrus);border:2px solid var(--ink);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:26px 22px;box-shadow:var(--shadow-sm);position:relative;
+}
+.flashcard .fterm{font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;}
+.flashcard .fdef{font-size:1rem;line-height:1.5;color:var(--ink-soft);}
+.flashcard .hint{position:absolute;bottom:10px;right:14px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--marble);}
+.flash-nav{display:flex;align-items:center;gap:14px;}
+.flash-nav button{font-size:1.3rem;width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--papyrus);}
+.self-report{display:flex;gap:10px;margin-top:6px;}
+.self-report button{font-size:.8rem;padding:8px 14px;border-radius:20px;border:2px solid var(--ink);}
+.self-report button.got{color:var(--laurel-dark);}
+.self-report button.review{color:var(--wax);}
+
+/* ---------- MCQ ---------- */
+.mcq-progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-family:'Space Mono',monospace;font-size:.78rem;color:var(--ink-soft);}
+.mcq-q{font-size:1.08rem;font-weight:700;margin-bottom:16px;line-height:1.4;}
+.mcq-opts{display:flex;flex-direction:column;gap:10px;}
+.mcq-opt{
+  text-align:left;padding:13px 16px;border:2px solid var(--ink);border-radius:8px;
+  background:var(--papyrus);font-size:.95rem;font-weight:600;
+}
+.mcq-opt:hover{background:var(--papyrus-dark);}
+.mcq-opt.correct{background:var(--laurel);color:var(--papyrus);border-color:var(--laurel-dark);}
+.mcq-opt.wrong{background:var(--wax);color:var(--papyrus);border-color:#6e1a11;}
+.mcq-opt.disabled{pointer-events:none;}
+.mcq-opt.reveal{opacity:.55;}
+.mcq-explain{
+  margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--papyrus);
+  border-left:4px solid var(--terracotta);font-size:.88rem;line-height:1.5;display:none;
+}
+.mcq-explain.show{display:block;}
+
+/* ---------- Word bank / diagram ---------- */
+.diagram-wrap{display:flex;justify-content:center;margin-bottom:18px;}
+.bank{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+.chip{
+  padding:9px 14px;border:2px solid var(--ink);border-radius:20px;font-size:.85rem;font-weight:700;
+  background:var(--papyrus);
+}
+.chip.selected{background:var(--gold-light);}
+.chip.used{opacity:.3;pointer-events:none;}
+.slots{display:flex;flex-direction:column;gap:8px;max-width:520px;margin:0 auto;}
+.slot-row{display:flex;align-items:center;gap:10px;}
+.slot-num{
+  width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--papyrus);
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;
+}
+.slot{
+  flex:1;min-height:38px;border:2px dashed var(--ink);border-radius:6px;
+  display:flex;align-items:center;padding:0 12px;font-weight:700;font-size:.9rem;background:var(--papyrus);
+}
+.slot.filled{border-style:solid;background:var(--gold-light);}
+.slot.correct{border-style:solid;background:var(--laurel);color:var(--papyrus);border-color:var(--laurel-dark);}
+.slot.wrong{border-style:solid;background:var(--wax);color:var(--papyrus);border-color:#6e1a11;}
+.slot .answer-key{font-family:'Space Mono',monospace;font-size:.7rem;margin-left:8px;opacity:.85;}
+
+/* ---------- Evidence compare ---------- */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:640px){.compare-grid{grid-template-columns:1fr;}}
+.compare-col{background:var(--papyrus);border:2px solid var(--ink);border-radius:10px;padding:16px;}
+.compare-col h4{margin:0 0 10px;font-family:'Cinzel',serif;font-size:1rem;}
+.evidence-toggle{
+  width:100%;text-align:left;background:var(--ink);color:var(--papyrus);border-radius:8px;
+  padding:12px 16px;font-weight:700;margin:16px 0 0;display:flex;justify-content:space-between;align-items:center;
+}
+.evidence-panel{display:none;padding:14px 16px;background:var(--marble-light);border-radius:0 0 8px 8px;border:2px solid var(--ink);border-top:none;}
+.evidence-panel.show{display:block;}
+.evidence-panel ul{margin:0;padding-left:20px;line-height:1.6;}
+
+/* ---------- Pose build (Case 3 climax) ---------- */
+.pose-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;}
+@media (max-width:640px){.pose-grid{grid-template-columns:1fr;}}
+.pose-col{text-align:center;}
+.pose-col h4{font-family:'Cinzel',serif;margin:8px 0 2px;}
+.pose-col .tag{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--ink-soft);}
+.markers{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.marker-btn{
+  width:30px;height:30px;border-radius:50%;background:var(--terracotta);color:#fff;font-weight:700;font-size:.8rem;
+  border:2px solid var(--ink);
+}
+.marker-btn.active{background:var(--gold);color:var(--ink);}
+.pose-caption{
+  margin-top:16px;padding:14px 16px;border-radius:8px;background:var(--papyrus);border-left:4px solid var(--wax);
+  min-height:52px;font-size:.9rem;line-height:1.5;
+}
+.heist-reveal{
+  margin-top:20px;padding:18px 20px;border-radius:10px;background:var(--ink);color:var(--papyrus);
+  font-size:.95rem;line-height:1.6;display:none;
+}
+.heist-reveal.show{display:block;}
+.heist-reveal b{color:var(--gold-light);}
+
+/* ---------- Case complete ---------- */
+.complete-box{text-align:center;padding:32px 20px;}
+.complete-box .medal{font-size:3rem;}
+.complete-box h2{margin:8px 0 4px;}
+.score-pill{
+  display:inline-block;margin-top:10px;padding:8px 18px;border-radius:20px;
+  background:var(--gold-light);font-family:'Space Mono',monospace;font-weight:700;
+}
+
+/* ---------- Timeline / final boss ---------- */
+.timeline-bank{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;}
+.tl-chip{
+  padding:12px 16px;border:2px solid var(--ink);border-radius:8px;background:var(--papyrus);
+  font-weight:700;font-size:.88rem;max-width:230px;text-align:left;
+}
+.tl-chip.used{opacity:.25;pointer-events:none;}
+.tl-slots{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.tl-slot{
+  border:2px dashed var(--ink);border-radius:8px;padding:10px 14px;min-height:40px;
+  display:flex;align-items:center;gap:10px;background:var(--papyrus);font-size:.88rem;font-weight:700;
+}
+.tl-slot .n{font-family:'Space Mono',monospace;color:var(--terracotta-dark);}
+.tl-slot.correct{background:var(--laurel);color:var(--papyrus);border-style:solid;}
+.tl-slot.wrong{background:var(--wax);color:var(--papyrus);border-style:solid;}
+
+/* ---------- Certificate ---------- */
+.certificate{
+  border:6px double var(--ink);padding:36px 28px;text-align:center;background:var(--papyrus);
+  border-radius:6px;
+}
+.certificate .eyebrow{font-family:'Space Mono',monospace;letter-spacing:3px;font-size:.72rem;color:var(--terracotta-dark);text-transform:uppercase;}
+.certificate h2{font-size:1.8rem;margin:8px 0;}
+.certificate .name-line{margin:22px 0;font-size:1.1rem;}
+.certificate .name-line input{
+  border:none;border-bottom:2px solid var(--ink);background:transparent;font-family:'Cinzel',serif;
+  font-size:1.2rem;text-align:center;padding:4px 10px;width:280px;
+}
+.certificate .seal-final{
+  width:80px;height:80px;border-radius:50%;background:var(--gold);border:3px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;margin:14px auto;font-size:1.8rem;
+}
+@media print{
+  .topbar, .btn-row, nav{display:none !important;}
+  body{background:#fff;}
+}
+
+/* ---------- extensions ---------- */
+.ext-list{display:flex;flex-direction:column;gap:14px;}
+.ext-item{
+  background:var(--marble-light);border:2px solid var(--ink);border-radius:10px;padding:16px 18px;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.ext-item .num{
+  font-family:'Cinzel',serif;font-weight:900;font-size:1.4rem;color:var(--terracotta);flex-shrink:0;
+}
+.ext-item h4{margin:0 0 4px;}
+.ext-item p{margin:0;color:var(--ink-soft);font-size:.9rem;line-height:1.5;}
+.map-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.85rem;}
+.map-table th,.map-table td{border:1px solid var(--marble);padding:7px 10px;text-align:left;}
+.map-table th{background:var(--papyrus-dark);font-family:'Space Mono',monospace;font-size:.7rem;text-transform:uppercase;}
+
+footer.foot{text-align:center;margin-top:36px;color:var(--marble);font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================
+   THE CONTRAPPOSTO HEIST — data
+   ========================================================= */
+
+const FLASH1 = [
+ {t:"Doric Order", d:"The plainest, stockiest column order. No base — it sits right on the floor. Flat, simple capital. Think: no-nonsense."},
+ {t:"Ionic Order", d:"A slimmer column with a scroll-shaped capital (volutes) and a base. More decorative than Doric, more restrained than Corinthian."},
+ {t:"Corinthian Order", d:"The tallest, fanciest order. Capital covered in carved acanthus leaves. Legend says it was inspired by leaves growing around a basket on a girl's grave."},
+ {t:"Entablature", d:"Everything that rests on top of the columns, stacked together: architrave, then frieze, then cornice."},
+ {t:"Architrave", d:"The plain horizontal beam resting directly on the columns — the bottom layer of the entablature."},
+ {t:"Frieze", d:"The middle band of the entablature — decorated with relief sculpture, or with triglyphs and metopes in Doric temples."},
+ {t:"Triglyph", d:"A block with three vertical grooves in a Doric frieze. Alternates with metopes."},
+ {t:"Metope", d:"A carved (or plain) panel between two triglyphs on a Doric frieze."},
+ {t:"Cornice", d:"The topmost, projecting horizontal band of the entablature — like a roof's overhang."},
+ {t:"Pediment", d:"The triangular gable at each end of a temple's roofline, often filled with sculpture."},
+ {t:"Cella", d:"The main interior room of a temple — home to the cult statue of the god."},
+ {t:"Portico", d:"A porch with columns marking the entrance of a building."},
+ {t:"Amphiprostyle", d:"A temple plan with a columned porch on both the front AND the back, but not along the sides."},
+ {t:"Stoa", d:"A long, covered walkway lined with columns — used for shopping, socializing, and shelter in the Agora."},
+ {t:"Agora", d:"The open public square at the heart of a Greek city — markets, politics, everyday life."},
+ {t:"Panathenaic Way", d:"The sacred road running through the Agora, used for the procession honoring Athena."},
+ {t:"Tholos", d:"A round building in the Agora, used by city officials as a meeting place and dining hall."},
+];
+
+const MCQ1 = [
+ {q:"Which column order has NO base and sits directly on the floor?",o:["Doric","Ionic","Corinthian"],c:0,e:"Doric is the oldest, plainest order — stocky, no base."},
+ {q:"A capital covered in carved acanthus leaves belongs to which order?",o:["Doric","Ionic","Corinthian"],c:2,e:"Corinthian is the fanciest, most decorated order."},
+ {q:"What's the triangular space at the end of a temple's roofline called?",o:["Cornice","Pediment","Frieze"],c:1,e:"The pediment is the triangular gable — often filled with sculpture."},
+ {q:"In a Doric frieze, the panel BETWEEN two triglyphs is a...",o:["Metope","Cella","Portico"],c:0,e:"Metope = the panel; Triglyph = the three-grooved block beside it."},
+ {q:"What was kept inside a temple's cella?",o:["Grain for the city","The cult statue of the god","Nothing — it stayed empty"],c:1,e:"The cella housed the god's statue — it's the whole reason the temple exists."},
+ {q:"The Agora was mainly used for...",o:["Athletic competitions only","Civic life — markets, politics, gathering","Burying the dead"],c:1,e:"The Agora was the civic heart of the city."},
+];
+
+const DIAGRAM_TEMPLE_SVG = `
+<svg viewBox="0 0 520 300" width="100%" style="max-width:480px">
+ <polygon points="60,80 260,20 460,80" fill="none" stroke="#211A13" stroke-width="3"/>
+ <circle cx="260" cy="55" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="260" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">1</text>
+ <rect x="55" y="80" width="410" height="14" fill="none" stroke="#211A13" stroke-width="3"/>
+ <circle cx="484" cy="87" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="484" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">2</text>
+ <rect x="55" y="94" width="410" height="26" fill="none" stroke="#211A13" stroke-width="3"/>
+ <g stroke="#211A13" stroke-width="2">
+  <line x1="80" y1="94" x2="80" y2="120"/><line x1="86" y1="94" x2="86" y2="120"/><line x1="92" y1="94" x2="92" y2="120"/>
+  <line x1="140" y1="94" x2="140" y2="120"/><line x1="146" y1="94" x2="146" y2="120"/><line x1="152" y1="94" x2="152" y2="120"/>
+  <line x1="200" y1="94" x2="200" y2="120"/><line x1="206" y1="94" x2="206" y2="120"/><line x1="212" y1="94" x2="212" y2="120"/>
+  <line x1="260" y1="94" x2="260" y2="120"/><line x1="266" y1="94" x2="266" y2="120"/><line x1="272" y1="94" x2="272" y2="120"/>
+  <line x1="320" y1="94" x2="320" y2="120"/><line x1="326" y1="94" x2="326" y2="120"/><line x1="332" y1="94" x2="332" y2="120"/>
+  <line x1="380" y1="94" x2="380" y2="120"/><line x1="386" y1="94" x2="386" y2="120"/><line x1="392" y1="94" x2="392" y2="120"/>
+ </g>
+ <circle cx="36" cy="107" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="36" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">3</text>
+ <circle cx="115" cy="132" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="115" y="137" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">4</text>
+ <circle cx="175" cy="132" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="175" y="137" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">5</text>
+ <rect x="55" y="120" width="410" height="10" fill="none" stroke="#211A13" stroke-width="3"/>
+ <circle cx="484" cy="125" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="484" y="130" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">6</text>
+ <g stroke="#211A13" stroke-width="4">
+  <line x1="90" y1="130" x2="90" y2="250"/><line x1="150" y1="130" x2="150" y2="250"/>
+  <line x1="210" y1="130" x2="210" y2="250"/><line x1="270" y1="130" x2="270" y2="250"/>
+  <line x1="330" y1="130" x2="330" y2="250"/><line x1="390" y1="130" x2="390" y2="250"/>
+ </g>
+ <circle cx="240" cy="190" r="14" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="240" y="195" text-anchor="middle" font-size="13" font-weight="700" fill="#EDE4D3">7</text>
+ <rect x="40" y="250" width="440" height="14" fill="none" stroke="#211A13" stroke-width="3"/>
+ <rect x="20" y="264" width="480" height="14" fill="none" stroke="#211A13" stroke-width="3"/>
+ <g stroke="#211A13" stroke-width="3" fill="none">
+  <line x1="20" y1="60" x2="55" y2="60"/><line x1="55" y1="60" x2="55" y2="118" stroke-dasharray="3,3"/>
+ </g>
+ <text x="18" y="55" font-size="11" font-weight="700" fill="#211A13">8</text>
+ <circle cx="18" cy="60" r="12" fill="#B5502E" stroke="#211A13" stroke-width="2"/><text x="18" y="65" text-anchor="middle" font-size="12" font-weight="700" fill="#EDE4D3">8</text>
+</svg>`;
+
+const WORDBANK1 = {
+ title:"Label the Temple",
+ instructions:"Click a word, then click its numbered spot on the diagram.",
+ svg: DIAGRAM_TEMPLE_SVG,
+ bank:["Pediment","Cornice","Triglyph","Frieze","Metope","Architrave","Column (Shaft)","Entablature"],
+ slots:[
+  {n:1, correct:"Pediment"},
+  {n:2, correct:"Cornice"},
+  {n:3, correct:"Triglyph"},
+  {n:4, correct:"Metope"},
+  {n:5, correct:"Metope"},
+  {n:6, correct:"Frieze"},
+  {n:7, correct:"Column (Shaft)"},
+  {n:8, correct:"Architrave"},
+ ]
+};
+
+function acropolisIcon(kind){
+ if(kind==='gate') return `<svg viewBox="0 0 100 90"><rect x="10" y="40" width="80" height="40" fill="none" stroke="#211A13" stroke-width="3"/><polygon points="5,40 50,10 95,40" fill="none" stroke="#211A13" stroke-width="3"/><line x1="25" y1="40" x2="25" y2="80" stroke="#211A13" stroke-width="3"/><line x1="42" y1="40" x2="42" y2="80" stroke="#211A13" stroke-width="3"/><line x1="58" y1="40" x2="58" y2="80" stroke="#211A13" stroke-width="3"/><line x1="75" y1="40" x2="75" y2="80" stroke="#211A13" stroke-width="3"/></svg>`;
+ if(kind==='parthenon') return `<svg viewBox="0 0 100 90"><polygon points="2,34 50,8 98,34" fill="none" stroke="#211A13" stroke-width="3"/><rect x="4" y="34" width="92" height="8" fill="none" stroke="#211A13" stroke-width="3"/>${[10,24,38,52,66,80].map(x=>`<line x1="${x}" y1="42" x2="${x}" y2="80" stroke="#211A13" stroke-width="3"/>`).join('')}<rect x="0" y="80" width="100" height="6" fill="none" stroke="#211A13" stroke-width="3"/></svg>`;
+ if(kind==='erechtheion') return `<svg viewBox="0 0 100 90"><rect x="8" y="30" width="60" height="10" fill="none" stroke="#211A13" stroke-width="3"/>${[14,26,38,50,60].map(x=>`<line x1="${x}" y1="40" x2="${x}" y2="78" stroke="#211A13" stroke-width="3"/>`).join('')}<rect x="70" y="20" width="26" height="20" fill="none" stroke="#211A13" stroke-width="3"/><circle cx="78" cy="46" r="4" fill="#211A13"/><circle cx="88" cy="46" r="4" fill="#211A13"/><line x1="78" y1="50" x2="78" y2="78" stroke="#211A13" stroke-width="3"/><line x1="88" y1="50" x2="88" y2="78" stroke="#211A13" stroke-width="3"/><rect x="4" y="78" width="92" height="6" fill="none" stroke="#211A13" stroke-width="3"/></svg>`;
+ return `<svg viewBox="0 0 100 90"><polygon points="20,30 50,12 80,30" fill="none" stroke="#211A13" stroke-width="3"/><rect x="18" y="30" width="64" height="6" fill="none" stroke="#211A13" stroke-width="3"/>${[26,42,58,74].map(x=>`<line x1="${x}" y1="36" x2="${x}" y2="72" stroke="#211A13" stroke-width="3"/>`).join('')}<rect x="14" y="72" width="72" height="6" fill="none" stroke="#211A13" stroke-width="3"/></svg>`;
+}
+
+const ACROPOLIS_MATCH = {
+ title:"Map the Acropolis",
+ instructions:"Click a building name, then click the matching outline below.",
+ bank:["Propylaea","Parthenon","Erechtheion","Temple of Athena Nike"],
+ items:[
+  {id:'gate', icon:acropolisIcon('gate'), correct:"Propylaea", note:"The monumental gatehouse — everyone passed through here to enter the sacred site."},
+  {id:'parthenon', icon:acropolisIcon('parthenon'), correct:"Parthenon", note:"The largest temple, Doric order, dedicated to Athena Parthenos."},
+  {id:'erechtheion', icon:acropolisIcon('erechtheion'), correct:"Erechtheion", note:"Ionic temple famous for its Caryatid porch — columns carved as women."},
+  {id:'nike', icon:acropolisIcon('nike'), correct:"Temple of Athena Nike", note:"A small, elegant Ionic temple celebrating victory."},
+ ]
+};
+
+const FLASH2 = [
+ {t:"The Geometric Period", d:"1000–700 BCE. Earliest Greek art after the Bronze Age collapse — pottery decorated with geometric patterns and simple stick-figure humans."},
+ {t:"The Archaic Period", d:"600–480 BCE. Greek sculpture becomes monumental and figural for the first time — Kouros and Kore statues, the famous 'Archaic smile.'"},
+ {t:"Kouros", d:"A standing, nude male youth statue from the Archaic period. Idealized, symmetrical, striding pose — borrowed from Egypt."},
+ {t:"Kore", d:"A standing, draped female statue from the Archaic period — the female counterpart to the Kouros."},
+ {t:"Peplos", d:"A simple belted wool garment worn by Greek women — seen on statues like the Peplos Kore."},
+];
+
+const MCQ2 = [
+ {q:"Which culture's rigid, frontal statue pose did early Greek sculptors borrow for the Kouros?",o:["Roman","Egyptian","Etruscan"],c:1,e:"Egyptian statues used a frontal, symmetrical pose to represent permanence — Greek sculptors copied this."},
+ {q:"What is a Kouros?",o:["A draped female figure","A nude male youth figure","A wine-mixing vessel"],c:1,e:"Kouros = Archaic nude male youth statue."},
+ {q:"What's the female equivalent of a Kouros called?",o:["Kore","Krater","Caryatid"],c:0,e:"Kore = draped Archaic female statue."},
+ {q:"The slight upturned lips seen on Archaic statues are known as the...",o:["Archaic smile","Classical grin","Hellenistic sneer"],c:0,e:"The 'Archaic smile' is a stylistic convention — it's not necessarily showing happiness."},
+ {q:"Even though the Kouros copied the Egyptian pose, what's one big difference?",o:["Kouroi are always seated","Kouroi are nude, most Egyptian figures are clothed","Kouroi have no arms"],c:1,e:"Nudity was a Greek ideal tied to athletics and the male body — Egyptian royal statues were clothed."},
+];
+
+const SPOT_STEAL = {
+ title:"Spot the Steal: Egypt \u2192 Kouros",
+ left:{name:"Egyptian Standing Statue", points:["Strict frontal gaze, staring straight ahead","Arms held rigidly at the sides, fists clenched","One leg steps forward — but weight stays even on both legs","Ageless, idealized body built for eternity, not portraiture"]},
+ right:{name:"Greek Kouros", points:["Strict frontal gaze, staring straight ahead","Arms held rigidly at the sides, fists clenched","One leg steps forward — but weight stays even on both legs","Ageless, idealized youthful body — the Greek ideal of beauty"]},
+ sameLabel:"What did Greece STEAL from Egypt?",
+ sameText:"Almost the entire pose! The frontal symmetry, the rigid stance, the forward-stepping leg with even weight, the idealized (not individual) body — Greek sculptors lifted this whole formula from centuries of Egyptian tradition.",
+ diffLabel:"What's actually DIFFERENT?",
+ diffText:"Mainly the nudity, and the material (marble instead of stone/wood/metal composites) and purpose — Kouroi often marked graves or served as offerings to gods, not as images of a divine king. The pose itself is a direct borrow.",
+};
+
+const FLASH3 = [
+ {t:"Polykleitos", d:"A Classical Greek sculptor (mid-5th century BCE) who created the Doryphoros and wrote a treatise on ideal proportion — his 'Canon.'"},
+ {t:"Canon", d:"A system of ideal mathematical proportions for representing the human body, developed by Polykleitos."},
+ {t:"Doryphoros (\u201CSpear-Bearer\u201D)", d:"c. 450 BCE. Polykleitos's masterwork — the first great statement of contrapposto. The original was bronze; we only have later marble Roman copies."},
+ {t:"Contrapposto", d:"Italian for \u201Ccounterpose.\u201D A standing pose where weight shifts onto one leg, so the hips and shoulders counterbalance in an S-curve — it creates a sense of relaxed, natural movement."},
+];
+
+const MCQ3 = [
+ {q:"What does 'contrapposto' literally mean?",o:["Spear bearer","Counterpose","Ideal beauty"],c:1,e:"Contrapposto = 'counterpose' — describing the weight-shift stance."},
+ {q:"Who created the Doryphoros and pioneered contrapposto?",o:["Phidias","Iktinos","Polykleitos"],c:2,e:"Polykleitos, a Classical-period sculptor, gets the credit for the breakthrough."},
+ {q:"In contrapposto, what actually happens to the body?",o:["Both legs bear equal weight, arms crossed","Weight shifts to one leg; hips & shoulders counterbalance in an S-curve","The figure sits down"],c:1,e:"That weight shift is exactly what makes the figure feel alive instead of frozen."},
+ {q:"What was the ORIGINAL medium of the Doryphoros?",o:["Marble","Bronze","Terracotta"],c:1,e:"The original was bronze (now lost) — surviving versions are later Roman marble copies."},
+ {q:"Polykleitos's \u201CCanon\u201D refers to...",o:["A weapon","A system of ideal body proportions","A type of temple"],c:1,e:"Canon = his mathematical rulebook for the 'perfect' human body."},
+];
+
+const POSE_MARKERS = [
+ {id:1,label:"Gaze",k:"Staring straight ahead — locked forward, like Egypt.",d:"Head turns slightly, gaze relaxes — a real person glancing off, not a frozen icon."},
+ {id:2,label:"Shoulders",k:"Level, perfectly horizontal — total symmetry.",d:"Tilted — one shoulder drops as the body counterbalances. The first crack in the symmetry."},
+ {id:3,label:"Hips",k:"Level, perfectly horizontal — matches the shoulders exactly.",d:"Tilted the OPPOSITE way from the shoulders — this is the actual S-curve of contrapposto."},
+ {id:4,label:"Legs",k:"Weight even on both legs, even though one steps forward.",d:"Weight ALL on one leg (the \u201Cengaged\u201D leg); the other bends and relaxes (the \u201Cfree\u201D leg)."},
+];
+
+const FLASH4 = [
+ {t:"Wet Drapery Technique", d:"Carving cloth so thin and clinging that it looks wet — revealing the body's forms underneath. Seen on Nike Adjusting Her Sandal."},
+ {t:"Krater", d:"A large vessel used to mix wine and water at a symposium (drinking party)."},
+ {t:"Amphora", d:"A two-handled vessel used to store and transport liquids like wine or oil."},
+ {t:"Lost-Wax Technique", d:"A bronze-casting method: sculpt the form in wax, encase it in a mold, melt out (\u201Close\u201D) the wax, then pour in molten bronze."},
+ {t:"Early / High / Late Classical Periods", d:"Subdivisions of the Classical period (480\u2013323 BCE), tracking naturalism's growth from the Doryphoros (Early/High) to the Grave Stele of Hegeso (Late)."},
+];
+
+const MCQ4 = [
+ {q:"'Wet drapery' makes carved cloth look like it's...",o:["Heavy and stiff","Thin and clinging, revealing the body beneath","Made of metal"],c:1,e:"It's another way sculptors pushed naturalism forward — cloth as a second skin."},
+ {q:"You'd mix wine and water in a...",o:["Krater","Amphora","Kore"],c:0,e:"Krater = mixing vessel."},
+ {q:"You'd store and transport oil or wine in a...",o:["Krater","Amphora","Peplos"],c:1,e:"Amphora = two-handled storage/transport jar."},
+ {q:"The Grave Stele of Hegeso shows a scene of...",o:["Battle","A woman with a jewelry box and her servant","Athletes competing"],c:1,e:"It's a quiet domestic funerary scene, showing Hegeso's role and status in life."},
+ {q:"Lost-wax casting is used to make sculptures out of...",o:["Marble","Bronze","Clay"],c:1,e:"You lose the wax, keep the bronze."},
+];
+
+const FLASH5 = [
+ {t:"The Hellenistic Period", d:"323\u201330 BCE (Alexander the Great's death to Egypt falling to Rome). Greek art gets bigger, more emotional, more theatrical, and spreads across a huge empire."},
+ {t:"Nike of Samothrace", d:"c. 190 BCE. Missing her head and arms, she still conveys explosive movement — windblown wet drapery, a dramatic diagonal pose, originally landing on a ship's prow."},
+ {t:"Gigantomachy", d:"The mythical battle between the Olympian gods and the Giants — the subject of the Pergamon Altar's dramatic frieze."},
+ {t:"Great Altar of Zeus and Athena (Pergamon)", d:"c. 175 BCE. A massive Hellenistic altar with a deep-relief Gigantomachy frieze — swirling drama used as political propaganda for the ruling dynasty."},
+ {t:"Seated Boxer", d:"c. 100 BCE, bronze (lost-wax cast). A battered, aging, bruised fighter — the opposite of the idealized Kouros/Doryphoros tradition. Realism over perfection."},
+];
+
+const MCQ5 = [
+ {q:"The Hellenistic period begins after the death of...",o:["Polykleitos","Alexander the Great","Zeus"],c:1,e:"323 BCE = the year Alexander died and his empire fractured."},
+ {q:"What is a Gigantomachy?",o:["A battle between gods and giants","A type of column","A wine festival"],c:0,e:"It's the mythical war depicted on the Pergamon Altar frieze."},
+ {q:"The Seated Boxer breaks from earlier Greek tradition because it shows...",o:["A perfectly idealized athlete","A battered, realistic, aging fighter","A god instead of a human"],c:1,e:"Hellenistic art often trades idealism for raw realism and emotion."},
+ {q:"What do the Nike of Samothrace's drapery and the Doryphoros's pose have in common?",o:["Nothing at all","Both trace back to the naturalism first unlocked by contrapposto","Both are carved from the same block of stone"],c:1,e:"Once Polykleitos 'stole' the rigidity out of sculpture, artists kept pushing naturalism further — all the way to this windblown drama."},
+ {q:"Compared to Classical art, Hellenistic art tends to be...",o:["Calmer and more restrained","More dramatic, emotional, and theatrical","Exactly the same"],c:1,e:"Bigger empire, bigger emotions, bigger drama."},
+];
+
+const THEN_NOW = {
+ title:"Then vs. Now: Calm \u2192 Chaos",
+ left:{name:"Nike Adjusting Her Sandal (Classical, c. 410 BCE)", points:["Stable, balanced, upright pose","Drapery clings but stays fairly calm","Quiet, controlled moment — bending to fix a sandal","Feels like a held breath"]},
+ right:{name:"Nike of Samothrace (Hellenistic, c. 190 BCE)", points:["Dramatic diagonal lean, off-balance, mid-motion","Drapery whips and swirls as if blown by sea wind","Explosive moment — landing on a ship's prow","Feels like a gust of wind caught in stone"]},
+ sameLabel:"What's the same DNA?",
+ sameText:"Both use wet drapery to reveal the body underneath the cloth — that trick never goes away. Both are goddesses of Victory (Nike). Both descend from the same naturalism Polykleitos unlocked.",
+ diffLabel:"What changed?",
+ diffText:"Scale of drama. Classical art wants balance and quiet idealism. Hellenistic art wants motion, emotion, and spectacle — the same tools, turned up to the max.",
+};
+
+const TIMELINE_ITEMS = [
+ {id:'egypt', label:"Egyptian Statue Tradition", note:"Ancient inspiration \u2014 frontal, rigid, symmetrical pose built for eternity."},
+ {id:'geo', label:"Geometric Period (1000\u2013700 BCE)", note:"Greek art's earliest chapter \u2014 pattern-covered pottery, stick-figure humans."},
+ {id:'archaic', label:"Archaic Period: Kouros & Kore (600\u2013480 BCE)", note:"Greece borrows the Egyptian pose \u2014 nude, idealized, frozen and frontal."},
+ {id:'classical1', label:"Classical Breakthrough: Doryphoros (c. 450 BCE)", note:"Polykleitos steals the rigidity out of the pose \u2014 contrapposto is born."},
+ {id:'classical2', label:"Naturalism Spreads: Wet Drapery & Grave Stele (c. 410\u2013400 BCE)", note:"Sculptors chase movement and real life into drapery and everyday scenes."},
+ {id:'hellenistic', label:"Hellenistic Drama (323\u201330 BCE)", note:"Nike of Samothrace, Pergamon Altar, Seated Boxer \u2014 naturalism turned up to full volume."},
+];
+
+const BONUS_MCQ = [
+ {q:"Kore vs. Kouros: which one is DRAPED and female?",o:["Kore","Kouros"],c:0,e:"Kore = draped female. Kouros = nude male."},
+ {q:"Which pair alternates across a Doric frieze?",o:["Triglyph & Metope","Cella & Portico","Krater & Amphora"],c:0,e:"Triglyphs (grooved blocks) alternate with metopes (panels)."},
+ {q:"Which vessel MIXES wine and water?",o:["Amphora","Krater","Stoa"],c:1,e:"Krater = mixing bowl. Amphora = storage/transport jar."},
+ {q:"Stoa vs. Agora: which one is the covered WALKWAY?",o:["Stoa","Agora"],c:0,e:"Agora = the whole open square. Stoa = one covered colonnaded walkway within/around it."},
+ {q:"Which order is the most heavily decorated, with acanthus leaves?",o:["Doric","Ionic","Corinthian"],c:2,e:"Corinthian — the fanciest of the three."},
+ {q:"Contrapposto vs. Canon: which term describes a POSE?",o:["Contrapposto","Canon"],c:0,e:"Contrapposto = the weight-shift pose. Canon = the proportion system."},
+ {q:"Which period comes FIRST: Archaic or Hellenistic?",o:["Archaic","Hellenistic"],c:0,e:"Archaic (600\u2013480 BCE) comes long before Hellenistic (323\u201330 BCE)."},
+ {q:"Which sculpture is famous for MISSING its head and arms, yet still feels full of motion?",o:["Doryphoros","Nike of Samothrace","Seated Boxer"],c:1,e:"The Winged Victory of Samothrace — drapery and pose alone carry all the drama."},
+];
+
+const ESSAY_MAP = [
+ {case:1, prompt:"How does the site plan of the Athenian Agora reflect the social and political organization of ancient Athens?", work:"Athenian Agora"},
+ {case:1, prompt:"Discuss the significance of the Acropolis as a cultural and religious center in ancient Athens.", work:"The Acropolis"},
+ {case:2, prompt:"Compare and contrast the Anavysos Kouros with Egyptian sculptures from a similar period.", work:"Anavysos Kouros"},
+ {case:2, prompt:"Compare and contrast the portrayal of women (Peplos Kore) with depictions of men in ancient Greek art.", work:"Peplos Kore"},
+ {case:3, prompt:"The Doryphoros is an example of contrapposto. How does the artist achieve a sense of naturalism and movement?", work:"Doryphoros"},
+ {case:4, prompt:"Examine how the Niobides Krater's artist used visual storytelling to convey a narrative.", work:"Niobides Krater"},
+ {case:4, prompt:"Examine the cultural context of the Grave Stele of Hegeso as a memorial object.", work:"Grave Stele of Hegeso"},
+ {case:5, prompt:"Analyze the use of movement and drapery in the Winged Victory of Samothrace.", work:"Nike of Samothrace"},
+ {case:5, prompt:"Discuss how the Great Altar of Zeus and Athena reflects Hellenistic artistic innovations and political power.", work:"Pergamon Altar"},
+ {case:5, prompt:"Examine how the Seated Boxer challenges idealized representations of athletes in earlier Greek art.", work:"Seated Boxer"},
+];
+
+const CASES = [
+ {id:1, icon:"\u{1F3DB}\uFE0F", title:"Building the Scene", sub:"Greek Architecture", activities:[
+   {type:'flash', data:FLASH1},
+   {type:'wordbank', data:WORDBANK1},
+   {type:'acropolis', data:ACROPOLIS_MATCH},
+   {type:'mcq', data:MCQ1},
+ ]},
+ {id:2, icon:"\u{1F5FF}", title:"The Original Pose", sub:"Egypt \u2192 Archaic Greece", activities:[
+   {type:'flash', data:FLASH2},
+   {type:'compare', data:SPOT_STEAL},
+   {type:'mcq', data:MCQ2},
+ ]},
+ {id:3, icon:"\u{1F513}", title:"The Steal", sub:"Polykleitos & Contrapposto", activities:[
+   {type:'flash', data:FLASH3},
+   {type:'posebuild', data:POSE_MARKERS},
+   {type:'mcq', data:MCQ3},
+ ]},
+ {id:4, icon:"\u{1F3FA}", title:"The Getaway", sub:"Naturalism Spreads", activities:[
+   {type:'flash', data:FLASH4},
+   {type:'mcq', data:MCQ4},
+ ]},
+ {id:5, icon:"\u26A1", title:"Going Big", sub:"Hellenistic Drama", activities:[
+   {type:'flash', data:FLASH5},
+   {type:'compare', data:THEN_NOW},
+   {type:'mcq', data:MCQ5},
+ ]},
+];
+
+/* =========================================================
+   ENGINE
+   ========================================================= */
+const state = {
+ screen:'home',
+ caseId:null,
+ actIndex:0,
+ scores:{}, // caseId -> {correct,total}
+ bonusScore:null,
+ flashIdx:0,
+ flashFlip:false,
+ wbSelected:null,
+ wbFilled:{},
+ wbChecked:false,
+ acChecked:false,
+ mcqIdx:0,
+ mcqSelected:null,
+ mcqAnswered:{},
+ mcqCorrectCount:0,
+ acSelected:null,
+ acFilled:{},
+ evSame:false,
+ evDiff:false,
+ poseMarker:null,
+ poseReveal:false,
+ tlBank:[],
+ tlSlots:[],
+ tlSelected:null,
+ tlChecked:false,
+};
+
+function app(){return document.getElementById('app');}
+function esc(s){return s;} // content is authored, safe
+
+function badgeFor(caseId){
+ const s = state.scores[caseId];
+ if(!s) return {cls:'new', label:'UNOPENED'};
+ const pct = s.total ? s.correct/s.total : 0;
+ if(pct >= 0.8) return {cls:'gold', label:'GOLD \u2605 '+s.correct+'/'+s.total};
+ if(pct >= 0.5) return {cls:'silver', label:'SILVER \u2605 '+s.correct+'/'+s.total};
+ return {cls:'bronze', label:'BRONZE \u2605 '+s.correct+'/'+s.total};
+}
+
+function goHome(){ state.screen='home'; render(); window.scrollTo(0,0); }
+function openCase(id){
+ state.screen='case'; state.caseId=id; state.actIndex=0;
+ resetActivityState();
+ render(); window.scrollTo(0,0);
+}
+function openFinal(){ state.screen='final'; setupTimeline(); render(); window.scrollTo(0,0); }
+function openBonus(){ state.screen='bonus'; state.mcqIdx=0; state.mcqSelected=null; state.mcqAnswered={}; state.mcqCorrectCount=0; render(); window.scrollTo(0,0); }
+function openExtensions(){ state.screen='extensions'; render(); window.scrollTo(0,0); }
+
+function resetActivityState(){
+ state.flashIdx=0; state.flashFlip=false;
+ state.wbSelected=null; state.wbFilled={}; state.wbChecked=false;
+ state.acSelected=null; state.acFilled={}; state.acChecked=false;
+ state.mcqIdx=0; state.mcqSelected=null; state.mcqAnswered={}; state.mcqCorrectCount=0;
+ state.poseMarker=null; state.poseReveal=false;
+ state.evSame=false; state.evDiff=false;
+}
+
+function nextActivity(){
+ const c = CASES.find(x=>x.id===state.caseId);
+ if(state.actIndex < c.activities.length-1){
+   state.actIndex++; resetActivityState(); render(); window.scrollTo(0,0);
+ } else {
+   // case complete
+   state.screen='caseComplete'; render(); window.scrollTo(0,0);
+ }
+}
+function prevActivity(){
+ if(state.actIndex>0){ state.actIndex--; resetActivityState(); render(); window.scrollTo(0,0); }
+}
+
+function render(){
+ let html = topbarHTML();
+ if(state.screen==='home') html += homeHTML();
+ else if(state.screen==='case') html += caseHTML();
+ else if(state.screen==='caseComplete') html += caseCompleteHTML();
+ else if(state.screen==='final') html += finalHTML();
+ else if(state.screen==='bonus') html += bonusHTML();
+ else if(state.screen==='extensions') html += extensionsHTML();
+ html += `<footer class="foot">CASE FILE UNIT 2.3 &middot; ANCIENT GREEK ART &middot; REOPEN THIS FILE ANYTIME TO KEEP INVESTIGATING</footer>`;
+ app().innerHTML = html;
+}
+
+function flashHTML(data){
+ const card = data[state.flashIdx];
+ return `<div class="card">
+  <span class="activity-label">Flashcards &middot; Vocabulary</span>
+  <div class="flashwrap">
+   <div class="flashcount">Card ${state.flashIdx+1} of ${data.length}</div>
+   <div class="flashcard" onclick="flipFlash()" role="button" tabindex="0">
+    ${state.flashFlip
+      ? `<div class="fdef">${card.d}</div>`
+      : `<div class="fterm">${card.t}</div>`}
+    <span class="hint">${state.flashFlip? 'click to see term':'click to flip'}</span>
+   </div>
+   <div class="flash-nav">
+    <button onclick="flashStep(-1)" aria-label="Previous card">\u2190</button>
+    <span class="stamp-font" style="font-size:.8rem;color:var(--ink-soft)">${state.flashIdx+1}/${data.length}</span>
+    <button onclick="flashStep(1)" aria-label="Next card">\u2192</button>
+   </div>
+  </div>
+ </div>`;
+}
+function flipFlash(){ state.flashFlip=!state.flashFlip; render(); }
+function flashStep(dir){
+ const c = CASES.find(x=>x.id===state.caseId);
+ const data = c.activities[state.actIndex].data;
+ state.flashIdx = (state.flashIdx + dir + data.length) % data.length;
+ state.flashFlip=false; render();
+}
+
+function wordbankHTML(data){
+ const usedWords = Object.values(state.wbFilled);
+ const bank = data.bank.map(w=>{
+   const used = usedWords.includes(w);
+   const sel = state.wbSelected===w;
+   return `<button class="chip ${sel?'selected':''} ${used?'used':''}" onclick="wbSelectWord('${w.replace(/'/g,"\\'")}')" ${used?'disabled':''}>${w}</button>`;
+ }).join('');
+ const checked = state.wbChecked;
+ const slots = data.slots.map((s,i)=>{
+   const filled = state.wbFilled[i];
+   let cls='slot';
+   let content = filled ? filled : '<span style="opacity:.4">click a word\u2026</span>';
+   if(checked && filled){
+     cls += (filled===s.correct) ? ' correct' : ' wrong';
+     if(filled!==s.correct) content += ` <span class="answer-key">(correct: ${s.correct})</span>`;
+   } else if(filled){
+     cls += ' filled';
+   }
+   return `<div class="slot-row"><div class="slot-num">${s.n}</div><div class="${cls}" onclick="wbPlace(${i})">${content}</div></div>`;
+ }).join('');
+ return `<div class="card">
+  <span class="activity-label">Word Bank &middot; Label the Diagram</span>
+  <h3 style="margin-top:0">${data.title}</h3>
+  <p style="color:var(--ink-soft);margin-top:-6px">${data.instructions}</p>
+  <div class="diagram-wrap">${data.svg}</div>
+  <div class="bank">${bank}</div>
+  <div class="slots">${slots}</div>
+  <div class="btn-row">
+   <button class="btn laurel" onclick="wbCheck()">Check My Answers</button>
+   <button class="btn ghost" onclick="wbReset()">Reset</button>
+  </div>
+ </div>`;
+}
+function wbSelectWord(w){ state.wbSelected = state.wbSelected===w ? null : w; render(); }
+function wbPlace(i){
+ if(state.wbChecked) return;
+ if(state.wbSelected){
+   // if slot already filled, return that word to bank first
+   state.wbFilled[i]=state.wbSelected; state.wbSelected=null;
+ } else if(state.wbFilled[i]!==undefined){
+   delete state.wbFilled[i];
+ }
+ render();
+}
+function wbCheck(){ state.wbChecked=true; render(); }
+function wbReset(){ state.wbFilled={}; state.wbSelected=null; state.wbChecked=false; render(); }
+
+function compareHTML(data){
+ const sameOpen = state.evSame; const diffOpen = state.evDiff;
+ return `<div class="card">
+  <span class="activity-label">Evidence Review &middot; Compare</span>
+  <h3 style="margin-top:0">${data.title}</h3>
+  <div class="compare-grid">
+   <div class="compare-col"><h4>${data.left.name}</h4><ul>${data.left.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+   <div class="compare-col"><h4>${data.right.name}</h4><ul>${data.right.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+  </div>
+  <button class="evidence-toggle" onclick="toggleEv('same')"><span>\u{1F50D} ${data.sameLabel}</span><span>${sameOpen?'\u2212':'+'}</span></button>
+  <div class="evidence-panel ${sameOpen?'show':''}"><p>${data.sameText}</p></div>
+  <button class="evidence-toggle" onclick="toggleEv('diff')" style="margin-top:10px"><span>\u{1F50E} ${data.diffLabel}</span><span>${diffOpen?'\u2212':'+'}</span></button>
+  <div class="evidence-panel ${diffOpen?'show':''}"><p>${data.diffText}</p></div>
+ </div>`;
+}
+function toggleEv(which){
+ if(which==='same') state.evSame=!state.evSame; else state.evDiff=!state.evDiff;
+ render();
+}
+
+function poseSvg(curve){
+ // curve: 'straight' (Kouros) or 's' (Doryphoros)
+ if(curve==='straight'){
+   return `<svg viewBox="0 0 120 220" width="140">
+    <circle cx="60" cy="26" r="16" fill="none" stroke="#211A13" stroke-width="4"/>
+    <line x1="60" y1="42" x2="60" y2="95" stroke="#211A13" stroke-width="4"/>
+    <line x1="60" y1="55" x2="30" y2="90" stroke="#211A13" stroke-width="4"/>
+    <line x1="60" y1="55" x2="90" y2="90" stroke="#211A13" stroke-width="4"/>
+    <line x1="60" y1="95" x2="42" y2="160" stroke="#211A13" stroke-width="4"/>
+    <line x1="60" y1="95" x2="78" y2="160" stroke="#211A13" stroke-width="4"/>
+    <line x1="42" y1="160" x2="38" y2="205" stroke="#211A13" stroke-width="4"/>
+    <line x1="78" y1="160" x2="82" y2="205" stroke="#211A13" stroke-width="4"/>
+    <line x1="20" y1="95" x2="100" y2="95" stroke="#B5502E" stroke-width="2" stroke-dasharray="4,3"/>
+    <line x1="20" y1="55" x2="100" y2="55" stroke="#B5502E" stroke-width="2" stroke-dasharray="4,3"/>
+   </svg>`;
+ }
+ return `<svg viewBox="0 0 120 220" width="140">
+  <circle cx="68" cy="26" r="16" fill="none" stroke="#211A13" stroke-width="4"/>
+  <path d="M64,42 C55,65 68,80 60,95 C52,112 70,130 65,160" fill="none" stroke="#211A13" stroke-width="4"/>
+  <line x1="60" y1="53" x2="32" y2="80" stroke="#211A13" stroke-width="4"/>
+  <line x1="65" y1="58" x2="95" y2="50" stroke="#211A13" stroke-width="4"/>
+  <line x1="60" y1="95" x2="40" y2="158" stroke="#211A13" stroke-width="4"/>
+  <line x1="63" y1="98" x2="86" y2="150" stroke="#211A13" stroke-width="4"/>
+  <line x1="40" y1="158" x2="36" y2="205" stroke="#211A13" stroke-width="4"/>
+  <line x1="86" y1="150" x2="92" y2="200" stroke="#211A13" stroke-width="4"/>
+  <line x1="18" y1="50" x2="98" y2="58" stroke="#B5502E" stroke-width="2" stroke-dasharray="4,3"/>
+  <line x1="18" y1="98" x2="98" y2="90" stroke="#B5502E" stroke-width="2" stroke-dasharray="4,3"/>
+ </svg>`;
+}
+function poseHTML(markers){
+ const active = state.poseMarker;
+ const m = active!=null ? markers.find(x=>x.id===active) : null;
+ const btns = markers.map(mk=>`<button class="marker-btn ${active===mk.id?'active':''}" onclick="poseSelect(${mk.id})">${mk.id}</button>`).join('');
+ return `<div class="card">
+  <span class="activity-label">The Heist &middot; Build the Pose</span>
+  <h3 style="margin-top:0">Kouros vs. Doryphoros: Click each number to compare</h3>
+  <div class="pose-grid">
+   <div class="pose-col">
+    <h4>Kouros</h4><div class="tag">ARCHAIC &middot; RIGID</div>
+    ${poseSvg('straight')}
+   </div>
+   <div class="pose-col">
+    <h4>Doryphoros</h4><div class="tag">CLASSICAL &middot; CONTRAPPOSTO</div>
+    ${poseSvg('s')}
+   </div>
+  </div>
+  <div class="markers">${btns}</div>
+  <div class="pose-caption">
+   ${m ? `<b>${m.label}</b> &mdash; Kouros: ${m.k}<br><b>${m.label}</b> &mdash; Doryphoros: ${m.d}` : 'Click a number above to compare that body part in both statues.'}
+  </div>
+  <div class="btn-row" style="margin-top:14px">
+   <button class="btn gold" onclick="revealHeist()">\u{1F52C} Reveal the Heist</button>
+  </div>
+  <div class="heist-reveal ${state.poseReveal?'show':''}">
+   Polykleitos didn't invent a whole new body type &mdash; he <b>stole the rigidity right out of the Egyptian pose</b> that Greek sculptors had been copying for 150 years. He kept the idealized, youthful, athletic nude male body from the Kouros tradition, but let the weight actually shift onto one leg. That single move creates the S-curve, and the S-curve is what makes marble feel alive. <b>Every Classical and Hellenistic sculpture that moves, leans, or twists after this owes something to that one heist.</b>
+  </div>
+ </div>`;
+}
+function poseSelect(id){ state.poseMarker = state.poseMarker===id ? null : id; render(); }
+function revealHeist(){ state.poseReveal=true; render(); }
+
+function acropolisHTML(data){
+ const usedWords = Object.values(state.acFilled);
+ const bank = data.bank.map(w=>{
+   const used = usedWords.includes(w);
+   const sel = state.acSelected===w;
+   return `<button class="chip ${sel?'selected':''} ${used?'used':''}" onclick="acSelectWord('${w.replace(/'/g,"\\'")}')" ${used?'disabled':''}>${w}</button>`;
+ }).join('');
+ const checked = state.acChecked;
+ const tiles = data.items.map((it,i)=>{
+   const filled = state.acFilled[i];
+   let cls='slot'; let content = filled ? filled : '<span style="opacity:.4">click a name\u2026</span>';
+   if(checked && filled){
+     cls += (filled===it.correct) ? ' correct' : ' wrong';
+     if(filled!==it.correct) content += ` <span class="answer-key">(${it.correct})</span>`;
+   } else if(filled){ cls+=' filled'; }
+   return `<div style="text-align:center">
+     <div style="width:110px;height:100px;margin:0 auto 6px">${it.icon}</div>
+     <div class="${cls}" style="justify-content:center;min-width:120px" onclick="acPlace(${i})">${content}</div>
+     ${checked ? `<p style="font-size:.78rem;color:var(--ink-soft);max-width:150px;margin:6px auto 0">${it.note}</p>` : ''}
+   </div>`;
+ }).join('');
+ return `<div class="card">
+  <span class="activity-label">Word Bank &middot; Map It</span>
+  <h3 style="margin-top:0">${data.title}</h3>
+  <p style="color:var(--ink-soft);margin-top:-6px">${data.instructions}</p>
+  <div class="bank">${bank}</div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:16px">${tiles}</div>
+  <div class="btn-row">
+   <button class="btn laurel" onclick="acCheck()">Check My Answers</button>
+   <button class="btn ghost" onclick="acReset()">Reset</button>
+  </div>
+ </div>`;
+}
+function acSelectWord(w){ state.acSelected = state.acSelected===w ? null : w; render(); }
+function acPlace(i){
+ if(state.acChecked) return;
+ if(state.acSelected){ state.acFilled[i]=state.acSelected; state.acSelected=null; }
+ else if(state.acFilled[i]!==undefined){ delete state.acFilled[i]; }
+ render();
+}
+function acCheck(){ state.acChecked=true; render(); }
+function acReset(){ state.acFilled={}; state.acSelected=null; state.acChecked=false; render(); }
+
+function mcqHTML(data){
+ const q = data[state.mcqIdx];
+ const answered = state.mcqAnswered[state.mcqIdx];
+ const opts = q.o.map((opt,i)=>{
+   let cls='mcq-opt';
+   if(answered!==undefined){
+     cls += ' disabled';
+     if(i===q.c) cls+=' correct';
+     else if(i===answered) cls+=' wrong';
+     else cls+=' reveal';
+   }
+   return `<button class="${cls}" onclick="mcqSelect(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
+ }).join('');
+ const answeredCount = Object.keys(state.mcqAnswered).length;
+ return `<div class="card">
+  <span class="activity-label">Quick Check &middot; Multiple Choice</span>
+  <div class="mcq-progress"><span>Question ${state.mcqIdx+1} of ${data.length}</span><span>Score so far: ${state.mcqCorrectCount}/${answeredCount}</span></div>
+  <div class="mcq-q">${q.q}</div>
+  <div class="mcq-opts">${opts}</div>
+  <div class="mcq-explain ${answered!==undefined?'show':''}">${q.e}</div>
+  <div class="btn-row">
+   ${state.mcqIdx>0 ? `<button class="btn ghost" onclick="mcqStep(-1)">\u2190 Prev Question</button>` : ''}
+   ${state.mcqIdx<data.length-1 ? `<button class="btn ghost" onclick="mcqStep(1)" ${answered===undefined?'disabled':''}>Next Question \u2192</button>` : ''}
+  </div>
+ </div>`;
+}
+function currentQuizData(){
+ if(state.screen==='bonus') return BONUS_MCQ;
+ const c = CASES.find(x=>x.id===state.caseId);
+ return c.activities[state.actIndex].data;
+}
+function mcqSelect(i){
+ if(state.mcqAnswered[state.mcqIdx]!==undefined) return;
+ const data = currentQuizData();
+ const q = data[state.mcqIdx];
+ state.mcqAnswered[state.mcqIdx]=i;
+ if(i===q.c) state.mcqCorrectCount++;
+ if(state.screen==='case'){
+   state.scores[state.caseId] = {correct:state.mcqCorrectCount, total:Object.keys(state.mcqAnswered).length};
+ } else if(state.screen==='bonus'){
+   state.bonusScore = {correct:state.mcqCorrectCount, total:Object.keys(state.mcqAnswered).length};
+ }
+ render();
+}
+function mcqStep(dir){
+ const data = currentQuizData();
+ state.mcqIdx = Math.max(0, Math.min(data.length-1, state.mcqIdx+dir));
+ render();
+}
+
+function caseHTML(){
+ const c = CASES.find(x=>x.id===state.caseId);
+ const act = c.activities[state.actIndex];
+ const dots = c.activities.map((a,i)=>`<span class="${i<state.actIndex?'done':i===state.actIndex?'current':''}"></span>`).join('');
+ let body='';
+ if(act.type==='flash') body = flashHTML(act.data);
+ else if(act.type==='mcq') body = mcqHTML(act.data);
+ else if(act.type==='wordbank') body = wordbankHTML(act.data);
+ else if(act.type==='acropolis') body = acropolisHTML(act.data);
+ else if(act.type==='compare') body = compareHTML(act.data);
+ else if(act.type==='posebuild') body = poseHTML(act.data);
+
+ const isLast = state.actIndex === c.activities.length-1;
+ const nextLabel = isLast ? 'Finish Case File \u2192' : 'Next \u2192';
+ const nextDisabled = (act.type==='mcq' && Object.keys(state.mcqAnswered).length < act.data.length) ? 'disabled' : '';
+
+ return `<button class="btn ghost" onclick="goHome()" style="margin-bottom:14px">\u2190 Evidence Wall</button>
+ <div class="case-header">
+  <div class="icon-badge">${c.icon}</div>
+  <div>
+   <span class="sub">Case File 0${c.id}</span>
+   <h2>${c.title}</h2>
+  </div>
+ </div>
+ <div class="progress-dots">${dots}</div>
+ ${body}
+ <div class="btn-row">
+   ${state.actIndex>0 ? `<button class="btn ghost" onclick="prevActivity()">\u2190 Back</button>` : ''}
+   <button class="btn primary" onclick="nextActivity()" ${nextDisabled}>${nextLabel}</button>
+ </div>`;
+}
+
+function caseCompleteHTML(){
+ const c = CASES.find(x=>x.id===state.caseId);
+ const s = state.scores[c.id];
+ const b = badgeFor(c.id);
+ const medal = b.cls==='gold' ? '\u{1F3C6}' : b.cls==='silver' ? '\u{1F948}' : '\u{1F949}';
+ return `<div class="card complete-box">
+  <div class="medal">${medal}</div>
+  <h2>Case File 0${c.id} Closed</h2>
+  <p>${c.title} \u2014 evidence logged.</p>
+  ${s ? `<div class="score-pill">QUIZ SCORE: ${s.correct}/${s.total}</div>` : ''}
+  <div class="btn-row" style="justify-content:center">
+   <button class="btn ghost" onclick="openCase(${c.id})">\u21BB Review This Case Again</button>
+   <button class="btn primary" onclick="goHome()">Back to Evidence Wall</button>
+  </div>
+ </div>`;
+}
+
+function extensionsHTML(){
+ const essayRows = ESSAY_MAP.map(e=>`<tr><td>Case ${e.case}</td><td>${e.work}</td><td>${e.prompt}</td></tr>`).join('');
+ return `<button class="btn ghost" onclick="goHome()" style="margin-bottom:14px">\u2190 Evidence Wall</button>
+ <div class="case-header"><div class="icon-badge">\u{1F392}</div><div><span class="sub">Keep Investigating</span><h2>Take It Home</h2></div></div>
+ <div class="ext-list">
+  <div class="ext-item">
+   <div class="num">01</div>
+   <div><h4>Replay any case file</h4><p>This whole file works the same on any computer \u2014 come back tonight, redo a case you got a bronze on, and try to earn gold. Nothing saves automatically, so replaying is the way to improve your score.</p></div>
+  </div>
+  <div class="ext-item">
+   <div class="num">02</div>
+   <div><h4>Stakeout bonus round</h4><p>Finished early or want a harder challenge? <button class="btn ghost" style="padding:6px 12px;font-size:.8rem" onclick="openBonus()">Open Stakeout \u2192</button> It mixes up easily-confused vocabulary on purpose.</p></div>
+  </div>
+  <div class="ext-item">
+   <div class="num">03</div>
+   <div><h4>Curator Challenge (creative writing)</h4><p>Pick one artwork from the unit. Write a museum wall label OR a "WANTED" poster for it, covering <b>Form, Function, Content, and Context</b> \u2014 the same four categories in your workbook. Bonus points if you can explain where it fits in the contrapposto story.</p></div>
+  </div>
+  <div class="ext-item">
+   <div class="num">04</div>
+   <div><h4>Workbook essay connections</h4><p>Your workbook's discussion questions line up with these case files. Good picks for homework or a written response:</p>
+    <table class="map-table"><thead><tr><th>Case</th><th>Work</th><th>Prompt</th></tr></thead><tbody>${essayRows}</tbody></table>
+   </div>
+  </div>
+ </div>`;
+}
+
+function setupTimeline(){
+ state.tlBank = TIMELINE_ITEMS.map(x=>x.id).sort(()=>Math.random()-0.5);
+ state.tlSlots = new Array(TIMELINE_ITEMS.length).fill(null);
+ state.tlSelected = null; state.tlChecked=false;
+}
+function tlSelect(id){ if(state.tlChecked) return; state.tlSelected = state.tlSelected===id ? null : id; render(); }
+function tlPlace(i){
+ if(state.tlChecked) return;
+ if(state.tlSelected){ state.tlSlots[i]=state.tlSelected; state.tlSelected=null; }
+ else if(state.tlSlots[i]){ state.tlSlots[i]=null; }
+ render();
+}
+function tlCheck(){ state.tlChecked=true; render(); }
+function tlReset(){ setupTimeline(); render(); }
+
+function finalHTML(){
+ const usedIds = state.tlSlots.filter(Boolean);
+ const bank = state.tlBank.filter(id=>!usedIds.includes(id)).map(id=>{
+   const item = TIMELINE_ITEMS.find(x=>x.id===id);
+   const sel = state.tlSelected===id;
+   return `<button class="tl-chip ${sel?'selected':''}" style="${sel?'background:var(--gold-light)':''}" onclick="tlSelect('${id}')">${item.label}</button>`;
+ }).join('');
+ const allFilled = state.tlSlots.every(Boolean);
+ const slots = state.tlSlots.map((id,i)=>{
+   const item = id ? TIMELINE_ITEMS.find(x=>x.id===id) : null;
+   let cls='tl-slot';
+   if(state.tlChecked && id){
+     cls += (TIMELINE_ITEMS[i].id===id) ? ' correct' : ' wrong';
+   }
+   return `<div class="${cls}" onclick="tlPlace(${i})"><span class="n">${i+1}.</span> ${item? item.label : '<span style="opacity:.4">click a card above\u2026</span>'}</div>`;
+ }).join('');
+ const correctCount = state.tlChecked ? state.tlSlots.filter((id,i)=>id===TIMELINE_ITEMS[i].id).length : 0;
+
+ let out = `<button class="btn ghost" onclick="goHome()" style="margin-bottom:14px">\u2190 Evidence Wall</button>
+ <div class="case-header">
+  <div class="icon-badge">\u{1F4CB}</div>
+  <div><span class="sub">Case Closed</span><h2>Line Up the Timeline</h2></div>
+ </div>
+ <div class="card">
+  <span class="activity-label">Final Review &middot; Chronology</span>
+  <p>Click a card, then click the numbered slot where it belongs &mdash; earliest at the top. This is the whole heist story, start to finish.</p>
+  <div class="timeline-bank">${bank || '<span style="color:var(--ink-soft);font-size:.85rem">All cards placed \u2014 hit Check!</span>'}</div>
+  <div class="tl-slots">${slots}</div>
+  <div class="btn-row">
+   <button class="btn laurel" onclick="tlCheck()" ${allFilled?'':'disabled'}>Check the Timeline</button>
+   <button class="btn ghost" onclick="tlReset()">Reset</button>
+  </div>
+  ${state.tlChecked ? `<div class="mcq-explain show" style="margin-top:18px">
+     <b>${correctCount} of ${TIMELINE_ITEMS.length} in the right spot.</b>
+     <div style="margin-top:10px">${TIMELINE_ITEMS.map(it=>`<div style="margin-bottom:8px"><b>${it.label}</b> \u2014 ${it.note}</div>`).join('')}</div>
+   </div>` : ''}
+ </div>`;
+
+ if(state.tlChecked && correctCount===TIMELINE_ITEMS.length){
+   out += certificateHTML();
+ }
+ return out;
+}
+
+function certificateHTML(){
+ return `<div class="card">
+  <div class="certificate">
+   <div class="eyebrow">Unit 2.3 &middot; Ancient Greek Art</div>
+   <h2>Case Closed</h2>
+   <div class="seal-final">\u{1F3FA}</div>
+   <p>This certifies that</p>
+   <div class="name-line"><input type="text" placeholder="detective's name" id="certName"></div>
+   <p>successfully traced the Contrapposto Heist from Egypt through the Hellenistic world,<br>and cracked every case file in Unit 2.3.</p>
+  </div>
+  <div class="btn-row" style="justify-content:center">
+   <button class="btn primary" onclick="window.print()">\u{1F5A8}\uFE0F Print / Save Certificate</button>
+   <button class="btn ghost" onclick="openExtensions()">Take It Home \u2192</button>
+  </div>
+ </div>`;
+}
+
+function bonusHTML(){
+ const allAnswered = Object.keys(state.mcqAnswered).length >= BONUS_MCQ.length;
+ let html = `<button class="btn ghost" onclick="goHome()" style="margin-bottom:14px">\u2190 Evidence Wall</button>
+ <div class="case-header">
+  <div class="icon-badge">\u{1F575}\uFE0F</div>
+  <div><span class="sub">Bonus Round</span><h2>Stakeout</h2></div>
+ </div>
+ <p style="color:var(--ink-soft)">These questions mix up commonly-confused terms on purpose. Slow down and read carefully!</p>
+ ${mcqHTML(BONUS_MCQ)}`;
+ if(allAnswered){
+   html += `<div class="card complete-box">
+    <div class="medal">\u{1F575}\uFE0F</div>
+    <h2>Stakeout Complete</h2>
+    <div class="score-pill">FINAL SCORE: ${state.bonusScore.correct}/${state.bonusScore.total}</div>
+    <div class="btn-row" style="justify-content:center"><button class="btn primary" onclick="goHome()">Back to Evidence Wall</button></div>
+   </div>`;
+ }
+ return html;
+}
+
+function homeHTML(){
+ const folders = CASES.map(c=>{
+   const b = badgeFor(c.id);
+   return `<button class="folder" onclick="openCase(${c.id})">
+     <span class="pin"></span>
+     <span class="num">CASE FILE 0${c.id}</span>
+     <span class="icon">${c.icon}</span>
+     <h3>${c.title}</h3>
+     <span class="sub">${c.sub}</span>
+     <span class="stamp ${b.cls}">${b.label}</span>
+   </button>`;
+ }).join('');
+ return `<div class="corkboard">
+  <div class="hero-line">
+   <div class="eyebrow">Detective Briefing</div>
+   <h2>Someone stole a 3,000-year-old pose.</h2>
+   <p>Egyptian sculptors invented it. Greek sculptors copied it. Then one man broke it wide open &mdash; and set off a chain reaction that runs through the entire rest of Greek art. Work the five case files below (any order, your pace) to crack it. Finish them all, then head to <b>Case Closed</b> to line up the whole timeline.</p>
+  </div>
+  <div class="thread">${folders}</div>
+  <div class="extra-row">
+   <button class="extra-card" style="text-align:left" onclick="openFinal()">
+    <h4>\u{1F4CB} Case Closed &mdash; Final Review</h4>
+    <p>Put the whole 1000-year story in order and pick up your case-closed certificate.</p>
+    <span class="btn primary" style="pointer-events:none">Open File \u2192</span>
+   </button>
+   <button class="extra-card" style="text-align:left" onclick="openBonus()">
+    <h4>\u{1F575}\uFE0F Stakeout &mdash; Bonus Round</h4>
+    <p>Trickier questions mixing up easily-confused terms. Great for early finishers.</p>
+    <span class="btn ghost" style="pointer-events:none">Start Stakeout \u2192</span>
+   </button>
+  </div>
+ </div>`;
+}
+
+function topbarHTML(){
+ return `<div class="topbar">
+  <div class="brand">
+   <div class="seal">\u{1F3FA}</div>
+   <div>
+    <div class="kicker">Unit 2.3 &middot; Case Files</div>
+    <h1>The Contrapposto Heist</h1>
+   </div>
+  </div>
+  <nav>
+   <button class="${state.screen==='home'?'active':''}" onclick="goHome()">Evidence Wall</button>
+   <button class="${state.screen==='extensions'?'active':''}" onclick="openExtensions()">Take It Home</button>
+  </nav>
+ </div>`;
+}
+
+render();
+</script>
+</body>
+</html>

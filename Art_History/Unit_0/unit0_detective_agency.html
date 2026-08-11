@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 0 Case Files — Art History Detective Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430; --ink2:#232E3D; --ink3:#2C3849;
+    --manila:#E8D9B5; --manila-dark:#D8C79A;
+    --red:#B23A2F; --red-dark:#8C2C22;
+    --brass:#C9A227; --teal:#3E6C6B; --charcoal:#2A2E35; --cream:#F3ECDD;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(1200px 800px at 20% -10%, #26324490, transparent),
+                repeating-linear-gradient(0deg, #1B2430 0px, #1B2430 2px, #1A2330 2px, #1A2330 4px), var(--ink);
+    color:var(--cream); font-family:'Lora', serif; min-height:100vh;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:20px 16px 60px;}
+  .letterhead{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; border-bottom:3px double var(--brass); padding-bottom:12px; margin-bottom:14px; flex-wrap:wrap;}
+  .letterhead h1{font-family:'Special Elite', monospace; font-size:clamp(20px,4vw,32px); letter-spacing:1px; margin:0; color:var(--cream);}
+  .letterhead .sub{font-family:'Courier Prime', monospace; font-size:12px; color:var(--brass); letter-spacing:2px; text-transform:uppercase;}
+  .objective{font-family:'Courier Prime', monospace; font-size:11px; color:#9fb2a8; text-align:right; max-width:260px; line-height:1.5;}
+  .tabs{display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:18px;}
+  .tab{flex:0 0 auto; font-family:'Special Elite', monospace; font-size:12px; background:var(--ink3); color:var(--cream); border:1px solid #3a4a5f; border-bottom:none; padding:10px 14px 8px; border-radius:8px 8px 0 0; cursor:pointer; position:relative; white-space:nowrap; opacity:.75;}
+  .tab.active{background:var(--manila); color:var(--charcoal); opacity:1;}
+  .tab .stamp{color:var(--red); margin-left:6px; font-weight:bold;}
+  .tab.active .stamp{color:var(--red-dark);}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fadeIn .35s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .folder{background:var(--manila); color:var(--charcoal); border-radius:4px; box-shadow:var(--shadow); padding:26px 26px 22px; position:relative; border:1px solid var(--manila-dark);}
+  .folder::before{content:""; position:absolute; top:-10px; left:24px; width:120px; height:16px; background:var(--manila); border-radius:6px 6px 0 0; border:1px solid var(--manila-dark); border-bottom:none;}
+  .case-tag{font-family:'Courier Prime', monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--red-dark); border:1.5px solid var(--red-dark); display:inline-block; padding:2px 8px; transform:rotate(-2deg); margin-bottom:10px;}
+  h2.case-title{font-family:'Special Elite', monospace; font-size:clamp(20px,3.4vw,28px); margin:0 0 10px; color:var(--charcoal);}
+  h3.sub-title{font-family:'Special Elite', monospace; font-size:16px; margin:18px 0 8px; color:var(--red-dark);}
+  p{line-height:1.65; margin:0 0 12px;}
+  .brief{font-size:15px;}
+  .hint{font-size:12.5px; color:#5b5140; font-style:italic;}
+  .btn{font-family:'Courier Prime', monospace; font-weight:700; font-size:13px; letter-spacing:.5px; text-transform:uppercase; background:var(--charcoal); color:var(--cream); border:none; padding:11px 18px; border-radius:3px; cursor:pointer; transition:transform .12s ease, background .2s ease;}
+  .btn:hover{background:var(--red-dark); transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.secondary{background:transparent; color:var(--charcoal); border:1.5px solid var(--charcoal);}
+  .btn.secondary:hover{background:var(--charcoal); color:var(--cream);}
+  .btn.small{padding:7px 12px; font-size:11px;}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; align-items:center;}
+
+  /* Case: Lineup */
+  .exhibits{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin:16px 0;}
+  .exhibit{background:var(--cream); border:1px solid var(--manila-dark); border-radius:6px; padding:14px 10px 12px; text-align:center; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
+  .exhibit:hover{transform:translateY(-3px); box-shadow:0 6px 14px rgba(0,0,0,.18);}
+  .exhibit.picked{outline:3px solid var(--red-dark);}
+  .exhibit svg{width:60px; height:60px;}
+  .exhibit .ex-label{font-family:'Courier Prime',monospace; font-size:11px; margin-top:8px; color:#4a4436;}
+  .exhibit .ex-name{font-weight:700; font-size:12px; margin-top:2px;}
+  .vote-bar-wrap{margin-top:6px; height:10px; background:#d9cba0; border-radius:5px; overflow:hidden;}
+  .vote-bar{height:100%; background:var(--teal); width:0%; transition:width .5s ease;}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;}
+  .chip{font-family:'Courier Prime', monospace; font-size:12.5px; border:1.5px solid var(--charcoal); border-radius:20px; padding:6px 12px; cursor:pointer; background:var(--cream);}
+  .chip.selected{background:var(--brass); border-color:var(--brass); color:#2a2200;}
+
+  /* Case: Sort evidence */
+  .clue-card{background:var(--cream); border:1px solid var(--manila-dark); padding:18px; border-radius:6px; font-family:'Special Elite',monospace; font-size:16px; margin:14px 0; text-align:center; min-height:60px; display:flex; align-items:center; justify-content:center;}
+  .cat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;}
+  .cat-btn{font-family:'Courier Prime',monospace; font-weight:700; font-size:12px; padding:12px 6px; border-radius:6px; border:2px solid var(--charcoal); background:var(--cream); cursor:pointer; text-transform:uppercase;}
+  .cat-btn.form{border-color:#7a4b8f;} .cat-btn.content{border-color:var(--teal);}
+  .cat-btn.context{border-color:var(--brass);} .cat-btn.function{border-color:var(--red-dark);}
+  .cat-btn:hover{background:var(--charcoal); color:#fff;}
+  .feedback{font-family:'Courier Prime',monospace; font-size:13px; margin-top:10px; min-height:20px; font-weight:700;}
+  .feedback.good{color:#1e6b3a;} .feedback.bad{color:var(--red-dark);}
+  .progress-wrap{height:10px;background:#d9cba0;border-radius:5px;overflow:hidden;margin:12px 0;}
+  .progress-bar{height:100%;background:var(--red-dark);width:0%;transition:width .4s ease;}
+
+  /* Case: Toolkit */
+  .term-grid{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0;}
+  .term-chip{font-family:'Courier Prime',monospace; font-size:12px; font-weight:700; border:1.5px solid var(--charcoal); border-radius:6px; padding:8px 10px; cursor:pointer; background:var(--cream);}
+  .term-chip[data-bucket="element"]{background:#cfe3df; border-color:var(--teal);}
+  .term-chip[data-bucket="principle"]{background:#f0dcae; border-color:var(--brass);}
+  .mcq{margin:14px 0; padding:14px; background:var(--cream); border-radius:6px; border:1px solid var(--manila-dark);}
+  .mcq[data-locked="1"] .opt{cursor:default;}
+  .mcq p.q{font-weight:700; margin-bottom:8px;}
+  .mcq .opt{display:block; width:100%; text-align:left; margin:5px 0; font-family:'Lora',serif; font-size:14px; padding:8px 12px; border:1px solid var(--charcoal); border-radius:5px; background:#fff; cursor:pointer;}
+  .mcq .opt.correct{background:#cdeccd; border-color:#1e6b3a;}
+  .mcq .opt.wrong{background:#f2d0cd; border-color:var(--red-dark);}
+
+  /* Case: Credit line */
+  .cl-pool{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+  .cl-chip{font-family:'Courier Prime',monospace; font-size:12px; background:var(--cream); border:1.5px solid var(--charcoal); border-radius:5px; padding:8px 10px; cursor:pointer;}
+  .cl-chip.used{opacity:.3; cursor:not-allowed;}
+  .cl-slots{background:#fff; border:2px dashed var(--manila-dark); border-radius:6px; padding:14px; min-height:56px; font-family:'Courier Prime',monospace; font-size:13px; margin:10px 0; line-height:1.8;}
+  .cl-result{font-family:'Lora',serif; font-style:italic; background:#fff; border-left:4px solid var(--brass); padding:12px 14px; margin-top:14px; display:none;}
+  .cl-result.show{display:block;}
+
+  /* Vocab matching */
+  .match-wrap{display:flex; gap:22px; flex-wrap:wrap; margin:14px 0;}
+  .match-col{flex:1 1 260px; display:flex; flex-direction:column; gap:8px;}
+  .match-col-title{font-family:'Courier Prime',monospace; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#5b5140;}
+  .match-tile{background:var(--cream); border:1.5px solid var(--charcoal); border-radius:6px; padding:10px 12px; font-size:13.5px; cursor:pointer; transition:background .15s;}
+  .match-tile.term{font-family:'Special Elite',monospace; font-size:13px;}
+  .match-tile.selected{background:var(--brass); border-color:var(--brass);}
+  .match-tile.matched{background:#cdeccd; border-color:#1e6b3a; opacity:.6; cursor:default;}
+  .match-tile.wrongflash{background:#f2d0cd !important; border-color:var(--red-dark) !important;}
+  .match-status{font-family:'Courier Prime',monospace; font-size:13px; font-weight:700; margin-top:10px;}
+
+  /* Gentileschi briefing */
+  .fact-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin:14px 0;}
+  .fact-card{background:#fff; border-left:4px solid var(--teal); padding:10px 12px; border-radius:4px; font-size:13px;}
+  .fact-card b{color:var(--red-dark);}
+
+  /* Extensions / cram */
+  .flash-stage{background:#fff; border:1px solid var(--manila-dark); border-radius:8px; min-height:140px; display:flex; align-items:center; justify-content:center; text-align:center; padding:20px; cursor:pointer; margin:14px 0;}
+  .flash-stage .fc-label{font-family:'Courier Prime',monospace; font-size:10px; text-transform:uppercase; letter-spacing:2px; color:#9a8c66; position:absolute; top:10px; left:14px;}
+  .flash-stage-wrap{position:relative;}
+  .flash-stage .fc-text{font-family:'Special Elite',monospace; font-size:17px;}
+  .flash-stage.back .fc-text{font-family:'Lora',serif; font-size:14.5px;}
+  .cram-controls{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:14px 0;}
+  .timer-badge{font-family:'Courier Prime',monospace; font-weight:700; background:var(--red-dark); color:#fff; padding:6px 12px; border-radius:5px; display:none;}
+  .cram-score{font-family:'Courier Prime',monospace; font-weight:700; font-size:13px;}
+  .cram-sheet{background:#fff; border:1px solid var(--manila-dark); border-radius:6px; padding:16px 18px; margin-top:18px;}
+  .cram-sheet h4{font-family:'Special Elite',monospace; color:var(--red-dark); margin:14px 0 6px; font-size:14px;}
+  .cram-sheet ul{margin:0 0 8px 18px; padding:0; font-size:13px; line-height:1.6;}
+
+  /* Case 7: Suspect board & evidence locker */
+  .suspect-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:14px 0;}
+  .suspect-card{background:#fff; border:1.5px solid var(--charcoal); border-radius:8px; padding:12px 14px; position:relative;}
+  .suspect-card.eliminated{opacity:.4;}
+  .suspect-card.eliminated::after{content:"CLEARED"; position:absolute; top:8px; right:8px; font-family:'Courier Prime',monospace; font-size:9px; color:var(--red-dark); border:1px solid var(--red-dark); padding:1px 5px; transform:rotate(-6deg);}
+  .suspect-name{font-family:'Special Elite',monospace; font-size:14px; font-weight:bold;}
+  .suspect-tag{font-family:'Courier Prime',monospace; font-size:10.5px; color:var(--teal); text-transform:uppercase; margin-bottom:6px;}
+  .suspect-bio{font-size:12.5px; line-height:1.5; margin-bottom:8px;}
+  .alibi-tag{font-family:'Courier Prime',monospace; font-size:11px; color:var(--red-dark); font-weight:bold;}
+  .evidence-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:14px 0;}
+  .eslot{background:#fff; border:1.5px dashed var(--manila-dark); border-radius:6px; padding:10px 12px; font-size:12.5px; min-height:70px;}
+  .eslot.revealed{border-style:solid; border-color:#1e6b3a; background:#eef8ee;}
+  .eslot-num{font-family:'Courier Prime',monospace; font-size:10px; letter-spacing:1px; color:#8a7d5c; margin-bottom:4px;}
+  .eslot-lock{font-family:'Special Elite',monospace; margin-bottom:6px; font-size:13px;}
+  .eslot-text{font-family:'Lora',serif;}
+  .case7-flavor{font-family:'Courier Prime',monospace; font-size:12px; color:#5b5140; margin:4px 0 14px;}
+
+  /* Finale */
+  .corkboard{background:#5b4632; border-radius:8px; padding:30px 20px; position:relative; box-shadow: inset 0 0 60px rgba(0,0,0,.4); margin:16px 0 20px; min-height:260px;}
+  .pin-card{position:absolute; width:130px; background:var(--cream); color:var(--charcoal); padding:14px 10px 10px; border-radius:2px; box-shadow:0 6px 14px rgba(0,0,0,.4); font-family:'Special Elite',monospace; font-size:12px; text-align:center;}
+  .pin-card::before{content:""; position:absolute; top:-7px; left:50%; transform:translateX(-50%); width:12px; height:12px; border-radius:50%; background:var(--red); box-shadow:0 2px 3px rgba(0,0,0,.5);}
+  .pc1{top:10px; left:6%;} .pc2{top:10px; left:56%;} .pc3{top:150px; left:6%;} .pc4{top:150px; left:56%;}
+  .badge{text-align:center; font-family:'Special Elite',monospace; font-size:20px; color:var(--brass); margin:10px 0 4px; letter-spacing:1px;}
+  .score-line{text-align:center; font-family:'Courier Prime',monospace; font-size:13px; color:#cbb98a;}
+  textarea{width:100%; min-height:90px; font-family:'Lora',serif; font-size:14px; border:1px solid var(--manila-dark); border-radius:6px; padding:10px; resize:vertical;}
+  .stamp-graphic{display:inline-block; font-family:'Special Elite',monospace; font-size:13px; color:var(--red-dark); border:2px solid var(--red-dark); padding:4px 10px; transform:rotate(-4deg); border-radius:4px; margin-left:10px;}
+  footer.note{text-align:center; font-family:'Courier Prime',monospace; font-size:11px; color:#7c8ba0; margin-top:26px;}
+
+  @media (max-width:640px){
+    .letterhead{flex-direction:column; align-items:flex-start;}
+    .objective{text-align:left;}
+    .pc2{left:6%; top:150px;} .pc4{left:56%; top:290px;} .pc1{left:56%;} .corkboard{min-height:360px;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="letterhead">
+    <div>
+      <div class="sub">Art History Detective Agency</div>
+      <h1>UNIT 0 CASE FILE</h1>
+    </div>
+    <div class="objective">HS1.VA.R3.A — Establish relevant criteria and apply them to an evaluation of a work of art.<br>Objective: I will establish evaluation criteria and apply them to artwork.</div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-panel="intro">Briefing</button>
+    <button class="tab" data-panel="case1">Vocab Vault <span class="stamp" id="stamp1"></span></button>
+    <button class="tab" data-panel="case2">Lineup <span class="stamp" id="stamp2"></span></button>
+    <button class="tab" data-panel="case3">Sort Evidence <span class="stamp" id="stamp3"></span></button>
+    <button class="tab" data-panel="case4">Toolkit <span class="stamp" id="stamp4"></span></button>
+    <button class="tab" data-panel="case5">Gentileschi File <span class="stamp" id="stamp5"></span></button>
+    <button class="tab" data-panel="case6">Credit Line <span class="stamp" id="stamp6"></span></button>
+    <button class="tab" data-panel="case7">The Unsigned Canvas <span class="stamp" id="stamp7"></span></button>
+    <button class="tab" data-panel="extend">The Night Before</button>
+    <button class="tab" data-panel="finale">Close the Case</button>
+  </div>
+
+  <!-- INTRO -->
+  <div class="panel active" id="panel-intro">
+    <div class="folder">
+      <span class="case-tag">Case #0000 — Open</span>
+      <h2 class="case-title">Welcome back, Investigator.</h2>
+      <p class="brief">Six open cases stand between you and a closed file. Every case pulls its questions from a bigger evidence pool than last time — so your screen, your partner's screen, and tomorrow's re-run will all look a little different. Solve solo, in pairs, or as a class.</p>
+      <ul class="brief">
+        <li><strong>Vocab Vault:</strong> match key terms to their definitions — reshuffles every round.</li>
+        <li><strong>The Lineup:</strong> what actually makes art "good"?</li>
+        <li><strong>Sort the Evidence:</strong> Form, Content, Context, or Function — draws a fresh batch of clues each time.</li>
+        <li><strong>The Detective's Toolkit:</strong> Elements of Art &amp; Principles of Design.</li>
+        <li><strong>The Gentileschi File:</strong> a real case study — Artemisia Gentileschi and <em>Judith Slaying Holofernes</em>.</li>
+        <li><strong>Write the Credit Line:</strong> ID an artwork correctly (the exhibit changes every time).</li>
+      </ul>
+      <p class="brief"><strong>Bonus Case #0007 — The Unsigned Canvas:</strong> once you've got your bearings, try the replayable deduction mystery. Answer questions to unlock real evidence, cross suspects off the board, and accuse the culprit. New suspects and a new culprit every time you play — this one never runs out.</p>
+      <p class="brief">Finished everything the night before the test? Head to <strong>The Night Before</strong> for an endless randomized practice-test generator, flashcards, and a printable cram sheet.</p>
+      <div class="btn-row"><button class="btn" onclick="goTo('case1')">Open Case 1 →</button></div>
+    </div>
+  </div>
+
+  <!-- CASE 1: VOCAB VAULT -->
+  <div class="panel" id="panel-case1">
+    <div class="folder">
+      <span class="case-tag">Case #0001</span>
+      <h2 class="case-title">The Vocab Vault</h2>
+      <p class="brief">Every locked term below hides a definition in the safe on the right. Click a term, then click the definition you think unlocks it. Wrong pairs flash red and reset — no penalty, just try again.</p>
+      <div class="match-wrap">
+        <div class="match-col">
+          <div class="match-col-title">Terms</div>
+          <div id="termCol"></div>
+        </div>
+        <div class="match-col">
+          <div class="match-col-title">Definitions</div>
+          <div id="defCol"></div>
+        </div>
+      </div>
+      <div class="match-status" id="matchStatus">0 / 8 matched</div>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="startVocabRound()">New Round (different terms)</button>
+        <button class="btn" onclick="finishCase(1)">File This Case ✔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 2: LINEUP -->
+  <div class="panel" id="panel-case2">
+    <div class="folder">
+      <span class="case-tag">Case #0002</span>
+      <h2 class="case-title">The Lineup</h2>
+      <p class="brief">A rotating set of exhibits, one question the Agency has never fully settled: <em>which piece is "the best," and why?</em> Pick the exhibit you'd defend in front of the whole department.</p>
+      <div class="exhibits" id="exhibits"></div>
+      <p class="hint" id="voteHint">Tap an exhibit to cast your vote.</p>
+      <div id="afterVote" style="display:none;">
+        <p class="brief"><strong>Here's the twist:</strong> there is no correct answer on this page — a good detective states their criteria <em>before</em> passing judgment. Pick up to 3 criteria you'd actually use to evaluate a work of art:</p>
+        <div class="chips" id="criteriaChips"></div>
+        <p class="hint">Discuss: who assigns value to art? Where does that value come from? Does everyone need to agree?</p>
+        <div class="btn-row"><button class="btn" onclick="finishCase(2)">File This Case ✔</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 3: SORT EVIDENCE -->
+  <div class="panel" id="panel-case3">
+    <div class="folder">
+      <span class="case-tag">Case #0003</span>
+      <h2 class="case-title">Sort the Evidence</h2>
+      <p class="brief">Every question a detective asks about a work of art falls into one of four files: <strong>Form</strong> (how it looks), <strong>Content</strong> (what it shows), <strong>Context</strong> (who/where/when), or <strong>Function</strong> (why it was made). File each clue correctly. This round pulls 12 random clues from a pool of 28.</p>
+      <p class="case7-flavor" id="c3flavor"></p>
+      <div class="progress-wrap"><div class="progress-bar" id="c3progress"></div></div>
+      <div class="clue-card" id="clueCard">Loading evidence…</div>
+      <div class="cat-grid">
+        <button class="cat-btn form" onclick="answerClue('form')">Form</button>
+        <button class="cat-btn content" onclick="answerClue('content')">Content</button>
+        <button class="cat-btn context" onclick="answerClue('context')">Context</button>
+        <button class="cat-btn function" onclick="answerClue('function')">Function</button>
+      </div>
+      <div class="feedback" id="c3feedback"></div>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="startCase3()">New Batch of Evidence</button>
+        <button class="btn" id="c3finishBtn" onclick="finishCase(3)" style="display:none;">File This Case ✔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 4: TOOLKIT -->
+  <div class="panel" id="panel-case4">
+    <div class="folder">
+      <span class="case-tag">Case #0004</span>
+      <h2 class="case-title">The Detective's Toolkit</h2>
+      <p class="brief"><strong>Round A — Ingredients or Recipe?</strong> The Elements of Art are the raw ingredients. The Principles of Design are the recipe. Tap each term to cycle it into the right bucket, then check.</p>
+      <div class="term-grid" id="termGrid"></div>
+      <div class="btn-row"><button class="btn secondary" onclick="checkRoundA()">Check My Sort</button></div>
+      <p class="feedback" id="roundAFeedback"></p>
+
+      <div id="roundBWrap" style="display:none; margin-top:18px;">
+        <h3 class="sub-title">Round B — Case Files</h3>
+        <p class="brief">6 random questions pulled from a pool of 14, definitions straight from your notes.</p>
+        <div id="roundB"></div>
+        <p class="cram-score" id="roundBScore"></p>
+        <div class="btn-row"><button class="btn secondary" onclick="renderRoundB()">Shuffle New Questions</button></div>
+
+        <h3 class="sub-title">Round C — Field Application</h3>
+        <p class="brief">No definitions this time — spot the Element or Principle at work in a real-world scenario. 5 random questions from a pool of 10.</p>
+        <div id="roundC"></div>
+        <p class="cram-score" id="roundCScore"></p>
+        <div class="btn-row">
+          <button class="btn secondary" onclick="renderRoundC()">Shuffle New Scenarios</button>
+          <button class="btn" onclick="finishCase(4)" id="finishCase4Btn" disabled>File This Case ✔</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 5: GENTILESCHI FILE -->
+  <div class="panel" id="panel-case5">
+    <div class="folder">
+      <span class="case-tag">Case #0005 — Judith File</span>
+      <h2 class="case-title">The Gentileschi File</h2>
+      <p class="brief">1612–1620: Baroque painter Artemisia Gentileschi returns to the same subject more than once — Judith, a widow who saves her besieged city by beheading the enemy general Holofernes, with help from her maidservant. Compare that to Caravaggio's more restrained version, and to Kehinde Wiley's 2012 reinterpretation with a Black woman in Judith's role.</p>
+      <div class="fact-grid">
+        <div class="fact-card"><b>Content</b> — a biblical widow beheads an enemy general to save her city.</div>
+        <div class="fact-card"><b>Form</b> — dramatic Value contrast (tenebrism) and a diagonal Movement through the composition.</div>
+        <div class="fact-card"><b>Context</b> — Baroque Italy; Gentileschi trained under her father Orazio and survived a widely documented assault and trial as a young woman, which many historians connect (as one interpretation, not the only one) to the force in her Judith paintings.</div>
+        <div class="fact-card"><b>Function</b> — biblical heroines like Judith were often commissioned to symbolize courage and virtue.</div>
+      </div>
+      <h3 class="sub-title">Compare the Versions</h3>
+      <p class="brief">Match each version of the story to what makes it distinct. Style — the "consistent, coherent way" an artist combines elements — is what separates all of these.</p>
+      <div class="match-wrap">
+        <div class="match-col"><div class="match-col-title">Version</div><div id="vTermCol"></div></div>
+        <div class="match-col"><div class="match-col-title">What Makes It Distinct</div><div id="vDefCol"></div></div>
+      </div>
+      <div class="match-status" id="vMatchStatus">0 / 4 matched</div>
+      <div class="btn-row"><button class="btn secondary" onclick="startVersionsMatch()">New Comparison</button></div>
+
+      <h3 class="sub-title">Case Quiz — 6 random questions from a pool of 14</h3>
+      <div id="judithQuiz"></div>
+      <p class="cram-score" id="judithScoreLine"></p>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="renderJudith()">New Questions</button>
+        <button class="btn" onclick="finishCase(5)" id="finishCase5Btn" disabled>File This Case ✔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASE 6: CREDIT LINE -->
+  <div class="panel" id="panel-case6">
+    <div class="folder">
+      <span class="case-tag" id="case6tag">Case #0006</span>
+      <h2 class="case-title">Write the Credit Line</h2>
+      <p class="brief">Format: <span style="font-family:'Courier Prime',monospace;font-size:13px;">Artist Name (Birth–Death). "Title". Date Created. Material. Dimensions. Current Location.</span></p>
+      <p class="brief">Click the six scrambled facts below <strong>in the correct order</strong>. The exhibit changes every time you open this case.</p>
+      <div class="cl-pool" id="clPool"></div>
+      <div class="cl-slots" id="clSlots">Click chips above to build the line…</div>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="resetCL()">Reset</button>
+        <button class="btn secondary" onclick="startCase6(true)">Try a Different Exhibit</button>
+        <button class="btn" onclick="checkCL()">Check My Credit Line</button>
+      </div>
+      <div class="cl-result" id="clResult"></div>
+      <div class="btn-row"><button class="btn" onclick="finishCase(6)">File This Case ✔</button></div>
+    </div>
+  </div>
+
+  <!-- CASE 7: THE UNSIGNED CANVAS (bonus deduction mystery) -->
+  <div class="panel" id="panel-case7">
+    <div class="folder">
+      <span class="case-tag">Bonus Case #0007 — Replayable</span>
+      <h2 class="case-title">The Unsigned Canvas</h2>
+      <p class="brief">An unsigned painting just turned up with no records. The Agency has narrowed it to four suspects. Answer questions to unlock evidence — each correct answer reveals one real clue about the piece. Use Form, Content, Context, and Function (plus the Elements &amp; Principles) to clear names off the board, then make your accusation. Every new case reshuffles the suspects, the culprit, and the clue order.</p>
+
+      <h3 class="sub-title">Suspect Board</h3>
+      <div class="suspect-grid" id="suspectBoard"></div>
+
+      <h3 class="sub-title">Evidence Locker</h3>
+      <div class="evidence-grid" id="evidenceLocker"></div>
+      <div id="evidenceQuestion"></div>
+
+      <div class="response-box" id="c7result"></div>
+      <div class="btn-row"><button class="btn secondary" onclick="startCase7()">New Case (new suspects, new culprit)</button></div>
+    </div>
+  </div>
+
+  <!-- EXTENSIONS: THE NIGHT BEFORE -->
+  <div class="panel" id="panel-extend">
+    <div class="folder">
+      <span class="case-tag">Extension File — Study the Night Before</span>
+      <h2 class="case-title">The Night Before</h2>
+      <p class="brief">Finished the six cases already? This file never runs out of new questions — regenerate it as many times as you want.</p>
+
+      <h3 class="sub-title">Flashcard Drill</h3>
+      <p class="brief">Every vocab term in the unit, shuffled. Click the card to flip it.</p>
+      <div class="flash-stage-wrap">
+        <div class="flash-stage" id="flashStage" onclick="flipFlash()"><span class="fc-label" id="flashLabel">TERM</span><div class="fc-text" id="flashText">Loading…</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="prevFlash()">← Prev</button>
+        <span class="cram-score" id="flashCounter"></span>
+        <button class="btn secondary" onclick="nextFlash()">Next →</button>
+        <button class="btn secondary" onclick="shuffleFlash()">Shuffle Deck</button>
+      </div>
+
+      <h3 class="sub-title">Practice Test Generator</h3>
+      <p class="brief">Pulls 15 random questions from every case in the unit — vocab, Form/Content/Context/Function, Elements &amp; Principles, and the Gentileschi file. Every click builds a different test.</p>
+      <div class="cram-controls">
+        <label style="font-family:'Courier Prime',monospace; font-size:12px;"><input type="checkbox" id="lightningToggle"> ⏱ 60-second lightning round</label>
+        <button class="btn" onclick="generateCram()">Generate My Practice Test</button>
+        <span class="timer-badge" id="cramTimerDisplay"></span>
+      </div>
+      <p class="cram-score" id="cramScoreLine"></p>
+      <div id="cramContainer"></div>
+
+      <div class="cram-sheet" id="cramSheetPrint">
+        <h3 class="sub-title" style="margin-top:0;">One-Page Cram Sheet</h3>
+        <h4>Form • Content • Context • Function</h4>
+        <ul>
+          <li><b>Form</b> — How does it look? Materials, technique, elements &amp; principles used.</li>
+          <li><b>Content</b> — What is it? Subject matter, story, symbols.</li>
+          <li><b>Context</b> — Who/where/when made it, and what beliefs shaped it.</li>
+          <li><b>Function</b> — Why was it made, what was it used for, artist's intention.</li>
+        </ul>
+        <h4>Elements of Art (the ingredients)</h4>
+        <ul><li>Line, Shape, Color, Value, Texture, Space, Form</li></ul>
+        <h4>Principles of Design (the recipe)</h4>
+        <ul><li>Balance, Contrast, Emphasis, Pattern, Unity, Movement, Rhythm</li></ul>
+        <h4>Credit Line Format</h4>
+        <ul><li>Artist Name (Birth–Death). "Title". Date Created. Material. Dimensions. Current Location.</li></ul>
+        <h4>Gentileschi Quick Facts</h4>
+        <ul>
+          <li>Artemisia Gentileschi (1593–1653), trained by her father Orazio; painted <em>Judith Slaying Holofernes</em> more than once.</li>
+          <li>Shares Caravaggio's tenebrism (strong Value contrast); her Judith is more physically engaged than his.</li>
+          <li>Kehinde Wiley reimagined the subject in 2012 with a Black woman in Judith's role.</li>
+        </ul>
+        <div class="btn-row"><button class="btn small secondary" onclick="window.print()">Print This Sheet</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINALE -->
+  <div class="panel" id="panel-finale">
+    <div class="folder">
+      <span class="case-tag">Close-Out</span>
+      <h2 class="case-title">Close the Case</h2>
+      <p class="brief">Form, Content, Context, and Function only tell the whole story when they're read together.</p>
+      <div class="corkboard">
+        <div class="pin-card pc1">FORM<br><span style="font-weight:normal;font-size:10px;">How does it look?</span></div>
+        <div class="pin-card pc2">CONTENT<br><span style="font-weight:normal;font-size:10px;">What is it about?</span></div>
+        <div class="pin-card pc3">CONTEXT<br><span style="font-weight:normal;font-size:10px;">Who, where, when?</span></div>
+        <div class="pin-card pc4">FUNCTION<br><span style="font-weight:normal;font-size:10px;">Why was it made?</span></div>
+      </div>
+      <div class="badge" id="finaleBadge">— case in progress —</div>
+      <div class="score-line" id="finaleScore"></div>
+      <div class="score-line" id="finaleBonus" style="margin-top:6px;"></div>
+      <p class="brief" style="margin-top:20px;"><strong>Detective's statement:</strong> in your own words, what criteria will YOU use to evaluate a work of art this year?</p>
+      <textarea id="statement" placeholder="I will judge artwork by..."></textarea>
+      <div class="btn-row">
+        <button class="btn" onclick="window.print()">Print My Case File</button>
+        <button class="btn secondary" onclick="location.reload()">Start a New Case</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">Mr. Taylor's Art History — Unit 0 Review — solve solo, in pairs, or as a class — revisit "The Night Before" tab anytime before a test</footer>
+</div>
+
+<script>
+/* ============ UTIL ============ */
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pickRandom(arr,n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ============ NAV ============ */
+function goTo(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelector('.tab[data-panel="'+name+'"]').classList.add('active');
+  if(name==='finale' && typeof updateFinale==='function') updateFinale();
+}
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab');
+  if(btn) goTo(btn.dataset.panel);
+});
+const solved = {1:false,2:false,3:false,4:false,5:false,6:false};
+function finishCase(n){
+  solved[n]=true;
+  const s=document.getElementById('stamp'+n);
+  if(s) s.textContent='✔';
+  updateFinale();
+}
+
+/* ============ DATA: VOCAB POOL ============ */
+const vocabPool = [
+  {term:'Form — Big Picture', def:'The observable visual qualities of a work: line, shape, color, value, texture, space, and how materials were used.'},
+  {term:'Content', def:'The subject matter, story, or observable "what" of an artwork.'},
+  {term:'Context', def:'Background info gathered through research: who made it, when, where, and what beliefs shaped it.'},
+  {term:'Function', def:'The purpose, use, or intended effect of an artwork — why it was made and for whom.'},
+  {term:'Phenomenological', def:'Looking at art "unencumbered" by outside knowledge — describing only what you personally perceive.'},
+  {term:'Style', def:'The particular, consistent way an artist chooses and combines visual elements.'},
+  {term:'Theme', def:'An artwork\'s deeper, more universal meaning — separate from its subject matter.'},
+  {term:'Mood', def:'The atmosphere or feeling an artwork expresses to the viewer.'},
+  {term:'Credit Line', def:'The standardized identifying label for an artwork: Artist (dates). "Title". Date. Material. Dimensions. Location.'},
+  {term:'Evaluation Criteria', def:'The standards a person sets, before judging, to decide whether a work of art is "good."'},
+  {term:'Restoration', def:'The act of repairing or conserving a damaged or deteriorating artwork.'},
+  {term:'Line', def:'A path made by a moving point through space; can vary in width, direction, and length.'},
+  {term:'Shape', def:'A flat, enclosed two-dimensional area — geometric or organic.'},
+  {term:'Color', def:'What we perceive from light reflecting off a surface; has hue, intensity, and value.'},
+  {term:'Value', def:'The lightness or darkness of a surface.'},
+  {term:'Texture', def:'The surface quality of an object — actual (how it feels) or implied (how it looks like it feels).'},
+  {term:'Space', def:'The illusion of depth, or the positive/negative area in and around a composition.'},
+  {term:'Form — Element', def:'A three-dimensional shape with volume that can be viewed from multiple angles.'},
+  {term:'Balance', def:'The distribution of visual weight — symmetrical, asymmetrical, or radial.'},
+  {term:'Contrast', def:'The difference between elements in a composition, such as a shift in value or size.'},
+  {term:'Emphasis', def:'The creation of a focal point that draws the viewer\'s eye first.'},
+  {term:'Pattern', def:'The decoration of an artwork through regularly repeated shapes or colors.'},
+  {term:'Unity', def:'The sense that all elements in a composition belong together and feel harmonious.'},
+  {term:'Movement', def:'How the eye is led to travel through an artwork from one point to another.'},
+  {term:'Rhythm', def:'The regular repetition of elements to create consistency and visual interest.'}
+];
+
+/* ============ GENERIC MATCH-GAME (reused by Case 1 & Case 5) ============ */
+function setupMatchGame(pool, roundSize, termColId, defColId, statusId, onProgress){
+  const items = pickRandom(pool, roundSize);
+  let matched = 0, selected = null;
+  const tc = document.getElementById(termColId); tc.innerHTML='';
+  const dc = document.getElementById(defColId); dc.innerHTML='';
+  function selectTerm(el,val){
+    if(el.classList.contains('matched')) return;
+    tc.querySelectorAll('.match-tile').forEach(t=>t.classList.remove('selected'));
+    el.classList.add('selected'); selected=val;
+  }
+  function selectDef(el,val){
+    if(el.classList.contains('matched') || !selected) return;
+    const item = items.find(r=>r.term===selected);
+    const termEl = [...tc.querySelectorAll('.match-tile')].find(t=>t.dataset.value===selected);
+    if(item && item.def===val){
+      el.classList.add('matched'); if(termEl) termEl.classList.add('matched');
+      matched++;
+      document.getElementById(statusId).textContent = matched+' / '+items.length+' matched'+(matched===items.length?' — round complete!':'');
+      selected=null;
+      if(onProgress) onProgress(matched, items.length);
+    } else {
+      el.classList.add('wrongflash'); if(termEl) termEl.classList.add('wrongflash');
+      setTimeout(()=>{ el.classList.remove('wrongflash','selected'); if(termEl) termEl.classList.remove('wrongflash','selected'); },450);
+      selected=null;
+    }
+  }
+  shuffle(items.map(x=>x.term)).forEach(t=>{
+    const el=document.createElement('div'); el.className='match-tile term'; el.textContent=t; el.dataset.value=t;
+    el.onclick=()=>selectTerm(el,t);
+    tc.appendChild(el);
+  });
+  shuffle(items.map(x=>x.def)).forEach(d=>{
+    const el=document.createElement('div'); el.className='match-tile def'; el.textContent=d; el.dataset.value=d;
+    el.onclick=()=>selectDef(el,d);
+    dc.appendChild(el);
+  });
+  document.getElementById(statusId).textContent = '0 / '+items.length+' matched';
+}
+
+/* ============ CASE 1: VOCAB VAULT (matching) ============ */
+function startVocabRound(){
+  window.__vocabScore=0; window.__vocabTotal=8;
+  setupMatchGame(vocabPool, 8, 'termCol', 'defCol', 'matchStatus', (m,t)=>{ window.__vocabScore=m; window.__vocabTotal=t; });
+}
+startVocabRound();
+
+/* ============ CASE 2: LINEUP ============ */
+const lineupPool = [
+  {id:'a', name:'Exhibit A — Marble & Chisel', tag:'Classical Sculpture', svg:'<svg viewBox="0 0 100 100"><path d="M30,90 L35,40 Q50,10 65,40 L70,90" fill="none" stroke="#2A2E35" stroke-width="3"/><circle cx="50" cy="24" r="10" fill="none" stroke="#2A2E35" stroke-width="3"/></svg>'},
+  {id:'b', name:'Exhibit B — Ink & Woodblock', tag:'1515 Printed Illustration', svg:'<svg viewBox="0 0 100 100"><rect x="15" y="55" width="70" height="30" rx="4" fill="none" stroke="#2A2E35" stroke-width="3"/><path d="M20,55 Q35,25 50,45 Q65,20 80,55" fill="none" stroke="#2A2E35" stroke-width="3"/></svg>'},
+  {id:'c', name:'Exhibit C — Oil & Time', tag:'Restored Fresco', svg:'<svg viewBox="0 0 100 100"><rect x="20" y="15" width="60" height="70" fill="none" stroke="#2A2E35" stroke-width="3"/><path d="M25,20 L75,80 M75,20 L25,80" stroke="#B23A2F" stroke-width="2"/></svg>'},
+  {id:'d', name:'Exhibit D — Paper & Scissors', tag:'Cut-Paper Collage', svg:'<svg viewBox="0 0 100 100"><rect x="15" y="15" width="30" height="30" fill="#3E6C6B"/><rect x="50" y="30" width="30" height="30" fill="#C9A227"/><rect x="30" y="55" width="30" height="30" fill="#B23A2F"/></svg>'},
+  {id:'e', name:'Exhibit E — Charcoal & Paper', tag:'Preparatory Sketch', svg:'<svg viewBox="0 0 100 100"><line x1="15" y1="80" x2="85" y2="20" stroke="#2A2E35" stroke-width="2"/><line x1="20" y1="30" x2="70" y2="70" stroke="#2A2E35" stroke-width="2"/><circle cx="50" cy="50" r="3" fill="#2A2E35"/></svg>'},
+  {id:'f', name:'Exhibit F — Bronze & Fire', tag:'Cast Sculpture', svg:'<svg viewBox="0 0 100 100"><path d="M30,80 Q30,40 50,30 Q70,40 70,80 Z" fill="none" stroke="#C9A227" stroke-width="3"/><ellipse cx="50" cy="80" rx="24" ry="6" fill="none" stroke="#C9A227" stroke-width="2"/></svg>'}
+];
+const votes = {};
+let voted=false, activeExhibits=[];
+function renderExhibits(){
+  activeExhibits = pickRandom(lineupPool, 4);
+  activeExhibits.forEach(ex=>votes[ex.id]=0);
+  const wrap = document.getElementById('exhibits'); wrap.innerHTML='';
+  activeExhibits.forEach(ex=>{
+    const div = document.createElement('div'); div.className='exhibit'; div.id='ex-'+ex.id;
+    div.innerHTML = ex.svg + '<div class="ex-name">'+ex.name+'</div><div class="ex-label">'+ex.tag+'</div><div class="vote-bar-wrap"><div class="vote-bar" id="bar-'+ex.id+'"></div></div>';
+    div.onclick = ()=>castVote(ex.id);
+    wrap.appendChild(div);
+  });
+}
+function castVote(id){
+  if(!voted){ voted=true; document.getElementById('voteHint').textContent='Vote locked in. Here comes the twist...'; }
+  votes[id]++;
+  document.querySelectorAll('.exhibit').forEach(e=>e.classList.remove('picked'));
+  document.getElementById('ex-'+id).classList.add('picked');
+  const total = Object.values(votes).reduce((a,b)=>a+b,0);
+  Object.keys(votes).forEach(k=>{
+    const pct = total? Math.round(votes[k]/total*100):0;
+    const bar=document.getElementById('bar-'+k); if(bar) bar.style.width = pct+'%';
+  });
+  document.getElementById('afterVote').style.display='block';
+}
+const criteriaOptions = ['Craftsmanship / skill','Emotional impact','Originality','Historical importance','Message or meaning','Beauty / aesthetics','Cultural significance','Technical difficulty'];
+let chosenCriteria=[];
+function renderCriteria(){
+  const wrap = document.getElementById('criteriaChips'); wrap.innerHTML='';
+  criteriaOptions.forEach(c=>{
+    const chip=document.createElement('div'); chip.className='chip'; chip.textContent=c;
+    chip.onclick=()=>{
+      if(chip.classList.contains('selected')){ chip.classList.remove('selected'); chosenCriteria=chosenCriteria.filter(x=>x!==c); }
+      else{ if(chosenCriteria.length>=3) return; chip.classList.add('selected'); chosenCriteria.push(c); }
+    };
+    wrap.appendChild(chip);
+  });
+}
+renderExhibits(); renderCriteria();
+
+/* ============ CASE 3: SORT EVIDENCE ============ */
+const fccfPool = [
+  {clue:'How does it look?', cat:'form'},
+  {clue:'How was it made — what materials and techniques?', cat:'form'},
+  {clue:'How are things arranged in the composition?', cat:'form'},
+  {clue:'What Elements of Art and Principles of Design are visible?', cat:'form'},
+  {clue:'How would you describe the visual qualities you can point to?', cat:'form'},
+  {clue:'What visual qualities can you point to and describe directly?', cat:'form'},
+  {clue:'How did the artist manipulate their materials to create this effect?', cat:'form'},
+  {clue:'What is the subject matter?', cat:'content'},
+  {clue:'What story is the artwork telling?', cat:'content'},
+  {clue:'What people, places, or things can you identify?', cat:'content'},
+  {clue:'What is the message being represented?', cat:'content'},
+  {clue:'What symbols or objects can you find in the image?', cat:'content'},
+  {clue:'What emotions or actions are the figures expressing?', cat:'content'},
+  {clue:'What objects or symbols carry extra meaning in this piece?', cat:'content'},
+  {clue:'Who made this, and when?', cat:'context'},
+  {clue:'Where was it originally displayed or experienced?', cat:'context'},
+  {clue:'What beliefs shaped the person or culture who made this?', cat:'context'},
+  {clue:'How did the original audience interpret this piece?', cat:'context'},
+  {clue:'What was happening in society at the time it was created?', cat:'context'},
+  {clue:'What historical events might have influenced this artwork?', cat:'context'},
+  {clue:'Who was the artwork\'s patron, and what did they want?', cat:'context'},
+  {clue:'Why was this artwork made?', cat:'function'},
+  {clue:'What was it used for?', cat:'function'},
+  {clue:"What is the artist's intention?", cat:'function'},
+  {clue:'How did the original audience use or respond to it?', cat:'function'},
+  {clue:'What does the audience\'s reaction reveal about its purpose?', cat:'function'},
+  {clue:'What effect did the artist want this piece to have on its audience?', cat:'function'},
+  {clue:'Was this artwork meant to be private or public?', cat:'function'}
+];
+const case3Flavors = [
+  "Tonight's exhibit: a cracked altar panel just pulled from storage. Sort what the curator already knows.",
+  "Tonight's exhibit: a spray-painted mural reported by a rideshare driver. Sort the evidence before the paint truck arrives.",
+  "Tonight's exhibit: a family photo album donated anonymously to the archive. Sort what's fact from what's guesswork.",
+  "Tonight's exhibit: a sculpture pulled from a sunken cargo ship. Sort the evidence before it goes back underwater."
+];
+let clues=[], c3idx=0, c3score=0;
+function startCase3(){
+  clues = pickRandom(fccfPool, 12);
+  c3idx=0; c3score=0;
+  document.getElementById('c3flavor').textContent = case3Flavors[Math.floor(Math.random()*case3Flavors.length)];
+  document.querySelector('#panel-case3 .cat-grid').style.display='grid';
+  document.getElementById('c3finishBtn').style.display='none';
+  document.getElementById('c3feedback').textContent='';
+  document.getElementById('c3feedback').className='feedback';
+  showClue();
+}
+function showClue(){
+  if(c3idx>=clues.length){
+    document.getElementById('clueCard').textContent = 'All evidence filed.';
+    document.querySelector('#panel-case3 .cat-grid').style.display='none';
+    document.getElementById('c3finishBtn').style.display='inline-block';
+    document.getElementById('c3feedback').textContent = 'Score: '+c3score+' / '+clues.length+' correctly filed on first try.';
+    document.getElementById('c3feedback').className='feedback good';
+    return;
+  }
+  document.getElementById('clueCard').textContent = '"'+clues[c3idx].clue+'"';
+  document.getElementById('c3progress').style.width = Math.round(c3idx/clues.length*100)+'%';
+}
+function answerClue(cat){
+  const fb = document.getElementById('c3feedback');
+  if(cat===clues[c3idx].cat){
+    fb.textContent='MATCH CONFIRMED ✔'; fb.className='feedback good'; c3score++;
+    c3idx++; setTimeout(showClue, 450);
+  } else {
+    fb.textContent='MISFILED — that clue belongs elsewhere. Try again.'; fb.className='feedback bad';
+  }
+}
+startCase3();
+
+/* ============ CASE 4: TOOLKIT ============ */
+const elements = ['Line','Shape','Color','Value','Texture','Space','Form'];
+const principles = ['Balance','Contrast','Emphasis','Pattern','Unity','Movement','Rhythm'];
+let allTerms = shuffle(elements.map(t=>({t,cat:'element'})).concat(principles.map(t=>({t,cat:'principle'}))));
+let bucketState = {};
+function renderTerms(){
+  const wrap = document.getElementById('termGrid'); wrap.innerHTML='';
+  allTerms.forEach(item=>{
+    bucketState[item.t]='unassigned';
+    const chip=document.createElement('div'); chip.className='term-chip'; chip.textContent=item.t; chip.id='term-'+item.t;
+    chip.onclick=()=>{
+      const order=['unassigned','element','principle'];
+      const next = order[(order.indexOf(bucketState[item.t])+1)%order.length];
+      bucketState[item.t]=next;
+      if(next==='unassigned'){ chip.removeAttribute('data-bucket'); chip.textContent=item.t; }
+      else { chip.setAttribute('data-bucket', next); chip.textContent = item.t + (next==='element'?' (ingredient)':' (recipe)'); }
+    };
+    wrap.appendChild(chip);
+  });
+}
+renderTerms();
+function checkRoundA(){
+  let correct=0;
+  allTerms.forEach(item=>{ if(bucketState[item.t]===item.cat) correct++; });
+  const fb = document.getElementById('roundAFeedback');
+  fb.textContent = correct+' / '+allTerms.length+' sorted correctly.';
+  fb.className = correct===allTerms.length? 'feedback good':'feedback bad';
+  if(correct===allTerms.length){ document.getElementById('roundBWrap').style.display='block'; renderRoundB(); renderRoundC(); }
+}
+const elementsPrinciplesPool = [
+  {q:'Which ELEMENT describes the lightness or darkness of a surface?', opts:['Value','Texture','Shape','Line'], a:'Value'},
+  {q:'Which PRINCIPLE is the distribution of visual weight in an artwork?', opts:['Rhythm','Balance','Pattern','Contrast'], a:'Balance'},
+  {q:'Which PRINCIPLE creates a focal point that draws the eye first?', opts:['Unity','Movement','Emphasis','Contrast'], a:'Emphasis'},
+  {q:'Which ELEMENT refers to the illusion of depth, or positive/negative area?', opts:['Form','Texture','Space','Line'], a:'Space'},
+  {q:'Which PRINCIPLE means all elements feel like they belong together?', opts:['Pattern','Balance','Unity','Rhythm'], a:'Unity'},
+  {q:'Which ELEMENT is a path made by a moving point through space?', opts:['Line','Shape','Value','Space'], a:'Line'},
+  {q:'Which ELEMENT is a flat, enclosed two-dimensional area?', opts:['Shape','Form','Texture','Line'], a:'Shape'},
+  {q:'Which ELEMENT describes how a surface feels, or looks like it would feel?', opts:['Texture','Color','Value','Pattern'], a:'Texture'},
+  {q:'Which ELEMENT has hue, intensity, and value as its three properties?', opts:['Color','Line','Shape','Space'], a:'Color'},
+  {q:'Which ELEMENT is three-dimensional and has volume?', opts:['Form','Shape','Space','Texture'], a:'Form'},
+  {q:'Which PRINCIPLE is the difference between elements, such as a jump in value or size?', opts:['Contrast','Unity','Balance','Rhythm'], a:'Contrast'},
+  {q:'Which PRINCIPLE decorates an artwork with regularly repeated shapes or colors?', opts:['Pattern','Movement','Emphasis','Balance'], a:'Pattern'},
+  {q:'Which PRINCIPLE describes how the eye travels through a composition?', opts:['Movement','Rhythm','Unity','Contrast'], a:'Movement'},
+  {q:'Which PRINCIPLE is the regular repetition of elements to build consistency?', opts:['Rhythm','Pattern','Emphasis','Balance'], a:'Rhythm'}
+];
+let roundBList=[], roundCList=[];
+window.__roundBDone=false; window.__roundCDone=false;
+function checkCase4Done(){
+  document.getElementById('finishCase4Btn').disabled = !(window.__roundBDone && window.__roundCDone);
+}
+function renderRoundB(){
+  roundBList = pickRandom(elementsPrinciplesPool, 6);
+  window.__roundBDone=false; checkCase4Done();
+  window.__elScore=0; window.__elTotal=roundBList.length;
+  renderMCQSet(document.getElementById('roundB'), roundBList, (s,c,t)=>{
+    window.__elScore=s;
+    document.getElementById('roundBScore').textContent = 'Score: '+s+' / '+c+' answered (out of '+t+')';
+    if(c>=t){ window.__roundBDone=true; checkCase4Done(); }
+  });
+  document.getElementById('roundBScore').textContent = 'Score: 0 / 0 answered (out of '+roundBList.length+')';
+}
+const roundCPool = [
+  {q:'A poster uses one giant red circle surrounded by a sea of small gray squares. Which PRINCIPLE is doing the most work?', opts:['Emphasis','Pattern','Balance','Rhythm'], a:'Emphasis'},
+  {q:'A quilt repeats the same diamond shape in the same colors across the entire surface. Which PRINCIPLE?', opts:['Pattern','Unity','Movement','Contrast'], a:'Pattern'},
+  {q:'A photographer frames a lone red umbrella against an all-gray rainy street. Which PRINCIPLE is at work?', opts:['Contrast','Balance','Rhythm','Unity'], a:'Contrast'},
+  {q:'A mural uses a diagonal line of running figures to pull your eye from bottom-left to top-right. Which PRINCIPLE?', opts:['Movement','Balance','Pattern','Emphasis'], a:'Movement'},
+  {q:'A logo mirrors the exact same shape perfectly on both sides of a center line. Which PRINCIPLE?', opts:['Balance','Unity','Rhythm','Contrast'], a:'Balance'},
+  {q:'A textile uses a repeated zig-zag stitch to build a steady visual beat across the fabric. Which PRINCIPLE?', opts:['Rhythm','Pattern','Movement','Emphasis'], a:'Rhythm'},
+  {q:'Every material and color in a room, from the rug to the curtains, feels like it belongs together. Which PRINCIPLE?', opts:['Unity','Balance','Pattern','Contrast'], a:'Unity'},
+  {q:'A sculptor smooths marble until it looks and feels like real skin. Which ELEMENT is being emphasized?', opts:['Texture','Value','Form','Space'], a:'Texture'},
+  {q:'An artist uses only black paint but shows every shade from paper-white to ink-black by mixing in water. Which ELEMENT?', opts:['Value','Color','Line','Shape'], a:'Value'},
+  {q:'An architect designs a courtyard so the empty area between buildings feels as important as the buildings. Which ELEMENT?', opts:['Space','Form','Shape','Line'], a:'Space'}
+];
+function renderRoundC(){
+  roundCList = pickRandom(roundCPool, 5);
+  window.__roundCDone=false; checkCase4Done();
+  window.__elCScore=0; window.__elCTotal=roundCList.length;
+  renderMCQSet(document.getElementById('roundC'), roundCList, (s,c,t)=>{
+    window.__elCScore=s;
+    document.getElementById('roundCScore').textContent = 'Score: '+s+' / '+c+' answered (out of '+t+')';
+    if(c>=t){ window.__roundCDone=true; checkCase4Done(); }
+  });
+  document.getElementById('roundCScore').textContent = 'Score: 0 / 0 answered (out of '+roundCList.length+')';
+}
+
+/* Generic MCQ renderer, reused everywhere below */
+function renderMCQSet(containerEl, list, scoreCallback, lockRef){
+  containerEl.innerHTML='';
+  let score=0, count=0;
+  list.forEach((item,i)=>{
+    const div=document.createElement('div'); div.className='mcq';
+    const qP=document.createElement('p'); qP.className='q'; qP.textContent=(i+1)+'. '+item.q; div.appendChild(qP);
+    shuffle(item.opts).forEach(opt=>{
+      const b=document.createElement('button'); b.className='opt'; b.textContent=opt;
+      b.onclick=()=>{
+        if(div.dataset.locked) return;
+        if(lockRef && lockRef.locked) return;
+        div.dataset.locked='1';
+        const allBtns=[...div.querySelectorAll('.opt')];
+        if(opt===item.a){ b.classList.add('correct'); score++; }
+        else { b.classList.add('wrong'); const c=allBtns.find(o=>o.textContent===item.a); if(c) c.classList.add('correct'); }
+        count++;
+        if(scoreCallback) scoreCallback(score,count,list.length);
+      };
+      div.appendChild(b);
+    });
+    containerEl.appendChild(div);
+  });
+}
+
+/* ============ CASE 5: GENTILESCHI FILE ============ */
+const judithPool = [
+  {q:'Who painted "Judith Slaying Holofernes" around 1614–1620?', opts:['Artemisia Gentileschi','Caravaggio','Michelangelo','Sandro Botticelli'], a:'Artemisia Gentileschi'},
+  {q:'Artemisia Gentileschi trained under which family member?', opts:['Her father, Orazio Gentileschi','Her uncle','Caravaggio directly','She had no family in art'], a:'Her father, Orazio Gentileschi'},
+  {q:'The story of Judith and Holofernes comes from which source?', opts:['The Book of Judith','Greek mythology','Norse mythology','A Renaissance play'], a:'The Book of Judith'},
+  {q:'In the story, why does Judith kill Holofernes?', opts:['To save her besieged city','For revenge on her family','To become queen','By accident'], a:'To save her besieged city'},
+  {q:'Which dramatic lighting style, shared with Caravaggio, is Gentileschi known for?', opts:['Tenebrism / strong value contrast','Pointillism','Flat pattern with no shadow','Watercolor wash'], a:'Tenebrism / strong value contrast'},
+  {q:"Many art historians connect the emotional intensity of Gentileschi's Judith paintings to which event in her own life?", opts:['A widely documented assault and trial she survived as a young woman','A trip to Paris','A shipwreck','Her retirement from painting'], a:'A widely documented assault and trial she survived as a young woman'},
+  {q:'What ELEMENT of art creates the strong light/dark drama in these paintings?', opts:['Value','Pattern','Rhythm','Unity'], a:'Value'},
+  {q:'What PRINCIPLE is created by the diagonal arrangement of arms, sword, and bodies?', opts:['Movement','Symmetry','Pattern','Emphasis on background'], a:'Movement'},
+  {q:'Contemporary artist Kehinde Wiley reinterpreted this subject in 2012 — what did he change?', opts:["He placed a Black woman in Judith's role, holding a white figure's head",'He set the scene on the moon','He removed all human figures','He painted it in black and white only'], a:"He placed a Black woman in Judith's role, holding a white figure's head"},
+  {q:"Caravaggio's version of this subject (c. 1598) differs from Gentileschi's mainly in what way?", opts:['Judith appears more detached / restrained',"Caravaggio's Judith is smiling",'There is no violence shown at all','It was painted on a ceiling'], a:'Judith appears more detached / restrained'},
+  {q:'Which category (Form/Content/Context/Function) covers "who made this and when"?', opts:['Context','Form','Content','Function'], a:'Context'},
+  {q:'Which category covers "what is happening in the scene"?', opts:['Content','Form','Context','Function'], a:'Content'},
+  {q:'During the Baroque period, biblical heroines like Judith were often commissioned to symbolize what?', opts:['Female courage and virtue','Wealth alone',"Military conquest of the patron",'Scientific progress'], a:'Female courage and virtue'},
+  {q:'Gentileschi was one of the first women admitted to which type of institution?', opts:['A fine arts academy (Accademia di Belle Arti del Disegno)','A university law program','A royal court as ambassador','A shipping guild'], a:'A fine arts academy (Accademia di Belle Arti del Disegno)'}
+];
+let judithList=[];
+function renderJudith(){
+  judithList = pickRandom(judithPool, 6);
+  document.getElementById('finishCase5Btn').disabled = true;
+  window.__judScore=0; window.__judTotal=judithList.length;
+  renderMCQSet(document.getElementById('judithQuiz'), judithList, (s,c,t)=>{
+    window.__judScore=s;
+    document.getElementById('judithScoreLine').textContent = 'Score: '+s+' / '+c+' answered (out of '+t+')';
+    if(c>=t) document.getElementById('finishCase5Btn').disabled=false;
+  });
+  document.getElementById('judithScoreLine').textContent = 'Score: 0 / 0 answered (out of '+judithList.length+')';
+}
+renderJudith();
+
+const versionsPool = [
+  {term:"Gentileschi's Judith Slaying Holofernes (c.1614–1620)", def:'Judith physically grapples with Holofernes at close range — dramatic diagonal Movement and deep Value contrast.'},
+  {term:'Caravaggio\'s Judith Beheading Holofernes (c.1598)', def:'Judith stands back with a detached, almost calm expression while committing the act.'},
+  {term:'Gentileschi\'s Judith and Maidservant with the Head of Holofernes (c.1623–1625)', def:'The violence is over — Judith and her maid pause together, alert, in the tense aftermath.'},
+  {term:"Kehinde Wiley's Judith Beheading Holofernes (2012)", def:'A contemporary reinterpretation that recasts Judith as a Black woman, foregrounding race and power against a decorative floral background.'},
+  {term:"A medieval manuscript illumination of Judith", def:'Flat, symbolic figures with little realistic anatomy — gold background, more symbol than drama.'},
+  {term:'A Baroque engraving/print version of the subject', def:'Black-and-white linework used to spread the dramatic composition widely through print, rather than a unique painted original.'}
+];
+function startVersionsMatch(){
+  window.__verScore=0; window.__verTotal=4;
+  setupMatchGame(versionsPool, 4, 'vTermCol', 'vDefCol', 'vMatchStatus', (m,t)=>{ window.__verScore=m; window.__verTotal=t; });
+}
+startVersionsMatch();
+
+/* ============ CASE 6: CREDIT LINE ============ */
+const creditProfiles = [
+  {tag:'Starry Night File', fields:[
+    {id:'artist', text:'Vincent van Gogh (Mar 30, 1853 – Jul 29, 1890)'},
+    {id:'title', text:'"The Starry Night"'},
+    {id:'date', text:'June 1889'},
+    {id:'media', text:'Oil on canvas'},
+    {id:'dims', text:`2' 5" x 3' 0"`},
+    {id:'loc', text:'The Museum of Modern Art'}
+  ]},
+  {tag:'Migrant Road File', fields:[
+    {id:'artist', text:'Dorothea Lange (1895–1965)'},
+    {id:'title', text:'"Towards Los Angeles, California"'},
+    {id:'date', text:'1937'},
+    {id:'media', text:'Photographic print, gelatin silver'},
+    {id:'dims', text:'9 x 9 1/4 in.'},
+    {id:'loc', text:'Library of Congress Prints and Photographs Division'}
+  ]},
+  {tag:'Judith File', fields:[
+    {id:'artist', text:'Artemisia Gentileschi (1593–1653)'},
+    {id:'title', text:'"Judith Slaying Holofernes"'},
+    {id:'date', text:'c. 1614–1620'},
+    {id:'media', text:'Oil on canvas'},
+    {id:'dims', text:'199 × 162 cm'},
+    {id:'loc', text:'Uffizi Gallery, Florence, Italy'}
+  ]}
+];
+const clCorrectOrder = ['artist','title','date','media','dims','loc'];
+let clPicked = [], currentProfileIdx = -1;
+function startCase6(forceDifferent){
+  let idx = Math.floor(Math.random()*creditProfiles.length);
+  if(forceDifferent && creditProfiles.length>1){ while(idx===currentProfileIdx) idx = Math.floor(Math.random()*creditProfiles.length); }
+  currentProfileIdx = idx;
+  const profile = creditProfiles[idx];
+  document.getElementById('case6tag').textContent = 'Case #0006 — '+profile.tag;
+  clPicked=[];
+  const pool = document.getElementById('clPool'); pool.innerHTML='';
+  shuffle(profile.fields).forEach(f=>{
+    const chip=document.createElement('div'); chip.className='cl-chip'; chip.textContent=f.text; chip.id='cl-'+f.id;
+    chip.onclick=()=>pickCL(f.id);
+    pool.appendChild(chip);
+  });
+  renderSlots();
+  document.getElementById('clResult').classList.remove('show');
+}
+function pickCL(id){
+  if(clPicked.includes(id)) return;
+  clPicked.push(id);
+  const el=document.getElementById('cl-'+id); if(el) el.classList.add('used');
+  renderSlots();
+}
+function renderSlots(){
+  const slots = document.getElementById('clSlots');
+  const profile = creditProfiles[currentProfileIdx];
+  if(clPicked.length===0){ slots.textContent='Click chips above to build the line…'; return; }
+  slots.textContent = clPicked.map(id=>profile.fields.find(f=>f.id===id).text).join('. ') + (clPicked.length?'.':'');
+}
+function resetCL(){
+  clPicked=[];
+  document.querySelectorAll('.cl-chip').forEach(c=>c.classList.remove('used'));
+  renderSlots();
+  document.getElementById('clResult').classList.remove('show');
+}
+function checkCL(){
+  const profile = creditProfiles[currentProfileIdx];
+  let correctCount=0;
+  for(let i=0;i<clCorrectOrder.length;i++){ if(clPicked[i]===clCorrectOrder[i]) correctCount++; }
+  const result = document.getElementById('clResult');
+  const finalLine = clCorrectOrder.map(id=>profile.fields.find(f=>f.id===id).text).join('. ')+'.';
+  result.innerHTML = correctCount===6
+    ? '<strong>Perfect file.</strong> ' + finalLine
+    : '<strong>'+correctCount+' / 6 in the right slot.</strong> Correct order:<br>' + finalLine;
+  result.classList.add('show');
+  window.__c5score = correctCount;
+}
+startCase6(false);
+
+/* ============ CASE 7: THE UNSIGNED CANVAS (bonus deduction mystery) ============ */
+const suspectPool = [
+  {id:'vera', name:'Vera Nocturne', tag:'Baroque Tenebrist',
+    bio:"Works only by candlelight, obsessed with the shadow-drenched tradition of Caravaggio and Artemisia Gentileschi. Every canvas is a violent diagonal wrenched out of near-total darkness.",
+    elements:['Value','Line'], principles:['Movement','Contrast'],
+    content:'dramatic biblical/mythological action', context:'Baroque tenebrist tradition (Caravaggio/Gentileschi lineage)', function:'to emotionally shock a private viewer',
+    clues:{
+      Value:"The canvas shows extreme VALUE contrast — figures wrenched from near-total black into blinding light.",
+      Line:"Sharp diagonal LINES cut across the canvas, slicing the composition into violent halves.",
+      Movement:"The composition uses strong MOVEMENT — the eye is dragged along a diagonal from one struggling figure to the next.",
+      Contrast:"Beyond light and dark, there's CONTRAST in scale — a small candle beside an enormous looming shadow.",
+      content:"The scene depicts a dramatic, violent moment from a biblical or mythological story, caught mid-action.",
+      context:"Investigators found sketches referencing Baroque tenebrism — the same shadow-drenched tradition as Caravaggio and Artemisia Gentileschi.",
+      function:"This piece seems built to shock a private viewer in a dim room, not to please a crowd."
+    }},
+  {id:'renny', name:'Renny Cutz', tag:'Collage & Pattern Artist',
+    bio:"Builds every surface out of cut paper and bold, unmixed color. No story, no drama — just shape, color, and pattern for their own sake.",
+    elements:['Shape','Color'], principles:['Pattern','Balance'],
+    content:'abstract arrangement of shapes, no story', context:'mid/late 20th-century paper-cutout studio practice', function:'purely decorative, enjoyed for color and form',
+    clues:{
+      Shape:"The surface is built entirely from flat, cut-paper SHAPES layered on top of one another.",
+      Color:"Bold, unmixed COLOR fills every shape — no blending, no shading, just pure hue against pure hue.",
+      Pattern:"A repeating PATTERN of shapes tiles across the whole surface, almost like wallpaper.",
+      Balance:"Despite the chaos of shapes, the composition is carefully BALANCED — nothing feels heavier on one side.",
+      content:"There's no story here at all — just abstract shapes arranged for their own sake.",
+      context:"The materials — cut paper, glue residue — point to a mid-to-late 20th-century studio practice.",
+      function:"This piece doesn't seem to be trying to say anything deep — it's meant to be enjoyed purely for color and form."
+    }},
+  {id:'marbella', name:'Marbella Stone', tag:'Classical Sculptor-Painter',
+    bio:"Studied ancient sculpture obsessively. Everything is idealized, symmetrical, and built to honor someone in public — never anything casual or private.",
+    elements:['Form','Space'], principles:['Balance','Unity'],
+    content:'idealized mythological or civic hero figure', context:'obsessive study of classical antiquity', function:'to honor a person or ideal in public space',
+    clues:{
+      Form:"Whatever this was based on, the figures have real volume — this artist thinks in three-dimensional FORM.",
+      Space:"Careful positive and negative SPACE gives the figures believable depth, almost like a relief carving.",
+      Balance:"The composition is nearly symmetrical — a textbook example of BALANCE.",
+      Unity:"Every figure, gesture, and prop feels like it belongs — total UNITY, nothing out of place.",
+      content:"The subject is an idealized human figure, styled after a mythological or civic hero.",
+      context:"Notes reference classical antiquity — this artist studied ancient sculpture obsessively.",
+      function:"This looks built for a public space — meant to honor someone or something, not sit in a private den."
+    }},
+  {id:'dot', name:'Dot Silvers', tag:'Documentary Photographer',
+    bio:"Works embedded in real communities, camera or sketchbook in hand. Everything is candid, textured, and true to life — no myth, no polish.",
+    elements:['Texture','Line'], principles:['Emphasis','Rhythm'],
+    content:'an ordinary person in an ordinary real moment', context:'embedded fieldwork in a real community, modern era', function:'to document a place or moment and provoke attention',
+    clues:{
+      Texture:"The surface has raw, unpolished TEXTURE — grain, scratches, the honesty of a working print.",
+      Line:"Loose, quick LINES sketch out real gestures — nothing posed, nothing perfect.",
+      Emphasis:"One ordinary detail is given all the EMPHASIS — the artist's eye clearly landed on a single human moment.",
+      Rhythm:"A RHYTHM of repeated shapes — fence posts, windows, figures in a line — gives the piece a steady beat.",
+      content:"This shows an ordinary person in an ordinary moment — no myth, no drama, just real life.",
+      context:"This looks like fieldwork — an artist embedded in a real community, not working from imagination alone.",
+      function:"This piece seems built to document a place and a moment — maybe even to make people pay attention to it."
+    }},
+  {id:'ondine', name:'Ondine Marsh', tag:'Plein-Air Impressionist',
+    bio:"Works only outdoors, chasing changing light across a landscape. Loose, broken color and brushy texture capture a fleeting moment rather than telling a story.",
+    elements:['Color','Texture'], principles:['Movement','Rhythm'],
+    content:'an outdoor landscape or everyday leisure scene', context:'working en plein air in the late 19th century', function:'to capture a fleeting moment of light and atmosphere',
+    clues:{
+      Color:"COLOR is applied in loose, broken strokes — dabs of pure hue that blend only in the viewer's eye.",
+      Texture:"The surface has thick, visible TEXTURE — you can see individual brushstrokes standing up off the canvas.",
+      Movement:"MOVEMENT ripples through the piece — like the wind or water itself is captured mid-motion.",
+      Rhythm:"A gentle RHYTHM repeats across the surface — dappled light, repeated brushstrokes, almost musical.",
+      content:"The scene shows an outdoor landscape or a quiet moment of everyday leisure — no myth, no drama.",
+      context:"This looks like it was painted on-site, outdoors, chasing changing light — a working method from the late 1800s.",
+      function:"This piece seems built to capture one fleeting moment of light and atmosphere, nothing more."
+    }},
+  {id:'milo', name:'Milo Grid', tag:'Geometric / Op Artist',
+    bio:"Obsessed with pure geometry — no people, no places, no stories. Just line, shape, and repeating pattern engineered to trick the eye.",
+    elements:['Line','Shape'], principles:['Pattern','Contrast'],
+    content:'pure geometric abstraction with no recognizable subject', context:'mid-20th-century mathematical/geometric art movement', function:'to create an optical/perceptual experiment, not to depict anything',
+    clues:{
+      Line:"Precise, ruler-straight LINES divide the surface into an engineered grid.",
+      Shape:"Every SHAPE is a clean geometric form — no organic curves, no accidents.",
+      Pattern:"A rigorous PATTERN repeats across the whole surface with almost mathematical precision.",
+      Contrast:"Sharp CONTRAST between shapes creates a buzzing, optical effect when you look too long.",
+      content:"There's no subject at all — just pure geometric abstraction, calculated rather than observed.",
+      context:"This fits a mid-20th-century movement obsessed with math, geometry, and perception itself.",
+      function:"This piece isn't depicting anything — it's an experiment in how the eye perceives shape and pattern."
+    }}
+];
+
+let activeSuspects=[], culprit=null, mysteryClues=[], accusedWrong=new Set(), caseSolved7=false;
+
+function buildClueSet(suspect){
+  const list = [];
+  suspect.elements.forEach(e=> list.push({type:'element', attrValue:e, text:suspect.clues[e], revealed:false}));
+  suspect.principles.forEach(p=> list.push({type:'principle', attrValue:p, text:suspect.clues[p], revealed:false}));
+  list.push({type:'content', attrValue:suspect.content, text:suspect.clues.content, revealed:false});
+  list.push({type:'context', attrValue:suspect.context, text:suspect.clues.context, revealed:false});
+  list.push({type:'function', attrValue:suspect.function, text:suspect.clues.function, revealed:false});
+  return shuffle(list);
+}
+function buildGateQuestion(clue){
+  if(clue.type==='element' || clue.type==='principle'){
+    const found = elementsPrinciplesPool.find(q=>q.a===clue.attrValue);
+    if(found) return found;
+  }
+  return {q:'This evidence — "'+clue.text+'" — belongs in which detective file: Form, Content, Context, or Function?', opts:['Form','Content','Context','Function'], a:capitalize(clue.type)};
+}
+function suspectMatchesClue(suspect, clue){
+  if(clue.type==='element') return suspect.elements.includes(clue.attrValue);
+  if(clue.type==='principle') return suspect.principles.includes(clue.attrValue);
+  return suspect[clue.type]===clue.attrValue;
+}
+function startCase7(){
+  activeSuspects = pickRandom(suspectPool, 4);
+  culprit = activeSuspects[Math.floor(Math.random()*activeSuspects.length)];
+  mysteryClues = buildClueSet(culprit);
+  accusedWrong = new Set();
+  caseSolved7 = false;
+  const s7 = document.getElementById('stamp7'); if(s7) s7.textContent='';
+  document.getElementById('evidenceQuestion').innerHTML='';
+  const box = document.getElementById('c7result'); box.innerHTML=''; box.classList.remove('show');
+  renderSuspectBoard();
+  renderEvidenceLocker();
+}
+function renderSuspectBoard(){
+  const wrap = document.getElementById('suspectBoard'); wrap.innerHTML='';
+  activeSuspects.forEach(s=>{
+    const card=document.createElement('div'); card.className='suspect-card'; card.id='suspect-'+s.id;
+    const cleared = accusedWrong.has(s.id);
+    card.innerHTML = '<div class="suspect-name">'+s.name+'</div><div class="suspect-tag">'+s.tag+'</div><div class="suspect-bio">'+s.bio+'</div>'+
+      (cleared ? '<div class="alibi-tag">CLEARED — has an alibi</div>' : '<button class="btn small accuse-btn" data-id="'+s.id+'" onclick="accuse(\''+s.id+'\')">Accuse '+s.name.split(' ')[0]+'</button>');
+    wrap.appendChild(card);
+  });
+  updateEliminations();
+}
+function updateEliminations(){
+  activeSuspects.forEach(s=>{
+    const card=document.getElementById('suspect-'+s.id); if(!card) return;
+    const eliminatedByEvidence = mysteryClues.some(c=> c.revealed && !suspectMatchesClue(s,c));
+    card.classList.toggle('eliminated', eliminatedByEvidence || accusedWrong.has(s.id));
+  });
+}
+function renderEvidenceLocker(){
+  const wrap=document.getElementById('evidenceLocker'); wrap.innerHTML='';
+  mysteryClues.forEach((c,i)=>{
+    const div=document.createElement('div'); div.className='eslot'+(c.revealed?' revealed':' locked');
+    if(c.revealed){ div.innerHTML='<div class="eslot-num">EVIDENCE #'+(i+1)+'</div><div class="eslot-text">'+c.text+'</div>'; }
+    else { div.innerHTML='<div class="eslot-num">EVIDENCE #'+(i+1)+'</div><div class="eslot-lock">🔒 LOCKED</div><button class="btn small" onclick="investigate('+i+')">Investigate</button>'; }
+    wrap.appendChild(div);
+  });
+}
+function investigate(i){
+  const clue = mysteryClues[i];
+  const q = buildGateQuestion(clue);
+  const area = document.getElementById('evidenceQuestion');
+  area.innerHTML = '<div class="mcq" id="gateMcq"><p class="q">Analyzing Evidence #'+(i+1)+' — '+q.q+'</p></div>';
+  const mcqDiv = document.getElementById('gateMcq');
+  shuffle(q.opts).forEach(opt=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=opt;
+    b.onclick=()=>{
+      if(mcqDiv.dataset.locked) return;
+      if(opt===q.a){
+        mcqDiv.dataset.locked='1'; b.classList.add('correct');
+        mysteryClues[i].revealed=true;
+        setTimeout(()=>{ renderEvidenceLocker(); updateEliminations(); area.innerHTML=''; },500);
+      } else {
+        b.classList.add('wrong');
+        setTimeout(()=>{ b.classList.remove('wrong'); },500);
+      }
+    };
+    mcqDiv.appendChild(b);
+  });
+}
+function accuse(id){
+  if(caseSolved7) return;
+  const box = document.getElementById('c7result');
+  if(id===culprit.id){
+    caseSolved7 = true;
+    window.__c7solved = true;
+    document.querySelectorAll('.accuse-btn').forEach(b=>b.disabled=true);
+    const revealedCount = mysteryClues.filter(c=>c.revealed).length;
+    const rank = revealedCount<=4 ? "sharp-eyed detective — case closed on minimal evidence" : "thorough detective — case closed";
+    box.innerHTML = '<strong>Case closed.</strong> It was '+culprit.name+' — '+culprit.tag+'. '+culprit.bio+' You closed it like a '+rank+'.';
+    box.classList.add('show');
+    const s7 = document.getElementById('stamp7'); if(s7) s7.textContent='✔';
+    if(typeof updateFinale==='function') updateFinale();
+  } else {
+    accusedWrong.add(id);
+    renderSuspectBoard();
+    box.innerHTML = activeSuspects.find(s=>s.id===id).name+" has an alibi — cleared. Keep investigating.";
+    box.classList.add('show');
+  }
+}
+startCase7();
+
+/* ============ EXTENSIONS: FLASHCARDS ============ */
+let flashDeck = shuffle(vocabPool), flashIdx=0, flashShowingBack=false;
+function renderFlash(){
+  const item = flashDeck[flashIdx];
+  document.getElementById('flashLabel').textContent = flashShowingBack? 'DEFINITION' : 'TERM';
+  document.getElementById('flashText').textContent = flashShowingBack? item.def : item.term;
+  document.getElementById('flashStage').classList.toggle('back', flashShowingBack);
+  document.getElementById('flashCounter').textContent = (flashIdx+1)+' / '+flashDeck.length;
+}
+function flipFlash(){ flashShowingBack=!flashShowingBack; renderFlash(); }
+function nextFlash(){ flashShowingBack=false; flashIdx=(flashIdx+1)%flashDeck.length; renderFlash(); }
+function prevFlash(){ flashShowingBack=false; flashIdx=(flashIdx-1+flashDeck.length)%flashDeck.length; renderFlash(); }
+function shuffleFlash(){ flashDeck=shuffle(vocabPool); flashIdx=0; flashShowingBack=false; renderFlash(); }
+renderFlash();
+
+/* ============ EXTENSIONS: CRAM QUIZ GENERATOR ============ */
+function buildVocabMCQ(pool){
+  return pool.map(item=>{
+    const distractors = pickRandom(pool.filter(p=>p.term!==item.term), 3).map(p=>p.term);
+    return {q:'Which term matches this definition: "'+item.def+'"?', opts:[item.term, ...distractors], a:item.term};
+  });
+}
+function combinedCramPool(){
+  const vocabMCQ = buildVocabMCQ(vocabPool);
+  const fccfMCQ = fccfPool.map(item=>({q:item.clue, opts:['Form','Content','Context','Function'], a:capitalize(item.cat)}));
+  return [...vocabMCQ, ...fccfMCQ, ...elementsPrinciplesPool, ...judithPool];
+}
+let cramLockRef = {locked:false}, cramInterval=null;
+function generateCram(){
+  cramLockRef.locked=false;
+  clearInterval(cramInterval);
+  const pool = combinedCramPool();
+  const set = pickRandom(pool, 15);
+  document.getElementById('cramScoreLine').textContent = 'Score: 0 / 0 (out of '+set.length+')';
+  renderMCQSet(document.getElementById('cramContainer'), set, (s,c,t)=>{
+    document.getElementById('cramScoreLine').textContent = 'Score: '+s+' / '+c+' (out of '+t+')';
+  }, cramLockRef);
+  const timerDisp = document.getElementById('cramTimerDisplay');
+  if(document.getElementById('lightningToggle').checked){
+    let t=60; timerDisp.style.display='inline-block'; timerDisp.textContent='⏱ 1:00';
+    cramInterval=setInterval(()=>{
+      t--; const m=Math.floor(t/60), s=t%60;
+      timerDisp.textContent='⏱ '+m+':'+String(s).padStart(2,'0');
+      if(t<=0){ clearInterval(cramInterval); cramLockRef.locked=true; timerDisp.textContent="⏱ TIME'S UP"; }
+    },1000);
+  } else { timerDisp.style.display='none'; }
+}
+
+/* ============ FINALE ============ */
+function updateFinale(){
+  const solvedCount = Object.values(solved).filter(Boolean).length;
+  const badge = document.getElementById('finaleBadge');
+  const scoreLine = document.getElementById('finaleScore');
+  const bonusLine = document.getElementById('finaleBonus');
+  if(bonusLine) bonusLine.textContent = window.__c7solved ? '🕵️ Bonus Case #0007 — The Unsigned Canvas — SOLVED' : '🕵️ Bonus Case #0007 — The Unsigned Canvas — not yet attempted';
+  scoreLine.textContent = solvedCount + ' / 6 cases filed.';
+  if(solvedCount<6){ badge.textContent='— case in progress —'; return; }
+  const vocabFrac = (window.__vocabTotal? window.__vocabScore/window.__vocabTotal : 1);
+  const fccfFrac = (clues.length? c3score/clues.length : 1);
+  const elDen = (window.__elTotal||0)+(window.__elCTotal||0);
+  const elFrac = elDen? ((window.__elScore||0)+(window.__elCScore||0))/elDen : 1;
+  const judDen = (window.__judTotal||0)+(window.__verTotal||0);
+  const judFrac = judDen? ((window.__judScore||0)+(window.__verScore||0))/judDen : 1;
+  const credFrac = ((window.__c5score||0)/6);
+  const pct = (vocabFrac+fccfFrac+elFrac+judFrac+credFrac)/5*100;
+  let rank='ROOKIE INVESTIGATOR';
+  if(pct>=85) rank='MASTER CURATOR — CASE CLOSED WITH HONORS';
+  else if(pct>=65) rank='FIELD DETECTIVE — CASE CLOSED';
+  else if(pct>=45) rank='JUNIOR INVESTIGATOR — CASE CLOSED';
+  badge.innerHTML = rank + '<span class="stamp-graphic">FILED</span>';
+  scoreLine.textContent = solvedCount+' / 6 cases filed · overall accuracy ~'+Math.round(pct)+'%';
+}
+</script>
+</body>
+</html>

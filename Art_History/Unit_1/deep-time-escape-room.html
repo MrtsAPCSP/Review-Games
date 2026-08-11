@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operation Deep Time — Unit 1 Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --char: #1C1815; --earth: #362519; --earth2: #4a3323;
+    --ochre-r: #A8452E; --ochre-y: #C08A34; --bone: #EFE6D3; --bone-dim: #D9CBAE;
+    --stone: #767b6e; --stone-dark: #4f544a; --good: #6f8f5a; --bad: #a8452e;
+    --shadow: rgba(0,0,0,.45); --radius: 4px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background: radial-gradient(ellipse at 30% -10%, rgba(192,138,52,.12), transparent 55%),
+      repeating-linear-gradient(180deg, #241a13 0 60px, #2b1f16 60px 120px), var(--char);
+    color:var(--bone); font-family:'Source Serif 4', Georgia, serif; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Cinzel',Georgia,serif; letter-spacing:.03em;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  button{font-family:inherit; cursor:pointer;}
+  button:focus-visible, [tabindex]:focus-visible{outline:3px solid var(--ochre-y); outline-offset:2px;}
+  button[disabled]{cursor:not-allowed; opacity:.55;}
+
+  #intro{position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:24px;
+    background: radial-gradient(ellipse at 50% 20%, rgba(168,69,46,.18), transparent 60%), var(--char); overflow-y:auto;}
+  .intro-card{max-width:660px; text-align:center; border:1px solid rgba(239,230,211,.15);
+    background:linear-gradient(180deg, rgba(54,37,25,.9), rgba(28,24,21,.95)); padding:40px 34px; border-radius:var(--radius);
+    box-shadow:0 30px 80px var(--shadow); margin:20px 0;}
+  .eyebrow{text-transform:uppercase; letter-spacing:.3em; font-size:.68rem; color:var(--ochre-y); margin-bottom:12px; font-family:'JetBrains Mono',monospace;}
+  .intro-card h1{font-size:2rem; margin:0 0 6px; color:var(--bone);}
+  .intro-card .sub{color:var(--stone); font-size:.95rem; margin-bottom:18px; font-style:italic;}
+  .intro-card p{line-height:1.62; color:var(--bone-dim); font-size:.95rem;}
+  .briefing{text-align:left; margin:18px 0; padding:15px 17px; border-left:3px solid var(--ochre-r);
+    background:rgba(0,0,0,.25); border-radius:2px; font-size:.9rem; line-height:1.6; color:var(--bone-dim);}
+  .briefing b{color:var(--bone);}
+  .villain{color:var(--ochre-r); font-weight:700;}
+  .begin-btn{margin-top:6px; padding:13px 30px; font-size:1rem; font-family:'Cinzel',serif; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--char); background:linear-gradient(180deg, var(--ochre-y), #a5701f);
+    border:none; border-radius:3px; box-shadow:0 6px 0 #7a5417, 0 10px 20px var(--shadow); transition:transform .1s;}
+  .begin-btn:hover{transform:translateY(-2px);}
+  .begin-btn:active{transform:translateY(2px); box-shadow:0 2px 0 #7a5417;}
+  .solo-link{display:block; margin-top:16px; background:transparent; border:none; color:var(--stone);
+    font-size:.82rem; text-decoration:underline; text-underline-offset:3px;}
+  .solo-link:hover{color:var(--ochre-y);}
+  .target-note{margin-top:22px; padding-top:14px; border-top:1px dashed rgba(239,230,211,.15);
+    font-size:.68rem; color:var(--stone-dark); line-height:1.5; text-align:left; opacity:.75;}
+
+  #app{display:none; max-width:1180px; margin:0 auto; padding:22px 18px 70px;}
+  header.bar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid rgba(239,230,211,.15);}
+  header.bar h1{font-size:1.35rem; margin:0; color:var(--bone);}
+  header.bar .tag{font-size:.72rem; color:var(--stone); letter-spacing:.1em; text-transform:uppercase;}
+  .hdr-right{display:flex; align-items:center; gap:12px;}
+  #timer{font-family:'JetBrains Mono',monospace; font-size:1.25rem; font-weight:700; padding:6px 14px;
+    border:1px solid rgba(239,230,211,.25); border-radius:3px; background:rgba(0,0,0,.3); min-width:82px; text-align:center;}
+  #timer.low{color:var(--ochre-r); border-color:var(--ochre-r);}
+  .ghost-btn{background:transparent; border:1px solid rgba(239,230,211,.3); color:var(--bone-dim); padding:7px 13px; border-radius:3px; font-size:.78rem;}
+  .ghost-btn:hover{border-color:var(--ochre-y); color:var(--ochre-y);}
+
+  .layout{display:grid; grid-template-columns:1fr 290px; gap:24px;}
+  @media (max-width:860px){ .layout{grid-template-columns:1fr;} }
+
+  .trench-note{font-size:.86rem; color:var(--stone); margin-bottom:14px; line-height:1.55;}
+  .trench{display:flex; flex-direction:column; gap:12px;}
+  .tablet{position:relative; display:flex; align-items:center; gap:15px;
+    background:linear-gradient(180deg, rgba(118,123,110,.16), rgba(118,123,110,.05));
+    border:1px solid rgba(239,230,211,.15); border-left:5px solid var(--stone-dark);
+    border-radius:var(--radius); padding:15px 17px; text-align:left; color:inherit; width:100%;
+    transition:border-color .15s, background .15s;}
+  .tablet.active:hover{border-left-color:var(--ochre-y); background:rgba(192,138,52,.08);}
+  .tablet.done{border-left-color:var(--good); background:rgba(111,143,90,.1);}
+  .tablet.locked{opacity:.45;}
+  .tablet .depth-mark{font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--stone);
+    writing-mode:vertical-rl; text-transform:uppercase; letter-spacing:.14em; opacity:.7;}
+  .tablet .glyph{flex:0 0 auto; width:44px; height:44px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; border:2px solid var(--stone); font-family:'Cinzel',serif; font-weight:700;
+    font-size:1.15rem; color:var(--stone); background:rgba(0,0,0,.25);}
+  .tablet.active .glyph{border-color:var(--ochre-y); color:var(--ochre-y);}
+  .tablet.done .glyph{border-color:var(--good); color:var(--good); background:rgba(111,143,90,.15);}
+  .tablet .info{flex:1;}
+  .tablet .info h3{margin:0 0 3px; font-size:1.02rem; color:var(--bone);}
+  .tablet .info .meta{font-size:.78rem; color:var(--stone);}
+  .tablet .status{font-size:.7rem; font-family:'JetBrains Mono',monospace; letter-spacing:.07em; color:var(--stone); text-transform:uppercase;}
+  .tablet.done .status{color:var(--good);} .tablet.active .status{color:var(--ochre-y);}
+
+  .journal{background:rgba(0,0,0,.28); border:1px solid rgba(239,230,211,.15); border-radius:var(--radius);
+    padding:17px; height:fit-content; position:sticky; top:18px;}
+  .journal h2{font-size:.98rem; margin:0 0 3px; color:var(--bone);}
+  .journal .sub{font-size:.7rem; color:var(--stone); margin-bottom:14px; text-transform:uppercase; letter-spacing:.07em;}
+  .strata{display:flex; flex-direction:column; gap:4px; margin-bottom:16px;}
+  .layer{display:flex; align-items:center; justify-content:space-between; padding:8px 9px; border-radius:2px;
+    font-size:.76rem; background:rgba(118,123,110,.12); border:1px dashed rgba(239,230,211,.2); color:var(--stone);}
+  .layer.done{background:rgba(111,143,90,.18); border:1px solid var(--good); color:var(--bone);}
+  .layer.active{border:1px solid var(--ochre-y); color:var(--bone);}
+  .layer .ltr{font-family:'Cinzel',serif; font-weight:700; font-size:.98rem; color:var(--ochre-y);}
+  .layer.done .ltr{color:var(--good);}
+  .seal-word{display:flex; gap:6px; justify-content:center; margin:12px 0;}
+  .seal-word span{width:30px; height:30px; border:1px solid rgba(239,230,211,.25); border-radius:2px;
+    display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-weight:700;
+    color:var(--stone); background:rgba(0,0,0,.2);}
+  .seal-word span.lit{color:var(--ochre-y); border-color:var(--ochre-y); background:rgba(192,138,52,.12);}
+  .journal .hint{font-size:.73rem; color:var(--stone); line-height:1.5;}
+
+  #overlay{display:none; position:fixed; inset:0; z-index:60; padding:18px; background:rgba(10,7,5,.85);
+    align-items:flex-start; justify-content:center; overflow-y:auto;}
+  .modal{max-width:680px; width:100%; margin:26px auto; background:linear-gradient(180deg, #2b1f16, #201712);
+    border:1px solid rgba(239,230,211,.18); border-radius:6px; padding:26px 24px; box-shadow:0 30px 90px var(--shadow);}
+  .modal.rival{border-color:var(--ochre-r);}
+  .modal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px;}
+  .modal-head h2{margin:0; font-size:1.22rem; color:var(--bone);}
+  .modal-head .meta{font-size:.78rem; color:var(--stone); margin-bottom:8px;}
+  .close-x{background:transparent; border:none; color:var(--stone); font-size:1.35rem; line-height:1;}
+  .close-x:hover{color:var(--ochre-r);}
+  .flavor{font-size:.85rem; font-style:italic; color:var(--ochre-y); margin:6px 0 14px; line-height:1.55;}
+  .works-strip{display:flex; gap:9px; flex-wrap:wrap; margin:10px 0 16px;}
+  .work-chip{font-size:.76rem; padding:6px 10px; border:1px solid rgba(239,230,211,.2); border-radius:20px; color:var(--bone-dim); background:rgba(0,0,0,.2);}
+  .qbox{margin-bottom:18px; padding-bottom:16px; border-bottom:1px dashed rgba(239,230,211,.14);}
+  .qbox:last-of-type{border-bottom:none;}
+  .qtag{font-family:'JetBrains Mono',monospace; font-size:.66rem; color:var(--ochre-y); text-transform:uppercase; letter-spacing:.09em; margin-bottom:5px;}
+  .qtext{font-size:.95rem; line-height:1.5; color:var(--bone); margin-bottom:10px;}
+  .qicon{display:flex; justify-content:center; margin-bottom:10px; color:var(--bone-dim);}
+  .qicon svg{width:110px; height:110px;}
+  .options{display:flex; flex-direction:column; gap:7px;}
+  .opt{text-align:left; padding:9px 13px; border:1px solid rgba(239,230,211,.2); border-radius:3px;
+    background:rgba(118,123,110,.08); color:var(--bone-dim); font-size:.9rem;}
+  .opt:hover{border-color:var(--ochre-y);}
+  .opt.correct{border-color:var(--good); background:rgba(111,143,90,.2); color:var(--bone);}
+  .opt.wrong{border-color:var(--bad); background:rgba(168,69,46,.18); color:var(--bone);}
+  .textrow{display:flex; gap:8px;}
+  .textrow input{flex:1; padding:9px 11px; border-radius:3px; border:1px solid rgba(239,230,211,.25);
+    background:rgba(0,0,0,.25); color:var(--bone); font-size:.9rem; font-family:inherit;}
+  .textrow button{padding:9px 15px; border-radius:3px; border:none; background:var(--ochre-y); color:var(--char); font-weight:700; font-size:.82rem;}
+  .feedback{margin-top:7px; font-size:.83rem; font-family:'JetBrains Mono',monospace;}
+  .feedback.good{color:var(--good);} .feedback.bad{color:var(--ochre-r);}
+  .discuss{font-size:.78rem; color:var(--ochre-y); font-style:italic; margin-bottom:10px;}
+  .rival-bar-wrap{height:8px; border-radius:4px; background:rgba(0,0,0,.35); overflow:hidden; margin:10px 0 16px; border:1px solid rgba(168,69,46,.4);}
+  .rival-bar{height:100%; background:linear-gradient(90deg, var(--ochre-r), var(--ochre-y)); width:100%; transition:width .2s linear;}
+  .rival-warn{font-size:.82rem; color:var(--ochre-r); font-family:'JetBrains Mono',monospace; margin-bottom:10px;}
+  .success-box{text-align:center; padding:16px; border-radius:4px; background:rgba(111,143,90,.14); border:1px solid var(--good);}
+  .success-box .big-ltr{font-family:'Cinzel',serif; font-size:2.2rem; color:var(--ochre-y);}
+  .cta-row{text-align:center; margin-top:14px;}
+
+  #final-wrap{display:none; margin-top:32px;}
+  .vault-banner{text-align:center; padding:24px; margin-bottom:18px; border:1px solid var(--ochre-y); border-radius:6px;
+    background:radial-gradient(ellipse at 50% 0%, rgba(192,138,52,.16), transparent 70%), rgba(0,0,0,.25);}
+  .vault-banner h2{margin:0 0 6px; font-size:1.4rem;}
+  .vault-banner p{color:var(--bone-dim); font-size:.9rem; max-width:540px; margin:0 auto;}
+  .pool, .timeline{display:flex; flex-wrap:wrap; gap:8px; padding:13px; border-radius:4px; min-height:52px;}
+  .pool{background:rgba(0,0,0,.22); border:1px dashed rgba(239,230,211,.25); margin-bottom:13px;}
+  .timeline{background:rgba(118,123,110,.1); border:1px solid rgba(239,230,211,.2); margin-bottom:13px;}
+  .card{padding:8px 12px; border-radius:20px; border:1px solid rgba(239,230,211,.3); background:rgba(239,230,211,.06); font-size:.8rem; color:var(--bone-dim);}
+  .card:hover{border-color:var(--ochre-y); color:var(--bone);}
+  .card.placed{background:rgba(192,138,52,.14); border-color:var(--ochre-y); color:var(--bone);}
+  .slotnum{font-family:'JetBrains Mono',monospace; color:var(--ochre-y); margin-right:5px; font-weight:700;}
+  .check-btn{padding:11px 24px; border-radius:3px; border:none; background:var(--ochre-r); color:var(--bone); font-family:'Cinzel',serif; letter-spacing:.05em; font-size:.92rem;}
+  .card.right{border-color:var(--good) !important; background:rgba(111,143,90,.2) !important;}
+  .card.wrong{border-color:var(--bad) !important; background:rgba(168,69,46,.18) !important;}
+
+  #celebrate, #solo-overlay, #vault-overlay{display:none; position:fixed; inset:0; z-index:70; align-items:center; justify-content:center; background:rgba(10,7,5,.9); padding:20px;}
+  .cel-card{max-width:660px; width:100%; text-align:center; padding:32px 28px; background:linear-gradient(180deg, #2b1f16, #201712);
+    border:1px solid var(--ochre-y); border-radius:8px; max-height:88vh; overflow-y:auto;}
+  .cel-card h1{font-size:1.8rem; color:var(--ochre-y); margin:0 0 8px;}
+  .cel-card p{color:var(--bone-dim); font-size:.9rem; line-height:1.6;}
+  .recap{text-align:left; margin-top:16px; font-size:.8rem; line-height:1.7;}
+  .recap li{margin-bottom:4px; color:var(--bone-dim);}
+  .recap b{color:var(--bone);}
+  .btnrow{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:16px;}
+
+  .quiz-card{max-width:560px; width:100%; text-align:left; padding:28px; background:linear-gradient(180deg, #2b1f16, #201712);
+    border:1px solid var(--ochre-y); border-radius:8px; max-height:88vh; overflow-y:auto; position:relative;}
+  .quiz-close{position:absolute; top:16px; right:16px;}
+  .tier-badge{display:inline-block; padding:4px 11px; border-radius:20px; font-size:.72rem; font-family:'JetBrains Mono',monospace;
+    text-transform:uppercase; letter-spacing:.06em; border:1px solid var(--ochre-y); color:var(--ochre-y); margin-bottom:12px;}
+  .streak-row{display:flex; justify-content:space-between; font-size:.8rem; color:var(--stone); margin-bottom:14px;}
+
+  @media (prefers-reduced-motion: reduce){ *, *::before, *::after{transition-duration:.01ms !important; animation-duration:.01ms !important;} }
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="intro-card">
+    <div class="eyebrow">Field Assignment · Unit 1</div>
+    <h1>Operation Deep Time</h1>
+    <div class="sub">Five sealed layers stand between you and the Vault of Global Prehistory.</div>
+    <p>Your team has reached an excavation site holding eleven artifacts spanning 25,000 years. A rockslide sealed the trench into five layers, newest on top, oldest at the bottom — exactly how real archaeologists find deep time: you have to dig down through it, one layer at a time.</p>
+    <div class="briefing">
+      <b>The complication:</b> <span class="villain">Dr. Voss and the Silvertrowel Society</span> — a rival team with a reputation for "acquiring" sites before proper documentation — has been spotted at the ridge. Every time you clear a layer, expect them to make a move on your fragment before you can bank it.<br><br>
+      <b>Your mission:</b> clear each layer in order — you can't skip ahead. Answer its questions correctly with your partner, then beat Voss's team to secure the fragment. Do this five times and the seal word will assemble on its own. Then face the Final Trial: rebuild the true chronological order before the vault opens.<br><br>
+      <b>Rules:</b> talk out loud with your partner before you answer. Every attempt looks a little different, even for the pair next to you — the trench shifts each time.
+    </div>
+    <button class="begin-btn" onclick="beginDig()">Begin Excavation</button>
+    <button class="solo-link" onclick="openSolo()">🔎 Working alone, or want more practice later? Try Solo Excavation</button>
+    <div class="target-note">Learning target: identify the title, culture/region, date range, and medium of each Unit 1 work, and apply unit vocabulary to analyze form, function, content, and context.</div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="bar">
+    <div>
+      <h1>Operation Deep Time</h1>
+      <div class="tag">Unit 1 · Global Prehistory, 30,000–500 BCE</div>
+    </div>
+    <div class="hdr-right">
+      <div id="timer" class="mono">38:00</div>
+      <button class="ghost-btn" onclick="resetDig()">Reset Dig Site</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div>
+      <div class="trench-note">Clear each layer in order, newest to oldest. Voss's team will try something between layers — stay sharp.</div>
+      <div class="trench" id="trench"></div>
+
+      <div id="final-wrap">
+        <div class="vault-banner">
+          <h2>🗝️ The Seal Word Has Assembled</h2>
+          <p id="seal-reveal"></p>
+        </div>
+        <div class="vault-banner" style="margin-top:0;">
+          <h2>Final Trial: The Timeline of Deep Time</h2>
+          <p>You dug newest to oldest — but historians read time forward. Tap the eleven works below in true chronological order, <b>oldest first</b>, to open the vault.</p>
+        </div>
+        <div class="pool" id="pool"></div>
+        <div class="timeline" id="timeline"></div>
+        <div style="text-align:center;"><button class="check-btn" onclick="checkTimeline()">Check the Timeline</button></div>
+        <div id="timeline-feedback" style="text-align:center;"></div>
+      </div>
+    </div>
+
+    <div class="journal">
+      <h2>Field Journal</h2>
+      <div class="sub">Stratigraphy progress</div>
+      <div class="strata" id="strata"></div>
+      <div class="sub" style="text-align:center;">Seal word</div>
+      <div class="seal-word" id="sealword"></div>
+      <div class="hint">Every layer you clear reveals one letter. Five layers, five letters — what era is this whole unit named for?</div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay"><div class="modal" id="modal-content"></div></div>
+<div id="celebrate"><div class="cel-card" id="cel-body"></div></div>
+<div id="vault-overlay"><div class="quiz-card" id="vault-body"></div></div>
+<div id="solo-overlay"><div class="quiz-card" id="solo-body"></div></div>
+
+<script>
+/* ================= ICONS ================= */
+/* Original abstract line-art built from each work's distinguishing silhouette/features —
+   not reproductions of any museum photograph. One icon per work, all 11 covered. */
+const ICONS = {
+  curledAnimal: `<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M65 100 C25 100 20 55 50 40 C75 28 95 45 88 62 C83 74 65 74 62 60"/><circle cx="60" cy="58" r="4" fill="currentColor"/></svg>`,
+  twoHead: `<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="4"><circle cx="45" cy="30" r="17"/><circle cx="75" cy="30" r="17"/><path d="M28 58 L92 58 L76 104 L44 104 Z"/></svg>`,
+  potsherd: `<svg viewBox="0 0 140 120" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M20 30 L70 15 L120 35 L110 70 L90 100 L55 95 L25 75 Z"/><path d="M35 40 A40 40 0 0 1 100 45" stroke-dasharray="4 4"/><path d="M40 55 A30 30 0 0 1 90 58" stroke-dasharray="4 4"/><circle cx="45" cy="35" r="2" fill="currentColor"/><circle cx="60" cy="28" r="2" fill="currentColor"/><circle cx="80" cy="30" r="2" fill="currentColor"/><circle cx="98" cy="40" r="2" fill="currentColor"/></svg>`,
+  ring: `<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="6"><circle cx="60" cy="60" r="40"/><circle cx="60" cy="60" r="16"/><line x1="60" y1="14" x2="60" y2="30"/><line x1="60" y1="90" x2="60" y2="106"/><line x1="14" y1="60" x2="30" y2="60"/><line x1="90" y1="60" x2="106" y2="60"/></svg>`,
+  trilithon: `<svg viewBox="0 0 120 120" fill="currentColor"><rect x="20" y="30" width="14" height="70"/><rect x="86" y="30" width="14" height="70"/><rect x="14" y="14" width="92" height="16"/></svg>`,
+  ibexHorn: `<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"><path d="M62 102 C18 102 18 38 62 38 C90 38 90 72 60 72 C42 72 42 54 60 54"/></svg>`,
+  steleSlab: `<svg viewBox="0 0 100 160" fill="none" stroke="currentColor" stroke-width="4"><rect x="20" y="10" width="60" height="140" rx="18"/><ellipse cx="50" cy="35" rx="14" ry="10"/><circle cx="45" cy="34" r="2" fill="currentColor"/><circle cx="55" cy="34" r="2" fill="currentColor"/><line x1="30" y1="60" x2="70" y2="100"/><line x1="70" y1="60" x2="30" y2="100"/><path d="M40 120 L60 120 L50 140 Z"/></svg>`,
+  boneHead: `<svg viewBox="0 0 140 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M30 60 C20 40 35 20 60 22 C58 14 66 10 72 14 C70 18 74 22 80 22 C105 22 120 40 110 62 C118 66 112 76 100 72 C92 82 70 84 55 78 C40 88 22 80 30 60 Z"/><circle cx="55" cy="45" r="6" fill="currentColor"/><circle cx="85" cy="42" r="6" fill="currentColor"/></svg>`,
+  hornedRunner: `<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="4"><circle cx="60" cy="25" r="10"/><path d="M50 20 C38 4 26 4 20 16"/><path d="M70 20 C82 4 94 4 100 16"/><line x1="60" y1="35" x2="60" y2="68"/><line x1="60" y1="45" x2="33" y2="60"/><line x1="60" y1="45" x2="92" y2="34"/><line x1="60" y1="68" x2="38" y2="106"/><line x1="60" y1="68" x2="86" y2="100"/></svg>`,
+  bull: `<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M20 70 C20 50 40 40 60 42 C58 30 66 22 74 24 C70 30 72 36 78 38 C100 36 130 46 140 62 C142 70 132 74 120 72 C110 80 90 82 70 78 C50 84 30 82 20 70 Z"/><line x1="30" y1="72" x2="26" y2="90"/><line x1="50" y1="76" x2="48" y2="92"/><line x1="100" y1="74" x2="104" y2="90"/><line x1="120" y1="70" x2="126" y2="86"/></svg>`,
+  scratchMark: `<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M30 65 L45 50 L60 55 L75 45 L95 50 L115 40" stroke-dasharray="2 5"/><path d="M35 68 L50 72 L65 70 L80 74 L100 68 L118 62"/><line x1="40" y1="70" x2="36" y2="86"/><line x1="60" y1="72" x2="58" y2="88"/><line x1="90" y1="70" x2="93" y2="86"/><line x1="108" y1="64" x2="112" y2="80"/></svg>`
+};
+function iconHTML(key){ return `<div class="qicon">${ICONS[key]||''}</div>`; }
+
+/* ================= LEVEL DATA (dig order: newest → oldest) ================= */
+const LEVELS = [
+  { id:'L1', letter:'S', title:'Layer I — Islands at the Edge of Prehistory',
+    subtitle:'c. 1,500–900 BCE · Papua New Guinea, Mexico & the Solomon Islands', depth:1,
+    flavor:'Loose soil, recent tool marks. This layer is closest to the surface — and closest to Voss\u2019s last known position.',
+    works:[
+      {name:'Ambum Stone', meta:'Papua New Guinea · c. 1,500 BCE · greywacke'},
+      {name:'Tlatilco Female Figurines', meta:'Central Mexico · 1,200–900 BCE · ceramic with traces of paint'},
+      {name:'Terracotta Fragment', meta:'Reef Islands, Solomon Islands · 1,000 BCE · incised terracotta'}
+    ],
+    bank:[
+      {type:'mcq', q:'Carved from greywacke stone in Papua New Guinea, this rounded sculpture curls almost into a spiral and is meant to be admired from every side.', options:['Ambum Stone','Terracotta Fragment','Tlatilco Female Figurines','Jade Cong'], correct:0},
+      {type:'text', q:'The technique of carving a sculpture so it can be appreciated from every angle. Two words.', accept:['sculpture in the round']},
+      {type:'mcq', q:'What material were the Tlatilco figurines made from?', options:['Bronze','Ceramic','Sandstone','Jade'], correct:1},
+      {type:'text', q:'Some Tlatilco figurines have two heads on one body. What word means "two-headed"?', accept:['bicephalic']},
+      {type:'mcq', q:'The incised Terracotta Fragment was found in which island group?', options:['Solomon Islands','Papua New Guinea','Arabian Peninsula','Central Mexico'], correct:0},
+      {type:'image', icon:'twoHead', q:'This silhouette highlights a feature of one work from this layer. Which one?', options:['Tlatilco Female Figurines','Ambum Stone','Terracotta Fragment'], correct:0},
+      {type:'image', icon:'curledAnimal', q:'This curled, rounded form is meant to be viewed from every side. Which work?', options:['Ambum Stone','Terracotta Fragment','Tlatilco Female Figurines'], correct:0},
+      {type:'image', icon:'potsherd', q:'A broken, incised piece of fired clay. Which work does this represent?', options:['Terracotta Fragment','Ambum Stone','Jade Cong'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was the Ambum Stone made?', options:['c. 1,500 BCE','c. 1,000 BCE','1,200–900 BCE','3,300–2,200 BCE'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when were the Tlatilco Female Figurines made?', options:['1,200–900 BCE','c. 1,500 BCE','1,000 BCE','4,000 BCE'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was the Terracotta Fragment made?', options:['1,000 BCE','c. 1,500 BCE','1,200–900 BCE','2,500 BCE'], correct:0},
+      {type:'mcq', q:'Of the three works in this layer, which is the oldest?', options:['Ambum Stone','Tlatilco Female Figurines','Terracotta Fragment','They are all the same date'], correct:0}
+    ]
+  },
+  { id:'L2', letter:'T', title:'Layer II — Monuments of the Neolithic',
+    subtitle:'c. 3,300–1,600 BCE · China & Britain', depth:2,
+    flavor:'The soil turns to compacted clay. Whatever built this layer meant it to last — you can feel the scale of it before you can see it.',
+    works:[
+      {name:'Jade Cong', meta:'Liangzhu, China · 3,300–2,200 BCE · carved jade'},
+      {name:'Stonehenge', meta:'Wiltshire, UK · c. 2,500–1,600 BCE · sandstone'}
+    ],
+    bank:[
+      {type:'text', q:'A tubular jade object with a circular hole cut into a square-shaped cross-section. One word.', accept:['cong']},
+      {type:'mcq', q:'Stonehenge was built using a method where two upright stones support a horizontal beam. What is this method called?', options:['Mortise-and-tenon','Post-and-lintel','Sculpture in the round','Twisted perspective'], correct:1},
+      {type:'text', q:'A very large stone used in a prehistoric structure, like the sarsens at Stonehenge. One word.', accept:['megalith']},
+      {type:'mcq', q:'A zoomorphic mask motif carved on Chinese jades — frontal, symmetrical, with raised eyes and no lower jaw.', options:['Taotie','Cong','Ibex','Stele'], correct:0},
+      {type:'mcq', q:'Which work was carved from jade and buried in a tomb at Liangzhu?', options:['Jade Cong','Stonehenge','Beaker with Ibex Motifs','Anthropomorphic Stele'], correct:0},
+      {type:'image', icon:'trilithon', q:'This post-and-lintel silhouette should look familiar. Which work does it represent?', options:['Stonehenge','Jade Cong'], correct:0},
+      {type:'image', icon:'ring', q:'A ringed jade form with a hole through the center. Which work?', options:['Jade Cong','Stonehenge'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was the Jade Cong made?', options:['3,300–2,200 BCE','c. 2,500–1,600 BCE','1,000 BCE','25,000 BCE'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was Stonehenge built?', options:['c. 2,500–1,600 BCE','3,300–2,200 BCE','15,000 BCE','1,000 BCE'], correct:0},
+      {type:'mcq', q:'Which of these two Neolithic monuments is older?', options:['Jade Cong','Stonehenge','They are exactly the same age'], correct:0},
+      {type:'mcq', q:'In which country is Stonehenge located?', options:['United Kingdom','France','Iran','China'], correct:0},
+      {type:'text', q:'The wood-joint-style technique that locks Stonehenge\u2019s lintels onto their upright stones. Hyphenated, two parts.', accept:['mortise-and-tenon','mortise and tenon']}
+    ]
+  },
+  { id:'L3', letter:'O', title:'Layer III — Cradles of the Near East',
+    subtitle:'c. 4,200–4,000 BCE · Iran & the Arabian Peninsula', depth:3,
+    flavor:'Fired clay dust and sandstone grit. People here were settling down for good — this is where farming villages take root.',
+    works:[
+      {name:'Beaker with Ibex Motifs', meta:'Susa, Iran · 4,200–3,500 BCE · painted terracotta'},
+      {name:'Anthropomorphic Stele', meta:'Arabian Peninsula · c. 4,000 BCE · sandstone'}
+    ],
+    bank:[
+      {type:'text', q:'A wild mountain goat with long, recurved horns, painted on a beaker from Susa. One word.', accept:['ibex']},
+      {type:'mcq', q:'"Anthropomorphic" describes a work that:', options:['is shaped like an animal','has human characteristics without being an actual human','was used to store grain','was carved after 500 BCE'], correct:1},
+      {type:'text', q:'An upright stone slab used to mark a grave or site. One word (plural: stelae).', accept:['stele']},
+      {type:'mcq', q:'The Beaker with Ibex Motifs was made from which material?', options:['Carved jade','Painted terracotta','Sandstone','Bone'], correct:1},
+      {type:'mcq', q:'Where was the Anthropomorphic Stele found?', options:['Susa, Iran','Arabian Peninsula','Liangzhu, China','Tequixquiac, Mexico'], correct:1},
+      {type:'image', icon:'ibexHorn', q:'This curling motif decorates a painted vessel from this layer. Which work?', options:['Beaker with Ibex Motifs','Anthropomorphic Stele'], correct:0},
+      {type:'image', icon:'steleSlab', q:'A carved standing slab with a simplified face and crossed bands. Which work?', options:['Anthropomorphic Stele','Beaker with Ibex Motifs'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was the Beaker with Ibex Motifs made?', options:['4,200–3,500 BCE','c. 4,000 BCE','1,500 BCE','15,000 BCE'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was the Anthropomorphic Stele made?', options:['c. 4,000 BCE','4,200–3,500 BCE','1,000 BCE','25,000 BCE'], correct:0},
+      {type:'mcq', q:'In which modern country would you find Susa, where the Beaker with Ibex Motifs was found?', options:['Iran','Iraq','Saudi Arabia','Turkey'], correct:0},
+      {type:'text', q:'The shift from nomadic hunting-gathering to settled farming communities — happening in this layer\u2019s region and period. Two words.', accept:['neolithic revolution']},
+      {type:'mcq', q:'Both works in this layer belong to which broad period of prehistory?', options:['Neolithic','Paleolithic','Mesolithic','Iron Age'], correct:0}
+    ]
+  },
+  { id:'L4', letter:'N', title:'Layer IV — Bones of the Hunters',
+    subtitle:'c. 14,000–4,000 BCE · Mexico & Algeria', depth:4,
+    flavor:'Sand and old bone fragments. The climate is warming here — hunter-gatherers are on the move, following rivers and herds.',
+    works:[
+      {name:'Camelid Sacrum in the Shape of a Canine', meta:'Tequixquiac, Mexico · 14,000–7,000 BCE · bone'},
+      {name:'Running Horned Woman', meta:'Tassili n\u2019 Ajjer, Algeria · 6,000–4,000 BCE · pigment on rock'}
+    ],
+    bank:[
+      {type:'text', q:'The triangular bone at the base of the spine, considered sacred — reshaped here into a dog\u2019s head. One word.', accept:['sacrum']},
+      {type:'mcq', q:'The bone above came from an animal in which family — mammals related to camels?', options:['Bovid','Camelid','Ibex','Hominid'], correct:1},
+      {type:'text', q:'The technique of using a figure\u2019s size to show its importance. Two words.', accept:['hierarchy of scale']},
+      {type:'mcq', q:'Running Horned Woman was painted using which medium?', options:['Charcoal on stone','Pigment on rock','Carved jade','Painted terracotta'], correct:1},
+      {type:'mcq', q:'Which work was carved from a single bone to resemble a dog\u2019s head?', options:['Camelid Sacrum','Running Horned Woman','Ambum Stone','Jade Cong'], correct:0},
+      {type:'image', icon:'hornedRunner', q:'Notice the horned headdress on this running figure. Which work is this?', options:['Running Horned Woman','Camelid Sacrum'], correct:0},
+      {type:'image', icon:'boneHead', q:'Two ear-like flaps and hollow eye sockets, carved from bone. Which work?', options:['Camelid Sacrum','Running Horned Woman'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was the Camelid Sacrum made?', options:['14,000–7,000 BCE','6,000–4,000 BCE','25,000 BCE','1,000 BCE'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was Running Horned Woman painted?', options:['6,000–4,000 BCE','14,000–7,000 BCE','15,000–13,000 BCE','3,300 BCE'], correct:0},
+      {type:'mcq', q:'Which of these two works is older?', options:['Camelid Sacrum','Running Horned Woman','They are the same age'], correct:0},
+      {type:'mcq', q:'Running Horned Woman was found at which site?', options:['Tassili n\u2019 Ajjer, Algeria','Lascaux, France','Susa, Iran','Namibia'], correct:0},
+      {type:'text', q:'A term for an ancient painting made on a rock surface, like Running Horned Woman. One word.', accept:['pictograph']}
+    ]
+  },
+  { id:'L5', letter:'E', title:'Layer V — The Ice Age Archive',
+    subtitle:'c. 25,500–13,000 BCE · Namibia & France', depth:5,
+    flavor:'Bedrock. This is the oldest surface humans left a mark on in this entire unit — the very floor of deep time.',
+    works:[
+      {name:'Apollo 11 Stones', meta:'Namibia · c. 25,500–25,300 BCE · charcoal on stone'},
+      {name:'Great Hall of the Bulls', meta:'Lascaux, France · 15,000–13,000 BCE · rock painting'}
+    ],
+    bank:[
+      {type:'mcq', q:'This charcoal-drawn animal on a stone slab, found in Namibia, is the oldest known figurative art from Africa in this unit.', options:['Great Hall of the Bulls','Apollo 11 Stones','Running Horned Woman','Ambum Stone'], correct:1},
+      {type:'text', q:'A mammal of the cattle family — cattle, bison, buffalo, antelope. One word.', accept:['bovid']},
+      {type:'text', q:'A belief system in which spirits are accessed by chamans — often used to explain deep cave paintings like Lascaux. One word.', accept:['shamanism']},
+      {type:'mcq', q:'Great Hall of the Bulls is located in which cave system?', options:['Lascaux','Altamira','Chauvet','Pech Merle'], correct:0},
+      {type:'mcq', q:'What is the medium of the Apollo 11 Stones?', options:['Painted terracotta','Charcoal on stone','Carved jade','Pigment on rock'], correct:1},
+      {type:'image', icon:'bull', q:'This bull-like silhouette is painted deep inside a cave in France. Which work?', options:['Great Hall of the Bulls','Apollo 11 Stones'], correct:0},
+      {type:'image', icon:'scratchMark', q:'A rough, scratchy charcoal sketch of an animal. Which work?', options:['Apollo 11 Stones','Great Hall of the Bulls'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when were the Apollo 11 Stones made?', options:['c. 25,500–25,300 BCE','15,000–13,000 BCE','6,000 BCE','1,000 BCE'], correct:0},
+      {type:'date', q:'Carbon-date it: approximately when was Great Hall of the Bulls painted?', options:['15,000–13,000 BCE','25,500–25,300 BCE','4,000 BCE','2,500 BCE'], correct:0},
+      {type:'mcq', q:'Which of these two works is older?', options:['Apollo 11 Stones','Great Hall of the Bulls','They are the same age'], correct:0},
+      {type:'mcq', q:'The Apollo 11 Stones were found in which country?', options:['Namibia','France','Spain','Algeria'], correct:0},
+      {type:'text', q:'A technique showing an animal\u2019s body in profile while its head turns to face the viewer. Two words.', accept:['twisted perspective']}
+    ]
+  }
+];
+
+const timelineOrder = [
+  'Apollo 11 Stones','Great Hall of the Bulls','Camelid Sacrum in the Shape of a Canine',
+  'Running Horned Woman','Beaker with Ibex Motifs','Anthropomorphic Stele','Jade Cong',
+  'Stonehenge','Ambum Stone','Tlatilco Female Figurines','Terracotta Fragment'
+];
+const timelineMeta = {
+  'Apollo 11 Stones':'Namibia · c. 25,500–25,300 BCE',
+  'Great Hall of the Bulls':'Lascaux, France · 15,000–13,000 BCE',
+  'Camelid Sacrum in the Shape of a Canine':'Tequixquiac, Mexico · 14,000–7,000 BCE',
+  'Running Horned Woman':'Tassili n\u2019 Ajjer, Algeria · 6,000–4,000 BCE',
+  'Beaker with Ibex Motifs':'Susa, Iran · 4,200–3,500 BCE',
+  'Anthropomorphic Stele':'Arabian Peninsula · c. 4,000 BCE',
+  'Jade Cong':'Liangzhu, China · 3,300–2,200 BCE',
+  'Stonehenge':'Wiltshire, UK · c. 2,500–1,600 BCE',
+  'Ambum Stone':'Papua New Guinea · c. 1,500 BCE',
+  'Tlatilco Female Figurines':'Central Mexico · 1,200–900 BCE',
+  'Terracotta Fragment':'Reef Islands, Solomon Islands · 1,000 BCE'
+};
+
+/* Harder cross-unit pool — fuels the Deep Vault (in-class bonus) and Solo Excavation (take-home) */
+const HARD_QS = [
+  {type:'mcq', q:'Which two works share the same general material family — a fired clay?', options:['Beaker with Ibex Motifs & Terracotta Fragment','Jade Cong & Stonehenge','Ambum Stone & Camelid Sacrum','Apollo 11 Stones & Great Hall of the Bulls'], correct:0},
+  {type:'mcq', q:'Which work is closest in date to the Jade Cong?', options:['Stonehenge','Great Hall of the Bulls','Apollo 11 Stones','Camelid Sacrum'], correct:0},
+  {type:'text', q:'Name the work in this unit made primarily of bone.', accept:['camelid sacrum','camelid sacrum in the shape of a canine']},
+  {type:'mcq', q:'Post-and-lintel construction appears in which work?', options:['Stonehenge','Jade Cong','Anthropomorphic Stele','Terracotta Fragment'], correct:0},
+  {type:'text', q:'Small, portable prehistoric artworks — figurines, engraved stones, bone carvings. Two words (French term).', accept:['art mobilier']},
+  {type:'mcq', q:'Which term refers to early human ancestors, including modern humans and their extinct relatives?', options:['Hominids','Bovids','Camelids','Taotie'], correct:0},
+  {type:'text', q:'The scientific study of ancient peoples through excavation. One word.', accept:['archaeology']},
+  {type:'text', q:'Broken pieces of ancient ceramic found at a dig site. One word.', accept:['potsherds','potsherd']},
+  {type:'text', q:'A single upright standing stone (not a full circle). One word.', accept:['menhir']},
+  {type:'mcq', q:'Put these Stone Age periods in order, earliest to latest:', options:['Paleolithic \u2192 Mesolithic \u2192 Neolithic','Neolithic \u2192 Mesolithic \u2192 Paleolithic','Mesolithic \u2192 Paleolithic \u2192 Neolithic','Neolithic \u2192 Paleolithic \u2192 Mesolithic'], correct:0},
+  {type:'mcq', q:'Which work in this unit is closest in date to 500 BCE (the unit\u2019s end boundary)?', options:['Terracotta Fragment','Apollo 11 Stones','Jade Cong','Great Hall of the Bulls'], correct:0},
+  {type:'mcq', q:'Roughly how many years separate the Apollo 11 Stones from the Terracotta Fragment?', options:['About 24,500 years','About 1,000 years','About 12,000 years','About 100 years'], correct:0},
+  {type:'mcq', q:'Which pair of works were both built as massive, labor-intensive Neolithic monuments on entirely different continents with no contact between the cultures?', options:['Jade Cong & Stonehenge','Ambum Stone & Terracotta Fragment','Apollo 11 Stones & Beaker with Ibex Motifs','Camelid Sacrum & Anthropomorphic Stele'], correct:0},
+  {type:'date', q:'Carbon-date it: which of these four works is the oldest of all eleven in this unit?', options:['Apollo 11 Stones','Great Hall of the Bulls','Camelid Sacrum','Jade Cong'], correct:0},
+  {type:'date', q:'Carbon-date it: which of these four works is the youngest (most recent) of all eleven in this unit?', options:['Terracotta Fragment','Ambum Stone','Stonehenge','Beaker with Ibex Motifs'], correct:0}
+];
+
+/* ================= UTIL ================= */
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function normalize(s){ return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,''); }
+function shuffleOptions(q){
+  if(q.type==='text') return {...q};
+  const idxs = shuffle(q.options.map((_,i)=>i));
+  const options = idxs.map(i=>q.options[i]);
+  const correct = idxs.indexOf(q.correct);
+  return {...q, options, correct};
+}
+function pickQuestions(bank, n){ return shuffle(bank).slice(0, n).map(shuffleOptions); }
+function tagFor(type){ return type==='image' ? 'Image ID' : type==='date' ? 'Date Estimate' : type==='text' ? 'Vocabulary' : 'Identify'; }
+
+/* ================= STATE ================= */
+let levelIndex = 0;
+let placedOrder = [];
+let secondsLeft = 38*60;
+let timerInterval = null;
+let sessionQuestions = [];
+let answeredFlags = [];
+let rivalTimer = null;
+
+/* ================= BOOT ================= */
+function beginDig(){
+  document.getElementById('intro').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderAll();
+  startTimer();
+}
+function renderAll(){ renderTrench(); renderStrata(); renderSealWord(); }
+
+function renderTrench(){
+  const el = document.getElementById('trench');
+  el.innerHTML = LEVELS.map((lv,i)=>{
+    const status = i<levelIndex ? 'done' : i===levelIndex ? 'active' : 'locked';
+    const glyph = status==='done' ? lv.letter : status==='active' ? '?' : '&#128274;';
+    const statusText = status==='done' ? 'Cleared' : status==='active' ? 'In progress' : `Locked — clear Layer ${i}`;
+    const clickable = status!=='locked';
+    return `<button class="tablet ${status}" ${clickable?`onclick="openLevel(${i})"`:'disabled'}>
+      <div class="depth-mark">Depth ${lv.depth}</div>
+      <div class="glyph">${glyph}</div>
+      <div class="info"><h3>${lv.title}</h3><div class="meta">${lv.subtitle}</div></div>
+      <div class="status">${statusText}</div>
+    </button>`;
+  }).join('');
+}
+function renderStrata(){
+  const el = document.getElementById('strata');
+  el.innerHTML = LEVELS.map((lv,i)=>{
+    const status = i<levelIndex ? 'done' : i===levelIndex ? 'active' : '';
+    return `<div class="layer ${status}"><span>${lv.title.split('—')[1].trim()}</span><span class="ltr">${status==='done'?lv.letter:'?'}</span></div>`;
+  }).join('');
+}
+function renderSealWord(){
+  const el = document.getElementById('sealword');
+  el.innerHTML = LEVELS.map((lv,i)=>`<span class="${i<levelIndex?'lit':''}">${i<levelIndex?lv.letter:'?'}</span>`).join('');
+  if(levelIndex>=LEVELS.length){
+    document.getElementById('final-wrap').style.display='block';
+    document.getElementById('seal-reveal').textContent = 'S · T · O · N · E — the era this entire unit is named for. All five layers cleared. On to the Final Trial.';
+    renderPool();
+  }
+}
+
+/* ================= LEVEL MODAL ================= */
+function openLevel(i){
+  const lv = LEVELS[i];
+  const overlay = document.getElementById('overlay');
+  const box = document.getElementById('modal-content');
+  if(i < levelIndex){
+    box.className='modal';
+    box.innerHTML = `
+      <div class="modal-head"><div><h2>${lv.title}</h2><div class="meta">${lv.subtitle}</div></div>
+        <button class="close-x" onclick="closeModal()">&times;</button></div>
+      <div class="success-box"><div>Already secured <span style="color:var(--good)">✓</span> — fragment "<b>${lv.letter}</b>" is safe.</div></div>
+      <div class="works-strip">${lv.works.map(w=>`<span class="work-chip">${w.name} — ${w.meta}</span>`).join('')}</div>`;
+    overlay.style.display='flex';
+    return;
+  }
+  sessionQuestions = pickQuestions(lv.bank, 5);
+  answeredFlags = new Array(sessionQuestions.length).fill(false);
+  box.className='modal';
+  box.innerHTML = `
+    <div class="modal-head"><div><h2>${lv.title}</h2><div class="meta">${lv.subtitle}</div></div>
+      <button class="close-x" onclick="closeModal()">&times;</button></div>
+    <div class="flavor">${lv.flavor}</div>
+    <div class="works-strip">${lv.works.map(w=>`<span class="work-chip">${w.name} — ${w.meta}</span>`).join('')}</div>
+    <div class="discuss">🗣️ Talk it out with your partner before you lock in an answer.</div>
+    <div id="qwrap"></div>
+    <div class="success-box" id="level-clear" style="display:none;"></div>`;
+  const qwrap = box.querySelector('#qwrap');
+  sessionQuestions.forEach((q,qi)=>{ qwrap.appendChild(renderQuestion(q, qi, i, 'main')); });
+  overlay.style.display='flex';
+}
+
+function renderQuestion(q, qi, levelIdx, mode){
+  const wrap = document.createElement('div');
+  wrap.className='qbox';
+  wrap.id = mode==='main' ? `mq-${qi}` : 'rq-box';
+  const iconHtml = q.type==='image' ? iconHTML(q.icon) : '';
+  let bodyHtml = `<div class="qtag">${tagFor(q.type)}</div>${iconHtml}<div class="qtext">${q.q}</div>`;
+  if(q.type==='text'){
+    bodyHtml += `<div class="textrow">
+      <input type="text" id="${mode}-input-${qi}" placeholder="Type your answer…" onkeydown="if(event.key==='Enter'){${mode==='main'?`answerText(${qi},${levelIdx})`:`rivalAnswerText(${qi})`}}">
+      <button onclick="${mode==='main'?`answerText(${qi},${levelIdx})`:`rivalAnswerText(${qi})`}">Submit</button>
+    </div>`;
+  } else {
+    bodyHtml += `<div class="options">${q.options.map((opt,oi)=>
+      `<button class="opt" onclick="${mode==='main'?`answerMCQ(${qi},${oi},${levelIdx})`:`rivalAnswerMCQ(${oi})`}">${opt}</button>`
+    ).join('')}</div>`;
+  }
+  bodyHtml += `<div class="feedback" id="${mode}-fb-${qi}"></div>`;
+  wrap.innerHTML = bodyHtml;
+  return wrap;
+}
+
+function answerMCQ(qi, oi, levelIdx){
+  const q = sessionQuestions[qi];
+  const box = document.getElementById(`mq-${qi}`);
+  const opts = box.querySelectorAll('.opt');
+  opts.forEach((b,i)=>{ b.disabled=true; if(i===q.correct) b.classList.add('correct'); if(i===oi && i!==q.correct) b.classList.add('wrong'); });
+  const fb = document.getElementById(`main-fb-${qi}`);
+  if(oi===q.correct){
+    fb.textContent='Correct.'; fb.className='feedback good';
+    answeredFlags[qi]=true;
+    checkLevelComplete(levelIdx);
+  } else {
+    fb.textContent='Not quite — discuss with your partner and try again.'; fb.className='feedback bad';
+    setTimeout(()=>{ opts.forEach(b=>{ if(!b.classList.contains('correct')){ b.disabled=false; b.classList.remove('wrong'); } }); },850);
+  }
+}
+function answerText(qi, levelIdx){
+  const q = sessionQuestions[qi];
+  const input = document.getElementById(`main-input-${qi}`);
+  const fb = document.getElementById(`main-fb-${qi}`);
+  const ok = q.accept.some(a=>normalize(a)===normalize(input.value));
+  if(ok){
+    fb.textContent='Correct.'; fb.className='feedback good';
+    input.disabled=true;
+    answeredFlags[qi]=true;
+    checkLevelComplete(levelIdx);
+  } else {
+    fb.textContent='Not quite — check the vocab list and try again.'; fb.className='feedback bad';
+  }
+}
+function checkLevelComplete(levelIdx){
+  if(answeredFlags.every(Boolean)){
+    const box = document.getElementById('level-clear');
+    box.style.display='block';
+    box.innerHTML = `<div>All questions cleared. Voss\u2019s team is closing in — securing the fragment now…</div>`;
+    setTimeout(()=>startRival(levelIdx), 900);
+  }
+}
+
+/* ================= RIVAL EVENT ================= */
+let rivalPool = [];
+function startRival(levelIdx){
+  const lv = LEVELS[levelIdx];
+  rivalPool = shuffle(lv.bank).map(shuffleOptions);
+  runRivalRound(levelIdx, 0);
+}
+function runRivalRound(levelIdx, attempt){
+  const box = document.getElementById('modal-content');
+  const q = rivalPool[attempt % rivalPool.length];
+  box.className='modal rival';
+  box.innerHTML = `
+    <div class="modal-head"><div><h2>⚠️ Rival Alert</h2><div class="meta">Dr. Voss\u2019s team has been spotted at Layer ${levelIdx+1}.</div></div></div>
+    <div class="flavor">${attempt===0 ? 'They\u2019re reaching for the fragment. Answer before the bar runs out to secure it first.' : 'They swapped it for a fake — answer fast to reclaim the real one.'}</div>
+    <div class="rival-warn" id="rival-clock">⏱ 14s</div>
+    <div class="rival-bar-wrap"><div class="rival-bar" id="rival-bar" style="width:100%;"></div></div>
+    <div id="rq-wrap"></div>`;
+  const qw = box.querySelector('#rq-wrap');
+  qw.appendChild(renderQuestion(q, 0, levelIdx, 'rival'));
+  window._rivalQ = q; window._rivalLevel = levelIdx; window._rivalAttempt = attempt; window._rivalResolved = false;
+  clearInterval(rivalTimer);
+  const totalMs = 14000; const start = Date.now();
+  rivalTimer = setInterval(()=>{
+    const elapsed = Date.now()-start;
+    const pct = Math.max(0, 100 - (elapsed/totalMs*100));
+    const bar = document.getElementById('rival-bar'); if(bar) bar.style.width = pct+'%';
+    const remaining = Math.max(0, Math.ceil((totalMs-elapsed)/1000));
+    const clock = document.getElementById('rival-clock'); if(clock) clock.textContent = `⏱ ${remaining}s`;
+    if(elapsed>=totalMs){ clearInterval(rivalTimer); if(!window._rivalResolved) rivalFail(levelIdx, attempt); }
+  }, 100);
+}
+function rivalAnswerMCQ(oi){
+  if(window._rivalResolved) return;
+  const q = window._rivalQ;
+  window._rivalResolved = true;
+  clearInterval(rivalTimer);
+  const correct = oi===q.correct;
+  const fb = document.getElementById('rival-fb-0');
+  const opts = document.querySelectorAll('#rq-box .opt');
+  opts.forEach((b,i)=>{ b.disabled=true; if(i===q.correct) b.classList.add('correct'); if(i===oi && !correct) b.classList.add('wrong'); });
+  if(correct){ fb.textContent='Secured!'; fb.className='feedback good'; setTimeout(()=>rivalSuccess(window._rivalLevel),700); }
+  else { fb.textContent='Voss got there first…'; fb.className='feedback bad'; setTimeout(()=>rivalFail(window._rivalLevel, window._rivalAttempt),700); }
+}
+function rivalAnswerText(){
+  if(window._rivalResolved) return;
+  const q = window._rivalQ;
+  const input = document.getElementById('rival-input-0');
+  const fb = document.getElementById('rival-fb-0');
+  const ok = q.accept.some(a=>normalize(a)===normalize(input.value));
+  window._rivalResolved = true;
+  clearInterval(rivalTimer);
+  input.disabled = true;
+  if(ok){ fb.textContent='Secured!'; fb.className='feedback good'; setTimeout(()=>rivalSuccess(window._rivalLevel),700); }
+  else { fb.textContent='Voss got there first…'; fb.className='feedback bad'; setTimeout(()=>rivalFail(window._rivalLevel, window._rivalAttempt),700); }
+}
+function rivalFail(levelIdx, attempt){
+  secondsLeft = Math.max(0, secondsLeft-90);
+  updateTimerDisplay();
+  runRivalRound(levelIdx, attempt+1);
+}
+function rivalSuccess(levelIdx){
+  levelIndex = levelIdx+1;
+  renderAll();
+  const box = document.getElementById('modal-content');
+  box.className='modal';
+  box.innerHTML = `<div class="success-box"><div>Fragment recovered.</div><div class="big-ltr">${LEVELS[levelIdx].letter}</div></div>
+    <div class="cta-row"><button class="begin-btn" onclick="closeModal()">Continue the Dig</button></div>`;
+}
+
+/* ================= TIMER ================= */
+function startTimer(){
+  updateTimerDisplay();
+  timerInterval = setInterval(()=>{ secondsLeft = Math.max(0, secondsLeft-1); updateTimerDisplay(); if(secondsLeft===0) clearInterval(timerInterval); },1000);
+}
+function updateTimerDisplay(){
+  const m = Math.floor(secondsLeft/60), s = secondsLeft%60;
+  const el = document.getElementById('timer');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('low', secondsLeft<=300);
+}
+function closeModal(){ document.getElementById('overlay').style.display='none'; }
+
+/* ================= FINAL TRIAL ================= */
+let shuffledPool = [];
+function renderPool(){ shuffledPool = shuffle(timelineOrder); placedOrder=[]; drawPool(); drawTimeline(); }
+function drawPool(){
+  const el = document.getElementById('pool');
+  el.innerHTML = shuffledPool.filter(w=>!placedOrder.includes(w)).map(w=>
+    `<button class="card" onclick="placeWork('${w.replace(/'/g,"\\'")}')">${w}</button>`).join('')
+    || '<span style="color:var(--stone); font-size:.8rem;">All artifacts placed — check your timeline.</span>';
+}
+function drawTimeline(){
+  const el = document.getElementById('timeline');
+  el.innerHTML = placedOrder.map((w,i)=>`<button class="card placed" onclick="unplaceWork(${i})"><span class="slotnum">${i+1}</span>${w}</button>`).join('')
+    || '<span style="color:var(--stone); font-size:.8rem;">Tap artifacts below to build the timeline, oldest first.</span>';
+}
+function placeWork(w){ if(placedOrder.length>=11) return; placedOrder.push(w); drawPool(); drawTimeline(); }
+function unplaceWork(i){ placedOrder.splice(i,1); drawPool(); drawTimeline(); }
+function checkTimeline(){
+  const fb = document.getElementById('timeline-feedback');
+  if(placedOrder.length<11){ fb.innerHTML = `<span style="color:var(--ochre-r);">Place all 11 artifacts before checking.</span>`; return; }
+  const cards = document.querySelectorAll('#timeline .card');
+  let correctCount=0;
+  placedOrder.forEach((w,i)=>{ const right = w===timelineOrder[i]; if(right) correctCount++; cards[i].classList.remove('right','wrong'); cards[i].classList.add(right?'right':'wrong'); });
+  if(correctCount===11){ fb.innerHTML = `<span style="color:var(--good);">All 11 in the correct order. Opening the vault…</span>`; setTimeout(showCelebration,900); }
+  else { fb.innerHTML = `<span style="color:var(--ochre-r);">${correctCount} of 11 correctly placed. Green = correct spot, red = move it.</span>`; }
+}
+function showCelebration(){
+  document.getElementById('cel-body').innerHTML = `
+    <h1>VAULT UNLOCKED</h1>
+    <p>Nice work, archaeologists — you rebuilt the entire unit from memory. Here's the fully excavated trench:</p>
+    <ol class="recap">${timelineOrder.map(w=>`<li><b>${w}</b> — ${timelineMeta[w]}</li>`).join('')}</ol>
+    <div class="btnrow">
+      <button class="begin-btn" onclick="document.getElementById('celebrate').style.display='none'; openVault();">Enter the Deep Vault (bonus)</button>
+      <button class="ghost-btn" onclick="document.getElementById('celebrate').style.display='none'">Close</button>
+    </div>`;
+  document.getElementById('celebrate').style.display='flex';
+}
+
+/* ================= REUSABLE QUIZ ENGINE (powers Deep Vault + Solo Excavation) ================= */
+function makeQuizEngine(bodyElId, overlayElId, opts){
+  const state = { streak:0, best:0, current:null };
+  function tierFor(streak){ return streak>=10 ? 'Master Archaeologist' : streak>=5 ? 'Field Agent' : 'Recruit'; }
+  function poolFor(streak){
+    const base = opts.basePool();
+    if(!opts.hardPool) return base;
+    if(streak>=10) return base.concat(opts.hardPool);
+    if(streak>=5) return base.concat(shuffle(opts.hardPool).slice(0,4));
+    return base;
+  }
+  function shell(){
+    document.getElementById(bodyElId).innerHTML = `
+      <button class="close-x quiz-close" onclick="document.getElementById('${overlayElId}').style.display='none'">&times;</button>
+      <h1 style="color:var(--ochre-y); font-size:1.3rem; margin:0 0 4px;">${opts.title}</h1>
+      <p style="color:var(--bone-dim); font-size:.85rem; margin:0 0 12px;">${opts.subtitle}</p>
+      <div class="tier-badge" id="${bodyElId}-tier">Recruit</div>
+      <div class="streak-row"><span id="${bodyElId}-streak">Current streak: 0</span><span id="${bodyElId}-best">Best: 0</span></div>
+      <div id="${bodyElId}-qwrap"></div>`;
+  }
+  function draw(){
+    const pool = poolFor(state.streak);
+    state.current = shuffleOptions(pool[Math.floor(Math.random()*pool.length)]);
+    const wrap = document.getElementById(`${bodyElId}-qwrap`);
+    const q = state.current;
+    const iconHtml = q.type==='image' ? iconHTML(q.icon) : '';
+    let html = `<div class="qbox"><div class="qtag">${tagFor(q.type)}</div>${iconHtml}<div class="qtext">${q.q}</div>`;
+    if(q.type==='text'){
+      html += `<div class="textrow"><input type="text" id="${bodyElId}-input" placeholder="Type your answer…" onkeydown="if(event.key==='Enter'){quizEngines['${bodyElId}'].answerText()}"><button onclick="quizEngines['${bodyElId}'].answerText()">Submit</button></div>`;
+    } else {
+      html += `<div class="options">${q.options.map((opt,oi)=>`<button class="opt" onclick="quizEngines['${bodyElId}'].answerMCQ(${oi})">${opt}</button>`).join('')}</div>`;
+    }
+    html += `<div class="feedback" id="${bodyElId}-fb"></div><div class="cta-row" id="${bodyElId}-next" style="display:none;"><button class="begin-btn" onclick="quizEngines['${bodyElId}'].draw()">Draw Another Question</button></div></div>`;
+    wrap.innerHTML = html;
+  }
+  function resolve(correct){
+    state.streak = correct ? state.streak+1 : 0;
+    state.best = Math.max(state.best, state.streak);
+    document.getElementById(`${bodyElId}-streak`).textContent = `Current streak: ${state.streak}`;
+    document.getElementById(`${bodyElId}-best`).textContent = `Best: ${state.best}`;
+    document.getElementById(`${bodyElId}-tier`).textContent = tierFor(state.streak);
+    document.getElementById(`${bodyElId}-next`).style.display='block';
+  }
+  function answerMCQ(oi){
+    const q = state.current;
+    const opts = document.querySelectorAll(`#${bodyElId}-qwrap .opt`);
+    opts.forEach((b,i)=>{ b.disabled=true; if(i===q.correct) b.classList.add('correct'); if(i===oi && i!==q.correct) b.classList.add('wrong'); });
+    const correct = oi===q.correct;
+    const fb = document.getElementById(`${bodyElId}-fb`);
+    fb.textContent = correct ? 'Correct.' : 'Not quite.'; fb.className = 'feedback '+(correct?'good':'bad');
+    resolve(correct);
+  }
+  function answerText(){
+    const q = state.current;
+    const input = document.getElementById(`${bodyElId}-input`);
+    const ok = q.accept.some(a=>normalize(a)===normalize(input.value));
+    input.disabled = true;
+    const fb = document.getElementById(`${bodyElId}-fb`);
+    fb.textContent = ok ? 'Correct.' : `Not quite. (Answer: ${q.accept[0]})`; fb.className = 'feedback '+(ok?'good':'bad');
+    resolve(ok);
+  }
+  function open(){ state.streak=0; state.best=0; shell(); draw(); document.getElementById(overlayElId).style.display='flex'; }
+  return { open, draw, answerMCQ, answerText };
+}
+
+const quizEngines = {};
+
+const vaultEngine = makeQuizEngine('vault-body', 'vault-overlay', {
+  title:'The Deep Vault',
+  subtitle:'Harder cross-layer questions for early finishers. Talk it through with your partner — build a streak.',
+  basePool: () => HARD_QS,
+  hardPool: null
+});
+quizEngines['vault-body'] = vaultEngine;
+function openVault(){ vaultEngine.open(); }
+
+const soloEngine = makeQuizEngine('solo-body', 'solo-overlay', {
+  title:'Solo Excavation',
+  subtitle:'Practice on your own, any time. Questions get harder as your streak grows.',
+  basePool: () => LEVELS.flatMap(lv=>lv.bank),
+  hardPool: HARD_QS
+});
+quizEngines['solo-body'] = soloEngine;
+function openSolo(){ soloEngine.open(); }
+
+/* ================= RESET ================= */
+function resetDig(){
+  if(!confirm('Reset the dig site for a new pair or a new period?')) return;
+  levelIndex=0; secondsLeft=38*60; placedOrder=[];
+  clearInterval(timerInterval); clearInterval(rivalTimer);
+  document.getElementById('final-wrap').style.display='none';
+  document.getElementById('celebrate').style.display='none';
+  renderAll(); startTimer();
+}
+</script>
+</body>
+</html>

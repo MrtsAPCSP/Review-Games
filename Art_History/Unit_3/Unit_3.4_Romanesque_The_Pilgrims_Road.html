@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pilgrim's Road: Unit 3.4 Romanesque Review</title>
+<style>
+:root{
+  --parchment:#f1e6c9;
+  --parchment2:#e8d7a8;
+  --parchment3:#dcc890;
+  --ink:#2c1e0f;
+  --ink-soft:#4a3520;
+  --maroon:#7a1f2b;
+  --maroon-dark:#5c141d;
+  --gold:#b8862f;
+  --gold-light:#d9ad4f;
+  --forest:#3f5d3a;
+  --forest-dark:#2c4127;
+  --stone:#8a8478;
+  --stone-dark:#5f5b52;
+  --navy:#2c3e50;
+  --good:#3f6b3a;
+  --bad:#8a2e2e;
+  --shadow: 0 6px 18px rgba(30,20,5,0.35);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--ink);
+  background: radial-gradient(ellipse at 20% 10%, #f6ecd2 0%, var(--parchment) 45%, var(--parchment3) 100%);
+  min-height:100vh;
+  background-attachment: fixed;
+}
+#app{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px 16px 60px;
+  min-height:100vh;
+}
+h1,h2,h3{ font-family: Georgia, 'Times New Roman', serif; margin: 0 0 8px; }
+.title-caps{
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.card{
+  background: linear-gradient(180deg, #fbf3dc, #f1e3bd);
+  border: 2px solid var(--ink-soft);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 22px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.card::before{
+  content:"";
+  position:absolute; inset:6px;
+  border: 1px solid rgba(122,31,43,0.35);
+  border-radius: 6px;
+  pointer-events:none;
+}
+.btn{
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+  transition: transform 0.08s ease;
+}
+.btn:hover{ transform: translateY(-1px); }
+.btn:active{ transform: translateY(1px); }
+.btn.secondary{ background: linear-gradient(180deg, #efe3c2, #d9c79a); }
+.btn.maroon{ background: linear-gradient(180deg, #a3323f, var(--maroon)); color:#f8ecd8; }
+.btn.forest{ background: linear-gradient(180deg, #5b8154, var(--forest)); color:#f8ecd8; }
+.btn:disabled{ opacity:0.45; cursor:not-allowed; transform:none; }
+.row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.center{ text-align:center; }
+.subtitle{ color: var(--ink-soft); font-style: italic; margin-bottom: 14px; }
+.hero-title{
+  font-size: 2.3rem;
+  text-align:center;
+  color: var(--maroon-dark);
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+  margin-bottom: 4px;
+}
+.scallop{ display:inline-block; }
+
+/* ---- passport bar ---- */
+.passport-bar{
+  display:flex; justify-content:space-between; align-items:center;
+  background: linear-gradient(180deg,#e9dcb2,#d8c48c);
+  border: 2px solid var(--ink-soft);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.stamps{ display:flex; gap:6px; flex-wrap:wrap; }
+.stamp{
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; border: 2px dashed var(--maroon-dark);
+  background: #f6ecd2; color: var(--stone-dark); opacity:0.35;
+}
+.stamp.earned{
+  background: radial-gradient(circle, var(--gold-light), var(--gold));
+  border: 2px solid var(--maroon-dark);
+  color: var(--maroon-dark); opacity:1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  animation: stampIn 0.5s ease;
+}
+@keyframes stampIn{ 0%{ transform: scale(2.4) rotate(-25deg); opacity:0;} 60%{transform: scale(0.9) rotate(8deg); opacity:1;} 100%{transform: scale(1) rotate(0deg);} }
+.score-pill{
+  background: var(--maroon); color: #f8ecd8; padding:8px 14px; border-radius:999px; font-weight:700;
+  border: 2px solid var(--ink);
+}
+
+/* ---- map ---- */
+.map-wrap{ position:relative; padding: 10px 0 30px; }
+.route-line{ position:relative; height: 210px; margin: 20px 0; }
+.route-svg{ width:100%; height:100%; display:block; }
+.waypoint-node{
+  position:absolute; transform: translate(-50%,-50%);
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; text-align:center; width:110px;
+}
+.pin{
+  width:46px; height:46px; border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, #e8cf8b, var(--gold));
+  border: 3px solid var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+}
+.pin.locked{ background: linear-gradient(180deg,#b9b3a2,#8a8478); filter: grayscale(0.6); cursor:not-allowed; }
+.pin.done{ background: radial-gradient(circle at 35% 30%, #9cc296, var(--forest)); }
+.waypoint-node .wname{ font-weight:700; font-size:0.8rem; color: var(--ink-soft); }
+.waypoint-node.locked .wname{ color: var(--stone-dark); }
+
+/* ---- quiz ---- */
+.progress-track{ height:10px; background: #dcc890; border-radius:999px; overflow:hidden; border:1px solid var(--ink-soft); margin-bottom:14px;}
+.progress-fill{ height:100%; background: linear-gradient(90deg, var(--gold), var(--maroon)); transition: width 0.3s ease;}
+.qprompt{ font-size:1.25rem; font-weight:700; margin-bottom:18px; line-height:1.4; }
+.options{ display:grid; gap:10px; }
+.opt-btn{
+  text-align:left; padding:14px 16px; border-radius:8px; border:2px solid var(--ink-soft);
+  background: #fbf3dc; cursor:pointer; font-size:1rem; font-family: Georgia, serif;
+}
+.opt-btn:hover{ background:#f3e6bf; }
+.opt-btn.correct{ background: #cfe3c9; border-color: var(--good); }
+.opt-btn.incorrect{ background: #e8c9c9; border-color: var(--bad); }
+.opt-btn:disabled{ cursor:default; }
+.feedback{ margin-top:14px; font-weight:700; }
+.feedback.good{ color: var(--good); }
+.feedback.bad{ color: var(--bad); }
+.turn-banner{
+  background: var(--forest); color:#f6ecd2; padding:6px 14px; border-radius:999px;
+  display:inline-block; font-weight:700; margin-bottom:10px; font-size:0.9rem;
+}
+.discuss-box{
+  background: #e3ecd8; border: 2px dashed var(--forest-dark); border-radius:10px; padding:18px; margin-bottom:14px;
+}
+
+/* ---- diagrams ---- */
+.diagram-wrap{ position:relative; width:100%; padding-top:46%; margin: 14px 0; }
+.diagram-inner{ position:absolute; inset:0; background:#e9ddb8; border:2px solid var(--ink-soft); border-radius:8px; overflow:hidden; }
+.zone{
+  position:absolute; border: 2px solid var(--ink-soft); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-size:0.68rem; font-weight:700; color: var(--ink); padding:2px; overflow:hidden;
+}
+.zone.solved{ outline: 3px solid var(--good); box-shadow: inset 0 0 0 2px var(--good); }
+.zone.wrong-flash{ outline: 3px solid var(--bad); }
+.wordbank{ display:flex; gap:8px; flex-wrap:wrap; margin: 12px 0; }
+.wb-btn{
+  padding:8px 14px; border-radius:999px; border:2px solid var(--ink-soft); background:#fbf3dc; cursor:pointer; font-weight:700; font-size:0.85rem;
+}
+.wb-btn.active{ background: var(--gold); border-color: var(--maroon-dark); }
+.wb-btn:disabled{ opacity:0.4; text-decoration:line-through; cursor:not-allowed; }
+
+.tympanum-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:14px 0; }
+.tymp-cell{
+  padding: 22px 6px; border-radius: 14px 14px 5px 5px; text-align:center; cursor:pointer;
+  background: linear-gradient(160deg,#cdbb8f,#a8916a); border:2px solid var(--ink-soft); font-weight:700; font-size:0.85rem;
+  color: var(--ink); min-height:70px; display:flex; align-items:center; justify-content:center;
+}
+.tymp-cell.bottom{ border-radius:5px; }
+.tymp-cell.solved{ background: linear-gradient(160deg,#b9d3ae,#7fa473); outline:3px solid var(--good); }
+.tymp-cell.wrong-flash{ outline:3px solid var(--bad); }
+
+/* ---- event banner ---- */
+.event-banner{
+  background: linear-gradient(180deg,#efe3c2,#d9c79a); border:2px dashed var(--maroon-dark); border-radius:10px;
+  padding:20px; text-align:center; margin-bottom:16px;
+}
+
+/* ---- certificate ---- */
+.certificate{
+  border: 6px double var(--maroon-dark); padding: 30px; text-align:center; background: #fbf3dc;
+}
+.cert-title{ font-size:2rem; color:var(--maroon-dark); letter-spacing:3px; text-transform:uppercase; margin-bottom:6px;}
+.cert-names{ font-size:1.4rem; font-weight:700; margin: 10px 0; font-style:italic; }
+.cert-stats{ display:flex; justify-content:center; gap:26px; flex-wrap:wrap; margin: 18px 0; }
+.cert-stat{ text-align:center; }
+.cert-stat .num{ font-size:1.6rem; font-weight:700; color:var(--maroon-dark); }
+.breakdown-table{ width:100%; border-collapse: collapse; margin-top:10px; }
+.breakdown-table td, .breakdown-table th{ border:1px solid var(--ink-soft); padding:8px; text-align:left; }
+.breakdown-table th{ background: var(--parchment3); }
+
+/* ---- study hall ---- */
+.tabbar{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.tab-btn{ padding:10px 18px; border-radius:8px 8px 0 0; border:2px solid var(--ink-soft); background:#e3d4a4; cursor:pointer; font-weight:700;}
+.tab-btn.active{ background:#fbf3dc; border-bottom-color:#fbf3dc; }
+.flip-card{
+  width:100%; min-height:220px; perspective:1200px; cursor:pointer; margin-bottom:16px;
+}
+.flip-inner{
+  position:relative; width:100%; height:220px; transition: transform 0.5s; transform-style: preserve-3d;
+}
+.flip-card.flipped .flip-inner{ transform: rotateY(180deg); }
+.flip-face{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius:12px; border:2px solid var(--ink-soft);
+  display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; font-size:1.15rem; font-weight:600;
+  background: linear-gradient(180deg,#fbf3dc,#f1e3bd);
+}
+.flip-back{ transform: rotateY(180deg); background: linear-gradient(180deg,#e3ecd8,#cfe0c2); }
+.chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.chip{ padding:6px 14px; border-radius:999px; border:2px solid var(--ink-soft); background:#efe3c2; cursor:pointer; font-size:0.85rem; font-weight:700;}
+.chip.active{ background: var(--forest); color:#f6ecd2; }
+.timerbar{ height:8px; background:#dcc890; border-radius:999px; overflow:hidden; margin-bottom:12px; border:1px solid var(--ink-soft);}
+.timerfill{ height:100%; background: var(--maroon); }
+.small-note{ font-size:0.85rem; color: var(--ink-soft); }
+.menu-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+@media (max-width:640px){ .menu-grid{ grid-template-columns: 1fr; } .tympanum-grid{ grid-template-columns: 1fr; } }
+.footer-note{ text-align:center; color: var(--ink-soft); font-size:0.8rem; margin-top:30px; }
+input[type=text]{
+  font-family: Georgia, serif; font-size:1rem; padding:10px 12px; border-radius:8px; border:2px solid var(--ink-soft);
+  background:#fbf3dc; width:100%;
+}
+label{ font-weight:700; display:block; margin-bottom:4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================
+   THE PILGRIM'S ROAD — Unit 3.4 Romanesque Review
+   Self-contained, offline, replayable review game.
+   ========================================================= */
+
+/* ---------- utility ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function sample(arr,n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+function esc(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ---------- content data (drawn directly from the Unit 3.4 workbook & slides) ---------- */
+
+const HISTORY = [
+ {a:"What does \"pilgrimage\" mean?", b:"A journey to a sacred place", reversible:false},
+ {a:"What was the most common early pilgrimage destination?", b:"The Holy Land of Jerusalem", reversible:false},
+ {a:"Why did fewer pilgrims travel all the way to Jerusalem?", b:"Travel limitations \u2014 cost, safety, and distance", reversible:false},
+ {a:"What popular alternative pilgrimage route ran through France into Spain?", b:"The Way of Saint James", reversible:false},
+ {a:"What Spanish shrine was the destination of the Way of Saint James?", b:"Santiago de Compostela", reversible:false},
+ {a:"What symbol represents Saint James and his pilgrims?", b:"A scalloped shell", reversible:false},
+ {a:"What do the grooves of the scallop shell represent?", b:"The many roads that lead to one destination", reversible:false},
+ {a:"How did many pilgrims travel to show devotion?", b:"They walked barefoot", reversible:false},
+ {a:"What did pilgrims pay homage to along their journey?", b:"Holy relics", reversible:false},
+ {a:"What two benefits did pilgrimage promise the soul?", b:"It purified the soul and provided miraculous healing", reversible:false},
+ {a:"What social and economic system structured medieval life?", b:"Feudalism", reversible:false},
+ {a:"In feudalism, what did peasants do in exchange for a lord's protection?", b:"They worked the lord's land", reversible:false},
+ {a:"What social class were most medieval artists considered?", b:"\"Middle class\" workers", reversible:false},
+ {a:"What kinds of art were medieval women typically confined to?", b:"\"Feminine arts\" like ceramics, weaving, and manuscript decoration", reversible:false},
+ {a:"What kind of works dominated medieval artistic production?", b:"Christian, religious works", reversible:false},
+ {a:"Besides churches, what other structures did Romanesque builders construct?", b:"Castles, manor houses, and monasteries", reversible:false},
+ {a:"What were the Crusades?", b:"Military campaigns into Muslim lands, in retaliation for Muslim expansion into Spain and the east", reversible:false},
+ {a:"How did knowledge and learning spread throughout medieval Europe?", b:"Through trade, pilgrimage, and military activity like the Crusades", reversible:false},
+ {a:"What three traits chiefly concern medieval art?", b:"Religious expression, court life, and scholarship", reversible:false},
+ {a:"What term describes the rejection or destruction of religious images?", b:"Iconoclasm", reversible:false},
+ {a:"Is there one uniform medieval style across all of Europe?", b:"No \u2014 medieval art varies by region, style, and tradition", reversible:false},
+ {a:"What type of building dominates medieval architecture?", b:"Religious buildings \u2014 churches", reversible:false},
+ {a:"Do medieval painting and sculpture generally pursue naturalistic depictions?", b:"No \u2014 they generally avoid naturalistic depictions", reversible:false},
+ {a:"What geographic region does Content Area 3 focus on for this unit?", b:"Europe", reversible:false},
+ {a:"About when did Europe begin to settle into major Christian kingdoms?", b:"Around 1000 C.E.", reversible:false},
+];
+
+const ARCH = [
+ {a:"Arcade", b:"A series of arches supported by columns"},
+ {a:"Bay", b:"A vertical section of a church embraced by a set of columns, usually made of arches and aligned windows"},
+ {a:"Buttress", b:"A projecting support of stone or brick built against a wall"},
+ {a:"Flying Buttress", b:"A buttress slanting from a separate pier, forming an arch with the wall it supports"},
+ {a:"Campanile", b:"The bell tower of an Italian building, usually separate from Romanesque churches"},
+ {a:"Choir (quire)", b:"The area of a church that provides seating for the clergy and church choir"},
+ {a:"Jamb", b:"The side posts of a medieval portal"},
+ {a:"Pinnacle", b:"A vertical ornamental element crowning a buttress, turret, or spire, most common in Gothic architecture"},
+ {a:"Portal", b:"A doorway, usually decorated in medieval art"},
+ {a:"Radiating Chapels", b:"Projecting chapels arranged radially around the ambulatory"},
+ {a:"Rib Vault", b:"A vault where diagonal arches form riblike, weblike patterns"},
+ {a:"Triforium", b:"An interior gallery opening onto the nave from above the side aisles"},
+ {a:"Tympanum", b:"The rounded sculpture placed over the portal of a medieval church"},
+ {a:"Archivolt", b:"A decorative piece of carved molding around an archway"},
+ {a:"Voussoir", b:"A wedge-shaped stone element used in an arch or vault"},
+ {a:"Lintel", b:"A horizontal beam spanning the opening of a doorway or window"},
+ {a:"Trumeau", b:"The center pillar supporting the tympanum of a large opening"},
+ {a:"Ambulatory", b:"A passageway around the apse of a church"},
+ {a:"Clerestory", b:"The third, or window, story of a church"},
+ {a:"Pilgrimage Church", b:"A church built along pilgrim routes to house relics and accommodate traveling pilgrims"},
+ {a:"Narthex", b:"The entrance area at the west end of a church"},
+ {a:"Nave", b:"The long central portion of the church plan where the devoted would sit or stand"},
+ {a:"Aisles", b:"Walkways off the central nave, used by pilgrims to access relics"},
+ {a:"Apse", b:"The semicircular space behind the choir, opposite the entrance, meant to be the focus of the building"},
+ {a:"Transept", b:"The two wings off the nave that transform the plan into a Christian cross"},
+ {a:"Crossing", b:"The area where the transept and the nave meet"},
+ {a:"Chevet / Radiating Chapels", b:"Small semicircular chapels or niches used to display and honor relics"},
+ {a:"Feudalism", b:"A mutual relationship between lords and peasants, where peasants worked the land and lords guaranteed security"},
+ {a:"Tapestry", b:"A form of textile art, traditionally woven by hand on a loom, used to create images"},
+ {a:"Textile", b:"A material made from fibers, threads, or filaments, natural or synthetic, or both"},
+ {a:"What shape are the arches in Romanesque architecture?", b:"Rounded", reversible:false},
+ {a:"How thick are Romanesque walls typically built?", b:"Thick", reversible:false},
+ {a:"Where are Romanesque windows typically placed, and how large are they?", b:"Small, and placed low on the walls", reversible:false},
+ {a:"What shape is the ground plan of a typical Romanesque church?", b:"Cruciform (cross-shaped)", reversible:false},
+ {a:"What overall type of plan do Romanesque churches follow?", b:"An axial, or basilica, plan", reversible:false},
+ {a:"How would you describe the interior lighting of a Romanesque church?", b:"Dark", reversible:false},
+ {a:"Name the vaulting types used in Romanesque construction.", b:"Barrel, groin, and (later) rib vaults", reversible:false},
+ {a:"How would you describe the overall mass of Romanesque structures?", b:"Low, massive, and solid-looking", reversible:false},
+ {a:"Why is this style called \"Romanesque\"?", b:"Because it looks \"Roman-like,\" showing heavy Roman architectural influence", reversible:false},
+];
+
+const CONQUES = [
+ {a:"What is the subject of the sculpture above the west portal at Sainte-Foy?", b:"The Last Judgment", reversible:false},
+ {a:"What material are the church and tympanum at Conques made of?", b:"Stone", reversible:false},
+ {a:"What material is the Sainte-Foy reliquary made of?", b:"Gold, silver, gemstones, and enamel over wood", reversible:false},
+ {a:"Approximately when was the church of Sainte-Foy built?", b:"c. 1050\u20131130 C.E.", reversible:false},
+ {a:"What year is the tympanum specifically dated to?", b:"1124 C.E.", reversible:false},
+ {a:"Where is Sainte-Foy located?", b:"Conques, France", reversible:false},
+ {a:"Who is enthroned at the center of the Last Judgment tympanum?", b:"Christ", reversible:false},
+ {a:"Toward whom does Christ raise his right hand?", b:"The saved", reversible:false},
+ {a:"Toward whom does Christ lower his left hand?", b:"The damned", reversible:false},
+ {a:"Whose kneeling figure is beckoned by the outstretched Hand of God?", b:"Sainte Foy (Saint Faith)", reversible:false},
+ {a:"Which Old Testament figure appears enthroned among the saved?", b:"Abraham", reversible:false},
+ {a:"What is the \"House of Paradise\" in the tympanum?", b:"Where the blessed, saved by Christ, remain in paradise for eternity", reversible:false},
+ {a:"What two things appear directly beneath Christ's feet, dividing saved from damned?", b:"A doorway leading to Paradise, and a monstrous mouth leading to Hell", reversible:false},
+ {a:"Who is enthroned on the side of the damned, mirroring Christ's pose?", b:"The Devil", reversible:false},
+ {a:"What does the enthroned devil do, like a mock version of Christ?", b:"He judges and determines punishments to match the severity of each sin", reversible:false},
+ {a:"Which biblical betrayer is shown hanged in the Hell scene?", b:"Judas", reversible:false},
+ {a:"What sin does the man hung by his legs in Hell represent?", b:"Gluttony", reversible:false},
+ {a:"What overall mood dominates the Hell portion of the tympanum?", b:"Chaos and disorder", reversible:false},
+ {a:"Who was the tympanum's warning meant for?", b:"Both traveling pilgrims and the resident clergy and monks of Conques", reversible:false},
+ {a:"Why was the Sainte-Foy reliquary especially important to pilgrims?", b:"It was believed to house relics with healing and miraculous power", reversible:false},
+ {a:"What kind of vault covers the nave at Sainte-Foy?", b:"A barrel vault, with groin vaults over the aisles", reversible:false},
+ {a:"What architectural feature let pilgrims circulate around the apse to view relics without disturbing services?", b:"The ambulatory and radiating chapels", reversible:false},
+];
+
+const BAYEUX = [
+ {a:"What is the medium of the Bayeux Tapestry?", b:"Embroidered wool on linen", reversible:false},
+ {a:"Why is the Bayeux Tapestry technically not a true woven \"tapestry\"?", b:"It is embroidered, not woven on a loom", reversible:false},
+ {a:"About how tall is the Bayeux Tapestry, and how long is it in total?", b:"About 1 foot 8 inches high, and roughly 229 feet 8 inches long", reversible:false},
+ {a:"When was the Bayeux Tapestry created?", b:"c. 1070\u20131080 C.E.", reversible:false},
+ {a:"Where was the Bayeux Tapestry originally housed?", b:"Bayeux Cathedral, in Bayeux, France", reversible:false},
+ {a:"What major historical event does the Bayeux Tapestry depict?", b:"The Norman Conquest of England, culminating in the Battle of Hastings (1066)", reversible:false},
+ {a:"Who defeated whom at the Battle of Hastings?", b:"William, Duke of Normandy, defeated King Harold II of England", reversible:false},
+ {a:"What does the tapestry's Latin inscription say happened to King Harold?", b:"He was killed (\"Harold Rex Interfectus Est\")", reversible:false},
+ {a:"What is shown in the decorative bands above and below the main narrative?", b:"Animals and smaller fable-like scenes", reversible:false},
+ {a:"What was the likely function of the Bayeux Tapestry?", b:"To document and celebrate William's conquest, likely for display and political messaging", reversible:false},
+ {a:"What other ancient or medieval artworks share the tapestry's continuous horizontal narrative format?", b:"Egyptian papyrus scrolls, Assyrian/Persian relief friezes, and Roman narrative columns like Trajan's Column", reversible:false},
+ {a:"Is the subject of the Bayeux Tapestry religious or secular?", b:"Secular \u2014 it records a political and military event", reversible:false},
+ {a:"Who is traditionally thought to have commissioned the tapestry?", b:"Bishop Odo of Bayeux, William's half-brother", reversible:false},
+ {a:"What military preparations does the tapestry depict before the battle?", b:"The Norman fleet crossing the channel, and cavalry and foot soldiers preparing for war", reversible:false},
+ {a:"Besides its artistic value, why is the tapestry historically important?", b:"It is one of the few surviving pictorial records of 11th-century warfare, ships, and clothing", reversible:false},
+ {a:"What region of France is the Bayeux Tapestry associated with?", b:"Normandy", reversible:false},
+];
+
+const DISCUSS_PROMPTS = [
+ "Why might a Romanesque church be built with small windows and thick walls?",
+ "Why would pilgrims choose to walk barefoot or endure hardship on their journey?",
+ "Why do you think a terrifying vision of Hell was carved right where everyone must enter the church?",
+ "Why record a political event like the Norman Conquest in embroidery rather than religious art?",
+ "How do relics help explain why pilgrimage churches were built specifically along travel routes?",
+ "What message does placing Christ's judgment above the door send to everyone entering?",
+ "Why do you think medieval art avoided naturalism? What did artists prioritize instead?",
+ "If you couldn't afford or safely travel to Jerusalem, why might Santiago de Compostela feel like a good alternative?"
+];
+
+const ROAD_EVENTS = [
+ {text:"A kind innkeeper offers you bread and cheese for the road.", bonus:20},
+ {text:"Rain turns the road to mud, slowing your pace \u2014 but your spirits remain strong.", bonus:0},
+ {text:"A fellow pilgrim shares a story by the fire, and you feel encouraged.", bonus:15},
+ {text:"You spot a scallop shell washed up by a stream \u2014 a good omen for the road ahead.", bonus:25},
+ {text:"The bells of a distant monastery ring for vespers, echoing across the hills.", bonus:0},
+ {text:"Your feet ache and your pack feels heavy, but Compostela calls onward.", bonus:0},
+ {text:"A merchant trades a few coins for a song about your journey so far.", bonus:10},
+ {text:"You cross paths with a relic-seller and politely decline \u2014 wisdom over superstition.", bonus:10},
+];
+
+const CHURCH_ZONES = [
+ {key:"narthex", label:"Narthex", box:{left:2,top:34,width:12,height:55}},
+ {key:"aisle", label:"Aisle", box:{left:14,top:34,width:58,height:12}},
+ {key:"aisle2", label:"Aisle", box:{left:14,top:72,width:58,height:12}, matchKey:"aisle"},
+ {key:"nave", label:"Nave", box:{left:14,top:46,width:58,height:26}},
+ {key:"transept", label:"Transept", box:{left:72,top:12,width:9,height:78}},
+ {key:"crossing", label:"Crossing", box:{left:72,top:46,width:9,height:26}},
+ {key:"apse", label:"Apse / Choir", box:{left:81,top:30,width:15,height:44}},
+ {key:"ambulatory", label:"Ambulatory", box:{left:78,top:24,width:20,height:56}, ring:true},
+];
+const CHEVET_DOTS = [{top:32},{top:50},{top:68}];
+const CHEVET_LABEL = {key:"chevet", label:"Radiating Chapels"};
+
+const TYMPANUM_ZONES = [
+ {key:"saved", label:"The Saved"},
+ {key:"christ", label:"Christ Enthroned"},
+ {key:"damned", label:"The Damned"},
+ {key:"handofgod", label:"Hand of God & Abraham"},
+ {key:"doorway", label:"Doorway to Heaven / Mouth of Hell"},
+ {key:"devil", label:"The Devil Enthroned"},
+];
+
+const WAYPOINTS = [
+ {id:"vezelay", name:"V\u00e9zelay", subtitle:"Setting Out on the Road", categoryName:"History", pairs:HISTORY, qCount:8,
+   flavor:"Your journey begins at the great abbey of V\u00e9zelay, one of the gathering points for pilgrims heading south. Before your feet touch the road, you must understand why so many walk this path at all \u2014 and what kind of world you are walking through."},
+ {id:"conques1", name:"Approach to Conques", subtitle:"Reading the Stones", categoryName:"Architecture", pairs:ARCH, qCount:8, labelGame:"church",
+   flavor:"Days of walking bring you within sight of a hill town where a great church rises from the rock. Before you enter, a local mason tests whether you can read the bones of a Romanesque building \u2014 its walls, its vaults, its plan."},
+ {id:"conques2", name:"Sainte-Foy's Tympanum", subtitle:"Judgment at the Threshold", categoryName:"Sainte-Foy", pairs:CONQUES, qCount:8, labelGame:"tympanum",
+   flavor:"You stand beneath the carved stone arch of Sainte-Foy at Conques. Above the doorway, a warning is carved in stone for every soul who enters: the Last Judgment. Look closely before you pass through."},
+ {id:"normandy", name:"Tales from Normandy", subtitle:"A Traveler's Tale", categoryName:"Bayeux Tapestry", pairs:BAYEUX, qCount:8,
+   flavor:"At an inn along the road, a traveler from Normandy unrolls a long strip of embroidered linen and tells you of a conquest stitched in wool and thread \u2014 not a religious tale, but a very political one."},
+ {id:"pyrenees", name:"Crossing the Pyrenees", subtitle:"The Long Gauntlet", categoryName:"mixed", qCount:12,
+   flavor:"The road climbs into the mountains. This is the hardest stretch of the Camino \u2014 a gauntlet of everything you have learned so far, thrown at you all at once."},
+ {id:"santiago", name:"Santiago de Compostela", subtitle:"Journey's End", categoryName:"mixed", qCount:10, isFinal:true,
+   flavor:"At last, the towers of the cathedral of Santiago de Compostela rise before you. One final trial stands between you and your Compostela \u2014 the certificate of your pilgrimage."},
+];
+
+/* ---------- question generation ---------- */
+function buildQuestion(pair, poolArr, categoryLabel){
+  const reversible = pair.reversible !== false;
+  const dir = (reversible && Math.random() < 0.5) ? "rev" : "fwd";
+  let promptText, correctText, field;
+  if(dir === "fwd"){ promptText = pair.a; correctText = pair.b; field = "b"; }
+  else { promptText = "Which term matches this idea: \u201c" + pair.b + "\u201d?"; correctText = pair.a; field = "a"; }
+  let pool = poolArr.filter(p => p !== pair).map(p => p[field]).filter(x => x && x !== correctText);
+  pool = Array.from(new Set(pool));
+  const distractors = sample(pool, 3);
+  const options = shuffle([correctText, ...distractors]);
+  return { prompt: promptText, options, correctIndex: options.indexOf(correctText), category: categoryLabel };
+}
+function buildWaypointQuestions(pairs, categoryLabel, n){
+  return sample(pairs, n).map(p => buildQuestion(p, pairs, categoryLabel));
+}
+function buildMixedQuestions(n){
+  const tagged = [
+    ...HISTORY.map(p => ({...p, __cat:"History"})),
+    ...ARCH.map(p => ({...p, __cat:"Architecture"})),
+    ...CONQUES.map(p => ({...p, __cat:"Sainte-Foy"})),
+    ...BAYEUX.map(p => ({...p, __cat:"Bayeux Tapestry"})),
+  ];
+  const chosen = sample(tagged, n);
+  return chosen.map(p => {
+    const samecat = tagged.filter(x => x.__cat === p.__cat);
+    return buildQuestion(p, samecat, p.__cat);
+  });
+}
+
+/* ---------- app state ---------- */
+const STORAGE_KEY = "pilgrimsRoad_u34";
+function loadStats(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { bestScore:0, bestTimeSec:null, playCount:0 };
+}
+function saveStats(stats){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(stats)); }catch(e){}
+}
+
+const state = {
+  screen: "title",
+  mode: "solo",
+  players: ["Pilgrim"],
+  turnIndex: 0,
+  waypointIndex: 0,
+  score: 0,
+  streak: 0,
+  earnedStamps: [],
+  categoryStats: {},
+  questions: [],
+  qIndex: 0,
+  answered: false,
+  startTime: null,
+  labelSolved: 0,
+  labelTotal: 0,
+  activeLabel: null,
+  studyTab: "flash",
+  flashDeck: [],
+  flashIndex: 0,
+  flashFilter: "All",
+  flashFlipped: false,
+  practiceQuestions: [],
+  practiceIndex: 0,
+  practiceScore: 0,
+  practiceAnswered: false,
+  lightningQuestions: [],
+  lightningIndex: 0,
+  lightningScore: 0,
+  lightningTimer: null,
+  lightningTimeLeft: 0,
+  lightningAnswered: false,
+};
+
+function bumpCategory(cat, correct){
+  if(!state.categoryStats[cat]) state.categoryStats[cat] = {correct:0,total:0};
+  state.categoryStats[cat].total++;
+  if(correct) state.categoryStats[cat].correct++;
+}
+
+function resetJourney(){
+  state.waypointIndex = 0;
+  state.score = 0;
+  state.streak = 0;
+  state.earnedStamps = [];
+  state.categoryStats = {};
+  state.startTime = Date.now();
+}
+
+/* ---------- render dispatcher ---------- */
+function render(){
+  const app = document.getElementById("app");
+  switch(state.screen){
+    case "title": app.innerHTML = renderTitle(); bindTitle(); break;
+    case "modeselect": app.innerHTML = renderModeSelect(); bindModeSelect(); break;
+    case "nameentry": app.innerHTML = renderNameEntry(); bindNameEntry(); break;
+    case "map": app.innerHTML = renderMap(); bindMap(); break;
+    case "waypoint-intro": app.innerHTML = renderWaypointIntro(); bindWaypointIntro(); break;
+    case "discuss": app.innerHTML = renderDiscuss(); bindDiscuss(); break;
+    case "quiz": app.innerHTML = renderQuiz(); bindQuiz(); break;
+    case "labelgame": app.innerHTML = renderLabelGame(); bindLabelGame(); break;
+    case "waypoint-complete": app.innerHTML = renderWaypointComplete(); bindWaypointComplete(); break;
+    case "roadevent": app.innerHTML = renderRoadEvent(); bindRoadEvent(); break;
+    case "certificate": app.innerHTML = renderCertificate(); bindCertificate(); break;
+    case "studyhall": app.innerHTML = renderStudyHall(); bindStudyHall(); break;
+    default: app.innerHTML = renderTitle(); bindTitle();
+  }
+  window.scrollTo(0,0);
+}
+
+/* ---------- TITLE ---------- */
+function renderTitle(){
+  const stats = loadStats();
+  return `
+  <div class="card center">
+    <div style="font-size:3rem;">\u{1F41A}</div>
+    <div class="hero-title title-caps">The Pilgrim's Road</div>
+    <div class="subtitle">A Journey to Santiago de Compostela &mdash; Unit 3.4: Romanesque Art Review</div>
+    <p style="max-width:560px;margin:14px auto;">Earn your <strong>Credencial</strong> &mdash; a pilgrim's passport &mdash; by answering questions about Romanesque history, architecture, and art as you walk the Way of St. James toward Santiago de Compostela.</p>
+    <div class="row center" style="justify-content:center;margin-top:18px;">
+      <button class="btn maroon" id="btn-start">Begin Your Journey</button>
+      <button class="btn secondary" id="btn-studyhall">\u{1F3E0} Traveler's Almanac (Study at Home)</button>
+    </div>
+    ${stats.playCount > 0 ? `<p class="small-note" style="margin-top:16px;">Pilgrimages completed: <strong>${stats.playCount}</strong> &nbsp;|&nbsp; Best score: <strong>${stats.bestScore}</strong> &nbsp;|&nbsp; Fastest journey: <strong>${stats.bestTimeSec ? formatTime(stats.bestTimeSec) : "\u2014"}</strong></p>` : ""}
+  </div>
+  <div class="card">
+    <h3>How the road works</h3>
+    <p>You'll travel through six waypoints on the road to Compostela, answering questions and completing challenges along the way. Every journey is different: questions, answer order, and the road's fortunes shuffle each time you walk it, so you can play again and again.</p>
+    <p class="small-note">Works solo, with a walking companion, or as a whole class taking turns at the front of the room.</p>
+  </div>
+  `;
+}
+function bindTitle(){
+  document.getElementById("btn-start").onclick = () => { state.screen = "modeselect"; render(); };
+  document.getElementById("btn-studyhall").onclick = () => { state.screen = "studyhall"; state.studyTab="flash"; setupFlashDeck(); render(); };
+}
+
+/* ---------- MODE SELECT ---------- */
+function renderModeSelect(){
+  return `
+  <div class="card center">
+    <h2>Choose Your Company</h2>
+    <p class="subtitle">Pilgrims often walked in pairs for safety and company.</p>
+    <div class="menu-grid">
+      <div class="card" style="margin:0;">
+        <div style="font-size:2rem;">\u{1F9CD}</div>
+        <h3>Solo Pilgrim</h3>
+        <p>Walk the road alone, at your own pace.</p>
+        <button class="btn" id="btn-solo">Travel Solo</button>
+      </div>
+      <div class="card" style="margin:0;">
+        <div style="font-size:2rem;">\u{1F9D1}\u200D\u{1F91D}\u200D\u{1F9D1}</div>
+        <h3>Two Companions</h3>
+        <p>Walk with a partner, taking turns to answer &mdash; and talking through the road's mysteries together.</p>
+        <button class="btn forest" id="btn-pair">Travel Together</button>
+      </div>
+    </div>
+    <button class="btn secondary" id="btn-back-title" style="margin-top:10px;">\u2190 Back</button>
+  </div>
+  `;
+}
+function bindModeSelect(){
+  document.getElementById("btn-solo").onclick = () => { state.mode="solo"; state.players=["Pilgrim"]; state.screen="nameentry"; render(); };
+  document.getElementById("btn-pair").onclick = () => { state.mode="pair"; state.players=["Companion A","Companion B"]; state.screen="nameentry"; render(); };
+  document.getElementById("btn-back-title").onclick = () => { state.screen="title"; render(); };
+}
+
+/* ---------- NAME ENTRY ---------- */
+function renderNameEntry(){
+  const fields = state.mode === "pair"
+    ? `<label for="n1">First Companion's Name</label><input type="text" id="n1" value="Companion A" maxlength="24">
+       <div style="height:12px;"></div>
+       <label for="n2">Second Companion's Name</label><input type="text" id="n2" value="Companion B" maxlength="24">`
+    : `<label for="n1">Your Pilgrim Name</label><input type="text" id="n1" value="Pilgrim" maxlength="24">`;
+  return `
+  <div class="card center">
+    <h2>Name Your ${state.mode === "pair" ? "Companions" : "Pilgrim"}</h2>
+    <div style="max-width:360px;margin:0 auto;text-align:left;">
+      ${fields}
+    </div>
+    <div class="row center" style="justify-content:center;margin-top:20px;">
+      <button class="btn maroon" id="btn-embark">Embark</button>
+      <button class="btn secondary" id="btn-back-mode">\u2190 Back</button>
+    </div>
+  </div>
+  `;
+}
+function bindNameEntry(){
+  document.getElementById("btn-embark").onclick = () => {
+    const n1 = document.getElementById("n1").value.trim() || (state.mode==="pair" ? "Companion A" : "Pilgrim");
+    if(state.mode === "pair"){
+      const n2 = document.getElementById("n2").value.trim() || "Companion B";
+      state.players = [n1, n2];
+    } else {
+      state.players = [n1];
+    }
+    resetJourney();
+    state.screen = "map";
+    render();
+  };
+  document.getElementById("btn-back-mode").onclick = () => { state.screen="modeselect"; render(); };
+}
+
+/* ---------- MAP ---------- */
+function passportBarHTML(){
+  const stampsHtml = WAYPOINTS.map((w,i) => {
+    const earned = state.earnedStamps.includes(w.id);
+    return `<div class="stamp ${earned ? "earned":""}" title="${esc(w.name)}">${earned ? "\u{1F41A}" : (i+1)}</div>`;
+  }).join("");
+  return `
+  <div class="passport-bar">
+    <div><strong>${esc(state.players.join(" & "))}</strong><div class="small-note">Credencial del Peregrino</div></div>
+    <div class="stamps">${stampsHtml}</div>
+    <div class="score-pill">${state.score} pts</div>
+  </div>`;
+}
+function renderMap(){
+  const positions = [8, 24, 42, 58, 76, 92]; // percent along path
+  const yWave = [30, 70, 30, 70, 30, 70];
+  let nodes = "";
+  WAYPOINTS.forEach((w,i) => {
+    const done = state.earnedStamps.includes(w.id);
+    const locked = i > state.waypointIndex;
+    const cls = done ? "done" : (locked ? "locked" : "");
+    const icon = done ? "\u2713" : (locked ? "\u{1F512}" : "\u26EA");
+    nodes += `<div class="waypoint-node ${locked?"locked":""}" style="left:${positions[i]}%;top:${yWave[i]}%;" data-idx="${i}">
+      <div class="pin ${cls}">${icon}</div>
+      <div class="wname">${i+1}. ${esc(w.name)}</div>
+    </div>`;
+  });
+  const nextIdx = state.waypointIndex;
+  const doneAll = state.earnedStamps.length >= WAYPOINTS.length;
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <h2 class="center">The Way of St. James</h2>
+    <p class="subtitle center">Click the next glowing waypoint to continue your journey.</p>
+    <div class="route-line">
+      <svg class="route-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="8,30 24,70 42,30 58,70 76,30 92,70" fill="none" stroke="#7a1f2b" stroke-width="0.8" stroke-dasharray="2,2"/>
+      </svg>
+      ${nodes}
+    </div>
+    <div class="center">
+      ${doneAll ? `<button class="btn maroon" id="btn-to-cert">\u{1F3C6} View Your Compostela</button>` :
+        `<button class="btn maroon" id="btn-continue" ${nextIdx>=WAYPOINTS.length?"disabled":""}>Continue to ${esc(WAYPOINTS[nextIdx].name)}</button>`}
+      <button class="btn secondary" id="btn-menu">Main Menu</button>
+    </div>
+  </div>
+  `;
+}
+function bindMap(){
+  document.querySelectorAll(".waypoint-node").forEach(node => {
+    node.onclick = () => {
+      const idx = parseInt(node.getAttribute("data-idx"));
+      if(idx > state.waypointIndex) return;
+      if(idx < state.waypointIndex && !state.earnedStamps.includes(WAYPOINTS[idx].id)) return;
+      if(idx === state.waypointIndex){
+        state.screen = "waypoint-intro";
+        render();
+      }
+    };
+  });
+  const cont = document.getElementById("btn-continue");
+  if(cont) cont.onclick = () => { state.screen="waypoint-intro"; render(); };
+  const cert = document.getElementById("btn-to-cert");
+  if(cert) cert.onclick = () => { state.screen="certificate"; render(); };
+  document.getElementById("btn-menu").onclick = () => { state.screen="title"; render(); };
+}
+
+/* ---------- WAYPOINT INTRO ---------- */
+function renderWaypointIntro(){
+  const w = WAYPOINTS[state.waypointIndex];
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <h2>${esc(w.name)}</h2>
+    <div class="subtitle">${esc(w.subtitle)}</div>
+    <p style="font-size:1.05rem;line-height:1.6;">${esc(w.flavor)}</p>
+    <div class="center" style="margin-top:18px;">
+      <button class="btn maroon" id="btn-begin-waypoint">Continue \u2192</button>
+    </div>
+  </div>
+  `;
+}
+function bindWaypointIntro(){
+  document.getElementById("btn-begin-waypoint").onclick = () => {
+    const w = WAYPOINTS[state.waypointIndex];
+    // build questions
+    state.questions = w.categoryName === "mixed" ? buildMixedQuestions(w.qCount) : buildWaypointQuestions(w.pairs, w.categoryName, w.qCount);
+    state.qIndex = 0;
+    state.answered = false;
+    state.turnIndex = 0;
+    // maybe show a discussion prompt first (pair mode only, ~45% chance)
+    if(state.mode === "pair" && Math.random() < 0.45){
+      state.screen = "discuss";
+    } else {
+      state.screen = "quiz";
+    }
+    render();
+  };
+}
+
+/* ---------- DISCUSS ---------- */
+function renderDiscuss(){
+  const prompt = sample(DISCUSS_PROMPTS,1)[0];
+  state._currentDiscuss = prompt;
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <div class="discuss-box">
+      <h3>\u{1F4AC} Talk it Over</h3>
+      <p style="font-size:1.1rem;">${esc(prompt)}</p>
+      <p class="small-note">Discuss with your companion for a moment, then continue.</p>
+    </div>
+    <div class="center">
+      <button class="btn forest" id="btn-discuss-done">We've Talked It Over \u2192</button>
+    </div>
+  </div>
+  `;
+}
+function bindDiscuss(){
+  document.getElementById("btn-discuss-done").onclick = () => { state.screen = "quiz"; render(); };
+}
+
+/* ---------- QUIZ ---------- */
+function renderQuiz(){
+  const w = WAYPOINTS[state.waypointIndex];
+  const q = state.questions[state.qIndex];
+  const pct = Math.round((state.qIndex / state.questions.length) * 100);
+  const turnBanner = state.mode === "pair" ? `<div class="turn-banner">${esc(state.players[state.turnIndex % 2])}'s turn to answer</div>` : "";
+  const optsHtml = q.options.map((opt,i) => `<button class="opt-btn" data-i="${i}">${esc(opt)}</button>`).join("");
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <div class="small-note">${esc(w.name)} &middot; Question ${state.qIndex+1} of ${state.questions.length}</div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    ${turnBanner}
+    <div class="qprompt">${esc(q.prompt)}</div>
+    <div class="options">${optsHtml}</div>
+    <div id="quiz-feedback"></div>
+    <div class="center" id="quiz-next-wrap" style="margin-top:16px;display:none;">
+      <button class="btn maroon" id="btn-next-q">Next \u2192</button>
+    </div>
+  </div>
+  `;
+}
+function bindQuiz(){
+  const q = state.questions[state.qIndex];
+  document.querySelectorAll(".opt-btn").forEach(btn => {
+    btn.onclick = () => {
+      if(state.answered) return;
+      state.answered = true;
+      const i = parseInt(btn.getAttribute("data-i"));
+      const correct = i === q.correctIndex;
+      document.querySelectorAll(".opt-btn").forEach((b,bi) => {
+        b.disabled = true;
+        if(bi === q.correctIndex) b.classList.add("correct");
+        else if(bi === i && !correct) b.classList.add("incorrect");
+      });
+      bumpCategory(q.category, correct);
+      const fb = document.getElementById("quiz-feedback");
+      if(correct){
+        state.streak++;
+        const bonus = Math.min(state.streak*10, 50);
+        state.score += 100 + bonus;
+        fb.innerHTML = `<div class="feedback good">\u2713 Correct! +${100+bonus} points ${state.streak>1 ? "(streak x"+state.streak+")":""}</div>`;
+      } else {
+        state.streak = 0;
+        fb.innerHTML = `<div class="feedback bad">\u2717 Not quite. The correct answer is highlighted above.</div>`;
+      }
+      document.getElementById("quiz-next-wrap").style.display = "block";
+    };
+  });
+  const nextBtn = document.getElementById("btn-next-q");
+  if(nextBtn){
+    nextBtn.onclick = () => {
+      state.qIndex++;
+      state.answered = false;
+      state.turnIndex++;
+      if(state.qIndex >= state.questions.length){
+        const w = WAYPOINTS[state.waypointIndex];
+        if(w.labelGame){
+          state.labelSolved = 0;
+          state.activeLabel = null;
+          state.labelTotal = w.labelGame === "church" ? new Set(CHURCH_ZONES.map(z=>z.matchKey||z.key)).size + 1 : TYMPANUM_ZONES.length;
+          state.screen = "labelgame";
+        } else {
+          state.screen = "waypoint-complete";
+        }
+      }
+      render();
+    };
+  }
+}
+
+/* ---------- LABEL GAME ---------- */
+function renderLabelGame(){
+  const w = WAYPOINTS[state.waypointIndex];
+  if(w.labelGame === "church") return renderChurchLabelGame();
+  return renderTympanumLabelGame();
+}
+function renderChurchLabelGame(){
+  const zonesHtml = CHURCH_ZONES.map(z => {
+    const key = z.matchKey || z.key;
+    const ringStyle = z.ring ? "background:transparent;border:6px solid #b7a1e0;" : "";
+    return `<div class="zone" data-key="${key}" style="left:${z.box.left}%;top:${z.box.top}%;width:${z.box.width}%;height:${z.box.height}%;${ringStyle}" data-solved="0"></div>`;
+  }).join("") + CHEVET_DOTS.map((d,i) => `<div class="zone" data-key="chevet" style="left:97%;top:${d.top}%;width:6%;height:14%;border-radius:50%;background:#c9b3ea;"></div>`).join("");
+  const labels = [];
+  const seen = new Set();
+  CHURCH_ZONES.forEach(z => { const k=z.matchKey||z.key; if(!seen.has(k)){ seen.add(k); labels.push({key:k,label:z.label}); }});
+  labels.push(CHEVET_LABEL);
+  const wbHtml = labels.map(l => `<button class="wb-btn" data-key="${l.key}">${esc(l.label)}</button>`).join("");
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <h3>\u{1F5FA}\uFE0F Label the Pilgrimage Church</h3>
+    <p class="small-note">Tap a label below, then tap the matching part of the church plan. (West entrance is on the left; the apse is on the right.)</p>
+    <div class="diagram-wrap">
+      <div class="diagram-inner" id="church-diagram">
+        ${zonesHtml}
+      </div>
+    </div>
+    <div class="wordbank" id="church-wordbank">${wbHtml}</div>
+    <div class="small-note">Solved: <span id="church-solved-count">0</span> / ${labels.length}</div>
+    <div class="center" id="church-continue-wrap" style="margin-top:14px;display:none;">
+      <button class="btn maroon" id="btn-church-continue">Continue \u2192</button>
+    </div>
+  </div>
+  `;
+}
+function bindChurchLabelGame(){
+  const total = new Set(CHURCH_ZONES.map(z=>z.matchKey||z.key)).size + 1; // + chevet
+  let solvedKeys = new Set();
+  function updateCount(){ document.getElementById("church-solved-count").textContent = solvedKeys.size; if(solvedKeys.size >= total){ document.getElementById("church-continue-wrap").style.display="block"; } }
+  document.querySelectorAll("#church-wordbank .wb-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("#church-wordbank .wb-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      state.activeLabel = btn.getAttribute("data-key");
+    };
+  });
+  document.querySelectorAll("#church-diagram .zone").forEach(z => {
+    z.onclick = () => {
+      if(!state.activeLabel) return;
+      const zk = z.getAttribute("data-key");
+      if(zk === state.activeLabel){
+        z.classList.add("solved");
+        z.textContent = z.textContent || "";
+        const wbBtn = document.querySelector(`#church-wordbank .wb-btn[data-key="${state.activeLabel}"]`);
+        if(wbBtn){ wbBtn.disabled = true; wbBtn.classList.remove("active"); }
+        solvedKeys.add(state.activeLabel);
+        state.activeLabel = null;
+        state.score += 50;
+        updateCount();
+      } else {
+        z.classList.add("wrong-flash");
+        setTimeout(()=>z.classList.remove("wrong-flash"), 500);
+      }
+    };
+  });
+  const contBtn = document.getElementById("btn-church-continue");
+  if(contBtn) contBtn.onclick = () => { state.screen = "waypoint-complete"; render(); };
+}
+function renderTympanumLabelGame(){
+  const cellsHtml = TYMPANUM_ZONES.map((z,i) => {
+    const isTop = i < 3;
+    return `<div class="tymp-cell ${isTop?"":"bottom"}" data-key="${z.key}">${esc(z.label)}</div>`;
+  }).join("");
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <h3>\u26EA Read the Tympanum</h3>
+    <p class="small-note">Tap a label, then tap the panel of the Last Judgment tympanum where it belongs.</p>
+    <div class="wordbank" id="tymp-wordbank">
+      ${TYMPANUM_ZONES.map(z=>`<button class="wb-btn" data-key="${z.key}">${esc(z.label)}</button>`).join("")}
+    </div>
+    <div class="tympanum-grid" id="tymp-diagram">${cellsHtml}</div>
+    <div class="small-note">Solved: <span id="tymp-solved-count">0</span> / ${TYMPANUM_ZONES.length}</div>
+    <div class="center" id="tymp-continue-wrap" style="margin-top:14px;display:none;">
+      <button class="btn maroon" id="btn-tymp-continue">Continue \u2192</button>
+    </div>
+  </div>
+  `;
+}
+function bindTympanumLabelGame(){
+  let solved = 0;
+  function updateCount(){ document.getElementById("tymp-solved-count").textContent = solved; if(solved >= TYMPANUM_ZONES.length){ document.getElementById("tymp-continue-wrap").style.display="block"; } }
+  document.querySelectorAll("#tymp-wordbank .wb-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("#tymp-wordbank .wb-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      state.activeLabel = btn.getAttribute("data-key");
+    };
+  });
+  document.querySelectorAll("#tymp-diagram .tymp-cell").forEach(cell => {
+    cell.onclick = () => {
+      if(!state.activeLabel) return;
+      const key = cell.getAttribute("data-key");
+      if(key === state.activeLabel){
+        cell.classList.add("solved");
+        const wbBtn = document.querySelector(`#tymp-wordbank .wb-btn[data-key="${key}"]`);
+        if(wbBtn){ wbBtn.disabled = true; wbBtn.classList.remove("active"); }
+        solved++;
+        state.activeLabel = null;
+        state.score += 50;
+        updateCount();
+      } else {
+        cell.classList.add("wrong-flash");
+        setTimeout(()=>cell.classList.remove("wrong-flash"), 500);
+      }
+    };
+  });
+  const contBtn = document.getElementById("btn-tymp-continue");
+  if(contBtn) contBtn.onclick = () => { state.screen = "waypoint-complete"; render(); };
+}
+function bindLabelGame(){
+  const w = WAYPOINTS[state.waypointIndex];
+  if(w.labelGame === "church") bindChurchLabelGame();
+  else bindTympanumLabelGame();
+}
+
+/* ---------- WAYPOINT COMPLETE ---------- */
+function renderWaypointComplete(){
+  const w = WAYPOINTS[state.waypointIndex];
+  if(!state.earnedStamps.includes(w.id)) state.earnedStamps.push(w.id);
+  return `
+  ${passportBarHTML()}
+  <div class="card center">
+    <div style="font-size:3rem;">\u{1F41A}</div>
+    <h2>Stamp Earned: ${esc(w.name)}</h2>
+    <p>Your Credencial now bears the mark of this waypoint.</p>
+    <p class="small-note">Current score: <strong>${state.score}</strong></p>
+    <button class="btn maroon" id="btn-wp-continue">Continue the Journey \u2192</button>
+  </div>
+  `;
+}
+function bindWaypointComplete(){
+  document.getElementById("btn-wp-continue").onclick = () => {
+    state.waypointIndex++;
+    if(state.waypointIndex >= WAYPOINTS.length){
+      state.screen = "certificate";
+    } else {
+      state.screen = "roadevent";
+      state._event = sample(ROAD_EVENTS,1)[0];
+      state.score += state._event.bonus;
+    }
+    render();
+  };
+}
+
+/* ---------- ROAD EVENT ---------- */
+function renderRoadEvent(){
+  const ev = state._event;
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <div class="event-banner">
+      <div style="font-size:2rem;">\u{1F6E4}\uFE0F</div>
+      <h3>Fortune of the Road</h3>
+      <p style="font-size:1.1rem;">${esc(ev.text)}</p>
+      ${ev.bonus > 0 ? `<p style="color:var(--good);font-weight:700;">+${ev.bonus} bonus points!</p>` : ""}
+    </div>
+    <div class="center">
+      <button class="btn maroon" id="btn-event-continue">Onward \u2192</button>
+    </div>
+  </div>
+  `;
+}
+function bindRoadEvent(){
+  document.getElementById("btn-event-continue").onclick = () => { state.screen = "map"; render(); };
+}
+
+/* ---------- CERTIFICATE ---------- */
+function formatTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return m + "m " + s + "s";
+}
+function renderCertificate(){
+  const elapsedSec = Math.round((Date.now() - state.startTime)/1000);
+  const stats = loadStats();
+  stats.playCount = (stats.playCount||0) + 1;
+  if(state.score > (stats.bestScore||0)) stats.bestScore = state.score;
+  if(stats.bestTimeSec == null || elapsedSec < stats.bestTimeSec) stats.bestTimeSec = elapsedSec;
+  saveStats(stats);
+
+  let totalCorrect=0, totalQ=0;
+  const rows = Object.keys(state.categoryStats).map(cat => {
+    const s = state.categoryStats[cat];
+    totalCorrect += s.correct; totalQ += s.total;
+    const pct = s.total ? Math.round((s.correct/s.total)*100) : 0;
+    return `<tr><td>${esc(cat)}</td><td>${s.correct} / ${s.total}</td><td>${pct}%</td></tr>`;
+  }).join("");
+  const overallPct = totalQ ? Math.round((totalCorrect/totalQ)*100) : 0;
+  const shells = overallPct >= 90 ? "\u{1F41A}\u{1F41A}\u{1F41A}" : overallPct >= 70 ? "\u{1F41A}\u{1F41A}" : "\u{1F41A}";
+  const dateStr = new Date().toLocaleDateString();
+
+  return `
+  ${passportBarHTML()}
+  <div class="card">
+    <div class="certificate">
+      <div style="font-size:2.4rem;">${shells}</div>
+      <div class="cert-title">La Compostela</div>
+      <p class="small-note">This certifies that the pilgrim(s)</p>
+      <div class="cert-names">${esc(state.players.join(" & "))}</div>
+      <p class="small-note">have completed the Way of St. James in the year of the review ${dateStr}</p>
+      <div class="cert-stats">
+        <div class="cert-stat"><div class="num">${state.score}</div><div class="small-note">Total Points</div></div>
+        <div class="cert-stat"><div class="num">${formatTime(elapsedSec)}</div><div class="small-note">Journey Time</div></div>
+        <div class="cert-stat"><div class="num">${overallPct}%</div><div class="small-note">Accuracy</div></div>
+      </div>
+      <table class="breakdown-table">
+        <tr><th>Waypoint Topic</th><th>Score</th><th>Accuracy</th></tr>
+        ${rows}
+      </table>
+    </div>
+    <div class="row center" style="justify-content:center;margin-top:20px;">
+      <button class="btn maroon" id="btn-walk-again">Walk the Road Again</button>
+      <button class="btn secondary" id="btn-cert-studyhall">\u{1F3E0} Traveler's Almanac</button>
+      <button class="btn secondary" id="btn-cert-menu">Main Menu</button>
+    </div>
+  </div>
+  `;
+}
+function bindCertificate(){
+  document.getElementById("btn-walk-again").onclick = () => { resetJourney(); state.screen = "map"; render(); };
+  document.getElementById("btn-cert-studyhall").onclick = () => { state.screen = "studyhall"; state.studyTab = "flash"; setupFlashDeck(); render(); };
+  document.getElementById("btn-cert-menu").onclick = () => { state.screen = "title"; render(); };
+}
+
+/* ---------- STUDY HALL ---------- */
+function taggedAll(){
+  return [
+    ...HISTORY.map(p => ({...p, __cat:"History"})),
+    ...ARCH.map(p => ({...p, __cat:"Architecture"})),
+    ...CONQUES.map(p => ({...p, __cat:"Sainte-Foy"})),
+    ...BAYEUX.map(p => ({...p, __cat:"Bayeux Tapestry"})),
+  ];
+}
+function setupFlashDeck(){
+  state.flashDeck = shuffle(taggedAll());
+  state.flashIndex = 0;
+  state.flashFlipped = false;
+  state.flashFilter = "All";
+}
+function currentFlashList(){
+  if(state.flashFilter === "All") return state.flashDeck;
+  return state.flashDeck.filter(c => c.__cat === state.flashFilter);
+}
+function renderStudyHall(){
+  const tabs = [
+    {key:"flash", label:"Flashcards"},
+    {key:"practice", label:"Practice Test"},
+    {key:"lightning", label:"Lightning Round"},
+  ];
+  const tabHtml = tabs.map(t => `<button class="tab-btn ${state.studyTab===t.key?"active":""}" data-tab="${t.key}">${t.label}</button>`).join("");
+  let body = "";
+  if(state.studyTab === "flash") body = renderFlashcards();
+  else if(state.studyTab === "practice") body = renderPractice();
+  else body = renderLightning();
+  return `
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <h2>\u{1F3E0} Traveler's Almanac</h2>
+      <button class="btn secondary" id="btn-almanac-menu">Main Menu</button>
+    </div>
+    <p class="subtitle">Review anytime, anywhere &mdash; no class period required.</p>
+    <div class="tabbar">${tabHtml}</div>
+    ${body}
+  </div>
+  `;
+}
+function renderFlashcards(){
+  const cats = ["All","History","Architecture","Sainte-Foy","Bayeux Tapestry"];
+  const chips = cats.map(c => `<button class="chip ${state.flashFilter===c?"active":""}" data-cat="${c}">${c}</button>`).join("");
+  const list = currentFlashList();
+  if(state.flashIndex >= list.length) state.flashIndex = 0;
+  const card = list[state.flashIndex];
+  if(!card){
+    return `<p>No cards in this category.</p>`;
+  }
+  return `
+  <div class="chip-row">${chips}</div>
+  <p class="small-note">Card ${state.flashIndex+1} of ${list.length} &mdash; tap the card to flip</p>
+  <div class="flip-card ${state.flashFlipped?"flipped":""}" id="flash-card-el">
+    <div class="flip-inner">
+      <div class="flip-face">${esc(card.a)}</div>
+      <div class="flip-face flip-back">${esc(card.b)}</div>
+    </div>
+  </div>
+  <div class="row center" style="justify-content:center;">
+    <button class="btn secondary" id="flash-prev">\u2190 Prev</button>
+    <button class="btn secondary" id="flash-shuffle">\u{1F500} Shuffle</button>
+    <button class="btn secondary" id="flash-next">Next \u2192</button>
+  </div>
+  `;
+}
+function renderPractice(){
+  if(state.practiceQuestions.length === 0){
+    return `
+    <p>Answer 20 random questions pulled from the whole unit, with immediate feedback.</p>
+    <div class="center"><button class="btn maroon" id="btn-start-practice">Start Practice Test</button></div>
+    `;
+  }
+  if(state.practiceIndex >= state.practiceQuestions.length){
+    const pct = Math.round((state.practiceScore/state.practiceQuestions.length)*100);
+    return `
+    <div class="center">
+      <h3>Practice Test Complete</h3>
+      <p style="font-size:1.3rem;">${state.practiceScore} / ${state.practiceQuestions.length} correct (${pct}%)</p>
+      <button class="btn maroon" id="btn-restart-practice">Try Again</button>
+    </div>
+    `;
+  }
+  const q = state.practiceQuestions[state.practiceIndex];
+  const pct = Math.round((state.practiceIndex/state.practiceQuestions.length)*100);
+  const optsHtml = q.options.map((opt,i) => `<button class="opt-btn" data-i="${i}">${esc(opt)}</button>`).join("");
+  return `
+  <div class="small-note">Question ${state.practiceIndex+1} of ${state.practiceQuestions.length} &middot; ${esc(q.category)}</div>
+  <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+  <div class="qprompt">${esc(q.prompt)}</div>
+  <div class="options">${optsHtml}</div>
+  <div id="practice-feedback"></div>
+  <div class="center" id="practice-next-wrap" style="margin-top:16px;display:none;">
+    <button class="btn maroon" id="btn-practice-next">Next \u2192</button>
+  </div>
+  `;
+}
+function renderLightning(){
+  if(state.lightningQuestions.length === 0){
+    return `
+    <p>15 rapid-fire questions, 8 seconds each. Speed matters!</p>
+    <div class="center"><button class="btn maroon" id="btn-start-lightning">Start Lightning Round</button></div>
+    `;
+  }
+  if(state.lightningIndex >= state.lightningQuestions.length){
+    clearLightningTimer();
+    return `
+    <div class="center">
+      <h3>Lightning Round Complete</h3>
+      <p style="font-size:1.3rem;">Score: ${state.lightningScore}</p>
+      <button class="btn maroon" id="btn-restart-lightning">Try Again</button>
+    </div>
+    `;
+  }
+  const q = state.lightningQuestions[state.lightningIndex];
+  const optsHtml = q.options.map((opt,i) => `<button class="opt-btn" data-i="${i}">${esc(opt)}</button>`).join("");
+  const timerPct = Math.round((state.lightningTimeLeft/8)*100);
+  return `
+  <div class="small-note">Question ${state.lightningIndex+1} of ${state.lightningQuestions.length} &middot; Score: ${state.lightningScore}</div>
+  <div class="timerbar"><div class="timerfill" id="lightning-timerfill" style="width:${timerPct}%;"></div></div>
+  <div class="qprompt">${esc(q.prompt)}</div>
+  <div class="options">${optsHtml}</div>
+  <div id="lightning-feedback"></div>
+  `;
+}
+function clearLightningTimer(){
+  if(state.lightningTimer){ clearInterval(state.lightningTimer); state.lightningTimer = null; }
+}
+function bindStudyHall(){
+  document.getElementById("btn-almanac-menu").onclick = () => { clearLightningTimer(); state.screen = "title"; render(); };
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.onclick = () => { clearLightningTimer(); state.studyTab = btn.getAttribute("data-tab"); render(); };
+  });
+  if(state.studyTab === "flash") bindFlashcards();
+  else if(state.studyTab === "practice") bindPractice();
+  else bindLightning();
+}
+function bindFlashcards(){
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.onclick = () => { state.flashFilter = chip.getAttribute("data-cat"); state.flashIndex = 0; state.flashFlipped = false; render(); };
+  });
+  const cardEl = document.getElementById("flash-card-el");
+  if(cardEl) cardEl.onclick = () => { state.flashFlipped = !state.flashFlipped; render(); };
+  const prev = document.getElementById("flash-prev");
+  if(prev) prev.onclick = () => {
+    const list = currentFlashList();
+    state.flashIndex = (state.flashIndex - 1 + list.length) % list.length;
+    state.flashFlipped = false; render();
+  };
+  const next = document.getElementById("flash-next");
+  if(next) next.onclick = () => {
+    const list = currentFlashList();
+    state.flashIndex = (state.flashIndex + 1) % list.length;
+    state.flashFlipped = false; render();
+  };
+  const shuf = document.getElementById("flash-shuffle");
+  if(shuf) shuf.onclick = () => { state.flashDeck = shuffle(state.flashDeck); state.flashIndex = 0; state.flashFlipped = false; render(); };
+}
+function bindPractice(){
+  const startBtn = document.getElementById("btn-start-practice");
+  if(startBtn) startBtn.onclick = () => {
+    state.practiceQuestions = buildMixedQuestions(20);
+    state.practiceIndex = 0;
+    state.practiceScore = 0;
+    render();
+  };
+  const restartBtn = document.getElementById("btn-restart-practice");
+  if(restartBtn) restartBtn.onclick = () => {
+    state.practiceQuestions = buildMixedQuestions(20);
+    state.practiceIndex = 0;
+    state.practiceScore = 0;
+    render();
+  };
+  const q = state.practiceQuestions[state.practiceIndex];
+  if(q){
+    document.querySelectorAll(".opt-btn").forEach(btn => {
+      btn.onclick = () => {
+        if(state.practiceAnswered) return;
+        state.practiceAnswered = true;
+        const i = parseInt(btn.getAttribute("data-i"));
+        const correct = i === q.correctIndex;
+        document.querySelectorAll(".opt-btn").forEach((b,bi) => {
+          b.disabled = true;
+          if(bi === q.correctIndex) b.classList.add("correct");
+          else if(bi === i && !correct) b.classList.add("incorrect");
+        });
+        if(correct) state.practiceScore++;
+        const fb = document.getElementById("practice-feedback");
+        fb.innerHTML = correct ? `<div class="feedback good">\u2713 Correct!</div>` : `<div class="feedback bad">\u2717 Correct answer highlighted above.</div>`;
+        document.getElementById("practice-next-wrap").style.display = "block";
+      };
+    });
+    const nextBtn = document.getElementById("btn-practice-next");
+    if(nextBtn) nextBtn.onclick = () => { state.practiceIndex++; state.practiceAnswered = false; render(); };
+  }
+}
+function bindLightning(){
+  const startBtn = document.getElementById("btn-start-lightning");
+  if(startBtn) startBtn.onclick = () => {
+    state.lightningQuestions = buildMixedQuestions(15);
+    state.lightningIndex = 0;
+    state.lightningScore = 0;
+    render();
+    startLightningTimer();
+  };
+  const restartBtn = document.getElementById("btn-restart-lightning");
+  if(restartBtn) restartBtn.onclick = () => {
+    state.lightningQuestions = buildMixedQuestions(15);
+    state.lightningIndex = 0;
+    state.lightningScore = 0;
+    render();
+    startLightningTimer();
+  };
+  const q = state.lightningQuestions[state.lightningIndex];
+  if(q && state.lightningIndex < state.lightningQuestions.length){
+    document.querySelectorAll(".opt-btn").forEach(btn => {
+      btn.onclick = () => {
+        if(state.lightningAnswered) return;
+        answerLightning(parseInt(btn.getAttribute("data-i")));
+      };
+    });
+  }
+}
+function startLightningTimer(){
+  clearLightningTimer();
+  state.lightningTimeLeft = 8;
+  state.lightningAnswered = false;
+  state.lightningTimer = setInterval(() => {
+    state.lightningTimeLeft -= 0.2;
+    const fill = document.getElementById("lightning-timerfill");
+    if(fill) fill.style.width = Math.max(0, Math.round((state.lightningTimeLeft/8)*100)) + "%";
+    if(state.lightningTimeLeft <= 0){
+      answerLightning(-1);
+    }
+  }, 200);
+}
+function answerLightning(chosenIndex){
+  if(state.lightningAnswered) return;
+  state.lightningAnswered = true;
+  clearLightningTimer();
+  const q = state.lightningQuestions[state.lightningIndex];
+  const correct = chosenIndex === q.correctIndex;
+  if(correct){
+    const speedBonus = Math.max(0, Math.round(state.lightningTimeLeft * 5));
+    state.lightningScore += 20 + speedBonus;
+  }
+  document.querySelectorAll(".opt-btn").forEach((b,bi) => {
+    b.disabled = true;
+    if(bi === q.correctIndex) b.classList.add("correct");
+    else if(bi === chosenIndex && !correct) b.classList.add("incorrect");
+  });
+  const fb = document.getElementById("lightning-feedback");
+  if(fb) fb.innerHTML = correct ? `<div class="feedback good">\u2713 Correct!</div>` : `<div class="feedback bad">\u2717 Time's up or incorrect.</div>`;
+  setTimeout(() => {
+    state.lightningIndex++;
+    state.lightningAnswered = false;
+    render();
+    if(state.lightningIndex < state.lightningQuestions.length) startLightningTimer();
+  }, 1100);
+}
+
+/* ---------- init ---------- */
+window.state = state; // exposed for debugging/testing only
+window.WAYPOINTS = WAYPOINTS;
+render();
+</script>
+</body>
+</html>
