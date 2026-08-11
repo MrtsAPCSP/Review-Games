@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pigment Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,600&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#17181c;
+    --ink-2:#20222a;
+    --panel:#262832;
+    --parchment:#EDE4CC;
+    --parchment-dim:#c9c0a6;
+    --vermilion:#c1440e;
+    --vermilion-bright:#e0592a;
+    --ultramarine:#3a5f9c;
+    --ultramarine-bright:#5b82c4;
+    --ochre:#c99a2e;
+    --ochre-bright:#e0b445;
+    --verdigris:#4c8c7d;
+    --verdigris-bright:#6bb5a3;
+    --patrol:#a1362f;
+    --patrol-bright:#d0473e;
+    --line: rgba(237,228,204,0.14);
+    --radius: 14px;
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(193,68,14,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 100%, rgba(58,95,156,0.10), transparent 60%),
+      var(--ink);
+    color:var(--parchment);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .stage{
+    width:100%;
+    max-width:960px;
+    position:relative;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; margin:0; letter-spacing:0.01em;}
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--parchment-dim);
+  }
+  button{font-family:inherit; cursor:pointer;}
+  .btn{
+    background:var(--vermilion);
+    color:var(--parchment);
+    border:none;
+    border-radius:999px;
+    padding:14px 28px;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:0.01em;
+    transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+    box-shadow:0 6px 18px rgba(193,68,14,0.35);
+  }
+  .btn:hover{background:var(--vermilion-bright); transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.secondary{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--parchment);
+    box-shadow:none;
+  }
+  .btn.secondary:hover{border-color:var(--parchment-dim); background:rgba(237,228,204,0.05);}
+  .btn:focus-visible, .lock-opt:focus-visible, .chamber-chip:focus-visible{
+    outline:2px solid var(--ochre-bright); outline-offset:2px;
+  }
+
+  /* ---------- SCREEN MANAGEMENT ---------- */
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- TITLE SCREEN ---------- */
+  .title-card{
+    background:linear-gradient(180deg, var(--panel), var(--ink-2));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:48px 40px;
+    box-shadow:var(--shadow);
+    text-align:center;
+  }
+  .vault-glyph{width:96px; height:96px; margin:0 auto 18px;}
+  .title-card h1{font-size:clamp(32px,5vw,48px); font-weight:900; line-height:1.05;}
+  .title-card .sub{
+    font-size:16px; color:var(--parchment-dim); max-width:520px; margin:14px auto 30px; line-height:1.55;
+  }
+  .title-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:10px;}
+  .best-line{margin-top:22px; font-family:'Space Mono',monospace; font-size:12px; color:var(--parchment-dim);}
+
+  /* ---------- MODE / CHAMBER PICKER ---------- */
+  .chip-row{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:22px;}
+  .chamber-chip{
+    background:var(--ink-2); border:1px solid var(--line); color:var(--parchment);
+    border-radius:10px; padding:12px 16px; font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .chamber-chip:hover{border-color:var(--ochre); transform:translateY(-1px);}
+  .chamber-chip .dot{width:10px;height:10px;border-radius:50%; display:inline-block;}
+
+  /* ---------- VAULT DIAL (map / hub) ---------- */
+  .hub{
+    background:linear-gradient(180deg, var(--panel), var(--ink-2));
+    border:1px solid var(--line); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow);
+  }
+  .hub-top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px;}
+  .hub-story{max-width:480px; font-size:14px; color:var(--parchment-dim); line-height:1.6;}
+  .suspicion-wrap{min-width:180px;}
+  .meter-label{font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--parchment-dim); margin-bottom:6px; display:flex; justify-content:space-between;}
+  .meter{height:8px; border-radius:6px; background:rgba(237,228,204,0.1); overflow:hidden;}
+  .meter > div{height:100%; border-radius:6px; transition:width .4s ease;}
+  .meter.suspicion > div{background:linear-gradient(90deg,var(--ochre),var(--patrol));}
+
+  .dial-area{display:flex; gap:28px; align-items:center; flex-wrap:wrap; justify-content:center;}
+  .dial-svg{width:260px; height:260px; flex-shrink:0;}
+  .chamber-list{flex:1; min-width:260px; display:flex; flex-direction:column; gap:10px;}
+  .chamber-row{
+    display:flex; align-items:center; gap:12px; background:var(--ink-2); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; transition:transform .15s ease, border-color .15s ease;
+  }
+  .chamber-row.unlockable{cursor:pointer;}
+  .chamber-row.unlockable:hover{transform:translateX(3px); border-color:var(--ochre);}
+  .chamber-row.locked{opacity:0.45;}
+  .chamber-row.cracked{border-color:var(--verdigris);}
+  .vial{
+    width:26px; height:38px; border:2px solid rgba(237,228,204,0.35); border-radius:4px 4px 8px 8px;
+    position:relative; overflow:hidden; flex-shrink:0; background:rgba(0,0,0,0.2);
+  }
+  .vial .fill{position:absolute; bottom:0; left:0; right:0; transition:height .5s ease;}
+  .chamber-meta{flex:1; min-width:0;}
+  .chamber-meta .name{font-weight:700; font-size:14.5px;}
+  .chamber-meta .desc{font-size:12px; color:var(--parchment-dim);}
+  .chamber-status{font-family:'Space Mono',monospace; font-size:11px; color:var(--parchment-dim); text-align:right; flex-shrink:0;}
+  .badge-star{color:var(--ochre-bright);}
+
+  .hub-actions{display:flex; justify-content:space-between; margin-top:22px; flex-wrap:wrap; gap:10px;}
+
+  /* ---------- QUESTION / LOCK SCREEN ---------- */
+  .lock-card{
+    background:linear-gradient(180deg, var(--panel), var(--ink-2));
+    border:1px solid var(--line); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow);
+  }
+  .lock-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;}
+  .lock-title{display:flex; align-items:center; gap:10px;}
+  .lock-title .dot{width:12px;height:12px;border-radius:50%;}
+  .streak-track{display:flex; gap:6px;}
+  .streak-pip{width:16px; height:16px; border-radius:50%; border:2px solid var(--line); transition:background .2s ease, border-color .2s ease;}
+  .streak-pip.filled{background:var(--verdigris-bright); border-color:var(--verdigris-bright);}
+
+  .question-text{font-family:'Fraunces', serif; font-size:clamp(20px,3vw,26px); font-weight:600; line-height:1.35; margin:6px 0 24px;}
+
+  .options{display:grid; gap:12px; grid-template-columns:1fr 1fr;}
+  @media (max-width:600px){.options{grid-template-columns:1fr;}}
+  .lock-opt{
+    background:var(--ink-2); border:1px solid var(--line); color:var(--parchment);
+    border-radius:10px; padding:16px 18px; font-size:15px; text-align:left; line-height:1.4;
+    transition:border-color .15s ease, transform .1s ease, background .15s ease;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .lock-opt .tag{
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--parchment-dim); border:1px solid var(--line);
+    border-radius:5px; padding:1px 6px; flex-shrink:0; margin-top:2px;
+  }
+  .lock-opt:hover:not(:disabled){border-color:var(--ochre); transform:translateY(-1px);}
+  .lock-opt:disabled{cursor:default;}
+  .lock-opt.correct{border-color:var(--verdigris-bright); background:rgba(76,140,125,0.18);}
+  .lock-opt.wrong{border-color:var(--patrol-bright); background:rgba(161,54,47,0.18);}
+  .lock-opt.dim{opacity:0.5;}
+
+  .feedback{
+    margin-top:20px; padding:16px 18px; border-radius:10px; font-size:14px; line-height:1.55;
+    border:1px solid var(--line); display:none;
+  }
+  .feedback.show{display:block; animation:fadein .25s ease;}
+  .feedback.good{border-color:var(--verdigris-bright); background:rgba(76,140,125,0.12);}
+  .feedback.bad{border-color:var(--patrol-bright); background:rgba(161,54,47,0.12);}
+  .feedback .flabel{font-family:'Space Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; display:block;}
+
+  .lock-bottom{display:flex; justify-content:space-between; align-items:center; margin-top:22px; gap:10px; flex-wrap:wrap;}
+
+  /* ---------- CRACKED / TRANSITION SCREEN ---------- */
+  .splash-card{
+    background:linear-gradient(180deg, var(--panel), var(--ink-2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:48px 40px; text-align:center; box-shadow:var(--shadow);
+  }
+  .splash-icon{width:80px; height:80px; margin:0 auto 16px;}
+
+  /* ---------- FINALE ---------- */
+  .stat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:26px 0;}
+  @media (max-width:600px){.stat-grid{grid-template-columns:1fr 1fr;}}
+  .stat-box{background:var(--ink-2); border:1px solid var(--line); border-radius:10px; padding:16px; text-align:center;}
+  .stat-box .num{font-family:'Fraunces',serif; font-size:26px; font-weight:800;}
+  .stat-box .lbl{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--parchment-dim); margin-top:4px;}
+
+  .footer-note{text-align:center; margin-top:18px; font-size:12px; color:var(--parchment-dim);}
+  a.reset-link{color:var(--parchment-dim); text-decoration:underline; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active, .feedback.show{animation:none;}
+    .btn:hover, .chamber-chip:hover, .lock-opt:hover{transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <!-- TITLE SCREEN -->
+  <section class="screen active" id="screen-title">
+    <div class="title-card">
+      <svg class="vault-glyph" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="#EDE4CC" stroke-opacity="0.3" stroke-width="2"/>
+        <circle cx="50" cy="50" r="32" stroke="#c99a2e" stroke-width="2"/>
+        <circle cx="50" cy="50" r="6" fill="#c1440e"/>
+        <line x1="50" y1="18" x2="50" y2="28" stroke="#EDE4CC" stroke-width="2"/>
+        <line x1="50" y1="72" x2="50" y2="82" stroke="#EDE4CC" stroke-width="2"/>
+        <line x1="18" y1="50" x2="28" y2="50" stroke="#EDE4CC" stroke-width="2"/>
+        <line x1="72" y1="50" x2="82" y2="50" stroke="#EDE4CC" stroke-width="2"/>
+      </svg>
+      <div class="eyebrow">Art 1 &middot; Midterm Prep</div>
+      <h1>The Pigment Vault</h1>
+      <p class="sub">The museum's pigment vault sealed itself at midnight, and every stolen color is locked behind an art-concept combination. Crack all five chambers &mdash; Elements of Art, the Color Wheel, Color Schemes, Shading &amp; Value, and the Master Vault &mdash; before the patrol makes its rounds.</p>
+      <div class="title-actions">
+        <button class="btn" id="btn-start-heist">Begin the Heist</button>
+        <button class="btn secondary" id="btn-practice">Practice a Chamber</button>
+      </div>
+      <div class="best-line" id="best-line"></div>
+    </div>
+  </section>
+
+  <!-- PRACTICE PICKER -->
+  <section class="screen" id="screen-practice-picker">
+    <div class="title-card">
+      <div class="eyebrow">Practice Mode</div>
+      <h1 style="font-size:28px;">Pick a chamber to drill</h1>
+      <p class="sub">No suspicion meter, no locks &mdash; just endless shuffled questions so you can hammer one topic until it sticks.</p>
+      <div class="chip-row" id="practice-chips"></div>
+      <div style="margin-top:26px;">
+        <button class="btn secondary" id="btn-practice-back">Back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUB / VAULT DIAL -->
+  <section class="screen" id="screen-hub">
+    <div class="hub">
+      <div class="hub-top">
+        <div class="hub-story" id="hub-story">Choose an unlocked chamber below. Answer correctly to build a streak &mdash; a wrong guess resets the streak and raises suspicion. Fill the suspicion meter and the patrol resets your current chamber.</div>
+        <div class="suspicion-wrap">
+          <div class="meter-label"><span>Suspicion</span><span id="susp-pct">0%</span></div>
+          <div class="meter suspicion"><div id="susp-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="dial-area">
+        <svg class="dial-svg" id="dial-svg" viewBox="0 0 220 220"></svg>
+        <div class="chamber-list" id="chamber-list"></div>
+      </div>
+      <div class="hub-actions">
+        <button class="btn secondary" id="btn-hub-title">Exit to Title</button>
+        <div class="eyebrow" id="hub-score"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOCK / QUESTION SCREEN -->
+  <section class="screen" id="screen-lock">
+    <div class="lock-card">
+      <div class="lock-top">
+        <div class="lock-title">
+          <span class="dot" id="lock-dot"></span>
+          <h2 id="lock-chamber-name" style="font-size:18px;"></h2>
+        </div>
+        <div class="streak-track" id="streak-track"></div>
+      </div>
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback">
+        <span class="flabel" id="feedback-label"></span>
+        <span id="feedback-text"></span>
+      </div>
+      <div class="lock-bottom">
+        <button class="btn secondary" id="btn-lock-exit">Back to Vault Map</button>
+        <button class="btn" id="btn-next" style="display:none;">Next Question &rarr;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE QUESTION SCREEN -->
+  <section class="screen" id="screen-practice-play">
+    <div class="lock-card">
+      <div class="lock-top">
+        <div class="lock-title">
+          <span class="dot" id="pp-dot"></span>
+          <h2 id="pp-chamber-name" style="font-size:18px;"></h2>
+        </div>
+        <div class="eyebrow" id="pp-score"></div>
+      </div>
+      <div class="question-text" id="pp-question-text"></div>
+      <div class="options" id="pp-options"></div>
+      <div class="feedback" id="pp-feedback">
+        <span class="flabel" id="pp-feedback-label"></span>
+        <span id="pp-feedback-text"></span>
+      </div>
+      <div class="lock-bottom">
+        <button class="btn secondary" id="btn-pp-exit">Back to Menu</button>
+        <button class="btn" id="btn-pp-next" style="display:none;">Next Question &rarr;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAMBER CRACKED SPLASH -->
+  <section class="screen" id="screen-cracked">
+    <div class="splash-card">
+      <svg class="splash-icon" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="44" stroke="#6bb5a3" stroke-width="3"/>
+        <path d="M30 52 L44 66 L72 34" stroke="#6bb5a3" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="eyebrow" id="cracked-eyebrow">Chamber Cracked</div>
+      <h1 id="cracked-title" style="font-size:30px;"></h1>
+      <p class="sub" id="cracked-sub"></p>
+      <button class="btn" id="btn-cracked-continue">Return to Vault Map</button>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section class="screen" id="screen-finale">
+    <div class="splash-card">
+      <div class="eyebrow">The Master Vault Opens</div>
+      <h1 id="finale-title" style="font-size:32px;">All Pigments Recovered</h1>
+      <p class="sub" id="finale-sub"></p>
+      <div class="stat-grid" id="finale-stats"></div>
+      <div class="title-actions">
+        <button class="btn" id="btn-finale-again">Run the Heist Again</button>
+        <button class="btn secondary" id="btn-finale-title">Exit to Title</button>
+      </div>
+    </div>
+    <div class="footer-note">Every run reshuffles the questions and answer order, so no two heists play out the same.</div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================================
+   QUESTION BANK
+   ========================================================================= */
+const BANK = {
+  elements: [
+    {q:"A mark with length and direction, but essentially no width, is which element of art?", o:["Line","Shape","Form","Texture"], a:0, n:"Line is the most basic element \u2014 a continuous mark that can vary in width, direction, and quality (straight, curved, implied)."},
+    {q:"A flat, two-dimensional area enclosed by an edge (like a circle or triangle) is a...", o:["Form","Shape","Value","Space"], a:1, n:"Shapes are 2D and flat. Once you add the illusion of depth, it becomes a form."},
+    {q:"A three-dimensional object with height, width, AND depth is called...", o:["Shape","Texture","Form","Line"], a:2, n:"Form is 3D \u2014 think sphere vs. circle, or cube vs. square."},
+    {q:"The lightness or darkness of a color or tone is called...", o:["Hue","Value","Saturation","Space"], a:1, n:"Value describes how light or dark something is, independent of the color itself."},
+    {q:"The element of art concerned with the area around, between, and within objects is...", o:["Form","Texture","Space","Line"], a:2, n:"Space includes positive space (the subject) and negative space (everything around it), plus the illusion of depth."},
+    {q:"The actual or implied surface quality of an object (rough, smooth, bumpy) is its...", o:["Texture","Value","Form","Color"], a:0, n:"Texture can be actual (you can feel it) or implied/visual (drawn to look like a certain surface)."},
+    {q:"Which element of art is created by mixing hue, value, and saturation?", o:["Space","Color","Line","Shape"], a:1, n:"Color is built from three properties: hue (the color name), value (light/dark), and saturation/intensity (purity)."},
+    {q:"A shape that is geometric, like a square or triangle, is best described as...", o:["Organic","Implied","Geometric","Amorphous"], a:2, n:"Geometric shapes are precise and mathematical; organic shapes are irregular, like something found in nature."},
+    {q:"An irregular, curvy shape that resembles something found in nature is called...", o:["Organic","Geometric","Linear","Structural"], a:0, n:"Organic shapes feel natural and free-flowing \u2014 think leaves, clouds, or puddles."},
+    {q:"A line that isn't actually drawn, but that our eyes perceive because of the arrangement of other elements, is called...", o:["A contour line","An implied line","A gesture line","A hatching line"], a:1, n:"Implied lines are 'invisible' \u2014 like a row of dots, or the direction a group of people is looking."},
+    {q:"Using overlapping objects, size differences, and placement on a page to suggest depth is creating the illusion of...", o:["Texture","Space","Value","Form"], a:1, n:"Depth cues like overlap, size, and placement all build the illusion of 3D space on a flat surface."},
+    {q:"A contour line drawing focuses on capturing which element of art?", o:["Value","Texture","Line","Saturation"], a:2, n:"Contour drawing is all about line \u2014 tracing the edges and internal structure of a form without shading."},
+    {q:"Which pair correctly matches an element of art with an example?", o:["Form \u2014 a flat circle drawn on paper","Value \u2014 how rough a tree's bark feels","Space \u2014 the illusion of a hallway receding into the distance","Texture \u2014 the lightness of a shadow"], a:2, n:"A receding hallway is a classic example of using space to create the illusion of depth."},
+    {q:"A rendered sphere (with highlight, midtone, and shadow) is showing off which element compared to a flat, outlined circle?", o:["Texture","Form","Line","Shape"], a:1, n:"Adding value changes a flat shape (circle) into an object that reads as a 3D form (sphere)."},
+    {q:"Cross-hatching is a technique primarily used to build up which element of art?", o:["Value","Space","Shape","Color"], a:0, n:"Cross-hatching layers lines to darken an area, which is really a way of controlling value."},
+    {q:"Which of these is an example of using color as the dominant element of art?", o:["A charcoal drawing built entirely from value gradations","A sculpture defined by its silhouette","A painting that separates near and far mountains using warm foreground colors and cool background colors","A pencil sketch using only outlines"], a:2, n:"Using warm/cool color shifts to separate foreground and background is a color-driven approach to depth."},
+    {q:"An artist smudging graphite to create a smooth gradient from dark to light is manipulating...", o:["Texture","Value","Line","Shape"], a:1, n:"Smudging/blending is a classic way to control value transitions."},
+    {q:"Which statement about shape vs. form is correct?", o:["Shape and form are the same thing","Shape is 3D, form is 2D","Shape is 2D, form is 3D","Neither has anything to do with dimension"], a:2, n:"Shape = flat/2D. Form = has volume/3D."},
+    {q:"A visual texture drawn to look like fur, even though the paper is smooth to the touch, is called...", o:["Actual texture","Implied (visual) texture","Organic texture","Negative texture"], a:1, n:"Implied texture is drawn/painted to suggest a surface quality that isn't physically there."}
+  ],
+  colorwheel: [
+    {q:"Which three colors are the primary colors on a traditional color wheel?", o:["Red, orange, yellow","Red, yellow, blue","Green, violet, orange","Red, green, blue"], a:1, n:"Red, yellow, and blue can't be made by mixing other colors \u2014 that's what makes them primary."},
+    {q:"Secondary colors are made by mixing...", o:["Two primary colors","A primary and a secondary color","Two secondary colors","Black and white"], a:0, n:"Orange, green, and violet are secondary colors, each made from two neighboring primaries."},
+    {q:"Which of these is a secondary color?", o:["Yellow","Red-orange","Green","Blue"], a:2, n:"Green is made by mixing blue and yellow, making it a secondary color."},
+    {q:"A tertiary color like 'yellow-green' is made by mixing...", o:["Two secondary colors","A primary and its neighboring secondary color","Two primary colors that are opposite each other","White and a primary color"], a:1, n:"Tertiary colors sit between a primary and secondary on the wheel and are named for both, like blue-green or red-violet."},
+    {q:"Colors that sit directly opposite each other on the color wheel are called...", o:["Analogous","Complementary","Monochromatic","Triadic"], a:1, n:"Complementary pairs (like red/green or blue/orange) create the strongest contrast on the wheel."},
+    {q:"The 'hue' of a color refers to...", o:["How light or dark it is","How dull or bright it is","Its name/family on the color wheel, like red or blue","How rough it looks"], a:2, n:"Hue is simply the color's identity \u2014 red, blue, yellow-green, etc."},
+    {q:"Saturation (also called intensity or chroma) describes...", o:["The color's name","How light or dark a color is","How pure/vivid or dull/muted a color is","Its position on the wheel"], a:2, n:"A highly saturated color is vivid and pure; a low-saturation color looks grayed-out or muted."},
+    {q:"Adding white to a color creates a...", o:["Shade","Tint","Tone","Hue"], a:1, n:"Tint = color + white (lighter version). Shade = color + black (darker version)."},
+    {q:"Adding black to a color creates a...", o:["Tint","Tone","Shade","Value scale"], a:2, n:"Shade = color + black. Think 'navy' as a shade of blue."},
+    {q:"Adding gray to a color, which mutes it without simply lightening or darkening it, creates a...", o:["Tint","Shade","Tone","Hue"], a:2, n:"Tone = color + gray. It's a way to dull a color's intensity while keeping its overall value more neutral."},
+    {q:"Warm colors on the color wheel include...", o:["Blue, green, violet","Red, orange, yellow","Black, white, gray","Blue-green and blue-violet only"], a:1, n:"Reds, oranges, and yellows are considered warm \u2014 they tend to feel energetic and advance toward the viewer."},
+    {q:"Cool colors on the color wheel include...", o:["Red, orange, yellow","Blue, green, violet","Only black and white","Red-orange and yellow-orange"], a:1, n:"Blues, greens, and violets are cool colors \u2014 they tend to feel calm and recede into the background."},
+    {q:"On the color wheel, which color is directly opposite blue?", o:["Green","Orange","Red","Yellow"], a:1, n:"Blue and orange are a classic complementary pair, directly across the wheel from each other."},
+    {q:"Which color is the complement of red?", o:["Green","Blue","Yellow","Violet"], a:0, n:"Red and green sit opposite each other on the wheel, making them complements."},
+    {q:"A neutral color, like gray, brown, black, or white, is created by...", o:["Mixing two primary colors","Mixing complementary colors (or all three primaries) together","Adding only white to a hue","Using colors next to each other on the wheel"], a:1, n:"Mixing complements (or all three primaries) cancels out hue and results in a neutral, muted color."},
+    {q:"How many main colors are typically shown on a basic 12-part color wheel?", o:["6","9","12","24"], a:2, n:"A standard color wheel shows 3 primary + 3 secondary + 6 tertiary colors = 12 total."},
+    {q:"If you keep adding white to a hue in small steps, you're creating a...", o:["Color scheme","Value scale / tint scale","Texture gradient","Complementary pair"], a:1, n:"A gradual series of tints (or shades) from light to dark is called a value scale."}
+  ],
+  schemes: [
+    {q:"A color scheme using only one hue, varied in value and saturation, is called...", o:["Analogous","Monochromatic","Complementary","Triadic"], a:1, n:"Monochromatic = 'one color' \u2014 all tints, tones, and shades of a single hue."},
+    {q:"A color scheme using colors that sit next to each other on the wheel (like yellow, yellow-green, and green) is...", o:["Complementary","Monochromatic","Analogous","Split-complementary"], a:2, n:"Analogous schemes use 2\u20134 neighboring hues and tend to feel harmonious and calm."},
+    {q:"A color scheme built on two colors directly opposite each other on the wheel is...", o:["Analogous","Complementary","Triadic","Neutral"], a:1, n:"Complementary schemes (like red/green) create high contrast and visual energy."},
+    {q:"A color scheme using three colors evenly spaced around the wheel, forming a triangle, is called...", o:["Triadic","Split-complementary","Analogous","Monochromatic"], a:0, n:"Triadic schemes (like red, yellow, and blue) are vibrant and balanced, since the hues are evenly spaced."},
+    {q:"A split-complementary scheme uses...", o:["One color and its exact opposite only","One color plus the two colors next to its complement","Three evenly spaced colors","Only warm colors"], a:1, n:"Split-complementary takes a base color and pairs it with the two hues on either side of its complement, giving contrast with a bit more flexibility."},
+    {q:"An artwork using only shades of blue \u2014 navy, sky blue, and steel blue \u2014 is using a ___ color scheme.", o:["Analogous","Monochromatic","Triadic","Complementary"], a:1, n:"Since every color is a variation of a single hue (blue), this is monochromatic."},
+    {q:"A painting using red, yellow-orange, and orange together is using a(n) ___ color scheme.", o:["Analogous","Complementary","Triadic","Split-complementary"], a:0, n:"These three hues sit next to each other on the wheel, making this an analogous scheme."},
+    {q:"Which color scheme is most likely to create strong visual contrast and make a subject 'pop'?", o:["Monochromatic","Analogous","Complementary","Neutral"], a:2, n:"Because complementary colors are opposites, placing them side by side creates maximum contrast."},
+    {q:"A 'warm' color scheme relies mainly on...", o:["Blues and greens","Reds, oranges, and yellows","Black, white, and gray only","Every hue on the wheel equally"], a:1, n:"Warm schemes lean on the red/orange/yellow half of the wheel, often feeling energetic or cozy."},
+    {q:"A 'cool' color scheme relies mainly on...", o:["Reds and yellows","Blues, greens, and violets","Only tertiary colors","Black and white"], a:1, n:"Cool schemes use the blue/green/violet half of the wheel, often feeling calm or distant."},
+    {q:"An artist chooses orange and blue for a poster to make the subject stand out sharply. This is an example of...", o:["Monochromatic scheme","Analogous scheme","Complementary scheme","Achromatic scheme"], a:2, n:"Orange and blue are complements, so pairing them maximizes contrast."},
+    {q:"A color scheme using only black, white, and gray (no hue at all) is called...", o:["Neutral / achromatic","Monochromatic","Analogous","Triadic"], a:0, n:"Achromatic literally means 'without color' \u2014 just values of gray from black to white."},
+    {q:"Which of these is a true analogous color group?", o:["Red, green, blue","Blue, blue-violet, violet","Yellow, violet, orange","Red, yellow, blue"], a:1, n:"Blue, blue-violet, and violet are all neighbors on the color wheel."},
+    {q:"Which of these is a true triadic color group?", o:["Red, yellow, blue","Blue, blue-green, green","Orange and blue only","Red and its tints"], a:0, n:"Red, yellow, and blue are spaced evenly around the wheel (120\u00b0 apart), forming a triadic set."}
+  ],
+  shading: [
+    {q:"Drawing a series of closely spaced parallel lines to build up value is called...", o:["Stippling","Hatching","Blending","Contour drawing"], a:1, n:"Hatching uses parallel lines; the closer together they are, the darker the value appears."},
+    {q:"Layering two sets of parallel lines that cross over each other to darken an area is called...", o:["Cross-hatching","Stippling","Scumbling","Contour hatching"], a:0, n:"Cross-hatching adds a second (or third) layer of lines at a different angle over the first to deepen value."},
+    {q:"Building up value using small dots, where more dots = darker value, is called...", o:["Hatching","Stippling","Blending","Cross-contouring"], a:1, n:"Stippling relies purely on dot density to control value."},
+    {q:"Smoothly transitioning between values with no visible lines or marks, often using a tool like a tortillon or your finger, is called...", o:["Stippling","Hatching","Blending","Hatch-scumbling"], a:2, n:"Blending softens and smooths transitions between values for a soft, continuous look."},
+    {q:"Lines that follow the curve of a form (rather than staying straight) to help describe its 3D surface are called...", o:["Contour lines / contour hatching","Gesture lines","Cross-hatching","Stippling"], a:0, n:"Contour hatching wraps lines around the form itself, which helps convey volume, not just value."},
+    {q:"A loose, circular scribbling technique used to build up soft, textured value is called...", o:["Scumbling","Blending","Stippling","Hatching"], a:0, n:"Scumbling uses layered, circular scribbles to build texture and value gradually."},
+    {q:"A full range of values from pure white to pure black, in gradual steps, is called a...", o:["Color scheme","Value scale","Hue wheel","Texture map"], a:1, n:"A value scale (often shown in 9 or 10 steps) trains your eye to see and control gradations of light to dark."},
+    {q:"The area on a form that is turned away from the light source is called the...", o:["Highlight","Core shadow / form shadow","Cast shadow","Reflected light"], a:1, n:"Form shadow (or core shadow) is the darkest part of the object itself, on the side away from the light."},
+    {q:"The shadow that an object casts onto the surface behind or beneath it is called the...", o:["Form shadow","Highlight","Cast shadow","Halftone"], a:2, n:"A cast shadow falls on another surface, separate from the object, and usually has a hard edge near the object."},
+    {q:"The brightest point on a form, where light hits most directly, is called the...", o:["Highlight","Midtone","Core shadow","Cast shadow"], a:0, n:"The highlight is the lightest value on the object, right where the light source hits it directly."},
+    {q:"A subtle bounce of light that lightens the edge of a shadow (often from a nearby surface) is called...", o:["Highlight","Reflected light","Cast shadow","Local color"], a:1, n:"Reflected light softens the edge of the form shadow, bouncing in from a nearby surface, but it's never as bright as the main highlight."},
+    {q:"The dramatic use of strong light and dark contrast in a drawing or painting is called...", o:["Chiaroscuro","Scumbling","Impasto","Sfumato"], a:0, n:"Chiaroscuro (Italian for 'light-dark') describes strong, dramatic value contrast, famously used by Caravaggio."},
+    {q:"When rendering a sphere, which order (from lightest to darkest) is typically correct?", o:["Cast shadow, core shadow, midtone, highlight","Highlight, midtone/halftone, core shadow, reflected light, cast shadow","Reflected light, highlight, cast shadow","Midtone, highlight, cast shadow, core shadow"], a:1, n:"Moving away from the light source: highlight \u2192 halftone \u2192 core (form) shadow \u2192 a touch of reflected light \u2192 and finally the cast shadow on the ground."},
+    {q:"Which shading technique would be fastest for filling a large, smooth area with an even, dark value?", o:["Stippling one dot at a time","Even, tight hatching or blending","Contour hatching only","Cast shadow mapping"], a:1, n:"Tight, even hatching or blending covers large areas efficiently while keeping the value consistent."},
+    {q:"A halftone (or midtone) in a value drawing refers to...", o:["The very darkest shadow","The values that sit between the highlight and the core shadow","The brightest highlight only","The cast shadow's edge"], a:1, n:"Halftones/midtones are the transitional grays between the light and dark extremes on a form."}
+  ]
+};
+
+const CHAMBERS = [
+  {key:"elements", name:"Elements of Art", short:"Elements", color:"var(--vermilion-bright)", fillColor:"#c1440e", target:3, desc:"Line, shape, form, value, space, texture, color."},
+  {key:"colorwheel", name:"The Color Wheel", short:"Color Wheel", color:"var(--ultramarine-bright)", fillColor:"#3a5f9c", target:4, desc:"Primary, secondary, tertiary, hue, value, saturation."},
+  {key:"schemes", name:"Color Schemes", short:"Schemes", color:"var(--ochre-bright)", fillColor:"#c99a2e", target:4, desc:"Monochromatic, analogous, complementary, triadic & more."},
+  {key:"shading", name:"Shading & Value", short:"Shading", color:"var(--verdigris-bright)", fillColor:"#4c8c7d", target:4, desc:"Hatching, blending, stippling, form & cast shadows."},
+  {key:"boss", name:"The Master Vault", short:"Master Vault", color:"var(--parchment)", fillColor:"#EDE4CC", target:6, desc:"A mixed final test drawing from every chamber."}
+];
+
+/* =========================================================================
+   UTIL
+   ========================================================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function buildShuffledQuestion(raw){
+  const optIdx = shuffle(raw.o.map((_,i)=>i));
+  const options = optIdx.map(i=>raw.o[i]);
+  const correct = optIdx.indexOf(raw.a);
+  return {q: raw.q, options, correct, note: raw.n};
+}
+function el(id){ return document.getElementById(id); }
+function show(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el(screenId).classList.add('active');
+}
+
+/* =========================================================================
+   STATE
+   ========================================================================= */
+const state = {
+  mode: null, // 'heist' | 'practice'
+  suspicion: 0,
+  chambers: {}, // key -> {cracked, unlocked}
+  currentChamber: null,
+  currentQueue: [],
+  currentQ: null,
+  streak: 0,
+  totalCorrect: 0,
+  totalAsked: 0,
+  practiceKey: null,
+  practiceScore: {correct:0, asked:0, streak:0}
+};
+
+function resetHeist(){
+  state.suspicion = 0;
+  state.totalCorrect = 0;
+  state.totalAsked = 0;
+  state.chambers = {};
+  CHAMBERS.forEach((c,i)=>{
+    state.chambers[c.key] = {cracked:false, unlocked: i===0};
+  });
+}
+
+/* =========================================================================
+   STORAGE (best run) -- best effort, never blocks UI
+   ========================================================================= */
+async function loadBest(){
+  try{
+    const r = await window.storage.get('pigment-vault-best', false);
+    if(r && r.value){
+      const data = JSON.parse(r.value);
+      el('best-line').textContent = `Best heist: ${data.chambersCracked}/5 chambers \u00b7 ${data.accuracy}% accuracy`;
+    }
+  }catch(e){ /* no record yet, that's fine */ }
+}
+async function saveBest(chambersCracked, accuracy){
+  try{
+    const r = await window.storage.get('pigment-vault-best', false).catch(()=>null);
+    let prevBest = -1;
+    if(r && r.value){ try{ prevBest = JSON.parse(r.value).chambersCracked ?? -1; }catch(e){} }
+    if(chambersCracked >= prevBest){
+      await window.storage.set('pigment-vault-best', JSON.stringify({chambersCracked, accuracy}), false);
+    }
+  }catch(e){ /* storage unavailable, skip silently */ }
+}
+loadBest();
+
+/* =========================================================================
+   HUB / DIAL RENDERING
+   ========================================================================= */
+function renderDial(){
+  const svg = el('dial-svg');
+  const cx=110, cy=110, rOuter=95, rInner=58;
+  const n = CHAMBERS.length;
+  let parts = `<circle cx="${cx}" cy="${cy}" r="${rOuter+4}" fill="none" stroke="rgba(237,228,204,0.15)" stroke-width="1"/>`;
+  for(let i=0;i<n;i++){
+    const c = CHAMBERS[i];
+    const st = state.chambers[c.key];
+    const a0 = (i/n)*2*Math.PI - Math.PI/2;
+    const a1 = ((i+1)/n)*2*Math.PI - Math.PI/2;
+    const x0o = cx+rOuter*Math.cos(a0), y0o = cy+rOuter*Math.sin(a0);
+    const x1o = cx+rOuter*Math.cos(a1), y1o = cy+rOuter*Math.sin(a1);
+    const x0i = cx+rInner*Math.cos(a0), y0i = cy+rInner*Math.sin(a0);
+    const x1i = cx+rInner*Math.cos(a1), y1i = cy+rInner*Math.sin(a1);
+    const fillOpacity = st.cracked ? 0.9 : (st.unlocked ? 0.35 : 0.1);
+    const stroke = st.cracked ? c.fillColor : 'rgba(237,228,204,0.25)';
+    parts += `<path d="M${x0o},${y0o} A${rOuter},${rOuter} 0 0,1 ${x1o},${y1o} L${x1i},${y1i} A${rInner},${rInner} 0 0,0 ${x0i},${y0i} Z"
+      fill="${c.fillColor}" fill-opacity="${fillOpacity}" stroke="${stroke}" stroke-width="1.5"/>`;
+    const mid = (a0+a1)/2;
+    const lx = cx + ((rOuter+rInner)/2)*Math.cos(mid);
+    const ly = cy + ((rOuter+rInner)/2)*Math.sin(mid);
+    parts += `<text x="${lx}" y="${ly}" fill="#17181c" font-size="9" font-weight="700" text-anchor="middle" dominant-baseline="middle" font-family="Work Sans, sans-serif" opacity="${st.cracked?1:0}">\u2713</text>`;
+  }
+  parts += `<circle cx="${cx}" cy="${cy}" r="${rInner-6}" fill="#17181c" stroke="rgba(237,228,204,0.2)" stroke-width="1"/>`;
+  const crackedCount = CHAMBERS.filter(c=>state.chambers[c.key] && state.chambers[c.key].cracked).length;
+  parts += `<text x="${cx}" y="${cy-4}" fill="#EDE4CC" font-size="20" font-weight="800" text-anchor="middle" font-family="Fraunces, serif">${crackedCount}/${n}</text>`;
+  parts += `<text x="${cx}" y="${cy+14}" fill="#c9c0a6" font-size="8" letter-spacing="1" text-anchor="middle" font-family="Space Mono, monospace">CRACKED</text>`;
+  svg.innerHTML = parts;
+}
+
+function renderChamberList(){
+  const list = el('chamber-list');
+  list.innerHTML = '';
+  CHAMBERS.forEach(c=>{
+    const st = state.chambers[c.key];
+    const row = document.createElement('div');
+    row.className = 'chamber-row ' + (st.cracked ? 'cracked' : (st.unlocked ? 'unlockable' : 'locked'));
+    const fillPct = st.cracked ? 100 : 0;
+    row.innerHTML = `
+      <div class="vial"><div class="fill" style="height:${fillPct}%; background:${c.fillColor};"></div></div>
+      <div class="chamber-meta">
+        <div class="name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+      </div>
+      <div class="chamber-status">${st.cracked ? '<span class="badge-star">\u2605</span> Cracked' : (st.unlocked ? (c.target+' in a row') : 'Locked')}</div>
+    `;
+    if(st.unlocked && !st.cracked){
+      row.addEventListener('click', ()=> enterChamber(c.key));
+    }
+    list.appendChild(row);
+  });
+  const acc = state.totalAsked ? Math.round(100*state.totalCorrect/state.totalAsked) : 0;
+  el('hub-score').textContent = `Correct: ${state.totalCorrect}/${state.totalAsked}  \u00b7  Accuracy: ${acc}%`;
+}
+
+function renderSuspicion(){
+  el('susp-fill').style.width = state.suspicion + '%';
+  el('susp-pct').textContent = state.suspicion + '%';
+}
+
+function goHub(){
+  renderDial();
+  renderChamberList();
+  renderSuspicion();
+  show('screen-hub');
+}
+
+/* =========================================================================
+   HEIST FLOW
+   ========================================================================= */
+function enterChamber(key){
+  const chamberDef = CHAMBERS.find(c=>c.key===key);
+  state.currentChamber = key;
+  state.streak = 0;
+  let pool;
+  if(key === 'boss'){
+    pool = shuffle([...BANK.elements, ...BANK.colorwheel, ...BANK.schemes, ...BANK.shading]);
+  } else {
+    pool = shuffle(BANK[key]);
+  }
+  state.currentQueue = pool;
+  el('lock-chamber-name').textContent = chamberDef.name;
+  el('lock-dot').style.background = chamberDef.fillColor;
+  nextLockQuestion();
+  show('screen-lock');
+}
+
+function currentChamberDef(){ return CHAMBERS.find(c=>c.key===state.currentChamber); }
+
+function renderStreakTrack(){
+  const def = currentChamberDef();
+  const track = el('streak-track');
+  track.innerHTML = '';
+  for(let i=0;i<def.target;i++){
+    const pip = document.createElement('div');
+    pip.className = 'streak-pip' + (i < state.streak ? ' filled' : '');
+    if(i < state.streak) pip.style.background = def.fillColor, pip.style.borderColor = def.fillColor;
+    track.appendChild(pip);
+  }
+}
+
+function nextLockQuestion(){
+  if(state.currentQueue.length === 0){
+    state.currentQueue = shuffle(state.currentChamber === 'boss'
+      ? [...BANK.elements, ...BANK.colorwheel, ...BANK.schemes, ...BANK.shading]
+      : BANK[state.currentChamber]);
+  }
+  const raw = state.currentQueue.pop();
+  state.currentQ = buildShuffledQuestion(raw);
+  el('question-text').textContent = state.currentQ.q;
+  const optWrap = el('options');
+  optWrap.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  state.currentQ.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className = 'lock-opt';
+    b.innerHTML = `<span class="tag">${letters[i]}</span><span>${opt}</span>`;
+    b.addEventListener('click', ()=> answerLock(i,b));
+    optWrap.appendChild(b);
+  });
+  el('feedback').className = 'feedback';
+  el('btn-next').style.display = 'none';
+  renderStreakTrack();
+}
+
+function answerLock(i, btnEl){
+  const q = state.currentQ;
+  const isCorrect = i === q.correct;
+  document.querySelectorAll('#options .lock-opt').forEach((b,idx)=>{
+    b.disabled = true;
+    if(idx === q.correct) b.classList.add('correct');
+    if(idx === i && !isCorrect) b.classList.add('wrong');
+    if(idx !== i && idx !== q.correct) b.classList.add('dim');
+  });
+  state.totalAsked++;
+  const fb = el('feedback');
+  const fbLabel = el('feedback-label');
+  const fbText = el('feedback-text');
+  fbText.textContent = q.note;
+  if(isCorrect){
+    state.totalCorrect++;
+    state.streak++;
+    fb.className = 'feedback show good';
+    fbLabel.textContent = 'Tumbler clicks into place';
+  } else {
+    state.streak = 0;
+    state.suspicion = Math.min(100, state.suspicion + 20);
+    fb.className = 'feedback show bad';
+    fbLabel.textContent = 'Wrong combination';
+    renderSuspicion();
+  }
+  renderStreakTrack();
+
+  const def = currentChamberDef();
+  if(state.suspicion >= 100){
+    setTimeout(()=>patrolCatch(), 700);
+    return;
+  }
+  if(isCorrect && state.streak >= def.target){
+    setTimeout(()=>crackChamber(), 700);
+    return;
+  }
+  el('btn-next').style.display = 'inline-block';
+}
+
+function patrolCatch(){
+  state.suspicion = 0;
+  state.streak = 0;
+  renderSuspicion();
+  el('cracked-eyebrow').textContent = 'Patrol Sweep!';
+  el('cracked-title').textContent = 'Suspicion maxed out';
+  el('cracked-sub').textContent = "A guard's flashlight swept the room. Your streak on this chamber resets, but nothing else is lost \u2014 catch your breath and try again.";
+  el('btn-cracked-continue').onclick = ()=>{ show('screen-lock'); nextLockQuestion(); };
+  show('screen-cracked');
+}
+
+function crackChamber(){
+  state.chambers[state.currentChamber].cracked = true;
+  const def = currentChamberDef();
+  const idx = CHAMBERS.findIndex(c=>c.key===def.key);
+  if(idx+1 < CHAMBERS.length && CHAMBERS[idx+1].key !== 'boss'){
+    state.chambers[CHAMBERS[idx+1].key].unlocked = true;
+  }
+  const nonBossCracked = CHAMBERS.filter(c=>c.key!=='boss').every(c=>state.chambers[c.key].cracked);
+  if(nonBossCracked){ state.chambers['boss'].unlocked = true; }
+
+  el('cracked-eyebrow').textContent = 'Chamber Cracked';
+  el('cracked-title').textContent = def.name + ' \u2014 pigment recovered';
+  el('cracked-sub').textContent = def.key === 'boss'
+    ? "The Master Vault swings open. Every pigment in the collection is finally back where it belongs."
+    : "The vial fills and the door releases. On to the next chamber \u2014 or return anytime to keep sharpening this one.";
+  el('btn-cracked-continue').onclick = ()=>{
+    if(def.key === 'boss'){
+      finishHeist();
+    } else {
+      goHub();
+    }
+  };
+  show('screen-cracked');
+}
+
+function finishHeist(){
+  const acc = state.totalAsked ? Math.round(100*state.totalCorrect/state.totalAsked) : 0;
+  const crackedCount = CHAMBERS.filter(c=>state.chambers[c.key].cracked).length;
+  el('finale-sub').textContent = acc >= 85
+    ? "Every chamber cracked with barely a wasted guess. That's Master Restorer form."
+    : "The vault is empty and every pigment is home. Run it again to push your accuracy even higher.";
+  el('finale-stats').innerHTML = `
+    <div class="stat-box"><div class="num">${crackedCount}/5</div><div class="lbl">Chambers Cracked</div></div>
+    <div class="stat-box"><div class="num">${acc}%</div><div class="lbl">Accuracy</div></div>
+    <div class="stat-box"><div class="num">${state.totalCorrect}</div><div class="lbl">Correct Answers</div></div>
+  `;
+  saveBest(crackedCount, acc);
+  loadBest();
+  show('screen-finale');
+}
+
+/* =========================================================================
+   PRACTICE FLOW
+   ========================================================================= */
+function renderPracticeChips(){
+  const wrap = el('practice-chips');
+  wrap.innerHTML = '';
+  CHAMBERS.filter(c=>c.key!=='boss').concat([{key:'boss', name:'Mixed Review', short:'Mixed', color:'var(--parchment)', fillColor:'#EDE4CC', desc:'All topics combined'}]).forEach(c=>{
+    const chip = document.createElement('button');
+    chip.className = 'chamber-chip';
+    chip.innerHTML = `<span class="dot" style="background:${c.fillColor}"></span>${c.key==='boss' ? 'Mixed Review' : c.name}`;
+    chip.addEventListener('click', ()=> startPractice(c.key));
+    wrap.appendChild(chip);
+  });
+}
+
+function startPractice(key){
+  state.practiceKey = key;
+  state.practiceScore = {correct:0, asked:0, streak:0};
+  const def = CHAMBERS.find(c=>c.key===key) || {name:'Mixed Review', fillColor:'#EDE4CC'};
+  el('pp-chamber-name').textContent = key==='boss' ? 'Mixed Review' : def.name;
+  el('pp-dot').style.background = def.fillColor;
+  state.currentQueue = shuffle(key === 'boss'
+    ? [...BANK.elements, ...BANK.colorwheel, ...BANK.schemes, ...BANK.shading]
+    : BANK[key]);
+  nextPracticeQuestion();
+  show('screen-practice-play');
+}
+
+function nextPracticeQuestion(){
+  if(state.currentQueue.length === 0){
+    state.currentQueue = shuffle(state.practiceKey === 'boss'
+      ? [...BANK.elements, ...BANK.colorwheel, ...BANK.schemes, ...BANK.shading]
+      : BANK[state.practiceKey]);
+  }
+  const raw = state.currentQueue.pop();
+  state.currentQ = buildShuffledQuestion(raw);
+  el('pp-question-text').textContent = state.currentQ.q;
+  const wrap = el('pp-options');
+  wrap.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  state.currentQ.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className = 'lock-opt';
+    b.innerHTML = `<span class="tag">${letters[i]}</span><span>${opt}</span>`;
+    b.addEventListener('click', ()=> answerPractice(i));
+    wrap.appendChild(b);
+  });
+  el('pp-feedback').className = 'feedback';
+  el('btn-pp-next').style.display = 'none';
+  updatePracticeScore();
+}
+
+function updatePracticeScore(){
+  el('pp-score').textContent = `Streak: ${state.practiceScore.streak}  \u00b7  ${state.practiceScore.correct}/${state.practiceScore.asked} correct`;
+}
+
+function answerPractice(i){
+  const q = state.currentQ;
+  const isCorrect = i === q.correct;
+  document.querySelectorAll('#pp-options .lock-opt').forEach((b,idx)=>{
+    b.disabled = true;
+    if(idx === q.correct) b.classList.add('correct');
+    if(idx === i && !isCorrect) b.classList.add('wrong');
+    if(idx !== i && idx !== q.correct) b.classList.add('dim');
+  });
+  state.practiceScore.asked++;
+  if(isCorrect){ state.practiceScore.correct++; state.practiceScore.streak++; }
+  else { state.practiceScore.streak = 0; }
+  updatePracticeScore();
+  const fb = el('pp-feedback');
+  el('pp-feedback-text').textContent = q.note;
+  if(isCorrect){ fb.className = 'feedback show good'; el('pp-feedback-label').textContent = 'Correct'; }
+  else { fb.className = 'feedback show bad'; el('pp-feedback-label').textContent = 'Not quite'; }
+  el('btn-pp-next').style.display = 'inline-block';
+}
+
+/* =========================================================================
+   WIRING
+   ========================================================================= */
+el('btn-start-heist').addEventListener('click', ()=>{
+  resetHeist();
+  goHub();
+});
+el('btn-practice').addEventListener('click', ()=>{
+  renderPracticeChips();
+  show('screen-practice-picker');
+});
+el('btn-practice-back').addEventListener('click', ()=> show('screen-title'));
+el('btn-hub-title').addEventListener('click', ()=> show('screen-title'));
+el('btn-lock-exit').addEventListener('click', ()=> goHub());
+el('btn-next').addEventListener('click', ()=> nextLockQuestion());
+el('btn-pp-exit').addEventListener('click', ()=>{ show('screen-practice-picker'); renderPracticeChips(); });
+el('btn-pp-next').addEventListener('click', ()=> nextPracticeQuestion());
+el('btn-finale-again').addEventListener('click', ()=>{ resetHeist(); goHub(); });
+el('btn-finale-title').addEventListener('click', ()=> show('screen-title'));
+</script>
+</body>
+</html>
