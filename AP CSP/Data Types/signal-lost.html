@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SIGNAL LOST — A Python Data Diagnostic</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#080b11;
+  --panel:#111a26;
+  --panel-2:#0d1520;
+  --line:#1e2c3d;
+  --amber:#ffb400;
+  --amber-dim:#8a6a1f;
+  --cyan:#5eead4;
+  --red:#ff5d5d;
+  --text:#c7d2e0;
+  --text-dim:#6f81a0;
+  --mono: 'Space Mono', 'Courier New', monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);height:100%;}
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(94,234,212,0.05), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(255,180,0,0.06), transparent 45%),
+    var(--bg);
+}
+#app{width:100%;max-width:880px;}
+
+/* scanline / crt flicker overlay */
+.crt::before{
+  content:"";
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.018) 0px, rgba(255,255,255,0.018) 1px, transparent 2px, transparent 3px);
+  pointer-events:none;
+  z-index:9999;
+  mix-blend-mode:overlay;
+}
+
+.panel{
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:0 0 0 1px rgba(255,180,0,0.03), 0 20px 60px -20px rgba(0,0,0,0.8);
+}
+
+/* ---------- TITLE SCREEN ---------- */
+#title-screen{padding:48px 40px;text-align:center;}
+.eyebrow{
+  font-family:var(--mono);
+  letter-spacing:0.25em;
+  color:var(--amber-dim);
+  font-size:12px;
+  margin-bottom:14px;
+}
+#title-screen h1{
+  font-family:var(--mono);
+  font-size:42px;
+  color:var(--amber);
+  margin:0 0 6px 0;
+  text-shadow:0 0 20px rgba(255,180,0,0.35);
+  letter-spacing:0.02em;
+}
+#title-screen .sub{color:var(--text-dim);font-size:14px;margin-bottom:30px;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto;}
+#boot-log{
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:var(--cyan);
+  text-align:left;
+  background:#060a10;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:14px 16px;
+  height:120px;
+  overflow:hidden;
+  margin-bottom:28px;
+  white-space:pre-wrap;
+}
+.blink{animation:blink 1s steps(2) infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+.btn{
+  font-family:var(--mono);
+  background:transparent;
+  border:1.5px solid var(--amber);
+  color:var(--amber);
+  padding:13px 30px;
+  border-radius:6px;
+  font-size:14px;
+  letter-spacing:0.08em;
+  cursor:pointer;
+  transition:all .15s ease;
+}
+.btn:hover{background:rgba(255,180,0,0.1);box-shadow:0 0 18px rgba(255,180,0,0.25);}
+.btn:active{transform:scale(0.98);}
+.btn.cyan{border-color:var(--cyan);color:var(--cyan);}
+.btn.cyan:hover{background:rgba(94,234,212,0.1);box-shadow:0 0 18px rgba(94,234,212,0.25);}
+.btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+
+/* ---------- GAME SCREEN ---------- */
+#game-screen{display:none;}
+#hud{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 22px;
+  gap:16px;
+  flex-wrap:wrap;
+}
+#map{display:flex;gap:8px;align-items:center;}
+.node{
+  width:34px;height:34px;border-radius:6px;
+  border:1.5px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;color:var(--text-dim);
+  position:relative;transition:all .3s ease;
+}
+.node.done{border-color:var(--cyan);color:var(--cyan);background:rgba(94,234,212,0.08);box-shadow:0 0 12px rgba(94,234,212,0.3);}
+.node.active{border-color:var(--amber);color:var(--amber);background:rgba(255,180,0,0.08);box-shadow:0 0 12px rgba(255,180,0,0.35);animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 8px rgba(255,180,0,0.25);}50%{box-shadow:0 0 18px rgba(255,180,0,0.5);}}
+.node-link{width:14px;height:1.5px;background:var(--line);}
+.node-link.done{background:var(--cyan);}
+
+#stats{display:flex;gap:18px;font-family:var(--mono);font-size:12px;color:var(--text-dim);}
+#stats .stat b{color:var(--amber);font-size:14px;display:block;font-family:var(--mono);}
+
+#oxygen-wrap{padding:0 22px 14px;}
+#oxygen-label{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:4px;display:flex;justify-content:space-between;}
+#oxygen-bar-bg{height:8px;background:#050810;border-radius:4px;overflow:hidden;border:1px solid var(--line);}
+#oxygen-bar{height:100%;background:linear-gradient(90deg,#3ad6c0,#5eead4);border-radius:4px;transition:width .4s ease, background .4s ease;}
+
+hr.div{border:none;border-top:1px solid var(--line);margin:0;}
+
+#room-header{padding:18px 22px 4px;}
+#room-name{font-family:var(--mono);color:var(--amber);font-size:13px;letter-spacing:0.08em;}
+#room-sub{color:var(--text-dim);font-size:12px;margin-top:2px;}
+#room-progress{display:flex;gap:5px;margin-top:10px;}
+.pip{width:16px;height:5px;border-radius:3px;background:#1a2534;transition:background .3s ease;}
+.pip.filled{background:var(--cyan);}
+
+#question-area{padding:22px;}
+#prompt{font-size:15.5px;line-height:1.55;margin-bottom:14px;}
+#code-box{
+  font-family:var(--mono);
+  background:#060a10;
+  border:1px solid var(--line);
+  border-left:3px solid var(--amber-dim);
+  border-radius:6px;
+  padding:14px 16px;
+  font-size:14.5px;
+  color:var(--cyan);
+  margin-bottom:18px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+#options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media (max-width:560px){#options{grid-template-columns:1fr;}}
+.opt{
+  font-family:var(--mono);
+  text-align:left;
+  background:#0c1420;
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:13px 16px;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:13.5px;
+  transition:all .12s ease;
+  line-height:1.4;
+}
+.opt:hover:not(:disabled){border-color:var(--amber-dim);background:#121f30;}
+.opt:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+.opt:disabled{cursor:default;}
+.opt.correct{border-color:var(--cyan);background:rgba(94,234,212,0.1);color:var(--cyan);}
+.opt.wrong{border-color:var(--red);background:rgba(255,93,93,0.08);color:var(--red);}
+
+#feedback{margin-top:16px;padding:14px 16px;border-radius:7px;background:#0c1420;border:1px solid var(--line);display:none;}
+#feedback.show{display:block;}
+#feedback .fb-head{font-family:var(--mono);font-size:12px;letter-spacing:0.06em;margin-bottom:6px;}
+#feedback.ok .fb-head{color:var(--cyan);}
+#feedback.bad .fb-head{color:var(--red);}
+#feedback .fb-body{font-size:13.5px;line-height:1.55;color:var(--text-dim);}
+#feedback .fb-body code{color:var(--amber);font-family:var(--mono);}
+
+#continue-wrap{margin-top:16px;text-align:right;display:none;}
+#continue-wrap.show{display:block;}
+
+/* ---------- TRANSITION / END SCREENS ---------- */
+.center-screen{display:none;padding:50px 40px;text-align:center;}
+.center-screen.show{display:block;}
+.center-screen h2{font-family:var(--mono);color:var(--amber);font-size:26px;margin-bottom:10px;text-shadow:0 0 16px rgba(255,180,0,0.3);}
+.center-screen p{color:var(--text-dim);font-size:14px;line-height:1.6;max-width:460px;margin:0 auto 26px;}
+.stat-row{display:flex;justify-content:center;gap:34px;margin-bottom:30px;flex-wrap:wrap;}
+.stat-row .s b{display:block;font-family:var(--mono);color:var(--cyan);font-size:26px;}
+.stat-row .s span{font-size:11px;color:var(--text-dim);letter-spacing:0.08em;font-family:var(--mono);}
+
+#footer-note{text-align:center;color:var(--text-dim);font-size:11px;margin-top:14px;font-family:var(--mono);letter-spacing:0.03em;}
+
+@media (prefers-reduced-motion: reduce){
+  .node.active{animation:none;}
+  .blink{animation:none;}
+}
+</style>
+</head>
+<body class="crt">
+<div id="app">
+
+  <!-- TITLE SCREEN -->
+  <div class="panel" id="title-screen">
+    <div class="eyebrow">MERIDIAN-7 · DEEP SPACE RESEARCH VESSEL</div>
+    <h1>SIGNAL LOST</h1>
+    <div class="sub">An electromagnetic surge corrupted the ship's core systems. You're the only crew unit still online. Restore each system by clearing its diagnostic — or the <em>Meridian-7</em> drifts forever.</div>
+    <div id="boot-log"></div>
+    <button class="btn" id="start-btn">▶ BOOT DIAGNOSTIC SEQUENCE</button>
+  </div>
+
+  <!-- ROOM INTRO -->
+  <div class="panel center-screen" id="room-intro-screen">
+    <div class="eyebrow" id="intro-eyebrow">SYSTEM LOCATED</div>
+    <h2 id="intro-title"></h2>
+    <p id="intro-text"></p>
+    <button class="btn cyan" id="intro-continue-btn">BEGIN DIAGNOSTIC →</button>
+  </div>
+
+  <!-- VICTORY -->
+  <div class="panel center-screen" id="victory-screen">
+    <div class="eyebrow">ALL SYSTEMS NOMINAL</div>
+    <h2>MERIDIAN-7 RESTORED</h2>
+    <p>Every corrupted system is back online. ARIA is already logging your diagnostic report for the captain.</p>
+    <div class="stat-row">
+      <div class="s"><b id="v-score">0</b><span>SCORE</span></div>
+      <div class="s"><b id="v-acc">0%</b><span>ACCURACY</span></div>
+      <div class="s"><b id="v-streak">0</b><span>BEST STREAK</span></div>
+    </div>
+    <button class="btn" id="replay-btn">↻ RUN NEW DIAGNOSTIC</button>
+  </div>
+
+  <!-- MAIN GAME -->
+  <div class="panel" id="game-screen">
+    <div id="hud">
+      <div id="map"></div>
+      <div id="stats">
+        <div class="stat">SCORE<b id="score-val">0</b></div>
+        <div class="stat">STREAK<b id="streak-val">0</b></div>
+      </div>
+    </div>
+    <div id="oxygen-wrap">
+      <div id="oxygen-label"><span>SHIP INTEGRITY</span><span id="oxygen-pct">100%</span></div>
+      <div id="oxygen-bar-bg"><div id="oxygen-bar" style="width:100%;"></div></div>
+    </div>
+    <hr class="div">
+    <div id="room-header">
+      <div id="room-name">// NAVIGATION ARRAY</div>
+      <div id="room-sub">Variables &amp; Naming</div>
+      <div id="room-progress"></div>
+    </div>
+    <div id="question-area">
+      <div id="prompt"></div>
+      <div id="code-box" style="display:none;"></div>
+      <div id="options"></div>
+      <div id="feedback">
+        <div class="fb-head"></div>
+        <div class="fb-body"></div>
+      </div>
+      <div id="continue-wrap"><button class="btn cyan" id="next-btn">CONTINUE →</button></div>
+    </div>
+  </div>
+
+  <div id="footer-note">ARIA DIAGNOSTIC TERMINAL · v2.3</div>
+</div>
+
+<script>
+/* ============================= UTILITIES ============================= */
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function pick(arr){return arr[randInt(0,arr.length-1)];}
+function pickN(arr,n){
+  const copy=[...arr]; const out=[];
+  for(let i=0;i<n && copy.length;i++){
+    const idx=randInt(0,copy.length-1);
+    out.push(copy[idx]); copy.splice(idx,1);
+  }
+  return out;
+}
+function shuffleWithCorrect(options, correctIdx){
+  const arr = options.map((text,i)=>({text, isCorrect:i===correctIdx}));
+  for(let i=arr.length-1;i>0;i--){
+    const j=randInt(0,i);
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  const newCorrect = arr.findIndex(o=>o.isCorrect);
+  return {options: arr.map(o=>o.text), correct:newCorrect};
+}
+function uniqueNums(nums){
+  // dedupe a distractor list while preserving first occurrence
+  const seen=new Set(); const out=[];
+  for(const n of nums){ if(!seen.has(n)){seen.add(n); out.push(n);} }
+  return out;
+}
+
+/* ============================= WORD / NAME POOLS ============================= */
+const VALID_NAMES = ["player_score","ship_fuel","crew_count","laser_power","oxygen_level","hull_integrity","warp_speed","signal_strength","cargo_weight","shield_charge","engine_temp","star_map","escape_pod","nav_beacon"];
+const DIGIT_START = ["7th_engine","2fast_drive","9lives_left","3rd_reactor","1core_status"];
+const SPACE_NAMES = ["crew count","fuel level","engine temp","shield status","cargo weight"];
+const KEYWORDS = ["class","import","return","for","while","True","False","None","if","def","break","continue"];
+const HYPHEN_NAMES = ["fuel-level","shield-power","warp-core","escape-pod"];
+const SPECIAL_NAMES = ["$credits","#power","@status","!alert","%charge"];
+const STR_WORDS = ["Nova","Voyager","stardust","hyperdrive","asteroid","Nebula-9","gravity well","quantum core","warp field","comet tail","ion trail","dark matter","solar flare","meteor"];
+
+/* ============================= FEEDBACK FLAVOR ============================= */
+const OK_LINES = ["Systems humming again.","ARIA logs that as correct.","Nice diagnostic work, Cadet.","Circuit stabilized.","Confidence in this subsystem: rising."];
+const BAD_LINES = ["That tripped a fault. Recalculate.","Not quite — check the logic core.","ARIA flags an anomaly there.","Close, but the ship disagrees."];
+
+/* ============================= ROOM DEFINITIONS ============================= */
+const ROOMS = [
+  {
+    key:"nav", name:"NAVIGATION ARRAY", sub:"Variables & Naming", needed:5,
+    introTitle:"Navigation Array Located", 
+    introText:"The nav computer won't accept any of its stored variables. ARIA suspects corrupted identifiers — you'll need to know what makes a Python variable name valid.",
+    gen: genNav
+  },
+  {
+    key:"sensor", name:"SENSOR SUITE", sub:"Data Types", needed:5,
+    introTitle:"Sensor Suite Located",
+    introText:"Sensor readings are coming back as raw, unlabeled values. Identify each value's data type so ARIA can re-calibrate the sensor array.",
+    gen: genSensor
+  },
+  {
+    key:"prop", name:"PROPULSION CORE", sub:"Arithmetic Operators", needed:5,
+    introTitle:"Propulsion Core Located",
+    introText:"Thrust calculations are scrambled. Work through the arithmetic — including a few operators the core is misreading entirely.",
+    gen: genProp
+  },
+  {
+    key:"life", name:"LIFE SUPPORT", sub:"Type Conversion", needed:5,
+    introTitle:"Life Support Located",
+    introText:"Oxygen sensors report numbers as text, and text as numbers. Convert values between types correctly, or the scrubbers stay offline.",
+    gen: genLife
+  },
+  {
+    key:"bridge", name:"COMMAND BRIDGE", sub:"Order of Operations — FINAL SYSTEM", needed:6,
+    introTitle:"Command Bridge Located",
+    introText:"This is the last corrupted system, and it combines everything. The bridge computer evaluates expressions in the wrong order — show it how Python really does it.",
+    gen: genBridge
+  }
+];
+
+/* ============================= QUESTION GENERATORS ============================= */
+
+function genNav(){
+  const type = randInt(1,3);
+  if(type===1){
+    const correctName = pick(VALID_NAMES);
+    const bad1 = pick(DIGIT_START);
+    const bad2 = pick(SPACE_NAMES);
+    const bad3 = pick(HYPHEN_NAMES.concat(SPECIAL_NAMES));
+    const {options, correct} = shuffleWithCorrect([correctName,bad1,bad2,bad3],0);
+    return {
+      prompt:"Which of these is a valid Python variable name?",
+      code:null,
+      options, correct,
+      explain:`<code>${correctName}</code> is valid — it starts with a letter and uses only letters, numbers, and underscores. The others break the rules: one starts with a digit, one contains a space, and one contains a character Python doesn't allow in names.`
+    };
+  }
+  if(type===2){
+    const pools = [
+      {name:pick(VALID_NAMES), valid:true, reason:"it starts with a letter and only uses letters, numbers, and underscores"},
+      {name:pick(DIGIT_START), valid:false, reason:"variable names can't start with a digit"},
+      {name:pick(SPACE_NAMES), valid:false, reason:"variable names can't contain spaces"},
+      {name:pick(HYPHEN_NAMES), valid:false, reason:"the hyphen ( - ) isn't allowed — Python would read it as subtraction"},
+      {name:pick(SPECIAL_NAMES), valid:false, reason:"that symbol isn't allowed in a variable name"},
+    ];
+    const q = pick(pools);
+    const {options, correct} = shuffleWithCorrect(["Valid variable name","Invalid variable name"], q.valid?0:1);
+    return {
+      prompt:`Is <code>${q.name}</code> a valid Python variable name?`,
+      code:null,
+      options, correct,
+      explain:`${q.valid?"Valid":"Invalid"} — ${q.reason}.`
+    };
+  }
+  // type 3: keyword pitfall
+  const kw = pick(KEYWORDS);
+  const opts = [
+    `It works fine and stores 10 in a variable called <code>${kw}</code>`,
+    `SyntaxError — <code>${kw}</code> is a reserved Python keyword`,
+    `It stores 10 as the text <code>"${kw}"</code>`,
+    `Nothing happens; the line is ignored`
+  ];
+  const {options, correct} = shuffleWithCorrect(opts, 1);
+  return {
+    prompt:`You try to run this line. What happens?`,
+    code:`${kw} = 10`,
+    options, correct,
+    explain:`<code>${kw}</code> is a reserved keyword — it already means something to Python, so it can't be used as a variable name. Trying this raises a <code>SyntaxError</code>.`
+  };
+}
+
+function genSensor(){
+  const type = randInt(1,3);
+  function literalOfType(t){
+    if(t==="int") return {code:String(randInt(-20,999)), type:"int"};
+    if(t==="float") return {code:(randInt(1,999)/10).toFixed(1), type:"float"};
+    if(t==="str") return {code:`"${pick(STR_WORDS)}"`, type:"str"};
+    return {code: pick(["True","False"]), type:"bool"};
+  }
+  if(type===1){
+    const t = pick(["int","float","str","bool"]);
+    const lit = literalOfType(t);
+    const {options, correct} = shuffleWithCorrect(["int","float","str","bool"], ["int","float","str","bool"].indexOf(t));
+    return {
+      prompt:"What data type is this value?",
+      code: lit.code,
+      options, correct,
+      explain:`This is a <code>${t}</code>${t==="str"?" — it's wrapped in quotes, which always makes it text.":t==="bool"?" — True/False values are Booleans.":t==="float"?" — it has a decimal point, so Python stores it as a float.":" — a whole number with no decimal point and no quotes."}`
+    };
+  }
+  if(type===2){
+    const combos = [
+      {code:()=>{const a=randInt(1,20),b=(randInt(1,90)/10).toFixed(1); return {c:`type(${a} + ${b})`, ans:"float", why:`Whenever an <code>int</code> and a <code>float</code> are combined with +, Python upgrades the result to <code>float</code>.`};}},
+      {code:()=>{const w1=pick(STR_WORDS),w2=pick(STR_WORDS); return {c:`type("${w1}" + "${w2}")`, ans:"str", why:`Adding two strings joins (concatenates) them — the result is still a <code>str</code>.`};}},
+      {code:()=>{const a=randInt(1,20); return {c:`type(True + ${a})`, ans:"int", why:`In arithmetic, <code>True</code> behaves like <code>1</code> and <code>False</code> like <code>0</code> — so adding a bool to an int gives an <code>int</code>.`};}},
+      {code:()=>{const a=randInt(1,50),b=randInt(1,9); return {c:`type(${a} // ${b})`, ans:"int", why:`Floor division <code>//</code> between two ints always produces an <code>int</code>.`};}},
+      {code:()=>{const a=randInt(1,50),b=randInt(1,9); return {c:`type(${a} / ${b})`, ans:"float", why:`Regular division <code>/</code> always returns a <code>float</code> in Python 3, even if the numbers divide evenly.`};}},
+    ];
+    const chosen = pick(combos).code();
+    const opts = ["int","float","str","bool"];
+    const {options, correct} = shuffleWithCorrect(opts, opts.indexOf(chosen.ans));
+    return {
+      prompt:"What does this display?",
+      code: chosen.c,
+      options, correct,
+      explain: chosen.why
+    };
+  }
+  // type 3: same type comparison
+  const pairMaker = ()=> pick(["int","float","str","bool"]);
+  const t1 = pairMaker(); let t2 = pairMaker();
+  const lit1 = literalOfType(t1); const lit2 = literalOfType(t2);
+  const same = t1===t2;
+  const {options, correct} = shuffleWithCorrect(["Yes, same type","No, different types"], same?0:1);
+  return {
+    prompt:`Do <code>${lit1.code}</code> and <code>${lit2.code}</code> have the same data type?`,
+    code:null,
+    options, correct,
+    explain: same ? `Both are <code>${t1}</code> values.` : `<code>${lit1.code}</code> is <code>${t1}</code>, but <code>${lit2.code}</code> is <code>${t2}</code> — different types.`
+  };
+}
+
+function genProp(){
+  const type = randInt(1,3);
+  if(type===1){
+    const a=randInt(3,20), b=randInt(2,9);
+    const opPool = [
+      {sym:"+", fn:(a,b)=>a+b, note:"addition"},
+      {sym:"-", fn:(a,b)=>a-b, note:"subtraction"},
+      {sym:"*", fn:(a,b)=>a*b, note:"multiplication"},
+      {sym:"//", fn:(a,b)=>Math.floor(a/b), note:"floor division — divides then drops anything after the decimal"},
+      {sym:"%", fn:(a,b)=>a%b, note:"modulo — gives the remainder after division"},
+      {sym:"**", fn:(a,b)=>Math.pow(a,b>4?2:b), note:"exponent — a raised to the power of b"},
+    ];
+    const op = pick(opPool);
+    const bb = op.sym==="**" ? randInt(2,3) : b;
+    const correctVal = op.fn(a,bb);
+    let distract = [correctVal+randInt(1,3), correctVal-randInt(1,3)];
+    if(op.sym==="//") distract.push(Math.round((a/bb)*10)/10); // true division confusion
+    if(op.sym==="%") distract.push(Math.floor(a/bb)); // confusing % with //
+    if(op.sym==="**") distract.push(a*bb); // confusing ** with *
+    distract = uniqueNums(distract.filter(d=>d!==correctVal)).slice(0,3);
+    while(distract.length<3) distract.push(correctVal + distract.length + 4);
+    const {options, correct} = shuffleWithCorrect([String(correctVal), ...distract.map(String)], 0);
+    return {
+      prompt:"What is the result?",
+      code:`${a} ${op.sym} ${bb}`,
+      options, correct,
+      explain:`<code>${op.sym}</code> is ${op.note}. <code>${a} ${op.sym} ${bb}</code> evaluates to <code>${correctVal}</code>.`
+    };
+  }
+  if(type===2){
+    const useRepeat = Math.random()<0.5;
+    if(useRepeat){
+      const w = pick(STR_WORDS).replace(" ","");
+      const n = randInt(2,4);
+      const correctVal = w.repeat(n);
+      const distract = [w.repeat(n)+" ", (w+" ").repeat(n).trim(), w.repeat(n+1)];
+      const {options, correct} = shuffleWithCorrect([correctVal, ...distract], 0);
+      return {
+        prompt:"What is the result?",
+        code:`"${w}" * ${n}`,
+        options, correct,
+        explain:`Multiplying a string by a number repeats it that many times, with nothing added in between: <code>"${w}" * ${n}</code> is <code>"${correctVal}"</code>.`
+      };
+    }else{
+      const w1 = pick(STR_WORDS).replace(" ","");
+      let w2 = pick(STR_WORDS).replace(" ","");
+      while(w2===w1) w2 = pick(STR_WORDS).replace(" ","");
+      const correctVal = w1+w2;
+      const opts = [correctVal, w1+" "+w2, w2+w1, w1+w2+w1];
+      const {options, correct} = shuffleWithCorrect(opts,0);
+      return {
+        prompt:"What is the result?",
+        code:`"${w1}" + "${w2}"`,
+        options, correct,
+        explain:`String <code>+</code> joins the text exactly as written — no space is added automatically. <code>"${w1}" + "${w2}"</code> is <code>"${correctVal}"</code>.`
+      };
+    }
+  }
+  // type 3: mismatch error
+  const n = randInt(1,99);
+  const strFirst = Math.random()<0.5;
+  const code = strFirst ? `"${n}" + ${n}` : `${n} + "${n}"`;
+  const opts = [
+    `${n*2}`,
+    `"${n}${n}"`,
+    "Error — Python won't add a string and a number directly",
+    "0"
+  ];
+  const {options, correct} = shuffleWithCorrect(opts, 2);
+  return {
+    prompt:"What happens when this code runs?",
+    code,
+    options, correct,
+    explain:`Python never automatically converts between <code>str</code> and <code>int</code> with <code>+</code>. Mixing a quoted number (a string) with a real number raises a <code>TypeError</code>. You'd need <code>int()</code> or <code>str()</code> to convert one of them first.`
+  };
+}
+
+function genLife(){
+  const type = randInt(1,4);
+  if(type===1){
+    const n = randInt(1,99);
+    const kind = pick(["int_str","float_str","str_int"]);
+    if(kind==="int_str"){
+      const opts=[String(n), `"${n}"`, `${n}.0`, "Error"];
+      const {options, correct} = shuffleWithCorrect(opts,0);
+      return {prompt:"What is the result?", code:`int("${n}")`, options, correct,
+        explain:`<code>int()</code> converts a plain numeric string into a real integer: <code>int("${n}")</code> becomes <code>${n}</code> (no quotes — it's a number now).`};
+    }
+    if(kind==="float_str"){
+      const opts=[`${n}.0`, `"${n}.0"`, String(n), "Error"];
+      const {options, correct} = shuffleWithCorrect(opts,0);
+      return {prompt:"What is the result?", code:`float("${n}")`, options, correct,
+        explain:`<code>float()</code> converts the string into a decimal number: <code>float("${n}")</code> becomes <code>${n}.0</code>.`};
+    }
+    const opts=[`"${n}"`, String(n), `${n}.0`, "Error"];
+    const {options, correct} = shuffleWithCorrect(opts,0);
+    return {prompt:"What is the result?", code:`str(${n})`, options, correct,
+      explain:`<code>str()</code> turns the number into text: <code>str(${n})</code> becomes <code>"${n}"</code> — now it's a string, not a number.`};
+  }
+  if(type===2){
+    const cases = [
+      {code:"bool(0)", ans:"False", why:"0 is treated as falsy."},
+      {code:`bool(${randInt(1,99)})`, ans:"True", why:"any nonzero number is treated as truthy."},
+      {code:`bool("")`, ans:"False", why:"an empty string is falsy."},
+      {code:`bool("${pick(STR_WORDS)}")`, ans:"True", why:"a non-empty string is truthy, no matter what it says."},
+      {code:"bool(0.0)", ans:"False", why:"0.0 is falsy, just like 0."},
+    ];
+    const c = pick(cases);
+    const {options, correct} = shuffleWithCorrect(["True","False"], c.ans==="True"?0:1);
+    return {prompt:"What is the result?", code:c.code, options, correct, explain:`<code>${c.code}</code> is <code>${c.ans}</code> — ${c.why}`};
+  }
+  if(type===3){
+    const whole = randInt(2,40), dec = randInt(1,9);
+    const n = `${whole}.${dec}`;
+    const opts=[String(whole), String(whole+1), `${whole}.0`, "Error"];
+    const {options, correct} = shuffleWithCorrect(opts,0);
+    return {prompt:"What is the result?", code:`int(${n})`, options, correct,
+      explain:`<code>int()</code> on a float truncates — it chops off the decimal part rather than rounding. <code>int(${n})</code> becomes <code>${whole}</code>, not <code>${whole+1}</code>.`};
+  }
+  // type 4: conversion errors
+  const badPool = [`"${randInt(1,9)}.${randInt(1,9)}"`, `"hello"`, `"${pick(STR_WORDS).replace(" ","")}"`];
+  const bad = pick(badPool);
+  const opts = ["A number","0","None","ValueError — can't convert that text to an int"];
+  const {options, correct} = shuffleWithCorrect(opts,3);
+  return {prompt:"What happens when this code runs?", code:`int(${bad})`, options, correct,
+    explain:`<code>int()</code> can only convert strings that look like whole numbers, with no letters or decimal points. <code>int(${bad})</code> raises a <code>ValueError</code>.`};
+}
+
+function genBridge(){
+  const a=randInt(2,9), b=randInt(2,9), c=randInt(2,9);
+  const templates = [
+    {c:`${a} + ${b} * ${c}`, correct:a+b*c, wrong:(a+b)*c, note:"multiplication happens before addition"},
+    {c:`(${a} + ${b}) * ${c}`, correct:(a+b)*c, wrong:a+b*c, note:"parentheses are evaluated first, before anything else"},
+    {c:`${a} * ${b} ** 2`, correct:a*Math.pow(b,2), wrong:Math.pow(a*b,2), note:"exponents happen before multiplication"},
+    {c:`${a*3+1} % ${b} + ${c}`, correct:((a*3+1)%b)+c, wrong:(a*3+1)%(b+c), note:"modulo happens before addition"},
+    {c:`${a*4} // ${b} - ${c}`, correct:Math.floor((a*4)/b)-c, wrong:Math.floor((a*4)/(b-c)), note:"floor division happens before subtraction"},
+    {c:`${a} ** 2 - ${b} * ${c}`, correct:a*a - b*c, wrong:(a*a-b)*c, note:"exponents and multiplication both happen before subtraction"},
+    {c:`${a} + ${b} - ${c} * 2`, correct:a+b-c*2, wrong:(a+b-c)*2, note:"multiplication happens before the additions/subtractions, left to right"},
+  ];
+  const t = pick(templates);
+  const near1 = t.correct + randInt(1,4);
+  const near2 = t.correct - randInt(1,4);
+  let opts = uniqueNums([t.correct, t.wrong, near1, near2]).slice(0,4);
+  while(opts.length<4) opts.push(t.correct + opts.length*3+2);
+  const {options, correct} = shuffleWithCorrect(opts.map(String), opts.indexOf(t.correct));
+  return {
+    prompt:"Following Python's order of operations, what is the result?",
+    code: t.c,
+    options, correct,
+    explain:`Python evaluates <code>**</code> first, then <code>*  /  //  %</code>, then <code>+  -</code> (parentheses always come first). Here, ${t.note}, so the answer is <code>${t.correct}</code>.`
+  };
+}
+
+/* ============================= GAME STATE ============================= */
+let state;
+function freshState(){
+  return {
+    roomIndex:0,
+    roomCorrect:0,
+    score:0,
+    streak:0,
+    bestStreak:0,
+    oxygen:100,
+    totalCorrect:0,
+    totalAnswered:0,
+    answered:false,
+    q:null
+  };
+}
+
+const el = id=>document.getElementById(id);
+
+function bootSequence(){
+  const lines = [
+    "MERIDIAN-7 CORE // BOOT",
+    "checking life support......... [FAULT]",
+    "checking navigation array...... [FAULT]",
+    "checking propulsion core....... [FAULT]",
+    "checking sensor suite.......... [FAULT]",
+    "checking command bridge........ [FAULT]",
+    "ARIA online. crew unit detected.",
+    "awaiting diagnostic authorization_"
+  ];
+  const box = el("boot-log");
+  let i=0;
+  function typeLine(){
+    if(i>=lines.length) return;
+    const line = lines[i];
+    box.innerHTML += (i>0?"\n":"") + line;
+    box.scrollTop = box.scrollHeight;
+    i++;
+    setTimeout(typeLine, i===lines.length?0:220);
+  }
+  typeLine();
+}
+bootSequence();
+
+el("start-btn").addEventListener("click", ()=>{
+  state = freshState();
+  el("title-screen").style.display="none";
+  showRoomIntro();
+});
+
+el("intro-continue-btn").addEventListener("click", ()=>{
+  el("room-intro-screen").classList.remove("show");
+  el("game-screen").style.display="block";
+  renderRoomHeader();
+  renderMap();
+  renderHud();
+  nextQuestion();
+});
+
+el("replay-btn").addEventListener("click", ()=>{
+  el("victory-screen").classList.remove("show");
+  state = freshState();
+  showRoomIntro();
+});
+
+function showRoomIntro(){
+  const room = ROOMS[state.roomIndex];
+  el("intro-eyebrow").textContent = state.roomIndex===ROOMS.length-1 ? "FINAL SYSTEM" : "SYSTEM LOCATED";
+  el("intro-title").textContent = room.introTitle;
+  el("intro-text").textContent = room.introText;
+  el("game-screen").style.display="none";
+  el("room-intro-screen").classList.add("show");
+}
+
+function renderMap(){
+  const map = el("map");
+  map.innerHTML="";
+  ROOMS.forEach((r,i)=>{
+    const node = document.createElement("div");
+    node.className = "node" + (i<state.roomIndex?" done":(i===state.roomIndex?" active":""));
+    node.textContent = i+1;
+    node.title = r.name;
+    map.appendChild(node);
+    if(i<ROOMS.length-1){
+      const link = document.createElement("div");
+      link.className = "node-link" + (i<state.roomIndex?" done":"");
+      map.appendChild(link);
+    }
+  });
+}
+
+function renderHud(){
+  el("score-val").textContent = state.score;
+  el("streak-val").textContent = state.streak;
+  el("oxygen-pct").textContent = Math.round(state.oxygen)+"%";
+  el("oxygen-bar").style.width = state.oxygen+"%";
+  const bar = el("oxygen-bar");
+  if(state.oxygen<30){ bar.style.background="linear-gradient(90deg,#ff5d5d,#ff8a5d)"; }
+  else if(state.oxygen<60){ bar.style.background="linear-gradient(90deg,#ffb400,#ffd45d)"; }
+  else { bar.style.background="linear-gradient(90deg,#3ad6c0,#5eead4)"; }
+}
+
+function renderRoomHeader(){
+  const room = ROOMS[state.roomIndex];
+  el("room-name").textContent = "// " + room.name;
+  el("room-sub").textContent = room.sub;
+  const prog = el("room-progress");
+  prog.innerHTML="";
+  for(let i=0;i<room.needed;i++){
+    const pip = document.createElement("div");
+    pip.className = "pip" + (i<state.roomCorrect?" filled":"");
+    prog.appendChild(pip);
+  }
+}
+
+function nextQuestion(){
+  state.answered = false;
+  const room = ROOMS[state.roomIndex];
+  state.q = room.gen();
+  el("prompt").innerHTML = state.q.prompt;
+  const codeBox = el("code-box");
+  if(state.q.code){
+    codeBox.style.display="block";
+    codeBox.textContent = state.q.code;
+  } else {
+    codeBox.style.display="none";
+  }
+  const optsWrap = el("options");
+  optsWrap.innerHTML="";
+  state.q.options.forEach((text,i)=>{
+    const b = document.createElement("button");
+    b.className="opt";
+    b.innerHTML = text;
+    b.addEventListener("click", ()=>selectOption(i,b));
+    optsWrap.appendChild(b);
+  });
+  el("feedback").classList.remove("show","ok","bad");
+  el("continue-wrap").classList.remove("show");
+}
+
+function selectOption(i, btnEl){
+  if(state.answered) return;
+  state.answered = true;
+  const isCorrect = i===state.q.correct;
+  const allBtns = el("options").querySelectorAll(".opt");
+  allBtns.forEach((b,idx)=>{
+    b.disabled = true;
+    if(idx===state.q.correct) b.classList.add("correct");
+    else if(idx===i && !isCorrect) b.classList.add("wrong");
+  });
+
+  state.totalAnswered++;
+  if(isCorrect){
+    state.totalCorrect++;
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    state.score += 10 + state.streak*2;
+    state.oxygen = Math.min(100, state.oxygen+6);
+    state.roomCorrect++;
+  } else {
+    state.streak = 0;
+    state.oxygen -= 12;
+    if(state.oxygen<=0){
+      state.oxygen = 40;
+    }
+  }
+
+  const fb = el("feedback");
+  fb.classList.add("show", isCorrect?"ok":"bad");
+  fb.querySelector(".fb-head").textContent = (isCorrect? pick(OK_LINES) : pick(BAD_LINES)) + (isCorrect?"  [CORRECT]":"  [INCORRECT]");
+  fb.querySelector(".fb-body").innerHTML = state.q.explain;
+
+  renderHud();
+  renderRoomHeader();
+
+  const room = ROOMS[state.roomIndex];
+  const nextBtn = el("next-btn");
+  nextBtn.textContent = state.roomCorrect>=room.needed ? "REPAIR SYSTEM →" : "CONTINUE →";
+  el("continue-wrap").classList.add("show");
+  nextBtn.onclick = advance;
+}
+
+function advance(){
+  const room = ROOMS[state.roomIndex];
+  if(state.roomCorrect>=room.needed){
+    // room complete
+    state.roomIndex++;
+    state.roomCorrect=0;
+    if(state.roomIndex>=ROOMS.length){
+      showVictory();
+      return;
+    }
+    renderMap();
+    showRoomIntro();
+  } else {
+    nextQuestion();
+  }
+}
+
+function showVictory(){
+  el("game-screen").style.display="none";
+  el("v-score").textContent = state.score;
+  const acc = state.totalAnswered? Math.round((state.totalCorrect/state.totalAnswered)*100) : 0;
+  el("v-acc").textContent = acc+"%";
+  el("v-streak").textContent = state.bestStreak;
+  el("victory-screen").classList.add("show");
+}
+</script>
+</body>
+</html>

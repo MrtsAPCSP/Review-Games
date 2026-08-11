@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Logic Vault — Python Boolean Heist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f1a;
+    --panel:#101a2c;
+    --panel2:#132238;
+    --grid: rgba(79,209,197,0.06);
+    --cyan:#4fd1c5;
+    --cyan-soft: rgba(79,209,197,0.16);
+    --amber:#f2a93b;
+    --red:#f2545b;
+    --green:#6fcf97;
+    --text:#e7eef5;
+    --text-dim:#7c93b3;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-code:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      radial-gradient(circle at 20% -10%, rgba(79,209,197,0.08), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 24px 14px 60px;
+  }
+  #app{width:100%; max-width:880px;}
+  button{font-family:var(--font-body); cursor:pointer;}
+  button:focus-visible, a:focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  .eyebrow{
+    font-family:var(--font-code);
+    letter-spacing:.14em;
+    font-size:11.5px;
+    color:var(--cyan);
+    text-transform:uppercase;
+  }
+  .title{font-family:var(--font-display); font-weight:700; letter-spacing:.01em;}
+
+  .hud{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:18px; flex-wrap:wrap;}
+  .hud-left h1{font-size:26px; margin:4px 0 2px;}
+  .hud-left .sub{color:var(--text-dim); font-size:13px;}
+  .hud-right{display:flex; gap:18px; align-items:center; flex-wrap:wrap;}
+  .stat{text-align:right;}
+  .stat .num{font-family:var(--font-code); font-size:20px; font-weight:600;}
+  .stat .lbl{font-family:var(--font-code); font-size:10px; color:var(--text-dim); letter-spacing:.1em; text-transform:uppercase;}
+  .lives{display:flex; gap:6px;}
+  .rivet{width:12px;height:12px;border-radius:50%;background:var(--amber); box-shadow:0 0 6px rgba(242,169,59,.6);}
+  .rivet.off{background:#2a3448; box-shadow:none;}
+
+  .doors{display:flex; gap:8px; margin-bottom:20px;}
+  .door-chip{
+    flex:1; padding:9px 10px; border-radius:8px; border:1px solid #1e3a5f;
+    background:var(--panel); font-family:var(--font-code); font-size:11px;
+    text-align:center; color:var(--text-dim); letter-spacing:.05em;
+  }
+  .door-chip.done{border-color:var(--cyan); color:var(--cyan); background:var(--cyan-soft);}
+  .door-chip.active{border-color:var(--amber); color:var(--amber); background:rgba(242,169,59,.1);}
+
+  .card{
+    background:linear-gradient(180deg, var(--panel2), var(--panel));
+    border:1px solid #1e3a5f;
+    border-radius:14px;
+    padding:22px 22px 26px;
+    position:relative;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,.6);
+  }
+  .card::before, .card::after{
+    content:""; position:absolute; width:16px; height:16px;
+    border-top:2px solid var(--cyan); border-left:2px solid var(--cyan);
+    top:10px; left:10px; opacity:.55;
+  }
+  .card::after{
+    top:auto; left:auto; bottom:10px; right:10px;
+    border-top:none; border-left:none;
+    border-bottom:2px solid var(--cyan); border-right:2px solid var(--cyan);
+  }
+
+  .door-title{font-family:var(--font-display); font-weight:700; font-size:19px; margin:0 0 2px;}
+  .door-tagline{color:var(--text-dim); font-size:12.5px; margin-bottom:6px;}
+  .diff-row{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .diff-tag{
+    font-family:var(--font-code); font-size:10.5px; letter-spacing:.06em;
+    color:var(--amber); border:1px solid rgba(242,169,59,.4); background:rgba(242,169,59,.08);
+    padding:3px 8px; border-radius:12px; text-transform:uppercase;
+  }
+
+  .layout{display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap;}
+  .code-col{flex:1 1 380px; min-width:280px;}
+  .dial-col{flex:0 0 130px; display:flex; flex-direction:column; align-items:center; gap:8px;}
+
+  .timer-wrap{margin-bottom:14px;}
+  .timer-track{height:6px; background:#1c2c42; border-radius:4px; overflow:hidden;}
+  .timer-fill{height:100%; background:var(--cyan); width:100%; transition:width 1s linear, background .3s;}
+  .timer-text{font-family:var(--font-code); font-size:11px; color:var(--text-dim); margin-top:4px; display:flex; justify-content:space-between;}
+
+  pre.code{
+    font-family:var(--font-code);
+    background:#08101d;
+    border:1px solid #1c3452;
+    border-radius:10px;
+    padding:16px 18px;
+    font-size:14.5px;
+    line-height:1.6;
+    color:#d8e6f5;
+    overflow-x:auto;
+    margin:0 0 18px;
+  }
+  pre.code .kw{color:var(--cyan);}
+  pre.code .cm{color:var(--text-dim); font-style:italic;}
+  pre.code .str{color:var(--amber);}
+
+  .question-label{
+    font-family:var(--font-code); font-size:11.5px; letter-spacing:.08em;
+    color:var(--text-dim); text-transform:uppercase; margin-bottom:10px;
+  }
+  .options{display:grid; gap:10px;}
+  .opt{
+    text-align:left; font-family:var(--font-code); font-size:14.5px;
+    background:#0d1729; border:1px solid #1e3a5f; color:var(--text);
+    border-radius:9px; padding:12px 14px; transition:border-color .15s, background .15s, transform .1s;
+  }
+  .opt:hover:not(:disabled){border-color:var(--cyan); background:#0f1f34;}
+  .opt:active:not(:disabled){transform:scale(.99);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{border-color:var(--green); background:rgba(111,207,151,.12); color:var(--green);}
+  .opt.wrong{border-color:var(--red); background:rgba(242,84,91,.12); color:var(--red);}
+  .opt .k{color:var(--text-dim); margin-right:8px;}
+
+  .dial{
+    width:104px; height:104px; border-radius:50%;
+    background: conic-gradient(var(--cyan) calc(var(--pct,0)*1%), #1c2c42 0);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .dial::before{content:""; position:absolute; width:78px; height:78px; border-radius:50%; background:var(--panel);}
+  .dial span{position:relative; font-family:var(--font-code); font-weight:600; font-size:16px;}
+  .dial-lbl{font-family:var(--font-code); font-size:10px; color:var(--text-dim); letter-spacing:.1em;}
+
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; border:1px solid #1e3a5f; background:#0d1729; font-size:13.5px; line-height:1.55;}
+  .feedback.ok{border-color:var(--green);}
+  .feedback.bad{border-color:var(--red);}
+  .feedback .verdict{font-family:var(--font-display); font-weight:700; font-size:14px; margin-bottom:6px;}
+  .feedback.ok .verdict{color:var(--green);}
+  .feedback.bad .verdict{color:var(--red);}
+  .feedback .bonus{color:var(--cyan); font-family:var(--font-code); font-size:12px; margin-top:6px;}
+
+  .next-row{display:flex; justify-content:flex-end; margin-top:16px;}
+  .btn{
+    font-family:var(--font-code); font-size:13px; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--cyan); color:#04151a; border:none; border-radius:8px;
+    padding:11px 20px; font-weight:600;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn.ghost{background:transparent; border:1px solid var(--cyan); color:var(--cyan);}
+
+  .center-card{text-align:center; padding:44px 26px;}
+  .center-card h1{font-family:var(--font-display); font-size:30px; margin:10px 0 4px;}
+  .center-card p{color:var(--text-dim); max-width:520px; margin:0 auto 22px; font-size:14.5px; line-height:1.6;}
+  .concepts{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:26px;}
+  .concept-tag{font-family:var(--font-code); font-size:11px; border:1px solid #1e3a5f; color:var(--text-dim); padding:6px 10px; border-radius:20px;}
+  .stat-grid{display:flex; justify-content:center; gap:30px; margin:22px 0 30px; flex-wrap:wrap;}
+  .stat-grid .box{text-align:center;}
+  .stat-grid .box .num{font-family:var(--font-code); font-size:26px; font-weight:700; color:var(--cyan);}
+  .stat-grid .box .lbl{font-family:var(--font-code); font-size:10.5px; color:var(--text-dim); letter-spacing:.08em; text-transform:uppercase;}
+
+  @media (max-width:520px){
+    .layout{flex-direction:column;}
+    .dial-col{flex-direction:row; width:100%; justify-content:center;}
+    .hud{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================= HELPERS ============================= */
+const CODENAMES = ['ECHO','VIPER','GHOST','FALCON','RAVEN','CIPHER','NOVA','SABLE','LYNX','WREN'];
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[randInt(0,arr.length-1)]; }
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pyBool(b){ return b ? 'True' : 'False'; }
+
+const OPS = [
+  {py:'==', fn:(a,b)=>a===b},
+  {py:'!=', fn:(a,b)=>a!==b},
+  {py:'<',  fn:(a,b)=>a<b},
+  {py:'>',  fn:(a,b)=>a>b},
+  {py:'<=', fn:(a,b)=>a<=b},
+  {py:'>=', fn:(a,b)=>a>=b},
+];
+const ORDER_OPS = ['<','>','<=','>='];
+
+const VARNAMES = ['laser_grid','pressure_seal','signal_freq','vault_temp','power_cell','alarm_level','coolant_flow','access_tier','fuel_charge','scan_range'];
+
+function highlightPy(code){
+  return code
+    .replace(/\b(if|elif|else|and|or|not|print|input|int)\b/g, '<span class="kw">$1</span>')
+    .replace(/(#.*)$/gm, '<span class="cm">$1</span>')
+    .replace(/("[^"]*")/g, '<span class="str">$1</span>');
+}
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* difficulty scales 0 (easiest) .. 15 (hardest) across the whole run */
+function rangeFor(diff){
+  if(diff<3) return [1,30];
+  if(diff<7) return [1,99];
+  if(diff<11) return [-20,150];
+  return [-50,250];
+}
+function timeLimitFor(diff){ return Math.max(28 - Math.round(diff*1.1), 11); }
+
+/* ============================= DOOR 1 — comparisons ============================= */
+function d1_direct(diff){
+  const [lo,hi]=rangeFor(diff);
+  const v=pick(VARNAMES), a=randInt(lo,hi), b=randInt(lo,hi), op=pick(OPS);
+  const result=op.fn(a,b);
+  const code=`${v} = ${a}\nthreshold = ${b}\n\nprint(${v} ${op.py} threshold)`;
+  const answer=pyBool(result);
+  const explain=`<code>${v}</code> is ${a} and <code>threshold</code> is ${b}. <code>${a} ${op.py} ${b}</code> is <strong>${answer}</strong>.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+function d1_assign(diff){
+  const [lo,hi]=rangeFor(diff);
+  const v=pick(VARNAMES), a=randInt(lo,hi), b=randInt(lo,hi), op=pick(OPS);
+  const result=op.fn(a,b);
+  const code=`${v} = ${a}\nthreshold = ${b}\nresult = ${v} ${op.py} threshold\n\nprint(result)`;
+  const answer=pyBool(result);
+  const explain=`<code>result</code> stores <code>${v} ${op.py} threshold</code>, which is <code>${a} ${op.py} ${b}</code> → <strong>${answer}</strong>. Printing <code>result</code> just prints that stored value.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+function d1_chained(diff){
+  const [lo,hi]=rangeFor(diff);
+  const x=randInt(lo,hi);
+  let boundA=randInt(lo,hi), boundB=randInt(lo,hi);
+  if(boundA>boundB){ [boundA,boundB]=[boundB,boundA]; }
+  const opLo=pick(['<','<=']), opHi=pick(['<','<=']);
+  const leftTrue = opLo==='<' ? boundA<x : boundA<=x;
+  const rightTrue = opHi==='<' ? x<boundB : x<=boundB;
+  const result = leftTrue && rightTrue;
+  const code=`x = ${x}\n\nprint(${boundA} ${opLo} x ${opHi} ${boundB})`;
+  const answer=pyBool(result);
+  const explain=`Python treats <code>${boundA} ${opLo} x ${opHi} ${boundB}</code> as two checks joined by <code>and</code>: <code>${boundA} ${opLo} x</code> is <strong>${leftTrue}</strong>, and <code>x ${opHi} ${boundB}</code> is <strong>${rightTrue}</strong>. Both must be True for the whole thing to be True.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+
+/* ============================= DOOR 2 — boolean logic ============================= */
+function d2_andor(diff){
+  const [loR,hiR]=rangeFor(diff);
+  const lo=Math.max(1,loR), hi=Math.max(lo+1,hiR);
+  const names=shuffle(VARNAMES);
+  const v1=names[0], v2=names[1];
+  const val1=randInt(lo,hi), val2=randInt(lo,hi);
+  const op1=pick(OPS), op2=pick(OPS);
+  const n1=randInt(lo,hi), n2=randInt(lo,hi);
+  const b1=op1.fn(val1,n1), b2=op2.fn(val2,n2);
+  const useAnd = Math.random()<0.5;
+  const result = useAnd ? (b1&&b2) : (b1||b2);
+  const connector = useAnd ? 'and' : 'or';
+  const code=`${v1} = ${val1}\n${v2} = ${val2}\n\nprint((${v1} ${op1.py} ${n1}) ${connector} (${v2} ${op2.py} ${n2}))`;
+  const answer=pyBool(result);
+  const explain = useAnd
+    ? `Left side <code>${val1} ${op1.py} ${n1}</code> is <strong>${b1}</strong>. Right side <code>${val2} ${op2.py} ${n2}</code> is <strong>${b2}</strong>. <code>and</code> needs both True — result is <strong>${answer}</strong>.`
+    : `Left side <code>${val1} ${op1.py} ${n1}</code> is <strong>${b1}</strong>. Right side <code>${val2} ${op2.py} ${n2}</code> is <strong>${b2}</strong>. <code>or</code> only needs one True — result is <strong>${answer}</strong>.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+function d2_not(diff){
+  const [loR,hiR]=rangeFor(diff);
+  const lo=Math.max(1,loR), hi=Math.max(lo+1,hiR);
+  const v=pick(VARNAMES), val=randInt(lo,hi), op=pick(OPS), n=randInt(lo,hi);
+  const b1=op.fn(val,n);
+  const result=!b1;
+  const code=`${v} = ${val}\n\nprint(not (${v} ${op.py} ${n}))`;
+  const answer=pyBool(result);
+  const explain=`<code>${v} ${op.py} ${n}</code> is <code>${val} ${op.py} ${n}</code> → <strong>${b1}</strong>. <code>not</code> flips it to <strong>${answer}</strong>.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+function d2_precedence(diff){
+  const [loR,hiR]=rangeFor(diff);
+  const lo=Math.max(1,loR), hi=Math.max(lo+1,hiR);
+  const names=shuffle(VARNAMES);
+  const v1=names[0], v2=names[1], v3=names[2];
+  const val1=randInt(lo,hi), val2=randInt(lo,hi), val3=randInt(lo,hi);
+  const op1=pick(OPS), op2=pick(OPS), op3=pick(OPS);
+  const n1=randInt(lo,hi), n2=randInt(lo,hi), n3=randInt(lo,hi);
+  const b1=op1.fn(val1,n1), b2=op2.fn(val2,n2), b3=op3.fn(val3,n3);
+  const result = (b1 && b2) || b3;
+  const code=`${v1} = ${val1}\n${v2} = ${val2}\n${v3} = ${val3}\n\nprint(${v1} ${op1.py} ${n1} and ${v2} ${op2.py} ${n2} or ${v3} ${op3.py} ${n3})`;
+  const answer=pyBool(result);
+  const explain=`Python checks <code>and</code> before <code>or</code>, so this reads as <code>(${v1} ${op1.py} ${n1} and ${v2} ${op2.py} ${n2}) or ${v3} ${op3.py} ${n3}</code>. That's <code>(${b1} and ${b2}) or ${b3}</code> → <strong>${answer}</strong>.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+function d2_boolvars(diff){
+  const names=shuffle(VARNAMES);
+  const v1=names[0], v2=names[1];
+  const b1=Math.random()<0.5, b2=Math.random()<0.5;
+  const pattern=pick(['and','or','and not','or not']);
+  const usesNot = pattern.includes('not');
+  const connector = pattern.startsWith('and') ? 'and' : 'or';
+  const b2eff = usesNot ? !b2 : b2;
+  const result = connector==='and' ? (b1&&b2eff) : (b1||b2eff);
+  const rhs = usesNot ? `not ${v2}` : v2;
+  const code=`${v1} = ${pyBool(b1)}\n${v2} = ${pyBool(b2)}\n\nprint(${v1} ${connector} ${rhs})`;
+  const answer=pyBool(result);
+  const explain=`${v1} is <strong>${pyBool(b1)}</strong>. ${usesNot?`<code>not ${v2}</code> flips ${v2} (${pyBool(b2)}) to <strong>${pyBool(b2eff)}</strong>.`:`${v2} is <strong>${pyBool(b2)}</strong>.`} Combined with <code>${connector}</code>, the result is <strong>${answer}</strong>.`;
+  return {code, options:shuffle(['True','False']), answer, explain};
+}
+
+/* ============================= DOOR 3 — if / elif / else ============================= */
+const SCENARIOS3 = [
+  { varLabel:'exam_score', tiers:['"Distinction"','"Merit Pass"','"Needs Review"'], base:[90,75] },
+  { varLabel:'hull_temp', tiers:['"CRITICAL"','"WARNING"','"STABLE"'], base:[80,45] },
+  { varLabel:'clearance', tiers:['"ADMIN ACCESS"','"STAFF ACCESS"','"ACCESS DENIED"'], base:[8,4] },
+  { varLabel:'battery_pct', tiers:['"FULL POWER"','"CONSERVE ENERGY"','"SHUTDOWN IMMINENT"'], base:[70,25] },
+];
+function d3_threshold(diff){
+  const sc=pick(SCENARIOS3);
+  const jitterSpread = diff<7 ? 4 : 8;
+  const t1=sc.base[0]+randInt(-jitterSpread,jitterSpread);
+  const t2=sc.base[1]+randInt(-jitterSpread,jitterSpread);
+  let value = randInt(t2-25, t1+25);
+  if(diff>=8 && Math.random()<0.45){ value = pick([t1, t2, t1-1, t2-1]); }
+  const code=`${sc.varLabel} = ${value}\n\nif ${sc.varLabel} >= ${t1}:\n    print(${sc.tiers[0]})\nelif ${sc.varLabel} >= ${t2}:\n    print(${sc.tiers[1]})\nelse:\n    print(${sc.tiers[2]})`;
+  let branch, explain;
+  if(value>=t1){ branch=0; explain=`${sc.varLabel} is ${value}, which is >= ${t1}, so the <strong>if</strong> branch runs immediately.`; }
+  else if(value>=t2){ branch=1; explain=`${sc.varLabel} is ${value}. It fails <code>>= ${t1}</code> but passes <code>>= ${t2}</code>, so the <strong>elif</strong> branch runs.`; }
+  else { branch=2; explain=`${sc.varLabel} is ${value}. It fails both thresholds, so control falls to <strong>else</strong>.`; }
+  const answer=sc.tiers[branch].replace(/"/g,'');
+  const options=shuffle(sc.tiers.map(t=>t.replace(/"/g,'')));
+  return {code, options, answer, explain};
+}
+function d3_compound(diff){
+  const names=shuffle(VARNAMES);
+  const v1=names[0], v2=names[1];
+  const cmp1=pick(ORDER_OPS), cmp2=pick(ORDER_OPS);
+  const t1=randInt(10,80), t2=randInt(10,80);
+  const val1=randInt(1,100), val2=randInt(1,100);
+  const fn = {'<':(a,b)=>a<b, '>':(a,b)=>a>b, '<=':(a,b)=>a<=b, '>=':(a,b)=>a>=b};
+  const b1=fn[cmp1](val1,t1), b2=fn[cmp2](val2,t2);
+  const outs=['"FULL BYPASS"','"PARTIAL BYPASS"','"LOCKDOWN"'];
+  let branch;
+  if(b1 && b2) branch=0; else if(b1 || b2) branch=1; else branch=2;
+  const code=`${v1} = ${val1}\n${v2} = ${val2}\n\nif ${v1} ${cmp1} ${t1} and ${v2} ${cmp2} ${t2}:\n    print(${outs[0]})\nelif ${v1} ${cmp1} ${t1} or ${v2} ${cmp2} ${t2}:\n    print(${outs[1]})\nelse:\n    print(${outs[2]})`;
+  const explain=`<code>${v1} ${cmp1} ${t1}</code> is <strong>${b1}</strong> and <code>${v2} ${cmp2} ${t2}</code> is <strong>${b2}</strong>. ${b1&&b2? 'Both are True, so the <code>and</code> branch fires first.' : (b1||b2)? 'Only one is True, so it skips the <code>and</code> check but passes the <code>or</code> check.' : 'Neither is True, so it falls to <code>else</code>.'}`;
+  const answer=outs[branch].replace(/"/g,'');
+  const options=shuffle(outs.map(o=>o.replace(/"/g,'')));
+  return {code, options, answer, explain};
+}
+
+/* ============================= DOOR 4 — input / output ============================= */
+const SCENARIOS4 = [
+  { promptLabel:'Age', varName:'age', base:[18,13], tiers:[n=>`${n}, full clearance granted.`, n=>`${n}, junior clearance only.`, n=>`${n}, access denied.`] },
+  { promptLabel:'Security Score', varName:'sec_score', base:[85,60], tiers:[n=>`${n} bypassed the vault silently.`, n=>`${n} triggered a minor alert.`, n=>`${n} set off the full alarm.`] },
+  { promptLabel:'Fuel Level', varName:'fuel', base:[50,20], tiers:[n=>`${n}, cleared for launch.`, n=>`${n}, refuel recommended.`, n=>`${n}, launch aborted.`] },
+];
+function d4_single(diff){
+  const sc=pick(SCENARIOS4);
+  const codename=pick(CODENAMES);
+  const jitter = diff<7 ? 3 : 6;
+  const t1=sc.base[0]+randInt(-jitter,jitter);
+  const t2=sc.base[1]+randInt(-jitter,jitter);
+  const value=randInt(t2-20, t1+20);
+  const line0 = sc.tiers[0]('__').split(', ')[1];
+  const line1 = sc.tiers[1]('__').split(', ')[1];
+  const line2 = sc.tiers[2]('__').split(', ')[1];
+  const code=`name = input("Codename: ")        # operative types: "${codename}"\n${sc.varName} = int(input("${sc.promptLabel}: "))   # operative types: ${value}\n\nif ${sc.varName} >= ${t1}:\n    print(f"{name}, ${line0}")\nelif ${sc.varName} >= ${t2}:\n    print(f"{name}, ${line1}")\nelse:\n    print(f"{name}, ${line2}")`;
+  let branch, explain;
+  if(value>=t1){ branch=0; explain=`${sc.varName} is ${value}, which meets <code>>= ${t1}</code>, so the first branch runs with <code>name</code> filled in as "${codename}".`; }
+  else if(value>=t2){ branch=1; explain=`${sc.varName} is ${value}. It doesn't clear ${t1}, but it clears ${t2}, so the <code>elif</code> branch runs.`; }
+  else { branch=2; explain=`${sc.varName} is ${value}, below both ${t1} and ${t2}, so it falls to <code>else</code>.`; }
+  const answer=sc.tiers[branch](codename);
+  const options=shuffle(sc.tiers.map(fn=>fn(codename)));
+  return {code, options, answer, explain};
+}
+function d4_sum(diff){
+  const codename=pick(CODENAMES);
+  const jitter = diff<10 ? 5 : 9;
+  const t1=60+randInt(-jitter,jitter), t2=35+randInt(-jitter,jitter);
+  const a=randInt(5,60), b=randInt(5,60);
+  const total=a+b;
+  const tiers=[n=>`${n}, reactor at full power.`, n=>`${n}, reactor stable.`, n=>`${n}, reactor offline.`];
+  const code=`name = input("Codename: ")       # operative types: "${codename}"\na = int(input("Charge A: "))     # operative types: ${a}\nb = int(input("Charge B: "))     # operative types: ${b}\ntotal = a + b\n\nif total >= ${t1}:\n    print(f"{name}, reactor at full power.")\nelif total >= ${t2}:\n    print(f"{name}, reactor stable.")\nelse:\n    print(f"{name}, reactor offline.")`;
+  let branch, explain;
+  if(total>=t1){ branch=0; explain=`total is ${a} + ${b} = ${total}, which meets <code>>= ${t1}</code>.`; }
+  else if(total>=t2){ branch=1; explain=`total is ${a} + ${b} = ${total}. It misses ${t1} but clears ${t2}.`; }
+  else { branch=2; explain=`total is ${a} + ${b} = ${total}, below both ${t1} and ${t2}.`; }
+  const answer=tiers[branch](codename);
+  const options=shuffle(tiers.map(fn=>fn(codename)));
+  return {code, options, answer, explain};
+}
+
+/* ============================= DOOR CONFIG ============================= */
+const DOORS = [
+  { title:'DOOR I — COMPARISON LOCKS', tag:'Crack the lock by evaluating comparison operators.',
+    shapes:[ {min:0,fn:d1_direct}, {min:3,fn:d1_assign}, {min:7,fn:d1_chained} ] },
+  { title:'DOOR II — BOOLEAN CIRCUITS', tag:'Combine conditions with and / or / not to find the current state.',
+    shapes:[ {min:0,fn:d2_andor}, {min:0,fn:d2_not}, {min:6,fn:d2_precedence}, {min:9,fn:d2_boolvars} ] },
+  { title:'DOOR III — BRANCH GATE', tag:'Trace the if / elif / else path the program actually takes.',
+    shapes:[ {min:0,fn:d3_threshold}, {min:6,fn:d3_compound} ] },
+  { title:'DOOR IV — TERMINAL INTERFACE', tag:'Predict what prints once user input flows through the logic.',
+    shapes:[ {min:0,fn:d4_single}, {min:5,fn:d4_sum} ] },
+];
+const NEEDED_PER_DOOR = 4;
+const START_LIVES = 3;
+const MAX_DIFF = (DOORS.length*NEEDED_PER_DOOR)-1;
+
+function getDifficulty(){ return state.doorIndex*NEEDED_PER_DOOR + state.correctInDoor; }
+
+/* ============================= STATE ============================= */
+let state = null;
+function freshState(){
+  return {
+    screen:'start', doorIndex:0, correctInDoor:0, lives:START_LIVES,
+    score:0, streak:0, bestStreak:0, totalCorrect:0, totalAnswered:0,
+    codename: pick(CODENAMES), q:null, answered:false, selected:null, timeLeft:0,
+  };
+}
+state = freshState();
+
+let timerInterval = null;
+function clearTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+
+function newQuestion(){
+  const diff = getDifficulty();
+  const shapes = DOORS[state.doorIndex].shapes.filter(s=>diff>=s.min);
+  const shapeFn = pick(shapes).fn;
+  state.q = shapeFn(diff);
+  state.q.difficulty = diff;
+  state.q.timeLimit = timeLimitFor(diff);
+  state.timeLeft = state.q.timeLimit;
+  state.answered = false;
+  state.selected = null;
+}
+
+function goToQuestion(){
+  newQuestion();
+  state.screen='playing';
+  render();
+  startTimer();
+}
+
+function startTimer(){
+  clearTimer();
+  timerInterval = setInterval(()=>{
+    state.timeLeft -= 1;
+    updateTimerDOM();
+    if(state.timeLeft<=0){ clearTimer(); handleTimeout(); }
+  }, 1000);
+}
+function updateTimerDOM(){
+  const fill=document.getElementById('timerFill');
+  const text=document.getElementById('timerText');
+  if(!fill) return;
+  const pct=Math.max(0,(state.timeLeft/state.q.timeLimit)*100);
+  fill.style.width=pct+'%';
+  fill.style.background = state.timeLeft<=5 ? 'var(--red)' : state.timeLeft<=10 ? 'var(--amber)' : 'var(--cyan)';
+  if(text) text.textContent = Math.max(0,state.timeLeft)+'s';
+}
+
+/* ============================= RENDER ============================= */
+const app = document.getElementById('app');
+
+function render(){
+  if(state.screen==='start') return renderStart();
+  if(state.screen==='doorclear') return renderDoorClear();
+  if(state.screen==='gameover') return renderGameOver();
+  if(state.screen==='complete') return renderComplete();
+  return renderPlaying();
+}
+
+function renderStart(){
+  app.innerHTML = `
+    <div class="card center-card">
+      <div class="eyebrow">OPERATIVE FILE #${randInt(1000,9999)}</div>
+      <h1>THE LOGIC VAULT</h1>
+      <p>Four vault doors stand between you and the score. Each one runs on real Python logic —
+      comparisons, booleans, if/elif/else, and input → output. The clock is running and the questions
+      get sharper the deeper you go. Get it wrong three times total and the alarm trips.</p>
+      <div class="concepts">
+        <span class="concept-tag">== != &lt; &gt;</span>
+        <span class="concept-tag">and / or / not</span>
+        <span class="concept-tag">if / elif / else</span>
+        <span class="concept-tag">input() → print()</span>
+        <span class="concept-tag">rising difficulty</span>
+        <span class="concept-tag">countdown timer</span>
+      </div>
+      <button class="btn" id="beginBtn">BEGIN HEIST</button>
+    </div>
+  `;
+  document.getElementById('beginBtn').onclick = goToQuestion;
+}
+
+function renderHud(){
+  const livesHtml = Array.from({length:START_LIVES}).map((_,i)=>
+    `<div class="rivet ${i < state.lives ? '' : 'off'}"></div>`).join('');
+  return `
+    <div class="hud">
+      <div class="hud-left">
+        <div class="eyebrow">OPERATIVE ${state.codename}</div>
+        <h1>THE LOGIC VAULT</h1>
+      </div>
+      <div class="hud-right">
+        <div class="stat"><div class="num">${state.score}</div><div class="lbl">Score</div></div>
+        <div class="stat"><div class="num">${state.streak}</div><div class="lbl">Streak</div></div>
+        <div class="stat"><div class="lives">${livesHtml}</div><div class="lbl">Lives</div></div>
+      </div>
+    </div>
+    <div class="doors">
+      ${DOORS.map((d,i)=>{
+        let cls='door-chip';
+        if(i < state.doorIndex) cls+=' done';
+        else if(i === state.doorIndex) cls+=' active';
+        return `<div class="${cls}">DOOR ${i+1}</div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderPlaying(){
+  const door = DOORS[state.doorIndex];
+  const q = state.q;
+  const pct = Math.round((state.correctInDoor/NEEDED_PER_DOOR)*100);
+
+  const optionsHtml = q.options.map((opt,i)=>{
+    let cls='opt';
+    if(state.answered){
+      if(opt === q.answer) cls+=' correct';
+      else if(opt === state.selected) cls+=' wrong';
+    }
+    return `<button class="${cls}" data-i="${i}" ${state.answered?'disabled':''}>
+      <span class="k">${String.fromCharCode(65+i)}</span>${escapeHtml(opt)}
+    </button>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if(state.answered){
+    const isTimeout = state.selected === '__TIMEOUT__';
+    const wasCorrect = !isTimeout && state.selected === q.answer;
+    const verdict = wasCorrect ? '✓ LOCK DISENGAGED' : isTimeout ? '⏱ TIME EXPIRED' : '✕ WRONG SEQUENCE';
+    feedbackHtml = `
+      <div class="feedback ${wasCorrect?'ok':'bad'}">
+        <div class="verdict">${verdict}</div>
+        <div>${q.explain}${wasCorrect?'':` The correct output was <strong>${escapeHtml(q.answer)}</strong>.`}</div>
+        ${wasCorrect && q._bonusMsg ? `<div class="bonus">${q._bonusMsg}</div>` : ''}
+      </div>
+      <div class="next-row"><button class="btn" id="nextBtn">CONTINUE →</button></div>
+    `;
+  }
+
+  const timerHtml = !state.answered ? `
+    <div class="timer-wrap">
+      <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+      <div class="timer-text"><span>CRACK THE LOCK</span><span id="timerText">${state.timeLeft}s</span></div>
+    </div>
+  ` : '';
+
+  app.innerHTML = `
+    ${renderHud()}
+    <div class="card">
+      <div class="door-title">${door.title}</div>
+      <div class="door-tagline">${door.tag}</div>
+      <div class="diff-row"><span class="diff-tag">DIFFICULTY ${q.difficulty+1} / ${MAX_DIFF+1}</span></div>
+      <div class="layout">
+        <div class="code-col">
+          ${timerHtml}
+          <pre class="code">${highlightPy(escapeHtml(q.code))}</pre>
+          <div class="question-label">What does this print?</div>
+          <div class="options">${optionsHtml}</div>
+          ${feedbackHtml}
+        </div>
+        <div class="dial-col">
+          <div class="dial" style="--pct:${pct}"><span>${state.correctInDoor}/${NEEDED_PER_DOOR}</span></div>
+          <div class="dial-lbl">DOOR PROGRESS</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if(!state.answered){
+    app.querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick = ()=>selectOption(q.options[+btn.dataset.i]);
+    });
+  } else {
+    document.getElementById('nextBtn').onclick = onContinue;
+  }
+}
+
+function selectOption(opt){
+  clearTimer();
+  state.selected = opt;
+  state.answered = true;
+  state.totalAnswered++;
+  const correct = opt === state.q.answer;
+  if(correct){
+    state.totalCorrect++;
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    const timeBonus = Math.round((Math.max(state.timeLeft,0)/state.q.timeLimit)*5);
+    state.score += 10 + state.streak*2 + timeBonus;
+    state.q._bonusMsg = timeBonus>0 ? `+${10+state.streak*2} base and streak, +${timeBonus} speed bonus` : `+${10+state.streak*2} base and streak`;
+    state.correctInDoor++;
+  } else {
+    state.streak = 0;
+    state.lives--;
+  }
+  render();
+}
+
+function handleTimeout(){
+  if(state.answered) return;
+  state.selected = '__TIMEOUT__';
+  state.answered = true;
+  state.totalAnswered++;
+  state.streak = 0;
+  state.lives--;
+  render();
+}
+
+function onContinue(){
+  if(state.lives <= 0){ state.screen='gameover'; clearTimer(); render(); return; }
+  if(state.correctInDoor >= NEEDED_PER_DOOR){
+    if(state.doorIndex >= DOORS.length-1){ state.screen='complete'; render(); return; }
+    state.screen='doorclear'; render(); return;
+  }
+  goToQuestion();
+}
+
+function renderDoorClear(){
+  const clearedDoor = DOORS[state.doorIndex];
+  app.innerHTML = `
+    ${renderHud()}
+    <div class="card center-card">
+      <div class="eyebrow">${clearedDoor.title} — CRACKED</div>
+      <h1>DOOR SEALED BEHIND YOU</h1>
+      <p>Score so far: <strong>${state.score}</strong> · Best streak: <strong>${state.bestStreak}</strong></p>
+      <button class="btn" id="advanceBtn">ADVANCE TO ${DOORS[state.doorIndex+1].title.split(' —')[0]}</button>
+    </div>
+  `;
+  document.getElementById('advanceBtn').onclick = ()=>{
+    state.doorIndex++;
+    state.correctInDoor = 0;
+    goToQuestion();
+  };
+}
+
+function renderGameOver(){
+  const accuracy = state.totalAnswered? Math.round((state.totalCorrect/state.totalAnswered)*100):0;
+  app.innerHTML = `
+    <div class="card center-card">
+      <div class="eyebrow" style="color:var(--red)">ALARM TRIGGERED</div>
+      <h1>THE VAULT LOCKED YOU OUT</h1>
+      <p>Operative ${state.codename} made it to <strong>${DOORS[state.doorIndex].title}</strong> before the third
+      wrong sequence sealed the exits.</p>
+      <div class="stat-grid">
+        <div class="box"><div class="num">${state.score}</div><div class="lbl">Final Score</div></div>
+        <div class="box"><div class="num">${accuracy}%</div><div class="lbl">Accuracy</div></div>
+        <div class="box"><div class="num">${state.bestStreak}</div><div class="lbl">Best Streak</div></div>
+      </div>
+      <button class="btn" id="retryBtn">RETRY HEIST</button>
+    </div>
+  `;
+  document.getElementById('retryBtn').onclick = ()=>{ state = freshState(); render(); };
+}
+
+function renderComplete(){
+  const accuracy = state.totalAnswered? Math.round((state.totalCorrect/state.totalAnswered)*100):0;
+  app.innerHTML = `
+    <div class="card center-card">
+      <div class="eyebrow" style="color:var(--green)">ALL FOUR DOORS CRACKED</div>
+      <h1>HEIST COMPLETE</h1>
+      <p>Operative ${state.codename} cleared comparisons, boolean logic, branching, and live input/output
+      without tripping the final alarm.</p>
+      <div class="stat-grid">
+        <div class="box"><div class="num">${state.score}</div><div class="lbl">Final Score</div></div>
+        <div class="box"><div class="num">${accuracy}%</div><div class="lbl">Accuracy</div></div>
+        <div class="box"><div class="num">${state.lives}</div><div class="lbl">Lives Left</div></div>
+        <div class="box"><div class="num">${state.bestStreak}</div><div class="lbl">Best Streak</div></div>
+      </div>
+      <button class="btn" id="againBtn">RUN A NEW HEIST</button>
+    </div>
+  `;
+  document.getElementById('againBtn').onclick = ()=>{ state = freshState(); render(); };
+}
+
+render();
+</script>
+</body>
+</html>

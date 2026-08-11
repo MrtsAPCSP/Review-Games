@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Relay: Kestrel-9</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg-deep:#0d1a26;
+    --bg-panel:#132638;
+    --bg-panel-2:#0f2030;
+    --line:#264257;
+    --amber:#ffb454;
+    --amber-dim:#8a6a3d;
+    --teal:#4fd1c5;
+    --copper:#e08a5b;
+    --red:#ff6b5b;
+    --cream:#f3ecdd;
+    --dim:#7d93a8;
+    --disp:'Space Grotesk', sans-serif;
+    --mono:'Space Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #16334a 0%, var(--bg-deep) 55%),
+      var(--bg-deep);
+    color:var(--cream);
+    font-family:var(--disp);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+  }
+  #app{
+    width:100%;
+    max-width:640px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  #scanlines{
+    position:fixed; inset:0; pointer-events:none; z-index:5;
+    background:repeating-linear-gradient(
+      to bottom, rgba(255,255,255,0.018) 0px, rgba(255,255,255,0.018) 1px,
+      transparent 1px, transparent 3px
+    );
+    mix-blend-mode:overlay;
+  }
+  header{
+    padding:18px 20px 12px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(255,180,84,0.05), transparent);
+  }
+  .brand{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.08em;
+    color:var(--amber);
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:8px;
+  }
+  .brand .sub{
+    font-family:var(--disp);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:0.04em;
+    color:var(--dim);
+  }
+  #hud{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:12px;
+    font-family:var(--mono);
+    font-size:12px;
+    flex-wrap:wrap;
+  }
+  #hud.hidden{display:none;}
+  .hud-item{color:var(--dim); letter-spacing:0.05em;}
+  .hud-item span{color:var(--cream); font-weight:700;}
+  #hudP2Wrap.hidden{display:none;}
+  .dial-wrap{margin-left:auto; display:flex; align-items:center; gap:6px;}
+  .dial-wrap.hidden{display:none;}
+  #ticker{
+    background:var(--bg-panel-2);
+    border-bottom:1px solid var(--line);
+    padding:9px 20px;
+    overflow:hidden;
+  }
+  #tickerText{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--teal);
+    white-space:pre-wrap;
+    line-height:1.5;
+  }
+  #tickerText .cursor{
+    display:inline-block; width:7px; height:12px; background:var(--teal);
+    margin-left:2px; vertical-align:-1px;
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  main{
+    flex:1;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+  }
+  .screen{display:none;}
+  .screen.active{display:flex; flex-direction:column; flex:1;}
+
+  /* ---- menu ---- */
+  #screen-menu h1{
+    font-size:26px; margin:6px 0 6px; letter-spacing:-0.01em;
+  }
+  #screen-menu .lede{
+    color:var(--dim); font-size:14px; line-height:1.55; margin:0 0 22px; max-width:520px;
+  }
+  .option-group{margin-bottom:20px;}
+  .option-group h3{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.12em;
+    color:var(--amber-dim); margin:0 0 10px; text-transform:uppercase;
+  }
+  .option-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .opt-btn{
+    font-family:var(--disp); font-weight:600; font-size:13.5px;
+    background:var(--bg-panel); color:var(--cream);
+    border:1px solid var(--line); border-radius:8px;
+    padding:11px 16px; cursor:pointer; transition:all .15s ease;
+    flex:1; min-width:120px;
+  }
+  .opt-btn:hover{border-color:var(--amber-dim);}
+  .opt-btn.selected{
+    background:linear-gradient(180deg, rgba(255,180,84,0.16), rgba(255,180,84,0.06));
+    border-color:var(--amber); color:var(--amber);
+    box-shadow: inset 0 0 0 1px rgba(255,180,84,0.25);
+  }
+  .opt-btn small{display:block; color:var(--dim); font-weight:400; font-size:11px; margin-top:2px;}
+  .opt-btn.selected small{color:var(--amber-dim);}
+  #p2NameWrap{display:flex; gap:10px;}
+  #p2NameWrap.hidden{display:none;}
+  #p2NameWrap input{
+    flex:1; background:var(--bg-panel); border:1px solid var(--line);
+    border-radius:8px; color:var(--cream); font-family:var(--disp);
+    padding:10px 12px; font-size:13.5px;
+  }
+  #startBtn{
+    margin-top:auto;
+    font-family:var(--mono); font-weight:700; letter-spacing:0.06em;
+    background:var(--amber); color:#1a1206; border:none; border-radius:9px;
+    padding:15px; font-size:14px; cursor:pointer;
+    box-shadow:0 6px 0 var(--amber-dim);
+    transition:transform .1s ease;
+  }
+  #startBtn:active{transform:translateY(4px); box-shadow:0 2px 0 var(--amber-dim);}
+
+  /* ---- game ---- */
+  #turnBanner{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.08em;
+    color:var(--copper); background:rgba(224,138,91,0.1);
+    border:1px solid rgba(224,138,91,0.35); border-radius:8px;
+    padding:8px 12px; margin-bottom:12px; text-align:center;
+  }
+  #turnBanner.hidden{display:none;}
+  #eventBanner{
+    font-family:var(--mono); font-size:12.5px; letter-spacing:0.03em;
+    border-radius:8px; padding:10px 14px; margin-bottom:12px;
+    display:flex; align-items:center; gap:10px;
+    animation:eventPop .25s ease;
+  }
+  #eventBanner.hidden{display:none;}
+  #eventBanner .icon{font-size:16px;}
+  @keyframes eventPop{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);}}
+
+  .console{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 22px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .console-label{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.1em;
+    color:var(--dim); text-transform:uppercase; margin-bottom:14px;
+  }
+  .readout{
+    font-family:var(--mono); font-weight:700;
+    font-size:clamp(34px, 10vw, 52px);
+    color:var(--amber);
+    letter-spacing:0.04em;
+    text-shadow:0 0 18px rgba(255,180,84,0.25);
+    margin-bottom:18px;
+    word-break:break-all;
+    min-height:60px;
+  }
+  .timerbar-wrap{
+    height:5px; background:var(--bg-panel-2); border-radius:3px; margin-bottom:16px; overflow:hidden;
+  }
+  .timerbar-wrap.hidden{display:none;}
+  .timerbar{
+    height:100%; width:100%; background:var(--red); border-radius:3px;
+    transform-origin:left; transition:transform linear;
+  }
+  #answerForm{display:flex; gap:10px; margin-bottom:12px;}
+  #answerInput{
+    flex:1; background:var(--bg-panel-2); border:1px solid var(--line);
+    border-radius:9px; color:var(--cream); font-family:var(--mono);
+    font-size:18px; padding:12px 14px; letter-spacing:0.04em;
+  }
+  #answerInput:focus{outline:none; border-color:var(--teal);}
+  #answerForm button{
+    font-family:var(--mono); font-weight:700; letter-spacing:0.05em;
+    background:var(--teal); color:#04241f; border:none; border-radius:9px;
+    padding:0 18px; font-size:13px; cursor:pointer;
+  }
+  #feedback{
+    font-family:var(--mono); font-size:13px; min-height:20px;
+    color:var(--dim);
+  }
+  #feedback.good{color:var(--teal);}
+  #feedback.bad{color:var(--red);}
+  .shake{animation:shake .28s ease;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);}
+    75%{transform:translateX(6px);}
+  }
+  .flash-good{animation:flashGood .5s ease;}
+  .flash-bad{animation:flashBad .5s ease;}
+  @keyframes flashGood{0%{box-shadow:inset 0 0 0 2px rgba(79,209,197,0.6);} 100%{box-shadow:inset 0 0 0 0 rgba(79,209,197,0);}}
+  @keyframes flashBad{0%{box-shadow:inset 0 0 0 2px rgba(255,107,91,0.6);} 100%{box-shadow:inset 0 0 0 0 rgba(255,107,91,0);}}
+
+  /* ---- end ---- */
+  #screen-end{align-items:flex-start;}
+  #screen-end h1{font-size:24px; margin:6px 0 10px;}
+  #endStory{color:var(--dim); font-size:13.5px; line-height:1.6; margin-bottom:20px;}
+  #endStats{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin-bottom:20px; width:100%;
+    font-family:var(--mono); font-size:13px; line-height:1.8;
+  }
+  #endStats .row{display:flex; justify-content:space-between; border-bottom:1px dashed var(--line); padding:5px 0;}
+  #endStats .row:last-child{border-bottom:none;}
+  #endStats .row span:last-child{color:var(--amber); font-weight:700;}
+  #restartBtn{
+    font-family:var(--mono); font-weight:700; letter-spacing:0.06em;
+    background:var(--amber); color:#1a1206; border:none; border-radius:9px;
+    padding:15px; font-size:14px; cursor:pointer; width:100%;
+  }
+  @media (max-width:420px){
+    .opt-btn{min-width:100%;}
+  }
+</style>
+</head>
+<body>
+<div id="scanlines"></div>
+<div id="app">
+
+  <header>
+    <div class="brand">SIGNAL RELAY <span class="sub">KESTREL-9 · CADET TERMINAL</span></div>
+    <div id="hud" class="hidden">
+      <div class="hud-item" id="hudScoreWrap">SCORE <span id="hudScore">0</span></div>
+      <div class="hud-item hidden" id="hudP2Wrap">P2 <span id="hudScore2">0</span></div>
+      <div class="hud-item">STREAK <span id="hudStreak">0</span></div>
+      <div class="hud-item">SIG <span id="hudProgress">0/10</span></div>
+      <div class="dial-wrap" id="dialWrap">
+        <svg id="signalDial" width="30" height="30" viewBox="0 0 30 30">
+          <circle cx="15" cy="15" r="12" fill="none" stroke="#264257" stroke-width="4"/>
+          <circle id="dialArc" cx="15" cy="15" r="12" fill="none" stroke="#4fd1c5" stroke-width="4"
+            stroke-dasharray="75.4" stroke-dashoffset="0" transform="rotate(-90 15 15)"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <div id="ticker"><div id="tickerText"></div></div>
+
+  <main>
+
+    <section id="screen-menu" class="screen active">
+      <h1>Incoming Transmission</h1>
+      <p class="lede">A solar storm fried Kestrel-9's translation matrix. The AI can't read binary or hex until it reboots — and that's hours away. You're the only cadet on shift who still remembers how to decode by hand. Command needs you on the terminal. Now.</p>
+
+      <div class="option-group">
+        <h3>01 · Crew on deck</h3>
+        <div class="option-row" id="crewRow">
+          <button class="opt-btn selected" data-crew="1">Solo cadet<small>Practice alone</small></button>
+          <button class="opt-btn" data-crew="2">Two cadets<small>Pass the terminal, take turns</small></button>
+        </div>
+      </div>
+
+      <div class="option-group hidden" id="p2NameWrap">
+        <input id="p1Name" placeholder="Cadet 1 name" maxlength="14">
+        <input id="p2Name" placeholder="Cadet 2 name" maxlength="14">
+      </div>
+
+      <div class="option-group">
+        <h3>02 · Decode focus</h3>
+        <div class="option-row" id="modeRow">
+          <button class="opt-btn" data-mode="bin">Binary only<small>Decimal ⇄ Binary</small></button>
+          <button class="opt-btn" data-mode="hex">Hex only<small>Decimal ⇄ Hex</small></button>
+          <button class="opt-btn selected" data-mode="mixed">Mixed signals<small>Bin, Hex + direct swaps</small></button>
+        </div>
+      </div>
+
+      <div class="option-group">
+        <h3>03 · Mission length</h3>
+        <div class="option-row" id="lenRow">
+          <button class="opt-btn" data-len="10">Quick run<small>10 transmissions</small></button>
+          <button class="opt-btn selected" data-len="20">Standard<small>20 transmissions</small></button>
+          <button class="opt-btn" data-len="30">Long haul<small>30 transmissions</small></button>
+        </div>
+      </div>
+
+      <button id="startBtn">BEGIN MISSION →</button>
+    </section>
+
+    <section id="screen-game" class="screen">
+      <div id="turnBanner" class="hidden"></div>
+      <div id="eventBanner" class="hidden"></div>
+      <div class="console" id="consoleBox">
+        <div class="console-label" id="questionLabel">DECODE THIS DECIMAL VALUE</div>
+        <div class="readout" id="questionText">—</div>
+        <div class="timerbar-wrap hidden" id="timerWrap"><div class="timerbar" id="timerBar"></div></div>
+        <form id="answerForm">
+          <input id="answerInput" autocomplete="off" inputmode="text" placeholder="Type your answer…">
+          <button type="submit">SEND</button>
+        </form>
+        <div id="feedback"></div>
+      </div>
+    </section>
+
+    <section id="screen-end" class="screen">
+      <h1 id="endTitle">Mission Complete</h1>
+      <p id="endStory"></p>
+      <div id="endStats"></div>
+      <button id="restartBtn">NEW MISSION</button>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- story content ----------
+  const STORY = [
+    "TRANSMISSION LOG // Storm knocked the AI translator offline. All incoming signals must be decoded by hand until it reboots. Command is routing everything through your terminal.",
+    "SECTOR 1 CLEAR // Distress beacon triangulated. A supply ship is drifting nearby — its beacon codes are coming in next.",
+    "SECTOR 2 CLEAR // Beacon locked in. Airlock override codes are arriving garbled — decode them so the rescue crew can dock safely.",
+    "SECTOR 3 CLEAR // Airlock's open. Life-support grid is sending status codes — keep decoding to reroute power before the backup cells drain.",
+    "SECTOR 4 CLEAR // Power's rerouted. Final stretch: the nav computer needs manual coordinate confirmations, digit by digit.",
+    "MISSION COMPLETE // Kestrel-9 is stable. The colony's breathing easy, the supply ship has docked, and command is already drafting the paperwork to name a coffee mug after you."
+  ];
+
+  const EVENTS = [
+    {
+      key:"flare", icon:"☀", label:"SOLAR FLARE",
+      text:"Interference spike! Answer this one in 10 seconds.",
+      color:"var(--red)", apply:(mods)=>{ mods.timed = 10; }
+    },
+    {
+      key:"boost", icon:"⚡", label:"SIGNAL BOOST",
+      text:"Clean signal window — next 3 correct decodes score double.",
+      color:"var(--teal)", apply:(mods)=>{ mods.doubleLeft = 3; }
+    },
+    {
+      key:"battery", icon:"🔋", label:"BACKUP BATTERY",
+      text:"A backup cell kicked in — your next miss won't cost signal.",
+      color:"var(--copper)", apply:(mods)=>{ mods.forgive = true; }
+    },
+    {
+      key:"static", icon:"▓", label:"STATIC INTERFERENCE",
+      text:"Numbers are scrambling bigger — tougher decode, bigger reward.",
+      color:"var(--copper)", apply:(mods)=>{ mods.hardBump = true; }
+    }
+  ];
+
+  // ---------- state ----------
+  let state = null;
+
+  function freshState(){
+    return {
+      crew:1, mode:"mixed", missionLength:20,
+      names:["Cadet", "Cadet 2"],
+      qIndex:0, currentPlayer:0,
+      scores:[0,0], streaks:[0,0], bestStreaks:[0,0],
+      correctCounts:[0,0], answeredCounts:[0,0],
+      lives:3, maxLives:5,
+      sectorIndex:0,
+      mods:{ timed:0, doubleLeft:0, forgive:false, hardBump:false },
+      eventChancePending:true,
+      answerLocked:false,
+      timerHandle:null, timerDeadline:null,
+      currentQuestion:null
+    };
+  }
+
+  // ---------- helpers ----------
+  function $(id){ return document.getElementById(id); }
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+
+  function parseInBase(raw, base){
+    let s = (raw || "").trim();
+    if(base===16){ s = s.replace(/^0x/i,''); }
+    if(s === "") return NaN;
+    const patterns = {2:/^[01]+$/, 10:/^[0-9]+$/, 16:/^[0-9a-fA-F]+$/};
+    if(!patterns[base].test(s)) return NaN;
+    return parseInt(s, base);
+  }
+
+  function typeToLabel(type){
+    switch(type){
+      case "dec2bin": return ["DECIMAL SIGNAL — TRANSLATE TO BINARY", "Type binary, e.g. 1011"];
+      case "bin2dec": return ["BINARY SIGNAL — TRANSLATE TO DECIMAL", "Type a decimal number"];
+      case "dec2hex": return ["DECIMAL SIGNAL — TRANSLATE TO HEX", "Type hex, e.g. 2F"];
+      case "hex2dec": return ["HEX SIGNAL — TRANSLATE TO DECIMAL", "Type a decimal number"];
+      case "bin2hex": return ["BINARY SIGNAL — TRANSLATE TO HEX", "Type hex, e.g. 2F"];
+      case "hex2bin": return ["HEX SIGNAL — TRANSLATE TO BINARY", "Type binary, e.g. 1011"];
+    }
+  }
+
+  function typePool(mode){
+    if(mode==="bin") return ["dec2bin","bin2dec"];
+    if(mode==="hex") return ["dec2hex","hex2dec"];
+    return ["dec2bin","bin2dec","dec2hex","hex2dec","bin2hex","hex2bin"];
+  }
+
+  // ---------- question generation ----------
+  function generateQuestion(){
+    const progress = state.qIndex / state.missionLength;
+    const bitTiers = [4,6,8,8,12];
+    let tierIdx = clamp(Math.floor(progress * bitTiers.length), 0, bitTiers.length-1);
+    if(state.mods.hardBump) tierIdx = clamp(tierIdx+1, 0, bitTiers.length-1);
+    const bits = bitTiers[tierIdx];
+    const maxVal = Math.pow(2,bits)-1;
+    const value = randInt(1, maxVal);
+
+    const pool = typePool(state.mode);
+    const type = pool[randInt(0,pool.length-1)];
+
+    let promptText, answerBase, correctValue;
+    correctValue = value;
+    switch(type){
+      case "dec2bin": promptText = String(value); answerBase = 2; break;
+      case "bin2dec": promptText = value.toString(2); answerBase = 10; break;
+      case "dec2hex": promptText = String(value); answerBase = 16; break;
+      case "hex2dec": promptText = value.toString(16).toUpperCase(); answerBase = 10; break;
+      case "bin2hex": promptText = value.toString(2); answerBase = 16; break;
+      case "hex2bin": promptText = value.toString(16).toUpperCase(); answerBase = 2; break;
+    }
+
+    const basePoints = 10 * (tierIdx+1);
+    return { type, promptText, answerBase, correctValue, basePoints };
+  }
+
+  // ---------- rendering ----------
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    $(id).classList.add("active");
+  }
+
+  function renderTicker(text, sticky){
+    const el = $("tickerText");
+    el.innerHTML = "";
+    let i = 0;
+    function step(){
+      el.textContent = text.slice(0,i);
+      const cur = document.createElement("span");
+      cur.className = "cursor";
+      el.appendChild(cur);
+      i++;
+      if(i <= text.length){ requestAnimationFrame(()=>setTimeout(step,10)); }
+    }
+    step();
+  }
+
+  function updateHud(){
+    $("hud").classList.remove("hidden");
+    $("hudScore").textContent = state.scores[0];
+    if(state.crew===2){
+      $("hudP2Wrap").classList.remove("hidden");
+      $("hudScore2").textContent = state.scores[1];
+      $("hudScoreWrap").firstChild.textContent = (state.names[0] || "P1") + " ";
+    } else {
+      $("hudP2Wrap").classList.add("hidden");
+      $("hudScoreWrap").firstChild.textContent = "SCORE ";
+    }
+    $("hudStreak").textContent = Math.max(state.streaks[0], state.streaks[1]);
+    $("hudProgress").textContent = state.qIndex + "/" + state.missionLength;
+
+    if(state.crew===1){
+      $("dialWrap").classList.remove("hidden");
+      const frac = state.lives / state.maxLives;
+      const circumference = 75.4;
+      $("dialArc").setAttribute("stroke-dasharray", circumference);
+      $("dialArc").setAttribute("stroke-dashoffset", circumference * (1-frac));
+      $("dialArc").setAttribute("stroke", frac <= 0.34 ? "#ff6b5b" : (frac <= 0.67 ? "#e08a5b" : "#4fd1c5"));
+    } else {
+      $("dialWrap").classList.add("hidden");
+    }
+  }
+
+  function updateTurnBanner(){
+    const b = $("turnBanner");
+    if(state.crew!==2){ b.classList.add("hidden"); return; }
+    b.classList.remove("hidden");
+    const name = state.names[state.currentPlayer] || ("Cadet " + (state.currentPlayer+1));
+    b.textContent = "◈ " + name.toUpperCase() + "'S TURN ON THE TERMINAL";
+  }
+
+  function showEvent(evt){
+    const b = $("eventBanner");
+    b.classList.remove("hidden");
+    b.style.background = "rgba(255,255,255,0.03)";
+    b.style.border = "1px solid " + evt.color;
+    b.style.color = evt.color;
+    b.innerHTML = '<span class="icon">'+evt.icon+'</span><span><strong>'+evt.label+'</strong> — '+evt.text+'</span>';
+    setTimeout(()=>{ b.classList.add("hidden"); }, 3200);
+  }
+
+  function renderQuestion(){
+    const q = state.currentQuestion;
+    const [label, placeholder] = typeToLabel(q.type);
+    $("questionLabel").textContent = label;
+    $("questionText").textContent = q.promptText;
+    $("answerInput").placeholder = placeholder;
+    $("answerInput").value = "";
+    $("feedback").textContent = "";
+    $("feedback").className = "";
+    $("answerInput").focus();
+
+    const timerWrap = $("timerWrap");
+    if(state.mods.timed > 0){
+      timerWrap.classList.remove("hidden");
+      const bar = $("timerBar");
+      bar.style.transition = "none";
+      bar.style.transform = "scaleX(1)";
+      requestAnimationFrame(()=>{
+        bar.style.transition = "transform " + state.mods.timed + "s linear";
+        bar.style.transform = "scaleX(0)";
+      });
+      clearTimeout(state.timerHandle);
+      state.timerHandle = setTimeout(()=>{
+        if(!state.answerLocked) handleAnswer(true); // timeout = forced wrong
+      }, state.mods.timed * 1000);
+    } else {
+      timerWrap.classList.add("hidden");
+      clearTimeout(state.timerHandle);
+    }
+  }
+
+  // ---------- game flow ----------
+  function startMission(){
+    state = freshState();
+    state.crew = Number(document.querySelector('#crewRow .selected').dataset.crew);
+    state.mode = document.querySelector('#modeRow .selected').dataset.mode;
+    state.missionLength = Number(document.querySelector('#lenRow .selected').dataset.len);
+    state.names[0] = ($("p1Name").value.trim() || "Cadet 1");
+    state.names[1] = ($("p2Name").value.trim() || "Cadet 2");
+
+    showScreen("screen-game");
+    updateHud();
+    updateTurnBanner();
+    renderTicker(STORY[0]);
+    nextQuestion();
+  }
+
+  function nextQuestion(){
+    state.answerLocked = false;
+    state.currentQuestion = generateQuestion();
+    renderQuestion();
+    updateHud();
+    updateTurnBanner();
+  }
+
+  function maybeTriggerEvent(){
+    // reset one-shot modifiers that just expired naturally handled elsewhere
+    if(Math.random() < 0.32){
+      const evt = EVENTS[randInt(0, EVENTS.length-1)];
+      evt.apply(state.mods);
+      showEvent(evt);
+    }
+  }
+
+  function decayModsAfterQuestion(){
+    if(state.mods.doubleLeft > 0) state.mods.doubleLeft--;
+    state.mods.timed = 0;
+    state.mods.hardBump = false;
+    // forgive is consumed on use, not here
+  }
+
+  function advanceSectorIfNeeded(){
+    const sectorSize = Math.max(3, Math.ceil(state.missionLength / 5));
+    const newSector = Math.min(5, Math.floor(state.qIndex / sectorSize));
+    if(newSector > state.sectorIndex){
+      state.sectorIndex = newSector;
+      renderTicker(STORY[Math.min(newSector, STORY.length-1)]);
+    }
+  }
+
+  function handleAnswer(forcedWrong){
+    if(state.answerLocked) return;
+    state.answerLocked = true;
+    clearTimeout(state.timerHandle);
+
+    const q = state.currentQuestion;
+    const p = state.crew===2 ? state.currentPlayer : 0;
+    const raw = $("answerInput").value;
+    const parsed = forcedWrong ? NaN : parseInBase(raw, q.answerBase);
+    const isCorrect = !forcedWrong && parsed === q.correctValue;
+
+    state.answeredCounts[p]++;
+    const box = $("consoleBox");
+    const fb = $("feedback");
+
+    if(isCorrect){
+      state.correctCounts[p]++;
+      state.streaks[p]++;
+      state.bestStreaks[p] = Math.max(state.bestStreaks[p], state.streaks[p]);
+
+      let pts = q.basePoints;
+      pts += Math.min(state.streaks[p]-1, 8) * 2; // streak bonus, capped
+      if(state.mods.doubleLeft > 0) pts *= 2;
+      state.scores[p] += pts;
+
+      if(state.crew===1 && state.streaks[p] % 5 === 0){
+        state.lives = clamp(state.lives+1, 0, state.maxLives);
+      }
+
+      fb.textContent = "✓ DECODED — +" + pts + " signal points" + (state.mods.doubleLeft>0 ? " (boosted!)" : "");
+      fb.className = "good";
+      box.classList.add("flash-good");
+      setTimeout(()=>box.classList.remove("flash-good"), 500);
+    } else {
+      const answerShown = q.correctValue.toString(q.answerBase).toUpperCase();
+      if(state.mods.forgive){
+        state.mods.forgive = false;
+        fb.textContent = "△ Missed it — correct was " + answerShown + " — backup battery absorbed the hit.";
+        fb.className = "bad";
+      } else {
+        if(state.crew===1) state.lives = clamp(state.lives-1, 0, state.maxLives);
+        fb.textContent = (forcedWrong ? "✗ TIMED OUT — " : "✗ GARBLED — ") + "correct was " + answerShown;
+        fb.className = "bad";
+        box.classList.add("shake","flash-bad");
+        setTimeout(()=>box.classList.remove("shake","flash-bad"), 400);
+      }
+      state.streaks[p] = 0;
+    }
+
+    decayModsAfterQuestion();
+    state.qIndex++;
+    advanceSectorIfNeeded();
+    updateHud();
+
+    if(state.crew===2) state.currentPlayer = 1 - state.currentPlayer;
+
+    if(state.qIndex >= state.missionLength){
+      setTimeout(endMission, 900);
+      return;
+    }
+
+    setTimeout(()=>{
+      maybeTriggerEvent();
+      nextQuestion();
+    }, 900);
+  }
+
+  function endMission(){
+    showScreen("screen-end");
+    $("endStory").textContent = STORY[STORY.length-1];
+
+    const acc = (p)=> state.answeredCounts[p] ? Math.round(100*state.correctCounts[p]/state.answeredCounts[p]) : 0;
+    let html = "";
+    if(state.crew===1){
+      html += row("Final score", state.scores[0]);
+      html += row("Accuracy", acc(0)+"%");
+      html += row("Best streak", state.bestStreaks[0]);
+      html += row("Sectors cleared", Math.min(state.sectorIndex,5)+"/5");
+      $("endTitle").textContent = "Mission Complete";
+    } else {
+      const n0 = state.names[0], n1 = state.names[1];
+      html += row(n0 + " score", state.scores[0] + " (" + acc(0) + "% accuracy)");
+      html += row(n1 + " score", state.scores[1] + " (" + acc(1) + "% accuracy)");
+      const winner = state.scores[0]===state.scores[1] ? "Tie — both cadets promoted" : (state.scores[0]>state.scores[1] ? n0 : n1) + " — Comms Champion";
+      html += row("Result", winner);
+      $("endTitle").textContent = "Mission Complete";
+    }
+    $("endStats").innerHTML = html;
+
+    function row(a,b){ return '<div class="row"><span>'+a+'</span><span>'+b+'</span></div>'; }
+  }
+
+  function resetToMenu(){
+    showScreen("screen-menu");
+    $("hud").classList.add("hidden");
+    renderTicker(STORY[0]);
+  }
+
+  // ---------- option button wiring ----------
+  function wireGroup(rowId, dataAttr){
+    document.querySelectorAll("#"+rowId+" .opt-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll("#"+rowId+" .opt-btn").forEach(b=>b.classList.remove("selected"));
+        btn.classList.add("selected");
+        if(rowId==="crewRow"){
+          $("p2NameWrap").classList.toggle("hidden", btn.dataset.crew !== "2");
+        }
+      });
+    });
+  }
+
+  wireGroup("crewRow");
+  wireGroup("modeRow");
+  wireGroup("lenRow");
+
+  $("startBtn").addEventListener("click", startMission);
+  $("restartBtn").addEventListener("click", resetToMenu);
+
+  $("answerForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    handleAnswer(false);
+  });
+
+  renderTicker(STORY[0]);
+})();
+</script>
+</body>
+</html>

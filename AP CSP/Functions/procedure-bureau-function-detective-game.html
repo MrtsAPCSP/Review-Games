@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Procedure Bureau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171f;
+    --ink2:#1c2130;
+    --ink3:#252b3d;
+    --manila:#e8d9ae;
+    --manila-dark:#cdb27e;
+    --manila-line:#b99a5f;
+    --brass:#b8935a;
+    --brass-light:#e4c98a;
+    --stamp-red:#a3342a;
+    --stamp-green:#3f7a52;
+    --terminal:#8fe3b0;
+    --paper:#f4ecd8;
+    --text-dark:#241f18;
+    --text-light:#f2ecda;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(184,147,90,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(143,227,176,0.05), transparent 45%);
+    color:var(--text-light);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding:20px 14px 60px;
+  }
+  .app{ max-width:880px; margin:0 auto; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:14px; margin-bottom:14px;
+  }
+  .bureau-title{ display:flex; align-items:center; gap:12px; }
+  .badge-icon{ font-size:2rem; filter:drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
+  .bureau-title h1{
+    font-family:'Special Elite', cursive;
+    font-size:1.35rem; letter-spacing:1.5px; margin:0; color:var(--brass-light);
+  }
+  .subtitle{ margin:2px 0 0; font-size:.78rem; color:#9aa3b8; letter-spacing:.5px; }
+
+  .stats{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .stat{ text-align:center; min-width:54px; }
+  .stat-label{ display:block; font-size:.62rem; letter-spacing:1px; text-transform:uppercase; color:#8a91a6; }
+  .stat-value{ display:block; font-family:'IBM Plex Mono', monospace; font-size:1.15rem; font-weight:600; color:var(--terminal); }
+  .streak-stat .stat-value{ color:var(--brass-light); }
+  .handbook-btn{
+    background:var(--ink3); color:var(--text-light); border:1px solid #3a4258;
+    padding:9px 14px; border-radius:8px; font-size:.82rem; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .handbook-btn:hover{ background:#2c3450; }
+
+  /* ---------- Rank strip ---------- */
+  .rank-strip{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  #rankBadge{ font-family:'IBM Plex Mono', monospace; font-size:.82rem; color:var(--brass-light); white-space:nowrap; }
+  .rank-bar{ flex:1; height:6px; background:#2a2f42; border-radius:4px; overflow:hidden; }
+  .rank-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--brass), var(--terminal)); transition:width .5s ease; }
+
+  /* ---------- Case folder ---------- */
+  .case-folder{ position:relative; margin-top:26px; }
+  .folder-tab{
+    position:absolute; top:-26px; left:18px;
+    background:var(--manila-dark); color:var(--text-dark);
+    font-family:'Special Elite', cursive; font-size:.78rem; letter-spacing:1.5px;
+    padding:8px 18px 6px; border-radius:8px 8px 0 0;
+    box-shadow:0 -2px 0 rgba(0,0,0,.15) inset;
+  }
+  .folder-body{
+    background:var(--manila);
+    border-radius:4px 14px 14px 14px;
+    padding:22px 20px 26px;
+    box-shadow:0 18px 40px rgba(0,0,0,.45), 0 0 0 1px var(--manila-line) inset;
+    position:relative;
+  }
+  .folder-body::before, .folder-body::after{
+    content:''; position:absolute; top:10px; width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #f0dca0, var(--brass) 70%);
+    box-shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+  .folder-body::before{ left:12px; }
+  .folder-body::after{ left:30px; }
+
+  .briefing{
+    font-family:'IBM Plex Sans', sans-serif; font-size:.95rem; color:var(--text-dark);
+    background:rgba(255,255,255,.35); border-left:3px solid var(--brass);
+    padding:12px 14px; border-radius:0 8px 8px 0; margin:10px 0 16px; line-height:1.5;
+  }
+
+  .evidence{
+    background:var(--ink); border-radius:8px; padding:16px 16px;
+    margin:10px 0 18px; overflow-x:auto;
+    box-shadow:inset 0 0 0 1px #333c52, 0 4px 10px rgba(0,0,0,.3);
+  }
+  .evidence pre{
+    margin:0; font-family:'IBM Plex Mono', monospace; font-size:.92rem;
+    color:var(--terminal); line-height:1.55; white-space:pre;
+  }
+
+  .question{
+    font-size:1.02rem; font-weight:600; color:var(--text-dark); margin:0 0 14px;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+
+  .options{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .options.code-options{ grid-template-columns:1fr; }
+  .option-btn{
+    background:var(--paper); border:1.5px solid var(--manila-line); border-radius:8px;
+    padding:12px 14px; font-family:'IBM Plex Sans', sans-serif; font-size:.9rem;
+    color:var(--text-dark); text-align:left; cursor:pointer; line-height:1.4;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .option-btn:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.18); }
+  .option-btn:disabled{ cursor:default; }
+  .option-btn:focus-visible{ outline:3px solid var(--stamp-green); outline-offset:1px; }
+  .option-btn.code-option pre{
+    margin:0; font-family:'IBM Plex Mono', monospace; font-size:.85rem; white-space:pre; color:var(--text-dark);
+  }
+  .option-btn.correct-option{ background:#dcf0e1; border-color:var(--stamp-green); }
+  .option-btn.wrong-option{ background:#f5d9d6; border-color:var(--stamp-red); }
+
+  /* ---------- Verdict ---------- */
+  .verdict{ margin-top:18px; position:relative; }
+  .stamp{
+    display:inline-block; font-family:'Special Elite', cursive; font-size:1.4rem;
+    letter-spacing:2px; padding:8px 20px; border:4px solid currentColor;
+    border-radius:6px; transform:rotate(-7deg); opacity:0;
+    animation:stampIn .35s ease-out forwards;
+    mix-blend-mode:multiply;
+  }
+  .stamp-green{ color:var(--stamp-green); }
+  .stamp-red{ color:var(--stamp-red); }
+  @keyframes stampIn{
+    0%{ opacity:0; transform:rotate(-7deg) scale(1.8); }
+    60%{ opacity:1; }
+    100%{ opacity:.9; transform:rotate(-7deg) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .stamp{ animation:none; opacity:.9; }
+  }
+  .notes{
+    margin-top:14px; background:rgba(255,255,255,.4); border-radius:8px;
+    padding:14px 16px; border-left:3px solid var(--brass);
+  }
+  .notes h3{
+    margin:0 0 6px; font-family:'Special Elite', cursive; font-size:.85rem;
+    color:var(--text-dark); letter-spacing:.5px;
+  }
+  .notes p{ margin:0; color:var(--text-dark); font-size:.9rem; line-height:1.55; }
+  .next-btn{
+    margin-top:16px; background:var(--ink); color:var(--terminal); border:none;
+    padding:12px 22px; border-radius:8px; font-size:.92rem; font-weight:600;
+    cursor:pointer; font-family:'IBM Plex Sans', sans-serif; letter-spacing:.3px;
+  }
+  .next-btn:hover{ background:#000; }
+  .next-btn:focus-visible{ outline:3px solid var(--brass-light); outline-offset:2px; }
+
+  /* ---------- Handbook overlay ---------- */
+  .handbook-overlay{
+    position:fixed; inset:0; background:rgba(10,12,18,.78);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+  }
+  .handbook-card{
+    background:var(--paper); color:var(--text-dark); border-radius:12px;
+    max-width:560px; width:100%; max-height:82vh; overflow-y:auto;
+    padding:26px 24px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .handbook-card h2{
+    font-family:'Special Elite', cursive; margin:0 0 16px; font-size:1.15rem; letter-spacing:1px;
+  }
+  .handbook-card dt{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; color:var(--stamp-red);
+    margin-top:14px; font-size:.92rem;
+  }
+  .handbook-card dd{ margin:4px 0 0; font-size:.88rem; line-height:1.5; }
+  .close-btn{
+    position:absolute; top:14px; right:14px; background:none; border:none;
+    font-size:1.1rem; cursor:pointer; color:var(--text-dark);
+  }
+
+  @media (max-width:640px){
+    .options{ grid-template-columns:1fr; }
+    .bureau-title h1{ font-size:1.1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="bureau-title">
+      <span class="badge-icon">🕵️</span>
+      <div>
+        <h1>THE PROCEDURE BUREAU</h1>
+        <p class="subtitle">Function Tracing Division</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-label">Case #</span><span id="caseNum" class="stat-value">1</span></div>
+      <div class="stat"><span class="stat-label">Solved</span><span id="solvedCount" class="stat-value">0</span></div>
+      <div class="stat streak-stat"><span class="stat-label">Streak</span><span id="streakCount" class="stat-value">0</span></div>
+      <button id="handbookBtn" class="handbook-btn">📖 Handbook</button>
+    </div>
+  </header>
+
+  <div class="rank-strip">
+    <span id="rankBadge">🕵️ Rookie Snoop</span>
+    <div class="rank-bar"><div id="rankFill" class="rank-fill"></div></div>
+  </div>
+
+  <main class="case-folder">
+    <div class="folder-tab" id="modeTab">WIRETAP TRANSCRIPT</div>
+    <div class="folder-body">
+      <p class="briefing" id="briefingText" hidden></p>
+      <div class="evidence" id="codeBlock"><pre id="codeText"></pre></div>
+      <p class="question" id="questionText"></p>
+      <div class="options" id="optionsGrid"></div>
+      <div class="verdict" id="verdict" hidden>
+        <div class="stamp" id="stampEl">CASE CLOSED</div>
+        <div class="notes">
+          <h3>Detective's Notes</h3>
+          <p id="explanationText"></p>
+        </div>
+        <button id="nextBtn" class="next-btn">Next Case →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="handbook-overlay" id="handbookOverlay" hidden>
+  <div class="handbook-card">
+    <button class="close-btn" id="closeHandbook">✕</button>
+    <h2>Detective's Handbook</h2>
+    <dl id="handbookList"></dl>
+  </div>
+</div>
+
+<script>
+// ============ Helpers ============
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function choice(arr){ return arr[randInt(0,arr.length-1)]; }
+function sample(arr,n){ const copy=[...arr]; const out=[]; for(let i=0;i<n;i++){ const idx=randInt(0,copy.length-1); out.push(copy.splice(idx,1)[0]); } return out; }
+function shuffle(arr){ const copy=[...arr]; for(let i=copy.length-1;i>0;i--){ const j=randInt(0,i); [copy[i],copy[j]]=[copy[j],copy[i]]; } return copy; }
+
+const FUNC_NAMES = ['decode_message','calculate_ransom','verify_alibi','track_suspect','crack_the_code','merge_evidence','disguise_id','translate_note','encrypt_file','tally_witnesses','convert_currency','average_speed','compare_prints','unlock_vault','forge_signature','trace_the_call','analyze_clue','flag_informant'];
+const INT_NAMES = ['shift','count','amount','distance','speed','level','dose','rate','minutes','miles','tokens','points'];
+const STR_NAMES = ['cipher','message','code_word','alias','phrase','suspect_name','note','tag'];
+const CODE_WORDS = ['ECHO','RAVEN','GHOST','ZERO','ORACLE','SHADOW','VIPER','CIPHER','FALCON','NOVA','ONYX','WOLF'];
+const SHORT_TAGS = ['X','Q7','GO','ZK','M1','07'];
+function randWord(){ return choice(CODE_WORDS); }
+function randTag(){ return choice(SHORT_TAGS); }
+
+// ============ Operations ============
+const OPS = [
+  { key:'add', arity:2, types:['int','int'], commutative:true,
+    pyExpr:p=>`${p[0]} + ${p[1]}`, compute:v=>v[0]+v[1],
+    gen:()=>[randInt(4,60), randInt(4,60)],
+    spec:p=>`adds ${p[0]} and ${p[1]}, and returns the total`,
+    wrongBody:p=>`${p[0]} - ${p[1]}` },
+  { key:'sub', arity:2, types:['int','int'], commutative:false,
+    pyExpr:p=>`${p[0]} - ${p[1]}`, compute:v=>v[0]-v[1],
+    gen:()=>[randInt(15,80), randInt(1,40)],
+    spec:p=>`returns ${p[0]} minus ${p[1]}`,
+    wrongBody:p=>`${p[0]} + ${p[1]}` },
+  { key:'mul', arity:2, types:['int','int'], commutative:true,
+    pyExpr:p=>`${p[0]} * ${p[1]}`, compute:v=>v[0]*v[1],
+    gen:()=>[randInt(2,12), randInt(2,12)],
+    spec:p=>`returns the product of ${p[0]} and ${p[1]}`,
+    wrongBody:p=>`${p[0]} // ${p[1]}` },
+  { key:'floordiv', arity:2, types:['int','int'], commutative:false,
+    pyExpr:p=>`${p[0]} // ${p[1]}`, compute:v=>Math.floor(v[0]/v[1]),
+    gen:()=>[randInt(20,99), randInt(2,9)],
+    spec:p=>`returns ${p[0]} divided by ${p[1]}, rounded down`,
+    wrongBody:p=>`${p[0]} * ${p[1]}` },
+  { key:'concat', arity:2, types:['str','str'], commutative:false,
+    pyExpr:p=>`${p[0]} + ${p[1]}`, compute:v=>v[0]+v[1],
+    gen:()=>[randWord(), randWord()],
+    spec:p=>`joins ${p[0]} and ${p[1]} together, in that order`,
+    wrongBody:p=>`${p[0]}` },
+  { key:'repeat', arity:2, types:['str','int'], commutative:false,
+    pyExpr:p=>`${p[0]} * ${p[1]}`, compute:v=>v[0].repeat(v[1]),
+    gen:()=>[randTag(), randInt(2,4)],
+    spec:p=>`repeats ${p[0]} a total of ${p[1]} times`,
+    wrongBody:p=>`${p[0]} + str(${p[1]})` },
+  { key:'len', arity:1, types:['str'], commutative:false,
+    pyExpr:p=>`len(${p[0]})`, compute:v=>v[0].length,
+    gen:()=>[randWord()],
+    spec:p=>`returns how many characters are in ${p[0]}`,
+    wrongBody:p=>`${p[0]}` },
+  { key:'compare', arity:2, types:['int','int'], commutative:false,
+    pyExpr:p=>`${p[0]} > ${p[1]}`, compute:v=>v[0]>v[1],
+    gen:()=>[randInt(1,50), randInt(1,50)],
+    spec:p=>`returns True if ${p[0]} is greater than ${p[1]}, otherwise False`,
+    wrongBody:p=>`${p[0]} < ${p[1]}` }
+];
+
+function pickParamNames(op){
+  if(op.types[0]===op.types[1]){
+    const pool = op.types[0]==='int' ? INT_NAMES : STR_NAMES;
+    return sample(pool, op.arity);
+  }
+  const pools = op.types.map(t => t==='int'?INT_NAMES:STR_NAMES);
+  return op.types.map((t,i)=>choice(pools[i]));
+}
+
+function buildScenario(op){
+  const paramNames = pickParamNames(op);
+  const funcName = choice(FUNC_NAMES);
+  const values = op.gen();
+  const exprBody = op.pyExpr(paramNames);
+  const returnValue = op.compute(values);
+  return {op, paramNames, funcName, values, exprBody, returnValue};
+}
+
+function pyLiteral(value, type){
+  if(type==='str') return `"${value}"`;
+  return String(value);
+}
+function formatPyValue(value){
+  if(typeof value === 'boolean') return value ? 'True' : 'False';
+  return String(value);
+}
+function defBlock(funcName, paramNames, bodyLine){
+  return `def ${funcName}(${paramNames.join(", ")}):\n    ${bodyLine}`;
+}
+function callLine(funcName, values, types){
+  const args = values.map((v,i)=>pyLiteral(v, types[i])).join(", ");
+  return `${funcName}(${args})`;
+}
+
+// ============ Mode 1: Wiretap Transcript ============
+function genWiretap(){
+  const op = choice(OPS);
+  const s = buildScenario(op);
+  const call = callLine(s.funcName, s.values, s.op.types);
+  const variantPrint = Math.random() < 0.3;
+
+  if(!variantPrint){
+    const code = `${defBlock(s.funcName, s.paramNames, `return ${s.exprBody}`)}\n\nresult = ${call}`;
+    const correct = formatPyValue(s.returnValue);
+    const distractors = new Set();
+    if(s.op.arity===2 && s.op.types[0]===s.op.types[1]){
+      const swapped = s.op.compute([s.values[1], s.values[0]]);
+      distractors.add(formatPyValue(swapped));
+    }
+    distractors.add('None');
+    if(typeof s.returnValue === 'number'){
+      distractors.add(formatPyValue(s.returnValue + choice([1,-1,2,-2,3])));
+    } else if(typeof s.returnValue === 'string'){
+      distractors.add(s.returnValue.split('').reverse().join(''));
+    } else if(typeof s.returnValue === 'boolean'){
+      distractors.add(formatPyValue(!s.returnValue));
+    }
+    distractors.delete(correct);
+    let distArr = shuffle([...distractors]).slice(0,3);
+    let fillerN = 2;
+    let fillerGuard = 0;
+    while(distArr.length<3 && fillerGuard<50){
+      fillerGuard++;
+      const filler = typeof s.returnValue==='number'
+        ? formatPyValue(s.returnValue + fillerN*5)
+        : `${correct}${'!'.repeat(fillerN)}`;
+      fillerN++;
+      if(filler!==correct && !distArr.includes(filler)) distArr.push(filler);
+    }
+    const options = shuffle([correct, ...distArr]).map(o=>({label:o, correct:o===correct}));
+    return {
+      tabLabel:'WIRETAP TRANSCRIPT',
+      code, briefing:null,
+      question:`What value does result hold after this call statement runs?`,
+      options,
+      explanation:`The call statement lines up its arguments (${s.values.map((v,i)=>pyLiteral(v,s.op.types[i])).join(', ')}) with the parameters (${s.paramNames.join(', ')}) in order. The return statement sends back ${correct}, so that's what result stores.`
+    };
+  } else {
+    const code = `${defBlock(s.funcName, s.paramNames, `print(${s.exprBody})`)}\n\nresult = ${call}\nprint(result)`;
+    const computedInside = formatPyValue(s.returnValue);
+    const correct = 'None';
+    let distArr = [computedInside, 'Error — the function is missing something', `${computedInside} None`];
+    distArr = [...new Set(distArr)].filter(d=>d!==correct).slice(0,3);
+    let fillerK = 0;
+    while(distArr.length<3 && fillerK<50){
+      const filler = `0${'x'.repeat(fillerK)}`;
+      if(filler!==correct && !distArr.includes(filler)) distArr.push(filler);
+      fillerK++;
+    }
+    const options = shuffle([correct, ...distArr]).map(o=>({label:o, correct:o===correct}));
+    return {
+      tabLabel:'WIRETAP TRANSCRIPT',
+      code, briefing:null,
+      question:`What gets printed by the final print(result) line?`,
+      options,
+      explanation:`The function prints ${computedInside} on its own, but it never uses a return statement. Without return, the call itself still evaluates to None — that's what result stores and what ultimately gets printed.`
+    };
+  }
+}
+
+// ============ Mode 2: Suspect Lineup ============
+function genSuspectLineup(){
+  const op = choice(OPS);
+  const s = buildScenario(op);
+  const call = callLine(s.funcName, s.values, s.op.types);
+  const correctVal = formatPyValue(s.returnValue);
+  const roll = Math.random();
+  let bugType = roll<0.15 ? 'none' : roll<0.45 ? 'missing_return' : roll<0.75 ? 'wrong_arg_count' : 'undefined_name';
+
+  const OUTCOME_RUNS_FINE = `Runs fine — result equals ${correctVal}`;
+  const OUTCOME_NONE = `Runs fine — result is None`;
+  const OUTCOME_TYPEERROR = `TypeError — the arguments don't match the parameter list`;
+  let code, correctOutcome, nameErrorText;
+
+  if(bugType==='none'){
+    code = `${defBlock(s.funcName, s.paramNames, `return ${s.exprBody}`)}\n\nresult = ${call}`;
+    correctOutcome = OUTCOME_RUNS_FINE;
+  } else if(bugType==='missing_return'){
+    code = `${defBlock(s.funcName, s.paramNames, s.exprBody)}\n\nresult = ${call}`;
+    correctOutcome = OUTCOME_NONE;
+  } else if(bugType==='wrong_arg_count'){
+    const dropLast = Math.random()<0.5 || s.op.arity===1;
+    const badValues = dropLast ? s.values.slice(0, s.op.arity-1) : [...s.values, 99];
+    const badTypes = dropLast ? s.op.types.slice(0, s.op.arity-1) : [...s.op.types, 'int'];
+    const badCall = callLine(s.funcName, badValues, badTypes);
+    code = `${defBlock(s.funcName, s.paramNames, `return ${s.exprBody}`)}\n\nresult = ${badCall}`;
+    correctOutcome = OUTCOME_TYPEERROR;
+  } else {
+    const idx = randInt(0, s.paramNames.length-1);
+    const typoName = s.paramNames[idx].length>2 ? s.paramNames[idx].slice(0,-1) : s.paramNames[idx]+'_x';
+    const badParams = [...s.paramNames]; badParams[idx] = typoName;
+    const buggyExpr = s.op.pyExpr(badParams);
+    code = `${defBlock(s.funcName, s.paramNames, `return ${buggyExpr}`)}\n\nresult = ${call}`;
+    nameErrorText = `NameError — name '${typoName}' is not defined`;
+    correctOutcome = nameErrorText;
+  }
+
+  const pool = [OUTCOME_RUNS_FINE, OUTCOME_NONE, OUTCOME_TYPEERROR, nameErrorText || `NameError — name '${s.paramNames[0]}z' is not defined`];
+  let options = new Set([correctOutcome]);
+  shuffle(pool).forEach(p => { if(options.size<4) options.add(p); });
+  let optArr = shuffle([...options]).map(o=>({label:o, correct:o===correctOutcome}));
+
+  return {
+    tabLabel:'SUSPECT LINEUP',
+    code, briefing:null,
+    question:`Detective, what happens when this call statement executes?`,
+    options: optArr,
+    explanation: bugType==='none'
+      ? `Nothing suspicious here — the arguments match the parameters one-for-one, and the return statement sends a value back. result equals ${correctVal}.`
+      : bugType==='missing_return'
+      ? `The function computes a value but never says return. Without a return statement, a call always evaluates to None — no matter what the function did internally.`
+      : bugType==='wrong_arg_count'
+      ? `Every parameter in the def line needs exactly one matching argument in the call. This call's argument count doesn't line up with the parameter list, so Python raises a TypeError before the body ever runs.`
+      : `The body refers to a name that was never defined as a parameter (just a typo of one). Python raises a NameError the instant it tries to evaluate that name.`
+  };
+}
+
+// ============ Mode 3: Assemble the Warrant ============
+function genAssemble(){
+  const op = choice(OPS);
+  const s = buildScenario(op);
+  const specText = op.spec(s.paramNames);
+  const correctBody = `return ${s.exprBody}`;
+  let opts = [ {code: defBlock(s.funcName, s.paramNames, correctBody), correct:true} ];
+
+  if(op.arity===2){
+    const swappedExpr = op.pyExpr([s.paramNames[1], s.paramNames[0]]);
+    opts.push({code: defBlock(s.funcName, s.paramNames, `return ${swappedExpr}`), correct:false});
+  } else {
+    const extraParams = [...s.paramNames, 'extra'];
+    opts.push({code: defBlock(s.funcName, extraParams, correctBody), correct:false});
+  }
+  opts.push({code: defBlock(s.funcName, s.paramNames, `print(${s.exprBody})`), correct:false});
+  opts.push({code: defBlock(s.funcName, s.paramNames, `return ${op.wrongBody(s.paramNames)}`), correct:false});
+
+  opts = shuffle(opts);
+  const options = opts.map(o=>({label:o.code, correct:o.correct, isCode:true}));
+  const paramCountWord = s.paramNames.length===1 ? 'one parameter' : 'two parameters';
+
+  return {
+    tabLabel:'ASSEMBLE THE WARRANT',
+    code:null,
+    briefing:`Case brief: the Bureau needs a function called ${s.funcName} that takes ${paramCountWord} — ${s.paramNames.join(', ')} — and ${specText}.`,
+    question:`Which function definition actually does the job?`,
+    options,
+    explanation:`The correct definition's parameters match the brief in order, and its return statement computes exactly ${op.pyExpr(s.paramNames)}. Watch for definitions that quietly swap the order, forget return in favor of print, or add a parameter nobody asked for.`
+  };
+}
+
+// ============ Mode 4: Call It In ============
+function genCallItIn(){
+  const op = choice(OPS);
+  const s = buildScenario(op);
+  const target = s.returnValue;
+  const code = defBlock(s.funcName, s.paramNames, `return ${s.exprBody}`);
+
+  let callOptions = [{values:s.values, correct:true}];
+  let guard=0;
+  while(callOptions.length<4 && guard<60){
+    guard++;
+    const candidate = op.gen();
+    const val = op.compute(candidate);
+    if(formatPyValue(val)===formatPyValue(target)) continue;
+    if(callOptions.some(c=> formatPyValue(op.compute(c.values))===formatPyValue(val))) continue;
+    callOptions.push({values:candidate, correct:false});
+  }
+  let guard2=0;
+  while(callOptions.length<4 && guard2<300){
+    guard2++;
+    const candidate = op.gen();
+    const label = callLine(s.funcName, candidate, s.op.types);
+    if(callOptions.some(c=>callLine(s.funcName,c.values,s.op.types)===label)) continue;
+    callOptions.push({values:candidate, correct:false});
+  }
+  callOptions = shuffle(callOptions);
+  const options = callOptions.map(c=>({
+    label: callLine(s.funcName, c.values, s.op.types),
+    correct: c.correct
+  }));
+
+  return {
+    tabLabel:'CALL IT IN',
+    code, briefing:null,
+    question:`Headquarters needs ${s.funcName}(...) to return exactly ${formatPyValue(target)}. Which call statement gets that result?`,
+    options,
+    explanation:`Matching arguments to parameters in order — ${s.paramNames.join(', ')} = ${s.values.map((v,i)=>pyLiteral(v,s.op.types[i])).join(', ')} — makes ${s.exprBody} evaluate to ${formatPyValue(target)}.`
+  };
+}
+
+// ============ Game state & rendering ============
+const MODES = [genWiretap, genSuspectLineup, genAssemble, genCallItIn];
+let lastModeIdx = -1;
+function pickMode(){
+  let idx;
+  do { idx = randInt(0, MODES.length-1); } while(idx===lastModeIdx && MODES.length>1);
+  lastModeIdx = idx;
+  return MODES[idx];
+}
+
+const RANKS = [
+  [0,'🕵️','Rookie Snoop'],
+  [5,'🔎','Junior Detective'],
+  [12,'🗂️','Detective'],
+  [22,'🎖️','Inspector'],
+  [35,'⭐','Chief Inspector'],
+  [50,'🏆','Master Sleuth']
+];
+function currentRank(solved){ let r=RANKS[0]; for(const e of RANKS){ if(solved>=e[0]) r=e; } return r; }
+function nextRankThreshold(solved){ for(const e of RANKS){ if(e[0]>solved) return e[0]; } return RANKS[RANKS.length-1][0]; }
+function prevRankThreshold(solved){ let p=0; for(const e of RANKS){ if(e[0]<=solved) p=e[0]; } return p; }
+
+const state = { solved:0, streak:0, caseNum:1, current:null, answered:false };
+
+function renderRound(){
+  const genFn = pickMode();
+  const round = genFn();
+  state.current = round;
+  state.answered = false;
+
+  document.getElementById('modeTab').textContent = round.tabLabel;
+  document.getElementById('caseNum').textContent = state.caseNum;
+
+  const codeBlockEl = document.getElementById('codeBlock');
+  if(round.code){ codeBlockEl.hidden=false; document.getElementById('codeText').textContent = round.code; }
+  else { codeBlockEl.hidden = true; }
+
+  const briefingEl = document.getElementById('briefingText');
+  if(round.briefing){ briefingEl.hidden=false; briefingEl.textContent = round.briefing; }
+  else { briefingEl.hidden = true; }
+
+  document.getElementById('questionText').textContent = round.question;
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  grid.classList.toggle('code-options', !!round.options[0].isCode);
+  round.options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (opt.isCode ? ' code-option' : '');
+    if(opt.isCode){
+      const pre = document.createElement('pre');
+      pre.textContent = opt.label;
+      btn.appendChild(pre);
+    } else {
+      btn.textContent = opt.label;
+    }
+    btn.addEventListener('click', () => selectOption(opt, btn));
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('verdict').hidden = true;
+}
+
+function selectOption(opt, btnEl){
+  if(state.answered) return;
+  state.answered = true;
+  const round = state.current;
+  const allBtns = Array.from(document.querySelectorAll('.option-btn'));
+  allBtns.forEach(b=>b.disabled=true);
+  round.options.forEach((o,i)=>{ if(o.correct) allBtns[i].classList.add('correct-option'); });
+  if(!opt.correct) btnEl.classList.add('wrong-option');
+
+  if(opt.correct){ state.solved++; state.streak++; } else { state.streak = 0; }
+  updateStats();
+
+  const stampEl = document.getElementById('stampEl');
+  stampEl.textContent = opt.correct ? 'CASE CLOSED' : 'FALSE LEAD';
+  stampEl.className = 'stamp ' + (opt.correct ? 'stamp-green' : 'stamp-red');
+  document.getElementById('explanationText').textContent = round.explanation;
+  document.getElementById('verdict').hidden = false;
+}
+
+function updateStats(){
+  document.getElementById('solvedCount').textContent = state.solved;
+  document.getElementById('streakCount').textContent = state.streak;
+  const rank = currentRank(state.solved);
+  document.getElementById('rankBadge').textContent = `${rank[1]} ${rank[2]}`;
+  const next = nextRankThreshold(state.solved);
+  const prev = prevRankThreshold(state.solved);
+  const pct = next===prev ? 100 : Math.min(100, ((state.solved-prev)/(next-prev))*100);
+  document.getElementById('rankFill').style.width = pct+'%';
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  state.caseNum++;
+  renderRound();
+});
+document.getElementById('handbookBtn').addEventListener('click', ()=>{ document.getElementById('handbookOverlay').hidden = false; });
+document.getElementById('closeHandbook').addEventListener('click', ()=>{ document.getElementById('handbookOverlay').hidden = true; });
+document.getElementById('handbookOverlay').addEventListener('click', (e)=>{ if(e.target.id==='handbookOverlay') e.currentTarget.hidden = true; });
+
+const HANDBOOK = [
+  ['def', 'The keyword that starts a function definition. It names the function and lists its parameters.'],
+  ['parameter', 'A placeholder name listed inside the parentheses of a def line. It only exists inside that function.'],
+  ['argument', 'The actual value handed over in a call statement. Arguments are matched to parameters in order — first argument to first parameter, and so on.'],
+  ['call statement', 'The line that actually runs a function: its name followed by parentheses containing arguments, e.g. crack_the_code("ECHO", 3).'],
+  ['return', 'Sends a value back out of the function to wherever it was called. If a function never runs a return statement, its call evaluates to None.'],
+  ['procedural abstraction', 'You can use a function correctly just by knowing its name, its parameters, and what it returns — without knowing a single line of how it works inside.']
+];
+const hbList = document.getElementById('handbookList');
+HANDBOOK.forEach(([term,def])=>{
+  const dt=document.createElement('dt'); dt.textContent=term;
+  const dd=document.createElement('dd'); dd.textContent=def;
+  hbList.appendChild(dt); hbList.appendChild(dd);
+});
+
+updateStats();
+renderRound();
+</script>
+</body>
+</html>
