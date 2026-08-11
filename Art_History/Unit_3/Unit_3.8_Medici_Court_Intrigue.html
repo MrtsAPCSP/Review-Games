@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medici Court Intrigue — Unit 3.8 Florentine Renaissance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#241a13;
+  --parchment:#e8dcbd;
+  --parchment-2:#ddccA0;
+  --parchment-deep:#c9b788;
+  --wine:#6f2b2b;
+  --wine-deep:#4a1c1c;
+  --gold:#a9822f;
+  --gold-bright:#d1a85a;
+  --verdigris:#3f6e63;
+  --verdigris-deep:#294b43;
+  --line:rgba(36,26,19,0.22);
+  --shadow:rgba(36,26,19,0.35);
+  --good:#3f6e63;
+  --bad:#8a2f2f;
+  --radius:6px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(255,255,255,0.10), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(0,0,0,0.10), transparent 55%),
+    repeating-linear-gradient(90deg, rgba(36,26,19,0.015) 0px, rgba(36,26,19,0.015) 1px, transparent 1px, transparent 3px),
+    var(--parchment);
+  color:var(--ink);
+  font-family:'EB Garamond', serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.display{font-family:'Cinzel', serif; letter-spacing:0.02em;}
+.decorative{font-family:'Cinzel Decorative', serif;}
+#app{max-width:900px;margin:0 auto;padding:18px 16px 60px;min-height:100vh;}
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+button:focus-visible, .choice:focus-visible, .wordbank-item:focus-visible{
+  outline:3px solid var(--verdigris); outline-offset:2px;
+}
+.ledger{
+  background:linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:0 10px 30px -12px var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.25);
+  padding:26px 24px;
+  position:relative;
+}
+.ledger::before{
+  content:"";
+  position:absolute; inset:8px;
+  border:1px solid rgba(36,26,19,0.14);
+  border-radius:4px;
+  pointer-events:none;
+}
+.eyebrow{
+  font-family:'Cinzel', serif; font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--wine-deep); opacity:0.85; margin:0 0 6px;
+}
+h1.title{
+  font-size:clamp(1.7rem, 4vw, 2.6rem); margin:0 0 6px; color:var(--wine-deep);
+}
+h2.sub{
+  font-size:clamp(1.1rem, 2.6vw, 1.5rem); margin:0 0 14px; color:var(--verdigris-deep); font-weight:600;
+}
+p{line-height:1.55; font-size:1.05rem;}
+.small{font-size:0.9rem; opacity:0.85;}
+.hr{height:1px; background:linear-gradient(90deg, transparent, var(--line), transparent); margin:18px 0;}
+
+/* seal */
+.seal{
+  width:64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, var(--wine-deep) 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.35), inset 0 0 0 3px rgba(255,255,255,0.25);
+  color:var(--parchment); font-family:'Cinzel Decorative';font-size:1.4rem;
+  flex-shrink:0;
+}
+@media (prefers-reduced-motion:no-preference){
+  .seal.stamp{animation:stampIn 0.5s cubic-bezier(.2,1.6,.4,1);}
+}
+@keyframes stampIn{0%{transform:scale(2.4) rotate(-12deg); opacity:0;} 60%{transform:scale(0.9) rotate(4deg); opacity:1;} 100%{transform:scale(1) rotate(0);} }
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  border:1px solid var(--wine-deep); background:var(--wine); color:var(--parchment);
+  padding:12px 20px; border-radius:var(--radius); font-family:'Cinzel'; font-size:0.95rem;
+  letter-spacing:0.03em; box-shadow:0 3px 0 var(--wine-deep);
+  transition:transform 0.08s ease;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:translateY(2px); box-shadow:0 1px 0 var(--wine-deep);}
+.btn.secondary{background:var(--verdigris); border-color:var(--verdigris-deep); box-shadow:0 3px 0 var(--verdigris-deep);}
+.btn.ghost{background:transparent; color:var(--wine-deep); border:1px solid var(--line); box-shadow:none;}
+.btn.wide{width:100%; padding:16px; font-size:1.05rem;}
+.btn[disabled]{opacity:0.45; cursor:not-allowed; transform:none !important;}
+
+/* mode cards */
+.mode-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;}
+@media (max-width:640px){.mode-grid{grid-template-columns:1fr;}}
+.mode-card{
+  border:1px solid var(--line); border-radius:var(--radius); padding:18px;
+  background:rgba(255,255,255,0.28); cursor:pointer; text-align:left;
+  transition:transform 0.1s ease, box-shadow 0.1s ease;
+}
+.mode-card:hover{transform:translateY(-2px); box-shadow:0 8px 18px -10px var(--shadow);}
+.mode-card h3{margin:0 0 6px; font-family:'Cinzel'; color:var(--wine-deep); font-size:1.05rem;}
+.mode-card p{margin:0; font-size:0.92rem; opacity:0.85;}
+.mode-card .tag{
+  display:inline-block; margin-top:10px; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--verdigris-deep); font-family:'Cinzel';
+}
+
+/* house header */
+.house-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+.house-badge{
+  display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:30px;
+  background:rgba(255,255,255,0.35); border:1px solid var(--line);
+}
+.sigil{width:30px;height:30px; border-radius:4px; flex-shrink:0;}
+.house-name{font-family:'Cinzel'; font-weight:600; font-size:0.95rem;}
+.prestige-num{font-family:'Cinzel Decorative'; font-size:1.1rem; color:var(--wine-deep);}
+.vs{font-family:'Cinzel Decorative'; opacity:0.5; font-size:1.2rem;}
+.active-turn{box-shadow:0 0 0 2px var(--gold-bright) inset; background:rgba(209,168,90,0.18);}
+
+/* progress track */
+.track{display:flex; gap:6px; margin:16px 0; flex-wrap:wrap;}
+.track .step{
+  width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); font-size:0.75rem; font-family:'Cinzel'; background:rgba(255,255,255,0.3);
+}
+.track .step.done{background:var(--verdigris); color:var(--parchment); border-color:var(--verdigris-deep);}
+.track .step.current{background:var(--wine); color:var(--parchment); border-color:var(--wine-deep);}
+
+/* question */
+.q-text{font-size:1.2rem; margin:10px 0 18px; font-weight:600;}
+.choices{display:flex; flex-direction:column; gap:10px;}
+.choice{
+  text-align:left; padding:13px 16px; border:1px solid var(--line); border-radius:var(--radius);
+  background:rgba(255,255,255,0.35); font-size:1.02rem; font-family:'EB Garamond';
+}
+.choice:hover{background:rgba(255,255,255,0.55);}
+.choice.correct{background:rgba(63,110,99,0.28); border-color:var(--good);}
+.choice.wrong{background:rgba(138,47,47,0.22); border-color:var(--bad);}
+.choice[disabled]{cursor:default;}
+.fill-row{display:flex; gap:10px; flex-wrap:wrap;}
+.fill-row input{
+  flex:1; min-width:180px; padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius);
+  font-family:'EB Garamond'; font-size:1.05rem; background:rgba(255,255,255,0.5);
+}
+.feedback{margin-top:14px; padding:12px 14px; border-radius:var(--radius); font-size:0.98rem;}
+.feedback.good{background:rgba(63,110,99,0.18); border:1px solid var(--good);}
+.feedback.bad{background:rgba(138,47,47,0.14); border:1px solid var(--bad);}
+
+/* labeling game */
+.label-wrap{display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;}
+.diagram-box{flex:1 1 340px; min-width:280px;}
+.wordbank{flex:1 1 200px; display:flex; flex-direction:column; gap:8px; min-width:180px;}
+.wordbank-item{
+  padding:10px 14px; border:1px solid var(--line); border-radius:var(--radius); background:rgba(255,255,255,0.4);
+  font-family:'Cinzel'; font-size:0.85rem; text-align:left;
+}
+.wordbank-item.used{opacity:0.3; text-decoration:line-through; cursor:not-allowed;}
+.wordbank-item.selected{background:var(--gold-bright); border-color:var(--gold);}
+.hotspot{cursor:pointer;}
+.hotspot circle, .hotspot rect{transition:fill 0.15s ease;}
+.hotspot:hover circle, .hotspot:hover rect{fill:rgba(209,168,90,0.5);}
+.hotspot.correct circle, .hotspot.correct rect{fill:rgba(63,110,99,0.55);}
+.hotspot-label{font-size:11px; font-family:'Cinzel'; fill:var(--ink);}
+
+/* event card */
+.event-card{
+  border:2px dashed var(--gold); border-radius:var(--radius); padding:20px; background:rgba(209,168,90,0.14);
+  margin:16px 0;
+}
+.event-card .eyebrow{color:var(--gold);}
+
+/* footer nav */
+.footer-nav{display:flex; justify-content:space-between; margin-top:20px; gap:10px; flex-wrap:wrap;}
+
+/* archive */
+.archive-list{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+.archive-item{
+  padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius); background:rgba(255,255,255,0.3);
+  text-align:left; display:flex; justify-content:space-between; align-items:center;
+}
+.archive-item .name{font-family:'Cinzel'; font-size:0.95rem;}
+.archive-item .arrow{opacity:0.5;}
+.vocab-chip{
+  display:inline-block; font-size:0.75rem; padding:3px 9px; border-radius:20px; margin:2px 4px 2px 0;
+  background:rgba(63,110,99,0.18); border:1px solid var(--verdigris); font-family:'Cinzel';
+}
+.fact-list{margin:0; padding-left:20px;}
+.fact-list li{margin-bottom:6px; line-height:1.5;}
+
+/* speed round */
+.timer-bar{height:10px; border-radius:6px; background:rgba(36,26,19,0.12); overflow:hidden; margin:14px 0;}
+.timer-fill{height:100%; background:linear-gradient(90deg, var(--verdigris), var(--gold-bright)); width:100%;}
+
+/* results */
+.result-row{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line);}
+.winner-banner{
+  text-align:center; padding:20px; margin-bottom:16px; border-radius:var(--radius);
+  background:linear-gradient(180deg, rgba(209,168,90,0.3), rgba(209,168,90,0.05));
+  border:1px solid var(--gold);
+}
+input[type=text]{
+  padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius); font-family:'EB Garamond';
+  font-size:1.05rem; background:rgba(255,255,255,0.5); width:100%;
+}
+label{font-family:'Cinzel'; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--wine-deep);}
+.field{margin-bottom:16px;}
+.sr-only{position:absolute; width:1px;height:1px; overflow:hidden; clip:rect(0,0,0,0);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   MEDICI COURT INTRIGUE — Unit 3.8 Florentine Renaissance
+   Single-file review game. All state in memory + localStorage
+   (Solo Ascent save only). No external deps besides Google Fonts.
+   ============================================================ */
+
+/* ---------- utility ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function sample(arr, n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- data: houses & flavor ---------- */
+const HOUSE_NAMES = ["Strozzi","Pitti","Albizzi","Tornabuoni","Capponi","Acciaiuoli","Peruzzi","Bardi","Guicciardini","Salviati"];
+const SIGIL_STYLES = [
+  {bg:"#6f2b2b", pattern:"solid"},
+  {bg:"#3f6e63", pattern:"stripe"},
+  {bg:"#a9822f", pattern:"diamond"},
+  {bg:"#4a1c1c", pattern:"solid"},
+  {bg:"#294b43", pattern:"stripe"},
+  {bg:"#7a5a1e", pattern:"diamond"},
+];
+function sigilSVG(style, size=30){
+  const s = style;
+  let inner = "";
+  if(s.pattern==="stripe"){
+    inner = `<rect width="${size}" height="${size}" fill="${s.bg}"/><rect x="${size*0.35}" width="${size*0.3}" height="${size}" fill="rgba(255,255,255,0.35)"/>`;
+  } else if(s.pattern==="diamond"){
+    inner = `<rect width="${size}" height="${size}" fill="${s.bg}"/><polygon points="${size/2},${size*0.1} ${size*0.9},${size/2} ${size/2},${size*0.9} ${size*0.1},${size/2}" fill="rgba(255,255,255,0.35)"/>`;
+  } else {
+    inner = `<rect width="${size}" height="${size}" fill="${s.bg}"/>`;
+  }
+  return `<svg class="sigil" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="House sigil"><rect width="${size}" height="${size}" rx="4" fill="none"/><clipPath id="clip"><rect width="${size}" height="${size}" rx="4"/></clipPath><g clip-path="url(#clip)">${inner}</g></svg>`;
+}
+function newHouse(excludeName){
+  let pool = HOUSE_NAMES.filter(n=>n!==excludeName);
+  const name = pick(pool);
+  const style = pick(SIGIL_STYLES);
+  return {name, style, prestige:0};
+}
+
+const OPENING_LINES = [
+  "The Signoria has whispered your family's name in the same breath as the Medici. Whether that is an honor or a warning depends on what you commission next.",
+  "Florence's bankers count coin; its patrons count glory. Your house intends to be remembered for both.",
+  "A courier arrives at dawn with word that a rival house has already called on three artists this month. There is no time to lose.",
+  "Gold buys silence. Art buys legacy. Your family has decided it wants legacy.",
+  "The wool trade made your house rich. Now the question is whether it can make your house immortal."
+];
+const EVENT_POOL = [
+  {text:"A rival banking house calls in an old debt early.", delta:-5},
+  {text:"The Pope's legate grants your house a lucrative wool contract.", delta:8},
+  {text:"Plague rumors empty the piazza. The whole city holds its breath.", delta:0},
+  {text:"Your family's name is toasted warmly at a wedding feast.", delta:5},
+  {text:"A ledger error is discovered — in your favor.", delta:6},
+  {text:"Scandal! A cousin is caught cheating at cards in the Mercato.", delta:-4},
+  {text:"A Flemish tapestry merchant overpays for your patronage of the arts, spreading your fame north.", delta:7},
+  {text:"Your family's galley is delayed at port, and creditors grow impatient.", delta:-3},
+];
+
+/* ---------- data: commissions ---------- */
+const COMMISSIONS = [
+  {
+    id:"doors", fixed:"first",
+    name:"The Door Competition",
+    artist:"Lorenzo Ghiberti & Filippo Brunelleschi",
+    work:"The Baptistery Door Competition, 1401",
+    icon:"doors",
+    vocab:["Humanism"],
+    intro:[
+      "Word has reached the piazza: the Baptistery of Florence needs new bronze doors, and the guild has staged an open competition to find the artist worthy of the commission.",
+      "Every workshop in Florence is buzzing about the door competition. Whoever wins it will be the talk of the city for a generation."
+    ],
+    facts:[
+      "In 1401, Florence held a competition to design new bronze doors for the Baptistery.",
+      "Competitors were required to depict the Sacrifice of Isaac in a single bronze relief panel.",
+      "Lorenzo Ghiberti won the competition over Filippo Brunelleschi and other rivals.",
+      "Ghiberti's North Doors were made between 1401 and 1424.",
+      "Ghiberti's later East Doors (1425–1452) became so admired that Michelangelo reportedly nicknamed them the 'Gates of Paradise.'",
+      "Having lost the competition, Brunelleschi shifted his ambitions toward architecture — a decision that would change Florence forever.",
+      "Humanism is the intellectual movement of the Renaissance that placed new value on secular subjects — classical literature, history, and philosophy — alongside religious devotion.",
+      "Wealthy ruling families competed fiercely to outspend and outshine one another through art patronage."
+    ],
+    pool:[
+      {type:"mc", q:"What Old Testament scene were competitors required to depict for the Baptistery Doors?", options:["The Creation of Adam","The Sacrifice of Isaac","The Flood","The Expulsion from Eden"], answer:1},
+      {type:"mc", q:"Who won the 1401 Baptistery Door Competition?", options:["Filippo Brunelleschi","Donatello","Lorenzo Ghiberti","Leon Battista Alberti"], answer:2},
+      {type:"tf", q:"After losing the door competition, Brunelleschi turned his ambitions toward architecture.", answer:true},
+      {type:"mc", q:"What nickname is given to Ghiberti's East Doors?", options:["The Golden Gates","The Gates of Paradise","The Sacred Portal","The Doors of Heaven"], answer:1},
+      {type:"fill", q:"Ghiberti's North Doors were created between 1401 and ____.", accept:["1424"], hint:"a year in the 1420s"},
+      {type:"mc", q:"Which intellectual movement of the Renaissance emphasized secular subjects — literature, history, philosophy — alongside religious ones?", options:["Scholasticism","Humanism","Mannerism","Iconoclasm"], answer:1},
+      {type:"mc", q:"What generally drove wealthy Florentine families to fund so much art?", options:["Church mandates only","Competition and rivalry among families","Government taxation","Guild lottery winnings"], answer:1},
+      {type:"tf", q:"Bronze relief panels for the door competition were meant to be purely decorative, with no required subject.", answer:false},
+    ]
+  },
+  {
+    id:"dome", fixed:null,
+    name:"The Dome & the Vanishing Point",
+    artist:"Filippo Brunelleschi",
+    work:"The Duomo & the Discovery of Linear Perspective, 1420",
+    icon:"dome",
+    vocab:["Linear Perspective","Aerial Perspective"],
+    intro:[
+      "Brunelleschi has done the impossible: raised a dome over the Florence Cathedral without any equal since ancient Rome. And whispers say he has discovered something even stranger — a way to trick the eye into seeing depth on a flat panel.",
+      "Your advisors return from the cathedral workshop breathless. Brunelleschi's demonstration with a mirror and a painted panel has half of Florence questioning what a picture even is."
+    ],
+    facts:[
+      "Filippo Brunelleschi is credited with discovering (formalizing) linear perspective in Florence around 1420.",
+      "Brunelleschi's dome for the Florence Cathedral was the first dome of its scale built since antiquity.",
+      "Linear perspective creates the illusion of three-dimensional depth and recession on a flat, two-dimensional surface.",
+      "Orthogonal lines are the diagonal lines within a perspective drawing that draw the eye back toward a single point.",
+      "That single point is called the vanishing point, and it typically sits on the horizon line, at the viewer's eye level.",
+      "A distance point helps an artist calculate the correct spacing of transversals — the horizontal lines that cross the orthogonals to mark depth.",
+      "Aerial (atmospheric) perspective is a different technique: distant objects are painted fainter, hazier, and cooler/bluer in tone, rather than using converging lines.",
+      "Brunelleschi tested his discovery using a mirror and a small painted panel depicting the Florence Baptistery."
+    ],
+    pool:[
+      {type:"mc", q:"Who is credited with discovering linear perspective around 1420?", options:["Donatello","Filippo Brunelleschi","Fra Filippo Lippi","Sandro Botticelli"], answer:1},
+      {type:"mc", q:"What is the single point where orthogonal lines converge called?", options:["Distance point","Horizon line","Vanishing point","Focal arc"], answer:2},
+      {type:"tf", q:"Aerial perspective relies on converging lines to suggest depth.", answer:false},
+      {type:"fill", q:"Aerial perspective makes distant objects appear fainter and more ____ in tone.", accept:["blue","bluish"], hint:"a color"},
+      {type:"mc", q:"The line that represents the viewer's eye level in a perspective drawing is the:", options:["Orthogonal","Transversal","Horizon line","Distance point"], answer:2},
+      {type:"mc", q:"Besides discovering linear perspective, what major architectural feat is Brunelleschi known for?", options:["The Palazzo Rucellai facade","The dome of Florence Cathedral","The Gates of Paradise","The Pazzi family tomb"], answer:1},
+      {type:"tf", q:"Brunelleschi's dome was the first dome of its kind built since antiquity.", answer:true},
+      {type:"mc", q:"The horizontal lines that cross orthogonal lines to mark depth intervals are called:", options:["Transversals","Pilasters","Roundels","Coffers"], answer:0},
+      {type:"mc", q:"Brunelleschi tested his perspective discovery using a mirror and a painted panel of which building?", options:["The Palazzo Rucellai","The Pazzi Chapel","The Florence Baptistery","The Uffizi"], answer:2},
+    ],
+    labelGame:"linearPerspective"
+  },
+  {
+    id:"pazzi", fixed:null,
+    name:"The Pazzi Commission",
+    artist:"Filippo Brunelleschi",
+    work:"Pazzi Chapel, Santa Croce, designed ca. 1423, begun 1442",
+    icon:"chapel",
+    vocab:["Humanism","Medici Family"],
+    intro:[
+      "The Pazzi family wants a chapel worthy of their name at Santa Croce — and they've hired the architect of the moment. Your rivals are already touring the site, taking notes.",
+      "A commission has quietly begun at Santa Croce: a small chapel, but one built entirely on the geometry of the ancients. Every patron in Florence wants to understand why it feels so different from anything built before it."
+    ],
+    facts:[
+      "The Pazzi Chapel, at Santa Croce in Florence, was designed by Filippo Brunelleschi around 1423, with construction beginning in 1442.",
+      "Renaissance architects favored order, clarity, and light — they considered the darkness and mystery of Gothic architecture to be old-fashioned, even barbaric.",
+      "Early Renaissance interiors typically feature wide window openings, limited stained glass, and vivid wall decoration rather than dim, colored Gothic light.",
+      "The chapel's design borrows heavily from ancient Roman architecture — domes, coffers, and triumphal-arch motifs — reviving classical ideals.",
+      "Its harmonious, geometric proportions were inspired by the writings of the ancient Roman architect Vitruvius.",
+      "The chapel's interior includes glazed terracotta roundels depicting the four Evangelists.",
+      "This era's architectural boom was fueled by wealthy patron families such as the Medici, whose spending set the pace for Florentine art and building."
+    ],
+    pool:[
+      {type:"mc", q:"Who designed the Pazzi Chapel?", options:["Leon Battista Alberti","Filippo Brunelleschi","Donatello","Fra Filippo Lippi"], answer:1},
+      {type:"mc", q:"In which Florence church complex is the Pazzi Chapel located?", options:["Santa Maria Novella","Santo Spirito","Santa Croce","San Lorenzo"], answer:2},
+      {type:"tf", q:"Renaissance architects generally admired the dark, mysterious quality of Gothic interiors and tried to imitate it.", answer:false},
+      {type:"mc", q:"Compared to Gothic churches, Early Renaissance interiors typically feature:", options:["More stained glass and dimmer light","Wide windows, limited stained glass, and vivid wall decoration","Taller pointed spires only","No windows at all"], answer:1},
+      {type:"mc", q:"The Pazzi Chapel's design draws heavily on the architecture of which past civilization?", options:["Ancient Egypt","Ancient Rome","Byzantium","Ancient Greece only"], answer:1},
+      {type:"fill", q:"The Pazzi Chapel's harmonious proportions were inspired by the ancient Roman architect ____.", accept:["vitruvius"], hint:"a Roman architect and writer"},
+      {type:"mc", q:"The circular decorative medallions in the Pazzi Chapel, depicting the Evangelists, are called:", options:["Pilasters","Roundels","Transversals","Orthogonals"], answer:1},
+      {type:"tf", q:"The Pazzi Chapel was designed around 1423, but construction did not begin until 1442.", answer:true},
+    ]
+  },
+  {
+    id:"rucellai", fixed:null,
+    name:"The Rucellai Commission",
+    artist:"Leon Battista Alberti",
+    work:"Palazzo Rucellai, Florence, ca. 1452–1470",
+    icon:"palazzo",
+    vocab:["Pilaster"],
+    intro:[
+      "Giovanni Rucellai, a patron whose ambition rivals even Cosimo de' Medici's, has hired the scholar-architect Alberti to build a palace unlike any private home Florence has seen.",
+      "Word spreads that the new Rucellai facade borrows the grammar of ancient Rome — columns, arches, and orders — and applies it, for the first time, to somebody's front door."
+    ],
+    facts:[
+      "The Palazzo Rucellai was designed by Leon Battista Alberti for the Rucellai family in Florence, roughly 1452–1470.",
+      "A pilaster is a flattened, engaged column attached to a wall, complete with a base, shaft, and capital, used decoratively rather than to support real weight.",
+      "The facade is divided into three horizontal tiers, each separated by an entablature, with each tier decreasing slightly in height as it rises.",
+      "The three tiers use three different classical orders of capital: Tuscan Doric on the ground floor, Ionic on the second, and Corinthian on the third.",
+      "Functionally, the palace had four stories: business on the ground floor, receiving guests on the second, the family's private quarters on the third, and hidden servants' quarters on the fourth.",
+      "Giovanni Rucellai was one of Florence's most prominent art patrons, rivaled in prominence only by Cosimo de' Medici.",
+      "Applying classical architectural vocabulary — once reserved mostly for temples and churches — to a private home was itself a bold, humanist statement."
+    ],
+    pool:[
+      {type:"mc", q:"Who designed the Palazzo Rucellai?", options:["Filippo Brunelleschi","Leon Battista Alberti","Donatello","Sandro Botticelli"], answer:1},
+      {type:"mc", q:"A flattened, decorative column attached to a wall is called a:", options:["Transversal","Roundel","Pilaster","Coffer"], answer:2},
+      {type:"mc", q:"How many horizontal tiers divide the Rucellai facade?", options:["Two","Three","Four","Five"], answer:1},
+      {type:"tf", q:"Each tier of the Rucellai facade increases in height as it rises.", answer:false},
+      {type:"mc", q:"Which patron rivaled Cosimo de' Medici in prominence as an art patron, and commissioned this palace?", options:["Giovanni Rucellai","Filippo Strozzi","Piero Pitti","Andrea Pazzi"], answer:0},
+      {type:"mc", q:"On which floor of the palazzo did the family conduct its business?", options:["Ground floor","Second floor","Third floor","Fourth floor"], answer:0},
+      {type:"mc", q:"Which floor was reserved for servants, with few windows and no view from the street?", options:["Ground floor","Second floor","Third floor","Fourth floor"], answer:3},
+      {type:"fill", q:"The top tier of the Rucellai facade uses ____ capitals.", accept:["corinthian"], hint:"a classical order, the most ornate of the three"},
+    ],
+    labelGame:"rucellaiTiers"
+  },
+  {
+    id:"david", fixed:null,
+    name:"The Bronze Commission",
+    artist:"Donatello",
+    work:"David, bronze, ca. late 1440s–1460",
+    icon:"statue",
+    vocab:["Chiaroscuro"],
+    intro:[
+      "The Medici have quietly commissioned a bronze figure for their own courtyard — and it is unlike anything cast in Florence in a thousand years. Your spies describe it in hushed, almost scandalized tones.",
+      "A bronze youth now stands in the Medici courtyard, hat tilted, sword in hand, standing over a severed head. No sculptor has dared show the nude male form so freely since the ancients."
+    ],
+    facts:[
+      "Donatello's David is a bronze sculpture made roughly between the late 1440s and 1460, standing about 5 feet 2 inches tall.",
+      "It is housed today in the Museo Nazionale del Bargello in Florence.",
+      "David is widely considered the first freestanding nude sculpture since antiquity.",
+      "The figure stands in contrapposto — a relaxed, naturalistic pose with weight shifted onto one leg.",
+      "David wears only boots and a laurel-crowned hat, standing triumphantly over the severed head of Goliath.",
+      "The work was commissioned by the Medici family for their own palace.",
+      "Chiaroscuro is the technique of using strong contrasts of light and dark to model volume and give figures a convincing sense of three-dimensional form."
+    ],
+    pool:[
+      {type:"mc", q:"What medium is Donatello's David made from?", options:["Marble","Bronze","Terracotta","Wood"], answer:1},
+      {type:"mc", q:"Where is Donatello's David displayed today?", options:["Galleria degli Uffizi","Museo Nazionale del Bargello","Santa Croce","Palazzo Rucellai"], answer:1},
+      {type:"tf", q:"Donatello's David is considered the first freestanding nude sculpture since antiquity.", answer:true},
+      {type:"mc", q:"The relaxed, weight-shifted stance seen in David is called:", answer:2, options:["Chiaroscuro","Aerial perspective","Contrapposto","Foreshortening"]},
+      {type:"mc", q:"Which family commissioned Donatello's David?", options:["The Rucellai family","The Pazzi family","The Medici family","The Strozzi family"], answer:2},
+      {type:"mc", q:"David stands triumphantly over the severed head of:", options:["Goliath","Holofernes","Medusa","A dragon"], answer:0},
+      {type:"fill", q:"Chiaroscuro is the technique of using strong contrasts of ____ and ____ to model volume.", accept:["light and dark","dark and light"], hint:"two opposites"},
+      {type:"tf", q:"In this sculpture, David is shown fully armored from head to toe.", answer:false},
+    ]
+  },
+  {
+    id:"lippi", fixed:null,
+    name:"The Devotion Commission",
+    artist:"Fra Filippo Lippi",
+    work:"Madonna and Child with Two Angels, ca. 1465",
+    icon:"madonna",
+    vocab:["Tempera","Humanism"],
+    intro:[
+      "A friar-painter has delivered a small devotional panel so tender and lifelike that even the Medici household is said to have wept over it.",
+      "Your chaplain returns from the workshop of Fra Filippo Lippi describing a Madonna painted with such warmth and naturalism that it hardly looks like a religious icon at all."
+    ],
+    facts:[
+      "Madonna and Child with Two Angels was painted by Fra Filippo Lippi around 1465, in tempera on wood panel.",
+      "It is housed today in the Galleria degli Uffizi in Florence.",
+      "Tempera is a type of paint bound with egg yolk; it dries quickly and produces flat, opaque areas of color.",
+      "The painting shows the Virgin Mary in profile, hands together in prayer, while two angels hold up the Christ Child.",
+      "Its tender, naturalistic treatment of a religious subject — along with the detailed landscape background — reflects the humanist spirit of the age.",
+      "'Fra' in Fra Filippo Lippi signals that he was a friar as well as a painter."
+    ],
+    pool:[
+      {type:"mc", q:"Who painted Madonna and Child with Two Angels?", options:["Sandro Botticelli","Fra Filippo Lippi","Donatello","Leon Battista Alberti"], answer:1},
+      {type:"mc", q:"What medium was used for this painting?", options:["Oil on canvas","Tempera on wood","Fresco","Bronze relief"], answer:1},
+      {type:"fill", q:"Tempera paint is traditionally bound with ____.", accept:["egg yolk","egg"], hint:"comes from a chicken"},
+      {type:"tf", q:"Tempera dries slowly, letting artists blend wet paint for days.", answer:false},
+      {type:"mc", q:"Where is this painting housed today?", options:["The Vatican Museums","Museo Nazionale del Bargello","Galleria degli Uffizi","The Louvre"], answer:2},
+      {type:"mc", q:"In the painting, who holds up the Christ Child?", options:["Joseph","Two angels","John the Baptist","Saint Anne"], answer:1},
+      {type:"tf", q:"'Fra' in the artist's name indicates he was a friar.", answer:true},
+      {type:"mc", q:"This painting's tender, naturalistic style, applied to a religious subject, reflects which intellectual movement?", options:["Scholasticism","Humanism","Mannerism","Neoclassicism"], answer:1},
+    ]
+  },
+  {
+    id:"venus", fixed:"last",
+    name:"The Venus Commission",
+    artist:"Sandro Botticelli",
+    work:"The Birth of Venus, ca. 1484–1486",
+    icon:"venus",
+    vocab:["Allegory"],
+    intro:[
+      "This is it — the commission every house in Florence has been waiting for. Botticelli has unveiled a painting so large, so mythological, so unapologetically pagan, that it could only have come from inside the Medici circle.",
+      "The final commission of the season: a goddess born from the sea on a golden shell, painted at a scale usually reserved for altarpieces. Whoever understands it best will be remembered for it."
+    ],
+    facts:[
+      "The Birth of Venus was painted by Sandro Botticelli around 1484–1486, in tempera on canvas, roughly 5 feet 9 inches by 9 feet 2 inches.",
+      "It is housed today in the Galleria degli Uffizi in Florence.",
+      "The painting depicts the goddess Venus newly born, arriving on a giant shell.",
+      "Zephyrus, the wind god, blows her toward shore, entwined with the nymph Chloris.",
+      "On the right, a Hora (goddess of the seasons) representing Springtime waits to clothe Venus in a floral robe.",
+      "Venus's pose was inspired by an ancient sculpture known as the Venus de' Medici.",
+      "An allegory is a story, poem, or image that carries a hidden, often moral or philosophical, meaning beneath its surface subject.",
+      "The painting is often read as a Neoplatonic allegory of divine beauty and love entering the world — a mythological subject made acceptable by the era's renewed interest in Florence's pagan, classical past."
+    ],
+    pool:[
+      {type:"mc", q:"Who painted The Birth of Venus?", options:["Fra Filippo Lippi","Sandro Botticelli","Donatello","Filippo Brunelleschi"], answer:1},
+      {type:"mc", q:"What medium was used for The Birth of Venus?", options:["Fresco","Tempera on canvas","Oil on wood","Bronze relief"], answer:1},
+      {type:"mc", q:"Which wind god blows Venus toward the shore?", options:["Boreas","Zephyrus","Notus","Eurus"], answer:1},
+      {type:"mc", q:"Which nymph is entwined with the wind god in the painting?", options:["Chloris","Flora","Daphne","Echo"], answer:0},
+      {type:"mc", q:"Who waits on shore to clothe Venus in a floral robe?", options:["Athena","A Hora representing Springtime","The nymph Chloris","Aphrodite's handmaiden"], answer:1},
+      {type:"fill", q:"A story or image carrying a hidden, often moral, meaning is called a(n) ____.", accept:["allegory"], hint:"a vocabulary word from this unit"},
+      {type:"tf", q:"Venus's pose was inspired by an ancient sculpture known as the Venus de' Medici.", answer:true},
+      {type:"mc", q:"Where is The Birth of Venus housed today?", options:["Museo Nazionale del Bargello","Galleria degli Uffizi","The Vatican Museums","Santa Croce"], answer:1},
+    ],
+    labelGame:"venusFigures"
+  }
+];
+
+/* ---------- labeling minigames ---------- */
+const LABEL_GAMES = {
+  linearPerspective:{
+    title:"Label the Perspective Diagram",
+    instructions:"Tap a term in the word bank, then tap the matching part of the diagram.",
+    labels:["Horizon Line","Vanishing Point","Distance Point","Orthogonals","Transversals"],
+    svg: (hot)=>`
+      <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Linear perspective diagram">
+        <rect width="400" height="260" fill="rgba(255,255,255,0.25)" rx="6"/>
+        <line x1="20" y1="60" x2="380" y2="60" stroke="${'#241a13'}" stroke-width="1.5"/>
+        <polygon points="200,60 60,230 340,230" fill="none" stroke="#241a13" stroke-width="1"/>
+        <line x1="200" y1="60" x2="150" y2="230" stroke="#241a13" stroke-width="1"/>
+        <line x1="200" y1="60" x2="250" y2="230" stroke="#241a13" stroke-width="1"/>
+        <line x1="90" y1="180" x2="310" y2="180" stroke="#241a13" stroke-width="1"/>
+        <line x1="75" y1="205" x2="325" y2="205" stroke="#241a13" stroke-width="1"/>
+        <g class="hotspot" data-label="Horizon Line" onclick="handleHotspot('Horizon Line')"><rect x="20" y="52" width="360" height="16" fill="transparent"/></g>
+        <g class="hotspot" data-label="Vanishing Point" onclick="handleHotspot('Vanishing Point')"><circle cx="200" cy="60" r="14" fill="rgba(111,43,43,0.15)"/></g>
+        <g class="hotspot" data-label="Distance Point" onclick="handleHotspot('Distance Point')"><circle cx="370" cy="60" r="14" fill="rgba(111,43,43,0.15)"/></g>
+        <g class="hotspot" data-label="Orthogonals" onclick="handleHotspot('Orthogonals')"><rect x="140" y="130" width="30" height="20" fill="transparent"/></g>
+        <g class="hotspot" data-label="Transversals" onclick="handleHotspot('Transversals')"><rect x="90" y="172" width="220" height="16" fill="transparent"/></g>
+        <text x="205" y="45" class="hotspot-label">?</text>
+        <text x="200" y="55" class="hotspot-label" text-anchor="middle">A</text>
+        <text x="200" y="90" class="hotspot-label" text-anchor="middle">B</text>
+        <text x="60" y="180" class="hotspot-label" text-anchor="middle">C</text>
+        <text x="335" y="60" class="hotspot-label" text-anchor="middle">D</text>
+      </svg>`,
+    map:{"Horizon Line":"Horizon Line","Vanishing Point":"Vanishing Point","Orthogonals":"Orthogonals","Transversals":"Transversals","Distance Point":"Distance Point"}
+  },
+  rucellaiTiers:{
+    title:"Label the Palazzo Rucellai's Classical Orders",
+    instructions:"Tap a classical order in the word bank, then tap the matching tier of the facade.",
+    labels:["Tuscan Doric (ground tier)","Ionic (middle tier)","Corinthian (top tier)"],
+    svg:()=>`
+      <svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Palazzo Rucellai facade">
+        <rect x="20" y="20" width="260" height="70" fill="rgba(169,130,47,0.18)" stroke="#241a13"/>
+        <rect x="20" y="90" width="260" height="75" fill="rgba(63,110,99,0.14)" stroke="#241a13"/>
+        <rect x="20" y="165" width="260" height="80" fill="rgba(111,43,43,0.12)" stroke="#241a13"/>
+        <g class="hotspot" data-label="Corinthian (top tier)" onclick="handleHotspot('Corinthian (top tier)')"><rect x="20" y="20" width="260" height="70" fill="transparent"/></g>
+        <g class="hotspot" data-label="Ionic (middle tier)" onclick="handleHotspot('Ionic (middle tier)')"><rect x="20" y="90" width="260" height="75" fill="transparent"/></g>
+        <g class="hotspot" data-label="Tuscan Doric (ground tier)" onclick="handleHotspot('Tuscan Doric (ground tier)')"><rect x="20" y="165" width="260" height="80" fill="transparent"/></g>
+      </svg>`,
+    map:{"Tuscan Doric (ground tier)":"Tuscan Doric (ground tier)","Ionic (middle tier)":"Ionic (middle tier)","Corinthian (top tier)":"Corinthian (top tier)"}
+  },
+  venusFigures:{
+    title:"Label The Birth of Venus",
+    instructions:"Tap a figure's name in the word bank, then tap that figure in the scene.",
+    labels:["Venus","Zephyrus","Chloris","Hora of Springtime"],
+    svg:()=>`
+      <svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Birth of Venus scene, simplified">
+        <rect width="400" height="240" fill="rgba(255,255,255,0.2)" rx="6"/>
+        <rect y="150" width="400" height="90" fill="rgba(63,110,99,0.14)"/>
+        <ellipse cx="200" cy="205" rx="55" ry="16" fill="rgba(169,130,47,0.35)"/>
+        <circle cx="200" cy="120" r="30" fill="rgba(209,168,90,0.55)"/>
+        <circle cx="70" cy="90" r="24" fill="rgba(111,43,43,0.3)"/>
+        <circle cx="120" cy="95" r="20" fill="rgba(111,43,43,0.22)"/>
+        <circle cx="330" cy="110" r="28" fill="rgba(63,110,99,0.35)"/>
+        <g class="hotspot" data-label="Venus" onclick="handleHotspot('Venus')"><circle cx="200" cy="120" r="34" fill="transparent"/></g>
+        <g class="hotspot" data-label="Zephyrus" onclick="handleHotspot('Zephyrus')"><circle cx="70" cy="90" r="28" fill="transparent"/></g>
+        <g class="hotspot" data-label="Chloris" onclick="handleHotspot('Chloris')"><circle cx="120" cy="95" r="24" fill="transparent"/></g>
+        <g class="hotspot" data-label="Hora of Springtime" onclick="handleHotspot('Hora of Springtime')"><circle cx="330" cy="110" r="32" fill="transparent"/></g>
+      </svg>`,
+    map:{"Venus":"Venus","Zephyrus":"Zephyrus","Chloris":"Chloris","Hora of Springtime":"Hora of Springtime"}
+  }
+};
+
+/* ---------- icons ---------- */
+function commissionIcon(icon){
+  const icons = {
+    doors:`<svg viewBox="0 0 40 40"><rect x="8" y="4" width="24" height="32" fill="none" stroke="currentColor" stroke-width="2"/><line x1="20" y1="4" x2="20" y2="36" stroke="currentColor" stroke-width="2"/><circle cx="14" cy="20" r="1.5" fill="currentColor"/><circle cx="26" cy="20" r="1.5" fill="currentColor"/></svg>`,
+    dome:`<svg viewBox="0 0 40 40"><path d="M8 30 A12 14 0 0 1 32 30" fill="none" stroke="currentColor" stroke-width="2"/><line x1="4" y1="30" x2="36" y2="30" stroke="currentColor" stroke-width="2"/><line x1="20" y1="4" x2="20" y2="16" stroke="currentColor" stroke-width="2"/></svg>`,
+    chapel:`<svg viewBox="0 0 40 40"><rect x="10" y="18" width="20" height="14" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 18 A10 8 0 0 1 30 18" fill="none" stroke="currentColor" stroke-width="2"/><line x1="4" y1="32" x2="36" y2="32" stroke="currentColor" stroke-width="2"/></svg>`,
+    palazzo:`<svg viewBox="0 0 40 40"><rect x="8" y="8" width="24" height="26" fill="none" stroke="currentColor" stroke-width="2"/><line x1="8" y1="16" x2="32" y2="16" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="24" x2="32" y2="24" stroke="currentColor" stroke-width="1.5"/></svg>`,
+    statue:`<svg viewBox="0 0 40 40"><circle cx="20" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="2"/><line x1="20" y1="14" x2="20" y2="28" stroke="currentColor" stroke-width="2"/><line x1="20" y1="28" x2="14" y2="36" stroke="currentColor" stroke-width="2"/><line x1="20" y1="28" x2="26" y2="36" stroke="currentColor" stroke-width="2"/></svg>`,
+    madonna:`<svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 34 Q20 20 30 34" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+    venus:`<svg viewBox="0 0 40 40"><path d="M6 26 Q20 34 34 26 Q26 14 20 26 Q14 14 6 26 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+  };
+  return icons[icon] || "";
+}
+
+/* ---------- state ---------- */
+let state = {};
+function resetState(){
+  state = { screen:"title" };
+}
+resetState();
+
+const SAVE_KEY = "medici_intrigue_solo_save_v1";
+
+function buildOrder(){
+  const first = COMMISSIONS.filter(c=>c.fixed==="first");
+  const last = COMMISSIONS.filter(c=>c.fixed==="last");
+  const middle = shuffle(COMMISSIONS.filter(c=>!c.fixed));
+  return [...first, ...middle, ...last].map(c=>c.id);
+}
+function getCommission(id){ return COMMISSIONS.find(c=>c.id===id); }
+
+/* ---------- render root ---------- */
+function render(){
+  const app = document.getElementById("app");
+  app.innerHTML = SCREENS[state.screen]();
+  window.scrollTo({top:0, behavior:"instant"});
+}
+
+/* ============== SCREENS ============== */
+const SCREENS = {};
+
+SCREENS.title = function(){
+  return `
+  <div class="ledger">
+    <p class="eyebrow">Unit 3.8 &middot; Florentine Renaissance Review</p>
+    <h1 class="title decorative">Medici Court Intrigue</h1>
+    <h2 class="sub">A game of art, ambition, and patronage in 15th-century Florence</h2>
+    <p>Your family has decided it wants more than gold. It wants to be remembered. The path runs through seven commissions — a bronze door, a dome, a chapel, a palace, a statue, a Madonna, and, if you prove worthy, a goddess born of the sea.</p>
+    <p class="small">Every session shuffles which commissions come when, which questions you're asked, and what fortune throws at your house. Play it once, play it five times — it won't repeat itself.</p>
+    <div class="hr"></div>
+    <button class="btn wide" onclick="goto('mode')">Enter the Court &rarr;</button>
+  </div>`;
+};
+
+SCREENS.mode = function(){
+  return `
+  <div class="ledger">
+    <p class="eyebrow">Choose Your Session</p>
+    <h1 class="title decorative">How will you play?</h1>
+    <div class="mode-grid">
+      <button class="mode-card" onclick="startSetup('duel')">
+        <h3>Patronage Duel</h3>
+        <p>Two houses, one screen, alternating turns. Whoever earns more prestige across all seven commissions wins the court.</p>
+        <span class="tag">2 players &middot; in class</span>
+      </button>
+      <button class="mode-card" onclick="startSetup('solo')">
+        <h3>Solo Ascent</h3>
+        <p>Race the rising House Medici. Your progress saves automatically, so you can pick this up again tonight.</p>
+        <span class="tag">1 player &middot; saves progress</span>
+      </button>
+      <button class="mode-card" onclick="startArchive()">
+        <h3>The Archive</h3>
+        <p>No scoring, no clock. Browse every commission's facts, vocabulary, and diagrams at your own pace.</p>
+        <span class="tag">Study mode</span>
+      </button>
+      <button class="mode-card" onclick="startSpeed()">
+        <h3>Rapid Audience</h3>
+        <p>A fast, randomized gauntlet across all seven commissions. Perfect for the night before the test.</p>
+        <span class="tag">Timed &middot; 90 seconds</span>
+      </button>
+    </div>
+    <div class="hr"></div>
+    <button class="btn ghost" onclick="goto('title')">&larr; Back</button>
+  </div>`;
+};
+
+/* ---- setup screen (duel / solo) ---- */
+SCREENS.setup = function(){
+  const isDuel = state.mode === "duel";
+  return `
+  <div class="ledger">
+    <p class="eyebrow">${isDuel ? "Two Houses Enter the Court" : "Your House Rises"}</p>
+    <h1 class="title decorative">Name your house</h1>
+    <div class="field">
+      <label for="h1">House ${isDuel ? "One" : ""} Name</label>
+      <input type="text" id="h1" placeholder="e.g. House Strozzi" maxlength="24">
+    </div>
+    ${isDuel ? `
+    <div class="field">
+      <label for="h2">House Two Name</label>
+      <input type="text" id="h2" placeholder="e.g. House Pitti" maxlength="24">
+    </div>` : ""}
+    <p class="small">Leave blank and we'll assign a randomly drawn Florentine house name.</p>
+    <div class="hr"></div>
+    <div class="footer-nav">
+      <button class="btn ghost" onclick="goto('mode')">&larr; Back</button>
+      <button class="btn" onclick="confirmSetup()">Begin &rarr;</button>
+    </div>
+  </div>`;
+};
+
+function startSetup(mode){
+  state.mode = mode;
+  state.screen = "setup";
+  render();
+}
+
+function confirmSetup(){
+  const n1 = document.getElementById("h1").value.trim();
+  const n2 = state.mode==="duel" ? document.getElementById("h2").value.trim() : null;
+  const house1 = { name: n1 || pick(HOUSE_NAMES), style: pick(SIGIL_STYLES), prestige:0 };
+  let house2;
+  if(state.mode === "duel"){
+    house2 = { name: (n2 && n2 !== house1.name) ? n2 : newHouse(house1.name).name, style: pick(SIGIL_STYLES.filter(s=>s!==house1.style)) || pick(SIGIL_STYLES), prestige:0 };
+    state.houses = [house1, house2];
+    state.turn = 0;
+  } else {
+    // solo — check for existing save
+    const saved = loadSave();
+    if(saved && confirm("A saved game for House " + saved.house.name + " was found. Load it? (Cancel starts a fresh game.)")){
+      state.houses = [saved.house];
+      state.medici = saved.medici;
+      state.order = saved.order;
+      state.commissionIdx = saved.commissionIdx;
+      state.screen = "commissionIntro";
+      render();
+      return;
+    }
+    state.houses = [house1];
+    state.medici = { name:"House Medici", prestige: 6 };
+  }
+  state.order = buildOrder();
+  state.commissionIdx = 0;
+  state.screen = "opening";
+  render();
+}
+
+SCREENS.opening = function(){
+  const line = pick(OPENING_LINES);
+  const isDuel = state.mode === "duel";
+  return `
+  <div class="ledger">
+    <p class="eyebrow">The Court Convenes</p>
+    <h1 class="title decorative">${esc(line)}</h1>
+    <div class="house-row" style="margin-top:20px;">
+      ${state.houses.map(h=>`
+        <div class="house-badge">${sigilSVG(h.style)}<span class="house-name">House ${esc(h.name)}</span></div>
+      `).join(isDuel ? '<span class="vs">vs</span>' : '')}
+      ${state.mode==="solo" ? `<div class="house-badge">${sigilSVG({bg:"#a9822f",pattern:"diamond"})}<span class="house-name">${esc(state.medici.name)}</span></div>` : ""}
+    </div>
+    <p style="margin-top:18px;">Seven commissions await. Answer well, and prestige follows. Answer poorly, and your rivals will happily take the credit.</p>
+    <div class="hr"></div>
+    <button class="btn wide" onclick="startPlay()">Begin the First Commission &rarr;</button>
+  </div>`;
+};
+
+function startPlay(){
+  state.screen = "commissionIntro";
+  render();
+}
+
+/* ---- commission intro ---- */
+SCREENS.commissionIntro = function(){
+  const c = getCommission(state.order[state.commissionIdx]);
+  const intro = pick(c.intro);
+  return `
+  <div class="ledger">
+    ${renderHeader()}
+    ${renderTrack()}
+    <div class="hr"></div>
+    <div style="display:flex; gap:14px; align-items:flex-start;">
+      <div style="width:44px; color:var(--wine-deep); flex-shrink:0;">${commissionIcon(c.icon)}</div>
+      <div>
+        <p class="eyebrow">Commission ${state.commissionIdx+1} of ${state.order.length}</p>
+        <h1 class="title decorative">${esc(c.name)}</h1>
+        <h2 class="sub">${esc(c.artist)} &mdash; ${esc(c.work)}</h2>
+      </div>
+    </div>
+    <p>${esc(intro)}</p>
+    ${c.vocab.length ? `<p>${c.vocab.map(v=>`<span class="vocab-chip">${esc(v)}</span>`).join("")}</p>` : ""}
+    <div class="hr"></div>
+    <button class="btn wide" onclick="startQuestions()">Study the Commission &rarr;</button>
+  </div>`;
+};
+
+function startQuestions(){
+  const c = getCommission(state.order[state.commissionIdx]);
+  state.currentQuestions = sample(c.pool, 5).map(q=>{
+    if(q.type === "mc"){
+      const opts = q.options.map((o,i)=>({text:o, correct:i===q.answer}));
+      return {...q, shuffledOptions: shuffle(opts)};
+    }
+    return q;
+  });
+  state.questionIdx = 0;
+  state.roundCorrect = 0;
+  state.answered = false;
+  state.screen = "question";
+  render();
+}
+
+/* ---- header / track partials ---- */
+function renderHeader(){
+  const isDuel = state.mode === "duel";
+  return `<div class="house-row">
+    ${state.houses.map((h,i)=>`
+      <div class="house-badge ${isDuel && state.turn===i ? 'active-turn' : ''}">
+        ${sigilSVG(h.style)}
+        <span class="house-name">House ${esc(h.name)}</span>
+        <span class="prestige-num">${h.prestige}</span>
+      </div>
+    `).join(isDuel ? '<span class="vs">vs</span>' : '')}
+    ${state.mode==="solo" ? `<div class="house-badge">${sigilSVG({bg:"#a9822f",pattern:"diamond"})}<span class="house-name">${esc(state.medici.name)}</span><span class="prestige-num">${state.medici.prestige}</span></div>` : ""}
+  </div>`;
+}
+function renderTrack(){
+  return `<div class="track">
+    ${state.order.map((id,i)=>{
+      let cls = "step";
+      if(i < state.commissionIdx) cls += " done";
+      else if(i === state.commissionIdx) cls += " current";
+      return `<span class="${cls}" title="${esc(getCommission(id).name)}">${i+1}</span>`;
+    }).join("")}
+  </div>`;
+}
+
+/* ---- question screen ---- */
+SCREENS.question = function(){
+  const c = getCommission(state.order[state.commissionIdx]);
+  const q = state.currentQuestions[state.questionIdx];
+  const isDuel = state.mode === "duel";
+  let body = "";
+  if(q.type === "mc"){
+    body = `<div class="choices">
+      ${q.shuffledOptions.map((o,i)=>`<button class="choice" id="opt${i}" onclick="answerMC(${i})">${esc(o.text)}</button>`).join("")}
+    </div>`;
+  } else if(q.type === "tf"){
+    body = `<div class="choices">
+      <button class="choice" id="opt0" onclick="answerTF(true)">True</button>
+      <button class="choice" id="opt1" onclick="answerTF(false)">False</button>
+    </div>`;
+  } else if(q.type === "fill"){
+    body = `<div class="fill-row">
+      <input type="text" id="fillInput" placeholder="Type your answer&hellip;" onkeydown="if(event.key==='Enter')answerFill()">
+      <button class="btn" onclick="answerFill()">Submit</button>
+    </div>
+    <p class="small" style="margin-top:8px;">Hint: ${esc(q.hint)}</p>`;
+  }
+  return `
+  <div class="ledger">
+    ${renderHeader()}
+    ${renderTrack()}
+    <div class="hr"></div>
+    <p class="eyebrow">${esc(c.name)} &middot; Question ${state.questionIdx+1} of ${state.currentQuestions.length} ${isDuel ? '&middot; House '+esc(state.houses[state.turn].name)+"'s turn" : ""}</p>
+    <p class="q-text">${esc(q.q)}</p>
+    ${body}
+    <div id="feedbackZone"></div>
+  </div>`;
+};
+
+function currentPlayer(){
+  return state.mode === "duel" ? state.houses[state.turn] : state.houses[0];
+}
+
+function settleAnswer(correct, correctText){
+  if(state.answered) return;
+  state.answered = true;
+  const gain = correct ? 10 : 0;
+  currentPlayer().prestige += gain;
+  if(correct) state.roundCorrect++;
+  const zone = document.getElementById("feedbackZone");
+  zone.innerHTML = `<div class="feedback ${correct?'good':'bad'}">
+    ${correct ? "Correct! +10 prestige." : "Not quite. The correct answer: <strong>"+esc(correctText)+"</strong>"}
+  </div>
+  <div class="footer-nav"><span></span><button class="btn" onclick="nextQuestion()">Continue &rarr;</button></div>`;
+}
+
+function answerMC(i){
+  if(state.answered) return;
+  const q = state.currentQuestions[state.questionIdx];
+  const chosen = q.shuffledOptions[i];
+  q.shuffledOptions.forEach((o,idx)=>{
+    const el = document.getElementById("opt"+idx);
+    el.disabled = true;
+    if(o.correct) el.classList.add("correct");
+    else if(idx===i) el.classList.add("wrong");
+  });
+  const correctOpt = q.shuffledOptions.find(o=>o.correct);
+  settleAnswer(chosen.correct, correctOpt.text);
+}
+function answerTF(val){
+  if(state.answered) return;
+  const q = state.currentQuestions[state.questionIdx];
+  const correct = (val === q.answer);
+  document.getElementById("opt0").disabled = true;
+  document.getElementById("opt1").disabled = true;
+  const rightIdx = q.answer ? 0 : 1;
+  document.getElementById("opt"+rightIdx).classList.add("correct");
+  if(!correct) document.getElementById("opt"+(val?0:1)).classList.add("wrong");
+  settleAnswer(correct, q.answer ? "True" : "False");
+}
+function answerFill(){
+  if(state.answered) return;
+  const q = state.currentQuestions[state.questionIdx];
+  const val = (document.getElementById("fillInput").value||"").trim().toLowerCase();
+  const correct = q.accept.some(a=>val.includes(a.toLowerCase()) || a.toLowerCase().includes(val)) && val.length>0;
+  document.getElementById("fillInput").disabled = true;
+  settleAnswer(correct, q.accept[0]);
+}
+
+function nextQuestion(){
+  if(state.mode==="duel"){
+    state.turn = 1 - state.turn;
+  }
+  state.questionIdx++;
+  state.answered = false;
+  if(state.questionIdx >= state.currentQuestions.length){
+    const c = getCommission(state.order[state.commissionIdx]);
+    if(c.labelGame){
+      state.screen = "labeling";
+      state.labelState = initLabelState(c.labelGame);
+      render();
+    } else {
+      finishCommission();
+    }
+  } else {
+    state.screen = "question";
+    render();
+  }
+}
+
+/* ---- labeling minigame ---- */
+function initLabelState(gameKey){
+  const g = LABEL_GAMES[gameKey];
+  return { gameKey, remaining: shuffle(g.labels), solved:{}, selected:null, correctCount:0 };
+}
+SCREENS.labeling = function(){
+  const g = LABEL_GAMES[state.labelState.gameKey];
+  const ls = state.labelState;
+  return `
+  <div class="ledger">
+    ${renderHeader()}
+    ${renderTrack()}
+    <div class="hr"></div>
+    <p class="eyebrow">Bonus Round</p>
+    <h1 class="title decorative">${esc(g.title)}</h1>
+    <p>${esc(g.instructions)}</p>
+    <div class="label-wrap">
+      <div class="diagram-box">${g.svg()}</div>
+      <div class="wordbank" id="wordbank">
+        ${g.labels.map(l=>{
+          const used = ls.solved[l];
+          const sel = ls.selected === l;
+          return `<button class="wordbank-item ${used?'used':''} ${sel?'selected':''}" ${used?'disabled':''} onclick="selectWord('${l.replace(/'/g,"\\'")}')">${esc(l)}</button>`;
+        }).join("")}
+      </div>
+    </div>
+    <div id="labelFeedback"></div>
+  </div>`;
+};
+function selectWord(label){
+  state.labelState.selected = state.labelState.solved[label] ? null : label;
+  render();
+}
+function handleHotspot(spotLabel){
+  const ls = state.labelState;
+  if(!ls.selected) return;
+  const g = LABEL_GAMES[ls.gameKey];
+  const correct = g.map[ls.selected] === spotLabel;
+  const fb = document.getElementById("labelFeedback");
+  if(correct){
+    ls.solved[ls.selected] = true;
+    ls.correctCount++;
+    currentPlayer().prestige += 6;
+    ls.selected = null;
+    render();
+    const zone = document.getElementById("labelFeedback");
+    if(zone) zone.innerHTML = `<div class="feedback good">Correct placement! +6 prestige.</div>`;
+    checkLabelComplete();
+  } else {
+    fb.innerHTML = `<div class="feedback bad">Not quite that spot — try again.</div>`;
+  }
+}
+function checkLabelComplete(){
+  const ls = state.labelState;
+  const g = LABEL_GAMES[ls.gameKey];
+  if(ls.correctCount >= g.labels.length){
+    setTimeout(()=>{ finishCommission(); }, 700);
+  }
+}
+
+/* ---- finish commission -> event -> next ---- */
+function finishCommission(){
+  state.commissionIdx++;
+  if(state.mode==="solo") saveGame();
+  if(state.commissionIdx >= state.order.length){
+    state.screen = "results";
+    if(state.mode==="solo") clearSave();
+    render();
+    return;
+  }
+  // court event
+  if(Math.random() < 0.7){
+    state.currentEvent = pick(EVENT_POOL);
+    currentPlayer().prestige = Math.max(0, currentPlayer().prestige + state.currentEvent.delta);
+    if(state.mode === "solo"){
+      state.medici.prestige += Math.floor(6 + Math.random()*9);
+    }
+    state.screen = "event";
+  } else {
+    if(state.mode === "solo"){
+      state.medici.prestige += Math.floor(6 + Math.random()*9);
+    }
+    state.screen = "commissionIntro";
+  }
+  render();
+}
+SCREENS.event = function(){
+  const e = state.currentEvent;
+  return `
+  <div class="ledger">
+    ${renderHeader()}
+    ${renderTrack()}
+    <div class="hr"></div>
+    <div class="event-card">
+      <p class="eyebrow">Fortune Turns</p>
+      <p class="q-text" style="margin-top:6px;">${esc(e.text)}</p>
+      <p class="small">${e.delta>0 ? "+"+e.delta : e.delta} prestige for House ${esc(currentPlayer().name)}.</p>
+    </div>
+    <button class="btn wide" onclick="afterEvent()">Continue to the Next Commission &rarr;</button>
+  </div>`;
+};
+function afterEvent(){
+  state.screen = "commissionIntro";
+  render();
+}
+
+/* ---- results ---- */
+SCREENS.results = function(){
+  if(state.mode === "duel"){
+    const [a,b] = state.houses;
+    const winner = a.prestige === b.prestige ? null : (a.prestige > b.prestige ? a : b);
+    return `
+    <div class="ledger">
+      <p class="eyebrow">The Court Adjourns</p>
+      <h1 class="title decorative">Final Reckoning</h1>
+      <div class="winner-banner">
+        <div class="seal stamp" style="margin:0 auto;">${sigilSVG(winner?winner.style:a.style, 34)}</div>
+        <h2 class="sub" style="margin-top:12px;">${winner ? "House "+esc(winner.name)+" wins the season" : "A rare tie between both houses"}</h2>
+      </div>
+      <div class="result-row"><span>House ${esc(a.name)}</span><strong>${a.prestige} prestige</strong></div>
+      <div class="result-row"><span>House ${esc(b.name)}</span><strong>${b.prestige} prestige</strong></div>
+      <div class="hr"></div>
+      <div class="footer-nav">
+        <button class="btn ghost" onclick="goto('title')">Return to Title</button>
+        <button class="btn" onclick="startSetup('duel')">Play Again &rarr;</button>
+      </div>
+    </div>`;
+  } else {
+    const h = state.houses[0];
+    const won = h.prestige >= state.medici.prestige;
+    return `
+    <div class="ledger">
+      <p class="eyebrow">The Court Adjourns</p>
+      <h1 class="title decorative">Final Reckoning</h1>
+      <div class="winner-banner">
+        <div class="seal stamp" style="margin:0 auto;">${sigilSVG(h.style, 34)}</div>
+        <h2 class="sub" style="margin-top:12px;">${won ? "House "+esc(h.name)+" outshines the Medici!" : "House Medici keeps its lead &mdash; for now."}</h2>
+      </div>
+      <div class="result-row"><span>House ${esc(h.name)}</span><strong>${h.prestige} prestige</strong></div>
+      <div class="result-row"><span>House Medici</span><strong>${state.medici.prestige} prestige</strong></div>
+      <div class="hr"></div>
+      <div class="footer-nav">
+        <button class="btn ghost" onclick="goto('title')">Return to Title</button>
+        <button class="btn" onclick="startSetup('solo')">Play Again &rarr;</button>
+      </div>
+    </div>`;
+  }
+};
+
+/* ---- localStorage (Solo Ascent only) ---- */
+function saveGame(){
+  try{
+    const data = { house: state.houses[0], medici: state.medici, order: state.order, commissionIdx: state.commissionIdx, ts: Date.now() };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }catch(e){ /* storage unavailable, ignore */ }
+}
+function loadSave(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+}
+
+/* ============== ARCHIVE (study mode) ============== */
+function startArchive(){
+  state.mode = "archive";
+  state.archiveIdx = null;
+  state.screen = "archiveList";
+  render();
+}
+SCREENS.archiveList = function(){
+  return `
+  <div class="ledger">
+    <p class="eyebrow">The Archive &middot; Study Mode</p>
+    <h1 class="title decorative">Browse the Commissions</h1>
+    <p>No score, no clock. Open any commission to review its facts, vocabulary, and diagrams.</p>
+    <div class="archive-list">
+      ${COMMISSIONS.map((c,i)=>`
+        <button class="archive-item" onclick="openArchive(${i})">
+          <span class="name">${esc(c.name)} &mdash; ${esc(c.artist)}</span>
+          <span class="arrow">&rarr;</span>
+        </button>
+      `).join("")}
+    </div>
+    <div class="hr"></div>
+    <button class="btn ghost" onclick="goto('mode')">&larr; Back to Modes</button>
+  </div>`;
+};
+function openArchive(i){
+  state.archiveIdx = i;
+  state.screen = "archiveDetail";
+  render();
+}
+SCREENS.archiveDetail = function(){
+  const c = COMMISSIONS[state.archiveIdx];
+  const g = c.labelGame ? LABEL_GAMES[c.labelGame] : null;
+  return `
+  <div class="ledger">
+    <p class="eyebrow">${esc(c.artist)}</p>
+    <h1 class="title decorative">${esc(c.name)}</h1>
+    <h2 class="sub">${esc(c.work)}</h2>
+    ${c.vocab.length ? `<p>${c.vocab.map(v=>`<span class="vocab-chip">${esc(v)}</span>`).join("")}</p>` : ""}
+    <div class="hr"></div>
+    <ul class="fact-list">${c.facts.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>
+    ${g ? `<div class="hr"></div><p class="eyebrow">Diagram Reference</p><div class="diagram-box">${g.svg()}</div><p class="small">Labels to know: ${g.labels.join(" &middot; ")}</p>` : ""}
+    <div class="hr"></div>
+    <div class="footer-nav">
+      <button class="btn ghost" onclick="goto('archiveList')">&larr; All Commissions</button>
+      <button class="btn secondary" onclick="startArchiveQuiz(${state.archiveIdx})">Quiz me on this &rarr;</button>
+    </div>
+  </div>`;
+};
+function startArchiveQuiz(i){
+  const c = COMMISSIONS[i];
+  state.archiveQuiz = { pool: c.pool, idx:0, current: null, correct:0, total:0, cName: c.name };
+  drawArchiveQuestion();
+}
+function drawArchiveQuestion(){
+  const q0 = pick(state.archiveQuiz.pool);
+  let q = {...q0};
+  if(q.type==="mc") q.shuffledOptions = shuffle(q.options.map((o,i)=>({text:o, correct:i===q.answer})));
+  state.archiveQuiz.current = q;
+  state.archiveQuiz.answered = false;
+  state.screen = "archiveQuiz";
+  render();
+}
+SCREENS.archiveQuiz = function(){
+  const aq = state.archiveQuiz;
+  const q = aq.current;
+  let body = "";
+  if(q.type === "mc"){
+    body = `<div class="choices">${q.shuffledOptions.map((o,i)=>`<button class="choice" id="aopt${i}" onclick="archiveAnswerMC(${i})">${esc(o.text)}</button>`).join("")}</div>`;
+  } else if(q.type === "tf"){
+    body = `<div class="choices"><button class="choice" id="aopt0" onclick="archiveAnswerTF(true)">True</button><button class="choice" id="aopt1" onclick="archiveAnswerTF(false)">False</button></div>`;
+  } else {
+    body = `<div class="fill-row"><input type="text" id="aFillInput" placeholder="Type your answer&hellip;" onkeydown="if(event.key==='Enter')archiveAnswerFill()"><button class="btn" onclick="archiveAnswerFill()">Submit</button></div><p class="small">Hint: ${esc(q.hint)}</p>`;
+  }
+  return `
+  <div class="ledger">
+    <p class="eyebrow">Practice Pool &middot; ${esc(aq.cName)} &middot; Score ${aq.correct}/${aq.total}</p>
+    <p class="q-text">${esc(q.q)}</p>
+    ${body}
+    <div id="aFeedback"></div>
+    <div class="hr"></div>
+    <button class="btn ghost" onclick="goto('archiveList')">&larr; All Commissions</button>
+  </div>`;
+};
+function archiveSettle(correct, correctText){
+  if(state.archiveQuiz.answered) return;
+  state.archiveQuiz.answered = true;
+  state.archiveQuiz.total++;
+  if(correct) state.archiveQuiz.correct++;
+  document.getElementById("aFeedback").innerHTML = `<div class="feedback ${correct?'good':'bad'}">${correct?"Correct!":"Correct answer: <strong>"+esc(correctText)+"</strong>"}</div>
+  <div class="footer-nav"><span></span><button class="btn" onclick="drawArchiveQuestion()">Next Question &rarr;</button></div>`;
+}
+function archiveAnswerMC(i){
+  const aq = state.archiveQuiz; if(aq.answered) return;
+  const q = aq.current; const chosen = q.shuffledOptions[i];
+  q.shuffledOptions.forEach((o,idx)=>{ const el = document.getElementById("aopt"+idx); el.disabled=true; if(o.correct) el.classList.add("correct"); else if(idx===i) el.classList.add("wrong"); });
+  archiveSettle(chosen.correct, q.shuffledOptions.find(o=>o.correct).text);
+}
+function archiveAnswerTF(val){
+  const aq = state.archiveQuiz; if(aq.answered) return;
+  const q = aq.current; const correct = val === q.answer;
+  document.getElementById("aopt0").disabled=true; document.getElementById("aopt1").disabled=true;
+  document.getElementById("aopt"+(q.answer?0:1)).classList.add("correct");
+  if(!correct) document.getElementById("aopt"+(val?0:1)).classList.add("wrong");
+  archiveSettle(correct, q.answer?"True":"False");
+}
+function archiveAnswerFill(){
+  const aq = state.archiveQuiz; if(aq.answered) return;
+  const q = aq.current;
+  const val = (document.getElementById("aFillInput").value||"").trim().toLowerCase();
+  const correct = q.accept.some(a=>val.includes(a.toLowerCase())||a.toLowerCase().includes(val)) && val.length>0;
+  document.getElementById("aFillInput").disabled = true;
+  archiveSettle(correct, q.accept[0]);
+}
+
+/* ============== RAPID AUDIENCE (speed round) ============== */
+let speedTimerHandle = null;
+function startSpeed(){
+  state.mode = "speed";
+  const allQ = [];
+  COMMISSIONS.forEach(c=>c.pool.forEach(q=>allQ.push({...q, source:c.name})));
+  state.speedPool = shuffle(allQ);
+  state.speedIdx = 0;
+  state.speedScore = 0;
+  state.speedTotal = 0;
+  state.speedSecondsLeft = 90;
+  state.screen = "speedIntro";
+  render();
+}
+SCREENS.speedIntro = function(){
+  return `
+  <div class="ledger">
+    <p class="eyebrow">Rapid Audience</p>
+    <h1 class="title decorative">90 Seconds Before the Court</h1>
+    <p>Answer as many questions as you can, drawn at random from every commission in the unit. Wrong answers don't stop the clock — they just don't score.</p>
+    <div class="hr"></div>
+    <button class="btn wide" onclick="beginSpeed()">Start the Clock &rarr;</button>
+  </div>`;
+};
+function beginSpeed(){
+  state.screen = "speedPlay";
+  drawSpeedQuestion();
+  speedTimerHandle = setInterval(()=>{
+    state.speedSecondsLeft--;
+    updateTimerBar();
+    if(state.speedSecondsLeft<=0){
+      clearInterval(speedTimerHandle);
+      state.screen = "speedResults";
+      render();
+    }
+  },1000);
+}
+function updateTimerBar(){
+  const fill = document.getElementById("timerFill");
+  const label = document.getElementById("timerLabel");
+  if(fill){ fill.style.width = Math.max(0,(state.speedSecondsLeft/90*100)) + "%"; }
+  if(label){ label.textContent = Math.max(0,state.speedSecondsLeft) + "s"; }
+}
+function drawSpeedQuestion(){
+  if(state.speedIdx >= state.speedPool.length){
+    state.speedPool = shuffle(state.speedPool);
+    state.speedIdx = 0;
+  }
+  let q = {...state.speedPool[state.speedIdx]};
+  if(q.type==="mc") q.shuffledOptions = shuffle(q.options.map((o,i)=>({text:o, correct:i===q.answer})));
+  state.speedCurrent = q;
+  state.speedAnswered = false;
+  render();
+}
+SCREENS.speedPlay = function(){
+  const q = state.speedCurrent;
+  let body = "";
+  if(q.type==="mc"){
+    body = `<div class="choices">${q.shuffledOptions.map((o,i)=>`<button class="choice" id="sopt${i}" onclick="speedAnswerMC(${i})">${esc(o.text)}</button>`).join("")}</div>`;
+  } else if(q.type==="tf"){
+    body = `<div class="choices"><button class="choice" id="sopt0" onclick="speedAnswerTF(true)">True</button><button class="choice" id="sopt1" onclick="speedAnswerTF(false)">False</button></div>`;
+  } else {
+    body = `<div class="fill-row"><input type="text" id="sFillInput" placeholder="Type your answer&hellip;" onkeydown="if(event.key==='Enter')speedAnswerFill()" autofocus><button class="btn" onclick="speedAnswerFill()">Submit</button></div>`;
+  }
+  return `
+  <div class="ledger">
+    <p class="eyebrow">Score: ${state.speedScore} / ${state.speedTotal}</p>
+    <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:${state.speedSecondsLeft/90*100}%"></div></div>
+    <p class="small" id="timerLabel">${state.speedSecondsLeft}s</p>
+    <p class="q-text">${esc(q.q)}</p>
+    ${body}
+    <div id="sFeedback"></div>
+  </div>`;
+};
+function speedSettle(correct){
+  if(state.speedAnswered) return;
+  state.speedAnswered = true;
+  state.speedTotal++;
+  if(correct) state.speedScore++;
+  setTimeout(()=>{
+    state.speedIdx++;
+    if(state.speedSecondsLeft>0) drawSpeedQuestion();
+  }, 500);
+}
+function speedAnswerMC(i){
+  if(state.speedAnswered) return;
+  const q = state.speedCurrent; const chosen = q.shuffledOptions[i];
+  q.shuffledOptions.forEach((o,idx)=>{ const el=document.getElementById("sopt"+idx); if(el){el.disabled=true; if(o.correct) el.classList.add("correct"); else if(idx===i) el.classList.add("wrong");} });
+  speedSettle(chosen.correct);
+}
+function speedAnswerTF(val){
+  if(state.speedAnswered) return;
+  const q = state.speedCurrent; const correct = val===q.answer;
+  const rightIdx = q.answer?0:1;
+  const r = document.getElementById("sopt"+rightIdx); if(r) r.classList.add("correct");
+  if(!correct){ const w = document.getElementById("sopt"+(val?0:1)); if(w) w.classList.add("wrong"); }
+  speedSettle(correct);
+}
+function speedAnswerFill(){
+  if(state.speedAnswered) return;
+  const q = state.speedCurrent;
+  const val = (document.getElementById("sFillInput").value||"").trim().toLowerCase();
+  const correct = q.accept.some(a=>val.includes(a.toLowerCase())||a.toLowerCase().includes(val)) && val.length>0;
+  document.getElementById("sFillInput").disabled = true;
+  speedSettle(correct);
+}
+SCREENS.speedResults = function(){
+  return `
+  <div class="ledger">
+    <p class="eyebrow">Time's Up</p>
+    <h1 class="title decorative">${state.speedScore} correct out of ${state.speedTotal}</h1>
+    <p>${state.speedScore >= state.speedTotal*0.8 && state.speedTotal>0 ? "The court is impressed. That's test-ready recall." : "A solid warm-up — run it again and beat that score."}</p>
+    <div class="hr"></div>
+    <div class="footer-nav">
+      <button class="btn ghost" onclick="goto('mode')">&larr; Back to Modes</button>
+      <button class="btn" onclick="startSpeed()">Play Again &rarr;</button>
+    </div>
+  </div>`;
+};
+
+/* ---- nav helper ---- */
+function goto(screen){
+  state.screen = screen;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
