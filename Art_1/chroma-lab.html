@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chroma Lab — Color Scheme Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14141A;
+    --surface:#1E1E27;
+    --surface2:#272733;
+    --paper:#F3EFE4;
+    --muted:#9490A0;
+    --gold:#E8B34A;
+    --gold-dim:#8a6a2c;
+    --good:#3FBF6B;
+    --bad:#E4572E;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- layout ---------- */
+  #app{
+    max-width:1000px;
+    margin:0 auto;
+    padding:24px 20px 60px;
+  }
+  header.top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:6px;
+  }
+  header.top .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  header.top h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:-0.02em;
+    margin:0;
+  }
+  header.top .brand small{
+    color:var(--gold);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  #fieldGuideBtn{
+    background:none;
+    border:1px solid #3a3a46;
+    color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:8px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+    white-space:nowrap;
+  }
+  #fieldGuideBtn:hover{border-color:var(--gold);color:var(--gold);}
+
+  .subline{
+    color:var(--muted);
+    font-size:14px;
+    margin:0 0 22px;
+    max-width:560px;
+  }
+
+  /* progress rail */
+  .rail{
+    display:flex;
+    gap:5px;
+    margin-bottom:26px;
+  }
+  .rail .seg{
+    flex:1;
+    height:6px;
+    border-radius:4px;
+    background:#2b2b36;
+    overflow:hidden;
+  }
+  .rail .seg i{
+    display:block;
+    height:100%;
+    width:0%;
+    background:var(--gold);
+    transition:width .4s ease;
+  }
+  .rail .seg.done i{width:100%;background:var(--good);}
+  .rail .seg.current i{background:var(--gold);}
+
+  .stat-row{
+    display:flex;
+    gap:18px;
+    margin-bottom:28px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .stat-row b{color:var(--paper);font-size:14px;}
+  .stat-row .streak b{color:var(--gold);}
+
+  /* ---------- game grid ---------- */
+  .game-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:28px;
+  }
+  @media(min-width:760px){
+    .game-grid{grid-template-columns: 1.1fr 1fr;}
+  }
+
+  .panel{
+    background:var(--surface);
+    border-radius:var(--radius);
+    padding:22px;
+    border:1px solid #2a2a35;
+  }
+
+  /* mission card */
+  .mission-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:8px;
+  }
+  .mission-brief{
+    font-size:16px;
+    line-height:1.5;
+    margin:0 0 14px;
+  }
+  .scheme-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    margin:0 0 4px;
+  }
+  .scheme-tagline{
+    color:var(--muted);
+    font-size:13px;
+    margin:0 0 18px;
+  }
+  .step-msg{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--paper);
+    background:var(--surface2);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:16px;
+    border-left:3px solid var(--gold);
+  }
+
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+  button.primary{
+    background:var(--gold);
+    color:#1a1408;
+    border:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:12px 22px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform .1s ease, opacity .15s;
+  }
+  button.primary:hover{transform:translateY(-1px);}
+  button.primary:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+  button.ghost{
+    background:none;
+    border:1px solid #3a3a46;
+    color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:11px 18px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  button.ghost:hover{border-color:var(--paper);}
+
+  .feedback{
+    margin-top:14px;
+    font-size:14px;
+    line-height:1.55;
+    border-radius:12px;
+    padding:14px 16px;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.correct{background:rgba(63,191,107,.12);border:1px solid rgba(63,191,107,.4);}
+  .feedback.wrong{background:rgba(228,87,46,.12);border:1px solid rgba(228,87,46,.4);}
+  .feedback .fb-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    display:block;
+    margin-bottom:4px;
+  }
+  .feedback.correct .fb-title{color:var(--good);}
+  .feedback.wrong .fb-title{color:var(--bad);}
+
+  /* wheel panel */
+  .wheel-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  #wheelSvg{
+    width:100%;
+    max-width:320px;
+    cursor:pointer;
+  }
+  .wedge{
+    transition:opacity .12s, transform .12s;
+    transform-origin:center;
+  }
+  .wedge:hover{opacity:.85;}
+  .wedge.selected{filter:drop-shadow(0 0 0 rgba(0,0,0,0));}
+  .pin{
+    transition:opacity .15s;
+  }
+  .hue-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    min-height:16px;
+  }
+
+  .tint-strip{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-top:6px;
+  }
+  .tint-swatch{
+    width:44px;height:44px;
+    border-radius:10px;
+    cursor:pointer;
+    border:2px solid transparent;
+    transition:border-color .15s, transform .1s;
+  }
+  .tint-swatch:hover{transform:translateY(-2px);}
+  .tint-swatch.selected{border-color:var(--gold);}
+  .tint-swatch.anchor{border-color:var(--paper);cursor:default;}
+
+  .required-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+  }
+
+  /* mockup */
+  .mockup-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:10px;
+    text-align:center;
+  }
+  .mockup-stage{
+    background:var(--paper);
+    border-radius:14px;
+    height:200px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:8px;
+  }
+  .mockup-stage.dark{background:#0d0d10;}
+
+  /* skate deck template */
+  .deck-board{
+    position:absolute; left:50%; top:50%;
+    width:280px; height:64px;
+    border-radius:32px;
+    background:var(--c1, #444);
+    transform:translate(-50%,-50%) rotate(-9deg);
+    transition:background .3s;
+  }
+  .deck-logo{
+    position:absolute; left:50%; top:50%;
+    width:34px; height:34px; border-radius:50%;
+    background:var(--c2,#888);
+    transform:translate(-50%,-50%);
+    transition:background .3s;
+  }
+  .deck-wheel{
+    position:absolute; width:16px; height:16px; border-radius:50%;
+    background:var(--c3,#222); transition:background .3s;
+  }
+
+  /* bag template */
+  .bag-body{
+    position:absolute; left:50%; bottom:14px;
+    width:130px; height:150px;
+    background:var(--c1,#444);
+    clip-path:polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%);
+    transform:translateX(-50%);
+    transition:background .3s;
+  }
+  .bag-label{
+    position:absolute; left:50%; top:78px;
+    width:82px; height:52px;
+    border-radius:8px;
+    background:var(--c2,#888);
+    transform:translateX(-50%);
+    transition:background .3s;
+  }
+  .bag-seal{
+    position:absolute; left:50%; top:36px;
+    width:22px; height:22px; border-radius:50%;
+    background:var(--c3,#222);
+    transform:translateX(-50%);
+    transition:background .3s;
+  }
+
+  /* poster template */
+  .poster-bg{
+    position:absolute; inset:0;
+    background:var(--c1,#444);
+    transition:background .3s;
+  }
+  .poster-block{
+    position:absolute; left:12%; top:22px;
+    width:76%; height:46px; border-radius:4px;
+    background:var(--c2,#888);
+    transition:background .3s;
+  }
+  .poster-accent{
+    position:absolute; right:14%; bottom:20px;
+    width:0; height:0;
+    border-left:34px solid transparent;
+    border-right:34px solid transparent;
+    border-bottom:58px solid var(--c3,#222);
+    transition:border-bottom-color .3s;
+  }
+
+  .geo-note{
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+  }
+
+  /* field guide modal */
+  #overlay{
+    position:fixed; inset:0;
+    background:rgba(10,10,12,.82);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  #overlay.show{display:flex;}
+  .modal{
+    background:var(--surface);
+    border:1px solid #34343f;
+    border-radius:20px;
+    max-width:620px;
+    width:100%;
+    max-height:86vh;
+    overflow-y:auto;
+    padding:28px;
+  }
+  .modal h2{
+    font-family:'Space Grotesk',sans-serif;
+    margin:0 0 4px;
+    font-size:22px;
+  }
+  .modal .modal-sub{color:var(--muted);font-size:13px;margin:0 0 20px;}
+  .guide-entry{
+    display:flex;
+    gap:14px;
+    padding:14px 0;
+    border-top:1px solid #2c2c37;
+  }
+  .guide-entry:first-of-type{border-top:none;}
+  .guide-swatch{
+    width:44px;height:44px;border-radius:10px;flex:none;margin-top:2px;
+  }
+  .guide-entry h3{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;
+    margin:0 0 4px;
+  }
+  .guide-entry p{
+    font-size:13px;
+    color:#c8c4d2;
+    line-height:1.5;
+    margin:0;
+  }
+  .modal-close{
+    display:block;
+    margin:20px auto 0;
+  }
+
+  /* intro + finish screens */
+  .center-card{
+    text-align:center;
+    padding:50px 20px;
+  }
+  .center-card h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:34px;
+    margin:0 0 10px;
+    letter-spacing:-0.02em;
+  }
+  .center-card p{color:var(--muted);max-width:460px;margin:0 auto 26px;line-height:1.6;}
+  .rules-list{
+    text-align:left;
+    max-width:420px;
+    margin:0 auto 30px;
+    font-size:14px;
+    color:#d6d2de;
+    line-height:1.7;
+  }
+  .rules-list li{margin-bottom:6px;}
+
+  .score-final{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:52px;
+    color:var(--gold);
+    margin:6px 0 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <header class="top">
+    <div class="brand">
+      <h1 class="display">Chroma Lab</h1>
+      <small>color scheme trainer</small>
+    </div>
+    <button id="fieldGuideBtn" class="mono">Field Guide</button>
+  </header>
+  <p class="subline">The traditional RYB pigment wheel — how paint actually mixes. Every round is a real design job: pick the palette that does the job, then watch it land on the mockup.</p>
+
+  <div id="screenIntro" class="panel center-card">
+    <h1 class="display">Five schemes. Fifteen jobs.</h1>
+    <p>You're the color consultant. Each client brief needs a specific kind of color relationship to work — not just "colors that look nice." Build it on the wheel, apply it to the mockup, see if it does its job.</p>
+    <ul class="rules-list mono">
+      <li>1. Tap a wedge on the wheel to set your <b>anchor</b> hue.</li>
+      <li>2. Tap more wedges to complete the scheme the brief calls for.</li>
+      <li>3. Hit <b>Lock it in</b> — correct schemes apply live to the mockup.</li>
+      <li>4. Five scheme types, three briefs each. Read the "why it works" after every round — that's the actual lesson.</li>
+    </ul>
+    <button class="primary" id="startBtn">Start the shift →</button>
+  </div>
+
+  <div id="screenGame" style="display:none;">
+    <div class="rail" id="rail"></div>
+    <div class="stat-row">
+      <span>SCORE <b id="scoreVal">0</b></span>
+      <span class="streak">STREAK <b id="streakVal">0</b></span>
+      <span>ROUND <b id="roundVal">1</b>/15</span>
+    </div>
+
+    <div class="game-grid">
+      <!-- LEFT: mission + wheel -->
+      <div class="panel">
+        <div class="mission-eyebrow mono" id="missionEyebrow">CLIENT BRIEF</div>
+        <p class="mission-brief" id="missionBrief">—</p>
+        <div class="scheme-name display" id="schemeName">—</div>
+        <p class="scheme-tagline" id="schemeTagline">—</p>
+        <div class="step-msg mono" id="stepMsg">Tap a wedge to set your anchor color.</div>
+
+        <div class="wheel-wrap">
+          <svg id="wheelSvg" viewBox="0 0 240 240"></svg>
+          <div class="required-note mono" style="opacity:.65;">12-step artist's wheel · Yellow / Red / Blue primaries</div>
+          <div class="hue-label mono" id="hueLabel">&nbsp;</div>
+          <div id="tintArea"></div>
+          <div class="required-note mono" id="requiredNote"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" id="lockBtn" disabled>Lock it in</button>
+          <button class="ghost" id="resetRoundBtn">Clear selection</button>
+        </div>
+
+        <div class="feedback" id="feedback">
+          <span class="fb-title" id="fbTitle"></span>
+          <span id="fbBody"></span>
+        </div>
+
+        <div class="btn-row" id="nextRow" style="display:none;">
+          <button class="primary" id="nextBtn">Next brief →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: mockup -->
+      <div class="panel">
+        <div class="mockup-label mono" id="mockupLabel">LIVE MOCKUP</div>
+        <div class="mockup-stage" id="mockupStage"></div>
+        <p class="geo-note mono" id="geoNote">The wheel geometry will trace itself here once you lock in a correct scheme.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="screenFinish" class="panel center-card" style="display:none;">
+    <div class="mission-eyebrow mono">SHIFT COMPLETE</div>
+    <h1 class="display">Nice palette work.</h1>
+    <div class="score-final" id="finalScore">0</div>
+    <p>Final score across 15 client briefs. Open the Field Guide any time to review why each scheme works before you use this stuff in your own projects.</p>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="primary" id="replayBtn">Run it again</button>
+      <button class="ghost" id="guideFromFinishBtn">Open Field Guide</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FIELD GUIDE MODAL -->
+<div id="overlay">
+  <div class="modal">
+    <h2 class="display">Field Guide</h2>
+    <p class="modal-sub mono">The five relationships, and where you'll actually see them.</p>
+    <div id="guideList"></div>
+    <button class="primary modal-close" id="closeGuideBtn">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  /* ---------------- data ---------------- */
+
+  const WHEEL_HUES = [0,30,60,90,120,150,180,210,240,270,300,330];
+
+  /* Traditional 12-step RYB (painter's) color wheel — Yellow, Red, Blue primaries
+     spaced 120° apart, secondaries and tertiaries between them. Positions are kept
+     180°-opposite-correct so red/green, blue/orange, yellow/violet land as true
+     complements, same as on a physical mixing wheel. */
+  const RYB_COLORS = {
+    0:  {name:'Yellow',        hex:'#FFE100'},
+    30: {name:'Yellow-Orange', hex:'#FFAE00'},
+    60: {name:'Orange',        hex:'#FF7F00'},
+    90: {name:'Red-Orange',    hex:'#FF4400'},
+    120:{name:'Red',           hex:'#E8112D'},
+    150:{name:'Red-Violet',    hex:'#9B1B6B'},
+    180:{name:'Violet',        hex:'#6C1F7A'},
+    210:{name:'Blue-Violet',   hex:'#3E2C96'},
+    240:{name:'Blue',          hex:'#1450A3'},
+    270:{name:'Blue-Green',    hex:'#0C8C8C'},
+    300:{name:'Green',         hex:'#1FA24A'},
+    330:{name:'Yellow-Green',  hex:'#8FBF26'}
+  };
+
+  function norm(h){ return ((h % 360) + 360) % 360; }
+  function pigment(h){ return RYB_COLORS[norm(h)].hex; }
+  function pigmentName(h){ return RYB_COLORS[norm(h)].name; }
+
+  /* mix a hex pigment toward white (tint) or black (shade) — how paint actually works */
+  function hexToRgb(hex){
+    const v = hex.replace('#','');
+    return [parseInt(v.substr(0,2),16), parseInt(v.substr(2,2),16), parseInt(v.substr(4,2),16)];
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(x=>Math.round(Math.max(0,Math.min(255,x))).toString(16).padStart(2,'0')).join('');
+  }
+  function mixHex(hex, targetHex, amt){
+    const a = hexToRgb(hex), b = hexToRgb(targetHex);
+    return rgbToHex(a[0]+(b[0]-a[0])*amt, a[1]+(b[1]-a[1])*amt, a[2]+(b[2]-a[2])*amt);
+  }
+  function tint(hex, amt){ return mixHex(hex,'#FFFFFF',amt); }   // mixed with white
+  function shade(hex, amt){ return mixHex(hex,'#000000',amt); }  // mixed with black
+  /* amt in [-0.6, 0.6]: negative = tint (lighter), 0 = pure pigment, positive = shade (darker) */
+  function swatchColor(baseHex, amt){
+    if(amt < 0) return tint(baseHex, -amt);
+    if(amt > 0) return shade(baseHex, amt);
+    return baseHex;
+  }
+
+  const SCHEMES = [
+    {
+      id:'comp', name:'Complementary', extra:1, mono:false,
+      tagline:'Opposites on the wheel — maximum contrast.',
+      calc:(h)=>[norm(h+180)],
+      briefs:[
+        "A food truck needs a paint job that reads from across a parking lot at 40 feet.",
+        "A youth basketball league wants jerseys that pop under gym lights on both teams' side of the court.",
+        "A city crosswalk sign needs to grab drivers' attention in half a second."
+      ],
+      why:"Complementary pairs sit directly opposite each other, so each one makes the other look more intense — that's why stop signs, sports rivalries, and anything meant to be seen instantly lean on this combo. High contrast, zero subtlety, exactly the point."
+    },
+    {
+      id:'analog', name:'Analogous', extra:2, mono:false,
+      tagline:'Neighbors on the wheel — calm and cohesive.',
+      calc:(h)=>[norm(h+30),norm(h-30)],
+      briefs:[
+        "A skincare brand wants packaging that feels calming, natural, and expensive — nothing jarring.",
+        "A meditation app needs a poster for a wellness fair that feels like a deep breath.",
+        "A café wants a bag design that feels warm and unified, not busy."
+      ],
+      why:"Analogous hues sit next to each other, so they share an underlying color and never fight. That's why spas, nature brands, and cozy interiors lean on this — it reads as harmonious because, chemically, these hues basically are related."
+    },
+    {
+      id:'triad', name:'Triadic', extra:2, mono:false,
+      tagline:'Three hues, evenly spaced — vibrant but balanced.',
+      calc:(h)=>[norm(h+120),norm(h+240)],
+      briefs:[
+        "A toy company wants packaging that screams 'fun' on a crowded shelf without looking chaotic.",
+        "A skate brand wants a deck graphic that feels loud and energetic but still put-together.",
+        "A kids' cereal box needs to stand out in bright colors that still feel intentional."
+      ],
+      why:"Triadic hues are spaced exactly evenly around the wheel, so the palette feels vibrant and playful but never lopsided — one color never overpowers the others. Red, yellow, and blue (the three primaries) are themselves a triadic set, which is exactly why that balance shows up constantly in toy design and branding aimed at kids."
+    },
+    {
+      id:'splitcomp', name:'Split-Complementary', extra:2, mono:false,
+      tagline:'One hue vs. the two beside its opposite — punch with more nuance.',
+      calc:(h)=>[norm(h+150),norm(h+210)],
+      briefs:[
+        "A streetwear drop wants bold contrast, but full complementary feels too harsh for the brand.",
+        "An album cover needs to feel edgy and current without looking like a warning label.",
+        "An editorial fashion spread wants tension in the palette, not aggression."
+      ],
+      why:"Split-complementary keeps most of the punch of full complementary contrast, but swaps the single opposite hue for the two hues beside it — softening the clash just enough. That's the move fashion and music branding use when they want 'bold' instead of 'alarming.'"
+    },
+    {
+      id:'mono', name:'Monochromatic', extra:2, mono:true,
+      tagline:'One hue, several values — controlled and premium.',
+      briefs:[
+        "A minimalist tech brand wants packaging that feels expensive and precise.",
+        "An architecture firm wants a presentation board that feels sophisticated, not flashy.",
+        "A fashion lookbook wants a single mood carried across every page."
+      ],
+      why:"Monochromatic palettes use one pigment mixed with white (tints) and black (shades) instead of switching hues at all — nothing competes for attention, so it reads as controlled and premium. It's the palette of choice whenever the message is 'we don't need to shout.'"
+    }
+  ];
+
+  const TEMPLATES = ['deck','bag','poster'];
+  const TEMPLATE_LABEL = {deck:'SKATE DECK MOCKUP', bag:'SNACK BAG MOCKUP', poster:'GIG POSTER MOCKUP'};
+
+  /* build the 15-round sequence: 5 schemes x 3 briefs, template cycled */
+  const ROUNDS = [];
+  SCHEMES.forEach((s, si)=>{
+    for(let r=0;r<3;r++){
+      ROUNDS.push({schemeIndex:si, briefIndex:r, template:TEMPLATES[r%3]});
+    }
+  });
+
+  /* ---------------- state ---------------- */
+
+  const state = {
+    roundIdx:0,
+    score:0,
+    streak:0,
+    anchor:null,
+    selected:[],      // hues (or tint indices for mono)
+    lastAnchor:null,
+    locked:false,
+    correct:false,
+    attempts:0
+  };
+
+  const TINT_AMOUNTS = [-0.55,-0.28,0,0.32,0.6]; // negative = mixed with white (tint), positive = mixed with black (shade)
+
+  /* ---------------- dom refs ---------------- */
+
+  const $ = (id)=>document.getElementById(id);
+  const screenIntro = $('screenIntro'), screenGame = $('screenGame'), screenFinish = $('screenFinish');
+  const rail = $('rail');
+  const scoreVal = $('scoreVal'), streakVal = $('streakVal'), roundVal = $('roundVal');
+  const missionBrief = $('missionBrief'), schemeName = $('schemeName'), schemeTagline = $('schemeTagline');
+  const stepMsg = $('stepMsg'), hueLabel = $('hueLabel'), tintArea = $('tintArea'), requiredNote = $('requiredNote');
+  const lockBtn = $('lockBtn'), resetRoundBtn = $('resetRoundBtn');
+  const feedback = $('feedback'), fbTitle = $('fbTitle'), fbBody = $('fbBody');
+  const nextRow = $('nextRow'), nextBtn = $('nextBtn');
+  const mockupStage = $('mockupStage'), mockupLabel = $('mockupLabel'), geoNote = $('geoNote');
+  const wheelSvg = $('wheelSvg');
+  const overlay = $('overlay'), guideList = $('guideList');
+
+  /* ---------------- wheel drawing ---------------- */
+
+  function polar(cx,cy,r,angleDeg){
+    const a = (angleDeg-90) * Math.PI/180;
+    return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+  }
+  function wedgePath(cx,cy,rOuter,rInner,startA,endA){
+    const [x1,y1]=polar(cx,cy,rOuter,startA);
+    const [x2,y2]=polar(cx,cy,rOuter,endA);
+    const [x3,y3]=polar(cx,cy,rInner,endA);
+    const [x4,y4]=polar(cx,cy,rInner,startA);
+    const large = (endA-startA) > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 ${large} 0 ${x4} ${y4} Z`;
+  }
+
+  function buildWheel(){
+    const cx=120, cy=120, rOuter=112, rInner=52;
+    let svgContent = `<g id="wedgeGroup">`;
+    WHEEL_HUES.forEach((h)=>{
+      const start = h-15, end = h+15;
+      const d = wedgePath(cx,cy,rOuter,rInner,start,end);
+      svgContent += `<path class="wedge" data-hue="${h}" d="${d}" fill="${pigment(h)}"></path>`;
+    });
+    svgContent += `</g><g id="pinGroup"></g><g id="geoGroup"></g>`;
+    wheelSvg.innerHTML = svgContent;
+
+    wheelSvg.querySelectorAll('.wedge').forEach(w=>{
+      w.addEventListener('click', ()=>onWedgeClick(parseInt(w.dataset.hue,10)));
+    });
+  }
+
+  function renderPins(){
+    const cx=120, cy=120, rPin=82;
+    const pinGroup = wheelSvg.querySelector('#pinGroup');
+    let html = '';
+    if(state.anchor!==null){
+      const [x,y] = polar(cx,cy,rPin,state.anchor);
+      html += `<circle class="pin" cx="${x}" cy="${y}" r="8" fill="#14141A" stroke="#F3EFE4" stroke-width="2.5"></circle>`;
+    }
+    state.selected.forEach(h=>{
+      const [x,y] = polar(cx,cy,rPin,h);
+      html += `<circle class="pin" cx="${x}" cy="${y}" r="7" fill="#14141A" stroke="#E8B34A" stroke-width="2.5"></circle>`;
+    });
+    pinGroup.innerHTML = html;
+
+    // dim unselected wedges slightly once anchor is set for focus
+    wheelSvg.querySelectorAll('.wedge').forEach(w=>{
+      const h = parseInt(w.dataset.hue,10);
+      const active = h===state.anchor || state.selected.includes(h);
+      w.style.opacity = (state.anchor===null || active) ? '1' : '0.55';
+    });
+  }
+
+  function renderGeometry(show){
+    const cx=120, cy=120, r=82;
+    const geoGroup = wheelSvg.querySelector('#geoGroup');
+    if(!show){ geoGroup.innerHTML=''; return; }
+    const pts = [state.anchor, ...state.selected].map(h=>polar(cx,cy,r,h));
+    let html='';
+    if(pts.length===2){
+      html = `<line x1="${pts[0][0]}" y1="${pts[0][1]}" x2="${pts[1][0]}" y2="${pts[1][1]}" stroke="#F3EFE4" stroke-width="2" stroke-dasharray="4 4" opacity="0.8"/>`;
+    } else if(pts.length===3){
+      html = `<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#F3EFE4" stroke-width="2" stroke-dasharray="4 4" opacity="0.8"/>`;
+    }
+    geoGroup.innerHTML = html;
+  }
+
+  /* ---------------- round flow ---------------- */
+
+  function currentScheme(){ return SCHEMES[ROUNDS[state.roundIdx].schemeIndex]; }
+  function currentRoundDef(){ return ROUNDS[state.roundIdx]; }
+
+  function pickAnchor(){
+    let h;
+    do{ h = WHEEL_HUES[Math.floor(Math.random()*WHEEL_HUES.length)]; }
+    while(h===state.lastAnchor);
+    return h;
+  }
+
+  function startRound(){
+    const rd = currentRoundDef();
+    const scheme = SCHEMES[rd.schemeIndex];
+
+    state.anchor = null;
+    state.selected = [];
+    state.locked = false;
+    state.correct = false;
+    state.attempts = 0;
+
+    schemeName.textContent = scheme.name;
+    schemeTagline.textContent = scheme.tagline;
+    missionBrief.textContent = scheme.briefs[rd.briefIndex];
+    stepMsg.textContent = 'Tap a wedge to set your anchor color.';
+    hueLabel.innerHTML = '&nbsp;';
+    tintArea.innerHTML = '';
+    requiredNote.textContent = '';
+    feedback.classList.remove('show','correct','wrong');
+    nextRow.style.display = 'none';
+    lockBtn.disabled = true;
+    lockBtn.textContent = 'Lock it in';
+
+    mockupLabel.textContent = TEMPLATE_LABEL[rd.template];
+    buildMockup(rd.template, null);
+    geoNote.textContent = "The wheel geometry will trace itself here once you lock in a correct scheme.";
+
+    renderPins();
+    renderGeometry(false);
+    updateHud();
+  }
+
+  function updateHud(){
+    scoreVal.textContent = state.score;
+    streakVal.textContent = state.streak;
+    roundVal.textContent = state.roundIdx+1;
+
+    rail.innerHTML='';
+    for(let i=0;i<5;i++){
+      const seg = document.createElement('div');
+      seg.className='seg';
+      const roundsDoneInSeg = Math.max(0, Math.min(3, state.roundIdx - i*3));
+      if(i*3 <= state.roundIdx && state.roundIdx < i*3+3){ seg.classList.add('current'); }
+      if(state.roundIdx > i*3+2){ seg.classList.add('done'); }
+      const bar = document.createElement('i');
+      const pct = state.roundIdx > i*3+2 ? 100 : (state.roundIdx===i*3? 33 : state.roundIdx===i*3+1?66:state.roundIdx===i*3+2?100:0);
+      bar.style.width = (i*3<=state.roundIdx? Math.min(100, ((state.roundIdx-i*3)+1)/3*100) : 0) + '%';
+      seg.appendChild(bar);
+      rail.appendChild(seg);
+    }
+  }
+
+  function onWedgeClick(hue){
+    if(state.locked) return;
+    const scheme = currentScheme();
+
+    if(state.anchor===null){
+      state.anchor = hue;
+      hueLabel.textContent = pigmentName(hue) + ' — locked as anchor';
+      if(scheme.mono){
+        stepMsg.textContent = `Now pick ${scheme.extra} more values of the SAME hue from the strip below.`;
+        buildTintStrip(hue);
+        requiredNote.textContent = `0 / ${scheme.extra} values selected`;
+      } else {
+        stepMsg.textContent = `Now complete the ${scheme.name} scheme — tap ${scheme.extra} more wedge${scheme.extra>1?'s':''}.`;
+        requiredNote.textContent = `0 / ${scheme.extra} selected`;
+      }
+      renderPins();
+      return;
+    }
+
+    if(scheme.mono) return; // mono uses tint strip only
+
+    if(hue===state.anchor) return;
+
+    const idx = state.selected.indexOf(hue);
+    if(idx>=0){
+      state.selected.splice(idx,1);
+    } else {
+      if(state.selected.length >= scheme.extra){
+        flashNote('Scheme already has enough colors — deselect one first, or lock it in.');
+        return;
+      }
+      state.selected.push(hue);
+    }
+    requiredNote.textContent = `${state.selected.length} / ${scheme.extra} selected`;
+    lockBtn.disabled = state.selected.length !== scheme.extra;
+    renderPins();
+  }
+
+  function buildTintStrip(anchorHue){
+    const base = pigment(anchorHue);
+    let html = '<div class="tint-strip">';
+    TINT_AMOUNTS.forEach((amt,i)=>{
+      html += `<div class="tint-swatch" data-idx="${i}" style="background:${swatchColor(base,amt)}"></div>`;
+    });
+    html += '</div>';
+    tintArea.innerHTML = html;
+    tintArea.querySelectorAll('.tint-swatch').forEach(sw=>{
+      sw.addEventListener('click', ()=>onTintClick(parseInt(sw.dataset.idx,10)));
+    });
+  }
+
+  function onTintClick(idx){
+    if(state.locked) return;
+    const scheme = currentScheme();
+    const existing = state.selected.indexOf(idx);
+    if(existing>=0){
+      state.selected.splice(existing,1);
+    } else {
+      if(state.selected.length >= scheme.extra){
+        flashNote('You have enough values — deselect one first, or lock it in.');
+        return;
+      }
+      state.selected.push(idx);
+    }
+    requiredNote.textContent = `${state.selected.length} / ${scheme.extra} values selected`;
+    lockBtn.disabled = state.selected.length !== scheme.extra;
+    tintArea.querySelectorAll('.tint-swatch').forEach((sw,i)=>{
+      sw.classList.toggle('selected', state.selected.includes(i));
+    });
+  }
+
+  function flashNote(msg){
+    const old = stepMsg.textContent;
+    stepMsg.textContent = msg;
+    stepMsg.style.borderLeftColor = 'var(--bad)';
+    setTimeout(()=>{ stepMsg.textContent = old; stepMsg.style.borderLeftColor='var(--gold)'; }, 1400);
+  }
+
+  function checkAnswer(){
+    const scheme = currentScheme();
+    let correct;
+
+    if(scheme.mono){
+      correct = state.selected.length === scheme.extra && new Set(state.selected).size === scheme.extra;
+    } else {
+      const target = new Set(scheme.calc(state.anchor));
+      const chosen = new Set(state.selected);
+      correct = target.size===chosen.size && [...target].every(h=>chosen.has(h));
+    }
+
+    state.attempts++;
+    state.locked = true;
+    state.correct = correct;
+
+    if(correct){
+      const pts = state.attempts===1 ? 10 : 5;
+      state.score += pts;
+      state.streak += 1;
+      fbTitle.textContent = `Locked in (+${pts})`;
+      fbBody.textContent = scheme.why;
+      feedback.className = 'feedback show correct';
+      applyToMockup();
+      renderGeometry(true);
+      nextRow.style.display = 'flex';
+      lockBtn.disabled = true;
+    } else {
+      state.streak = 0;
+      fbTitle.textContent = 'Not quite that relationship';
+      fbBody.textContent = `That combination doesn't satisfy ${scheme.name.toLowerCase()} — check the wheel positions and try again.`;
+      feedback.className = 'feedback show wrong';
+      state.locked = false; // allow retry
+      lockBtn.disabled = false;
+    }
+    updateHud();
+  }
+
+  /* ---------------- mockup ---------------- */
+
+  function buildMockup(template, colors){
+    let html='';
+    const c1 = colors? colors[0] : '#3a3a45';
+    const c2 = colors? colors[1] : '#4a4a58';
+    const c3 = colors? colors[2] : '#22222a';
+    mockupStage.className = 'mockup-stage' + (colors?'':' dark');
+    mockupStage.style.setProperty('--c1', c1);
+    mockupStage.style.setProperty('--c2', c2);
+    mockupStage.style.setProperty('--c3', c3);
+
+    if(template==='deck'){
+      html = `<div class="deck-board"></div>
+               <div class="deck-logo"></div>
+               <div class="deck-wheel" style="left:24px; top:36px;"></div>
+               <div class="deck-wheel" style="right:24px; bottom:36px;"></div>`;
+    } else if(template==='bag'){
+      html = `<div class="bag-body"></div>
+              <div class="bag-label"></div>
+              <div class="bag-seal"></div>`;
+    } else {
+      html = `<div class="poster-bg"></div>
+              <div class="poster-block"></div>
+              <div class="poster-accent"></div>`;
+    }
+    mockupStage.innerHTML = html;
+  }
+
+  function applyToMockup(){
+    const scheme = currentScheme();
+    const rd = currentRoundDef();
+    let c1,c2,c3;
+
+    if(scheme.mono){
+      const base = pigment(state.anchor);
+      const sortedIdx = [...state.selected].sort((a,b)=>a-b);
+      c1 = base; // pure pigment baseline
+      c2 = swatchColor(base, TINT_AMOUNTS[sortedIdx[0]]);
+      c3 = swatchColor(base, TINT_AMOUNTS[sortedIdx[1]]);
+    } else if(scheme.extra===1){
+      c1 = pigment(state.anchor);
+      c2 = pigment(state.selected[0]);
+      c3 = '#14141A';
+    } else {
+      c1 = pigment(state.anchor);
+      c2 = pigment(state.selected[0]);
+      c3 = pigment(state.selected[1]);
+    }
+    buildMockup(rd.template, [c1,c2,c3]);
+    geoNote.textContent = "That's the actual geometry on the wheel behind it — same shape, every time this scheme is used.";
+  }
+
+  /* ---------------- nav ---------------- */
+
+  function nextRound(){
+    state.lastAnchor = state.anchor;
+    state.roundIdx++;
+    if(state.roundIdx >= ROUNDS.length){
+      finishGame();
+    } else {
+      startRound();
+    }
+  }
+
+  function finishGame(){
+    screenGame.style.display='none';
+    screenFinish.style.display='block';
+    $('finalScore').textContent = state.score;
+  }
+
+  function resetGame(){
+    state.roundIdx=0; state.score=0; state.streak=0; state.lastAnchor=null;
+    screenFinish.style.display='none';
+    screenGame.style.display='block';
+    startRound();
+  }
+
+  /* ---------------- field guide ---------------- */
+
+  function buildGuide(){
+    const GUIDE_SWATCH = {
+      comp:      `linear-gradient(90deg, ${pigment(120)}, ${pigment(300)})`,           // red / green
+      analog:    `linear-gradient(90deg, ${pigment(0)}, ${pigment(30)}, ${pigment(60)})`, // yellow / yellow-orange / orange
+      triad:     `linear-gradient(90deg, ${pigment(0)}, ${pigment(120)}, ${pigment(240)})`, // yellow / red / blue — the primaries
+      splitcomp: `linear-gradient(90deg, ${pigment(120)}, ${pigment(270)}, ${pigment(330)})`, // red / blue-green / yellow-green
+      mono:      `linear-gradient(90deg, ${tint(pigment(240),0.5)}, ${pigment(240)}, ${shade(pigment(240),0.5)})` // blue tint→pure→shade
+    };
+    let html='';
+    SCHEMES.forEach(s=>{
+      html += `<div class="guide-entry">
+        <div class="guide-swatch" style="background:${GUIDE_SWATCH[s.id]}"></div>
+        <div>
+          <h3 class="display">${s.name}</h3>
+          <p>${s.why}</p>
+        </div>
+      </div>`;
+    });
+    guideList.innerHTML = html;
+  }
+
+  /* ---------------- wire up ---------------- */
+
+  $('startBtn').addEventListener('click', ()=>{
+    screenIntro.style.display='none';
+    screenGame.style.display='block';
+    startRound();
+  });
+  lockBtn.addEventListener('click', checkAnswer);
+  resetRoundBtn.addEventListener('click', ()=>{
+    if(state.locked && state.correct) return;
+    state.anchor=null; state.selected=[]; state.locked=false;
+    hueLabel.innerHTML='&nbsp;'; tintArea.innerHTML=''; requiredNote.textContent='';
+    stepMsg.textContent='Tap a wedge to set your anchor color.';
+    feedback.classList.remove('show','correct','wrong');
+    lockBtn.disabled=true;
+    renderPins(); renderGeometry(false);
+  });
+  nextBtn.addEventListener('click', nextRound);
+  replayBtnHandler();
+  function replayBtnHandler(){ $('replayBtn').addEventListener('click', resetGame); }
+  $('fieldGuideBtn').addEventListener('click', ()=>overlay.classList.add('show'));
+  $('guideFromFinishBtn').addEventListener('click', ()=>overlay.classList.add('show'));
+  $('closeGuideBtn').addEventListener('click', ()=>overlay.classList.remove('show'));
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.classList.remove('show'); });
+
+  buildWheel();
+  buildGuide();
+
+})();
+</script>
+</body>
+</html>

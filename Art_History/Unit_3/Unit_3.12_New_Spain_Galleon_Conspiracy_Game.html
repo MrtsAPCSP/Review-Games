@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Manila Galleon Conspiracy</title>
+<style>
+  :root{
+    --bg: #0c1120;
+    --bg-2: #141b30;
+    --bg-3: #1b2440;
+    --amber: #d8a34d;
+    --amber-bright: #f0c478;
+    --amber-dim: #8a6a34;
+    --terracotta: #b5602f;
+    --terracotta-light: #d17c46;
+    --pearl: #cfd8e3;
+    --pearl-bright: #eef2f7;
+    --parchment: #ecdfc2;
+    --parchment-dim: #a9b3c9;
+    --ink: #0f1422;
+    --danger: #b04a3a;
+    --success: #4f8f6a;
+    --indigo-line: #2a3358;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+    --font-label: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    --radius: 6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background: radial-gradient(ellipse at 50% -10%, #1b2446 0%, var(--bg) 55%, #050710 100%);
+    color:var(--parchment);
+    font-family:var(--font-body);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:24px 16px 60px;position:relative;
+  }
+  #app::before{
+    content:"";
+    position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;
+    background: radial-gradient(ellipse at 50% 35%, transparent 25%, rgba(4,6,14,0.6) 100%);
+    animation: lanternglow 7s infinite ease-in-out;
+    z-index:1;
+  }
+  @keyframes lanternglow{
+    0%,100%{opacity:0.92;}
+    50%{opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){ #app::before{animation:none;} }
+  .stage{position:relative;z-index:2;width:100%;max-width:880px;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0 0 8px 0;color:var(--amber-bright);
+    text-shadow:0 0 16px rgba(240,196,120,0.22), 0 2px 2px rgba(0,0,0,0.6);}
+  h1{font-size:2.5rem;font-style:italic;letter-spacing:0.5px;}
+  h2{font-size:1.65rem;font-style:italic;}
+  h3{font-size:1.2rem;}
+  .eyebrow{font-family:var(--font-label);text-transform:uppercase;letter-spacing:3px;font-size:0.7rem;color:var(--amber);margin-bottom:10px;display:block;}
+  p{line-height:1.6;color:var(--parchment);}
+  .dim{color:var(--parchment-dim);}
+  .frame{
+    background:linear-gradient(160deg, var(--bg-3), var(--bg-2));
+    border:1px solid var(--amber-dim);
+    border-radius:var(--radius);
+    padding:28px 30px;margin:18px 0;
+    box-shadow:0 0 0 1px rgba(216,163,77,0.08) inset, 0 18px 40px rgba(0,0,0,0.55);
+    position:relative;
+  }
+  .frame::before, .frame::after{content:"";position:absolute;width:20px;height:20px;border:2px solid var(--amber);opacity:0.5;}
+  .frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .frame::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+  .center{text-align:center;}
+  .btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+  button{
+    font-family:var(--font-label);
+    background:linear-gradient(160deg,var(--amber),var(--amber-dim));
+    color:#20160a;border:none;padding:13px 26px;border-radius:3px;font-size:0.95rem;font-weight:700;
+    letter-spacing:0.5px;cursor:pointer;transition:transform 0.15s, box-shadow 0.15s;
+    box-shadow:0 4px 14px rgba(0,0,0,0.45);
+  }
+  button:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(216,163,77,0.3);}
+  button:active{transform:translateY(0);}
+  button:focus-visible{outline:3px solid var(--pearl-bright);outline-offset:2px;}
+  button.secondary{background:transparent;color:var(--parchment);border:1px solid var(--amber-dim);}
+  button:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .card-list{display:grid;gap:14px;margin-top:18px;}
+  .choice-card{
+    display:block;width:100%;text-align:left;background:var(--bg-3);border:1px solid var(--amber-dim);
+    color:var(--parchment);padding:16px 18px;border-radius:4px;font-family:var(--font-body);font-size:1rem;cursor:pointer;
+  }
+  .choice-card:hover{border-color:var(--amber);background:#212c4e;}
+  .choice-card.correct{border-color:var(--success);background:#16281f;}
+  .choice-card.wrong{border-color:var(--danger);background:#2c1a16;animation:shake 0.4s;}
+  .choice-card.disabled{pointer-events:none;opacity:0.6;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .map-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:22px;}
+  .site-door{
+    border-radius:6px;padding:22px 16px;text-align:center;cursor:pointer;border:2px solid var(--amber-dim);
+    background:linear-gradient(180deg, var(--bg-3), var(--bg-2));transition:transform 0.15s;position:relative;
+  }
+  .site-door:hover{transform:translateY(-4px);}
+  .site-door.done{opacity:0.55;cursor:default;}
+  .site-door .glyph{font-size:2rem;display:block;margin-bottom:8px;}
+  .site-door .name{font-family:var(--font-display);font-style:italic;font-size:1.02rem;color:var(--amber-bright);}
+  .site-door .status{font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--parchment-dim);margin-top:6px;display:block;}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;width:100%;max-width:880px;margin-bottom:6px;
+    font-family:var(--font-label);font-size:0.8rem;color:var(--parchment-dim);letter-spacing:0.5px;flex-wrap:wrap;gap:8px;
+  }
+  .track{display:flex;align-items:center;gap:8px;}
+  .track-dot{width:9px;height:9px;border-radius:50%;background:var(--amber-dim);}
+  .track-dot.lit{background:var(--amber-bright);box-shadow:0 0 8px var(--amber-bright);}
+  .curtain{
+    position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#101a33,#050710);
+    z-index:50;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s, visibility 0.5s;
+  }
+  .curtain.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+  .curtain span{font-family:var(--font-display);font-style:italic;font-size:1.5rem;color:var(--amber-bright);}
+  .lives{display:flex;gap:6px;font-size:1.1rem;}
+  .match-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  @media (max-width:560px){.match-cols{grid-template-columns:1fr;}}
+  .match-tile{
+    background:var(--bg-3);border:1px solid var(--amber-dim);color:var(--parchment);padding:12px 14px;border-radius:4px;
+    margin-bottom:10px;cursor:pointer;font-size:0.92rem;text-align:left;width:100%;font-family:var(--font-body);
+  }
+  .match-tile:hover{border-color:var(--amber);}
+  .match-tile.selected{border-color:var(--amber-bright);box-shadow:0 0 0 2px rgba(240,196,120,0.3);}
+  .match-tile.locked{border-color:var(--success);background:#16281f;opacity:0.75;cursor:default;pointer-events:none;}
+  .footer-note{margin-top:26px;font-size:0.75rem;color:var(--parchment-dim);text-align:center;font-family:var(--font-label);letter-spacing:0.3px;}
+  .pass-screen{text-align:center;padding:60px 20px;}
+  .pass-screen .big{font-size:3rem;margin-bottom:14px;}
+  .quiz-explain{background:#101627;border-left:3px solid var(--amber);padding:10px 14px;margin-top:14px;border-radius:0 4px 4px 0;font-size:0.9rem;}
+  .mode-card{background:var(--bg-3);border:1px solid var(--amber-dim);border-radius:6px;padding:20px;text-align:left;cursor:pointer;transition:transform 0.15s;}
+  .mode-card:hover{transform:translateY(-3px);border-color:var(--amber);}
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+  @media (max-width:600px){.mode-grid{grid-template-columns:1fr;}}
+  .ending-title{font-size:2.1rem;}
+  .seal{
+    display:inline-block;border:2px solid var(--amber);color:var(--amber-bright);border-radius:50%;
+    width:64px;height:64px;line-height:60px;text-align:center;font-family:var(--font-display);font-style:italic;font-size:1.6rem;
+    box-shadow:0 0 0 3px rgba(216,163,77,0.15);
+  }
+  .hidden{display:none !important;}
+  .small{font-size:0.85rem;}
+  .evidence-tag{
+    display:inline-block;background:var(--bg-3);border:1px dashed var(--pearl);color:var(--pearl-bright);
+    font-family:var(--font-label);font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;
+    padding:4px 10px;border-radius:3px;margin:2px 4px 2px 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar hidden" id="topbar">
+    <span id="topbarLeft"></span>
+    <span class="track" id="track"></span>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="footer-note">The Manila Galleon Conspiracy &middot; AP Art History &middot; Unit 3.12: New Spain</div>
+</div>
+<div class="curtain hidden" id="curtain"><span id="curtainText">&hellip;</span></div>
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+var VOCAB = {
+  codex: {term:"Codex", def:"An ancient manuscript text in book form."},
+  viceroy: {term:"Viceroy", def:"A ruler exercising authority in a colony on behalf of a sovereign."},
+  arquebus: {term:"Arquebus", def:"An early type of long gun, sometimes supported on a tripod or forked rest."},
+  enconchados: {term:"Enconchados", def:"Shell-inlay paintings: tiny fragments of mother-of-pearl set into a wood support, covered with a yellowish tint and thin glazes of paint."},
+  biombos: {term:"Biombos", def:"Folding, free-standing screens \u2014 a furniture form adapted from Japanese design."},
+  mestizo: {term:"Mestizo", def:"A person of mixed European and Native American descent."},
+  castaPaintings: {term:"Casta Paintings", def:"Paintings from New Spain that labeled and ranked individuals according to mixed racial ancestry."},
+  escudo: {term:"Escudo", def:"A framed painting worn below the neck in a colonial Spanish portrait, often called a nun's shield (escudo de monja)."}
+};
+
+var WORKS = {
+  codexMendoza: {
+    id:"codexMendoza", site:"scriptorium",
+    artist:"Unknown Aztec and colonial scribes", title:"Frontispiece of the Codex Mendoza", date:"ca. 1541\u20131542",
+    medium:"Pigment on paper", location:"Bodleian Library, Oxford University",
+    vocabKeys:["codex","viceroy"], func:"Historical record",
+    facts:[
+      "Likely commissioned by the Viceroy of New Spain to document Aztec history, tribute, and daily life for the Spanish crown.",
+      "Blends Aztec pictorial conventions \u2014 glyphs, stylized figures \u2014 with a European page layout and some European artistic influence.",
+      "The frontispiece depicts the founding of Tenochtitlan: an eagle perched on a cactus, and a grid-like map dividing the city into four quadrants.",
+      "A codex is a manuscript in book form; here, one of the ways Indigenous knowledge survived and was transmitted under colonial rule."
+    ],
+    quiz:[
+      {q:"Who most likely commissioned the Codex Mendoza?", choices:["The Aztec emperor before the conquest","The Viceroy of New Spain, for the Spanish crown","A Franciscan missionary acting alone","A private Spanish merchant"], a:1, explain:"The Viceroy \u2014 the crown's representative in the colony \u2014 likely commissioned it to document Aztec history and tribute for Spain."},
+      {q:"What artistic traditions combine in the Codex Mendoza's frontispiece?", choices:["Only European painting conventions","Only pre-contact Aztec conventions with no outside influence","Aztec pictorial conventions blended with European page layout","Chinese ink painting and Aztec glyphs"], a:2, explain:"The codex fuses Aztec glyphs and figures with a European approach to organizing the page."},
+      {q:"What does the frontispiece's central image depict?", choices:["A Spanish coronation","The founding of Tenochtitlan, with an eagle on a cactus","A religious procession","A battle scene"], a:1, explain:"It shows the founding of Tenochtitlan \u2014 the eagle-on-cactus origin story, with the city mapped into four quadrants."},
+      {q:"What is a codex?", choices:["A type of firearm","A folding screen","A manuscript text in book form","A framed portrait medallion"], a:2, explain:"Codex refers to a manuscript in book form \u2014 exactly the format used here to record Aztec history."},
+      {q:"What is a viceroy?", choices:["A high-ranking priest","A person of mixed ancestry","A ruler who exercises authority in a colony on behalf of a sovereign","An Indigenous military leader"], a:2, explain:"A viceroy governs a colony on behalf of the monarch \u2014 in this case, the King of Spain."}
+    ]
+  },
+  angelArquebus: {
+    id:"angelArquebus", site:"chapel",
+    artist:"Master of Calamarca (attr. Jos\u00e9 L\u00f3pez de los R\u00edos)", title:"Angel with Arquebus (Asiel Timor Dei)", date:"c. 1680",
+    medium:"Oil on canvas", location:"National Art Museum, La Paz, Bolivia",
+    vocabKeys:["arquebus"], func:"Religious",
+    facts:[
+      "An angel is dressed in fashionable European aristocratic clothing, holding an arquebus \u2014 an early firearm \u2014 instead of a traditional sword or lily.",
+      "The painting is part of the Cuzco School, blending Catholic religious iconography with the visual traditions of the Andean region.",
+      "The armed angel may reflect the militarized reality of colonial expansion and the arrival of European weapons technology in the Americas.",
+      "Many Cuzco School works, including this one, were created by Indigenous and mestizo artists trained in European techniques."
+    ],
+    quiz:[
+      {q:"What unusual object does the angel hold in this painting?", choices:["A lily","A sword","An arquebus, an early firearm","A shield"], a:2, explain:"The angel holds an arquebus, an early type of long gun \u2014 an unusual attribute for a religious figure."},
+      {q:"What artistic tradition does this painting belong to?", choices:["The Cuzco School, Andean colonial art","Dutch genre painting","Italian Renaissance fresco","Aztec codex painting"], a:0, explain:"This work belongs to the Cuzco School, which blended Catholic subject matter with Andean visual traditions."},
+      {q:"What might the armed angel symbolize about colonial life?", choices:["The complete absence of conflict in the colonies","The militarized reality of European colonial expansion","A celebration of Indigenous weaponry","Nothing \u2014 it is purely decorative"], a:1, explain:"The firearm hints at the militarized nature of conquest and colonial control in the period."},
+      {q:"Who typically created Cuzco School paintings like this one?", choices:["Only artists trained in Spain who had never left Europe","Often Indigenous and mestizo artists trained in European techniques","Exclusively Portuguese sailors","Anonymous Aztec priests"], a:1, explain:"Indigenous and mestizo artists, trained in European methods, produced much of the Cuzco School's output."},
+      {q:"What is an arquebus?", choices:["A folding screen","An early type of long gun, sometimes supported on a rest","A shell-inlay technique","A nun's badge"], a:1, explain:"An arquebus is an early firearm, sometimes braced on a tripod or forked rest."}
+    ]
+  },
+  screenSiege: {
+    id:"screenSiege", site:"treasury",
+    artist:"Circle of the Gonz\u00e1lez Family", title:"Screen with the Siege of Belgrade and Hunting Scenes", date:"ca. 1697\u20131701",
+    medium:"Tempera and resin on wood, inlaid with mother-of-pearl", location:"Brooklyn Museum, New York",
+    vocabKeys:["biombos","enconchados","viceroy"], func:"Decorative / historical narrative",
+    facts:[
+      "This is a biombo \u2014 a folding screen, a furniture form imported and adapted from Japanese design for elite New Spain households.",
+      "It uses the enconchado technique: tiny fragments of mother-of-pearl inlaid into wood, then glazed with thin, tinted layers of paint.",
+      "One side shows the Siege of Belgrade, a European historical/military event; the other shows Hunting Scenes \u2014 elite European history and leisure imagery, reproduced in New Spain.",
+      "The screen reflects Mexico's role as a waystation in transpacific trade: Asian materials and techniques traveled to New Spain via the Manila Galleon route."
+    ],
+    quiz:[
+      {q:"What kind of object is this artwork?", choices:["A biombo, or folding screen","A wall fresco","A ceramic vessel","A stone relief"], a:0, explain:"It is a biombo \u2014 a folding screen, a form adapted from Japanese furniture design."},
+      {q:"What technique gives this screen its shimmering surface?", choices:["Gold leaf gilding","Enconchado \u2014 mother-of-pearl inlay with tinted paint glazes","Fresco secco","Woodblock printing"], a:1, explain:"The enconchado technique inlays tiny mother-of-pearl fragments into wood, then glazes them with tinted paint."},
+      {q:"What do the two sides of the screen depict?", choices:["Two Aztec creation myths","The Siege of Belgrade and Hunting Scenes","Portraits of the Viceroy's family","Scenes from the life of Sor Juana"], a:1, explain:"One side shows the European Siege of Belgrade; the other, elite Hunting Scenes."},
+      {q:"How does this screen reflect New Spain's global trade connections?", choices:["It shows no outside influence at all","It uses a Japanese-derived furniture form and mother-of-pearl techniques tied to transpacific trade","It was carved entirely from Andean stone","It depicts only local Mexican wildlife"], a:1, explain:"The biombo form and enconchado technique both trace back through Asian trade routes reaching New Spain."},
+      {q:"What does 'enconchados' refer to?", choices:["Folding screens generally","Shell-inlay paintings using mother-of-pearl fragments","A type of firearm","A racial classification system"], a:1, explain:"Enconchados specifically names the mother-of-pearl inlay painting technique."}
+    ]
+  },
+  guadalupe: {
+    id:"guadalupe", site:"shrine",
+    artist:"Miguel Gonz\u00e1lez", title:"The Virgin of Guadalupe (Virgen de Guadalupe)", date:"c. 1698",
+    medium:"Oil on wood, inlaid with mother-of-pearl (enconchado)", location:"Basilica of Guadalupe, Mexico City",
+    vocabKeys:["enconchados"], func:"Religious",
+    facts:[
+      "Four surrounding scenes, carried by angels, narrate Juan Diego's story: led to the Virgin by angels; her vision atop the hill; Juan Diego leaving Mary with his cloak; and Juan Diego revealing the miraculous image to the Bishop.",
+      "Like the Siege of Belgrade screen, this piece uses the enconchado technique \u2014 mother-of-pearl inlay tied to transpacific material culture.",
+      "The Virgin of Guadalupe became, and remains, one of the most powerful symbols of Mexican religious and national identity.",
+      "The combination of a devotional Catholic subject with Asian-linked materials shows how deeply intertwined New Spain's visual culture had become."
+    ],
+    quiz:[
+      {q:"What do the four scenes surrounding the central image depict?", choices:["Scenes from the life of Sor Juana","The story of Juan Diego and the Virgin of Guadalupe","Four different Viceroys of New Spain","Scenes of the Manila Galleon's voyage"], a:1, explain:"The four surrounding scenes narrate Juan Diego's encounter with the Virgin, from vision to revelation."},
+      {q:"What technique connects this painting to the Siege of Belgrade screen?", choices:["Fresco secco","Enconchado, or mother-of-pearl inlay","Woodblock printing","Tapestry weaving"], a:1, explain:"Both works use the enconchado technique, tying New Spain's religious art to transpacific material culture."},
+      {q:"What has the Virgin of Guadalupe come to symbolize in Mexico?", choices:["Colonial administration","One of the most powerful symbols of Mexican religious and national identity","European royal succession","Trade regulation policy"], a:1, explain:"The image became (and remains) a central symbol of Mexican identity and devotion."},
+      {q:"Where is this artwork housed?", choices:["Bodleian Library, Oxford","Basilica of Guadalupe, Mexico City","Brooklyn Museum, New York","Museo del Prado, Madrid"], a:1, explain:"It resides in the Basilica of Guadalupe in Mexico City."},
+      {q:"What is the FUNCTION of this artwork?", choices:["Genre","Still-life","Religious","Landscape"], a:2, explain:"It depicts a religious narrative central to Mexican Catholic devotion."}
+    ]
+  },
+  mestizoPainting: {
+    id:"mestizoPainting", site:"studio",
+    artist:"Attr. Juan Rodr\u00edguez Ju\u00e1rez", title:"Spaniard and Indian Produce a Mestizo", date:"c. 1715",
+    medium:"Oil on canvas", location:"Mexico City, New Spain",
+    vocabKeys:["mestizo","castaPaintings"], func:"Genre / social documentation",
+    facts:[
+      "This painting belongs to a genre called casta paintings: images made in New Spain that labeled and ranked individuals by their mixed ethnic ancestry.",
+      "Casta paintings used sixteen categories in total to classify combinations of Spanish, Indigenous, and African ancestry, reinforcing a colonial social hierarchy with Spaniards at the top.",
+      "Sometimes casta paintings appeared as single images like this one; sometimes all sixteen categories were combined onto one large canvas as a kind of colonial chart.",
+      "Historians study casta paintings today as critical evidence of how colonial society constructed and policed racial categories \u2014 not as an endorsement of that system, but as a record to be examined and questioned."
+    ],
+    quiz:[
+      {q:"What genre of painting does this work belong to?", choices:["Vanitas still-life","Casta paintings","Landscape","Religious icon"], a:1, explain:"Casta paintings labeled and ranked individuals by mixed racial ancestry in colonial New Spain."},
+      {q:"What is a mestizo, as the term is used in this painting's title?", choices:["A colonial governor","A person of mixed European and Native American descent","A type of folding screen","A Catholic religious order"], a:1, explain:"Mestizo describes a person of mixed European and Indigenous American ancestry."},
+      {q:"How many categories did the full casta painting system use to classify people?", choices:["Four","Sixteen","One hundred","Two"], a:1, explain:"The system used sixteen categories to classify various mixed-ancestry combinations."},
+      {q:"Why do historians study casta paintings today?", choices:["To celebrate the racial hierarchy they depict","As critical evidence of how colonial society constructed and enforced racial categories","Because they contain no useful historical information","To copy their compositions for modern portraits"], a:1, explain:"Casta paintings are studied critically, as documentation of a colonial system historians analyze rather than endorse."},
+      {q:"Where and when was this painting made?", choices:["Rome, c. 1600","Mexico City, New Spain, c. 1715","Bolivia, c. 1680","Amsterdam, c. 1664"], a:1, explain:"It was made in Mexico City, New Spain, around 1715."}
+    ]
+  },
+  sorJuana: {
+    id:"sorJuana", site:"library",
+    artist:"Miguel Cabrera", title:"Portrait of Sor Juana In\u00e9s de la Cruz", date:"c. 1750",
+    medium:"Oil on canvas", location:"Museo Nacional de Historia, Castillo de Chapultepec, Mexico",
+    vocabKeys:["escudo"], func:"Portrait",
+    facts:[
+      "Sor Juana was a self-taught scholar who learned to read by age three, mastered Latin, and wrote in Nahuatl.",
+      "She joined a convent \u2014 first the strict Carmelites, then the more relaxed Jeronymite order \u2014 specifically so she could keep studying, writing, and collecting books.",
+      "She wears an escudo de monja (\u2018nun's shield\u2019): a framed painting worn on the chest, usually showing the Virgin Mary; Sor Juana's shows the Annunciation.",
+      "Her right hand rests on a book by St. Jerome and her left holds a rosary \u2014 a deliberate pairing of intellectual and devotional life \u2014 and she meets the viewer's gaze directly, unusual for nuns' portraits of the time."
+    ],
+    quiz:[
+      {q:"What is unusual about Sor Juana's gaze in this portrait?", choices:["She looks away from the viewer entirely","She meets the viewer's gaze directly, unusual for nuns' portraits of the time","Her eyes are closed in prayer","She is shown in profile only"], a:1, explain:"Her direct gaze was unusual for the period and suggests assertiveness and intellectual confidence."},
+      {q:"What is an escudo de monja?", choices:["A type of firearm","A framed painting worn on the chest, or 'nun's shield'","A folding screen","A racial classification chart"], a:1, explain:"An escudo de monja is a framed devotional painting worn on a nun's habit \u2014 here showing the Annunciation."},
+      {q:"Why did Sor Juana join a convent?", choices:["She had no other options in colonial society","So she could continue studying, writing, and collecting books","To escape a forced marriage only","Convents were the only place women could paint"], a:1, explain:"Joining a convent, especially the more relaxed Jeronymite order, gave her the freedom to pursue scholarship."},
+      {q:"What do the book and rosary in her hands represent together?", choices:["A contradiction the artist wanted to hide","A deliberate pairing of intellectual and devotional life","Evidence she rejected religious life","Nothing symbolic \u2014 generic props"], a:1, explain:"The book (St. Jerome) and rosary together show her combined devotion to faith and scholarship."},
+      {q:"What languages did Sor Juana master or write in?", choices:["Only Spanish","Latin and Nahuatl, among others","Only Nahuatl","French and Portuguese"], a:1, explain:"She was fluent in Latin and also wrote in Nahuatl, the language of the Aztec."}
+    ]
+  }
+};
+
+var SITES = [
+  {
+    id:"scriptorium", name:"The Franciscan Scriptorium", accent:"amber", glyph:"\uD83D\uDCDC",
+    subtitle:"Where the friars keep their records",
+    works:["codexMendoza"], vocabIntro:["codex","viceroy"],
+    intro:"Candle-stubs and ink pots crowd a friar's desk. Among the ledgers, a strange manuscript catches your eye \u2014 half Aztec glyph, half Spanish bureaucracy.",
+    choices:[
+      {label:"Ask the friar who commissioned this manuscript", tag:"methodical"},
+      {label:"Study the pictorial glyphs yourself before asking anyone", tag:"independent-eye"}
+    ]
+  },
+  {
+    id:"chapel", name:"The Frontier Mission Chapel", accent:"amber", glyph:"\u26EA",
+    subtitle:"A world away, in the Andean highlands",
+    works:["angelArquebus"], vocabIntro:["arquebus"],
+    intro:"A traveling report from a mission chapel describes an angel unlike any other \u2014 dressed as a nobleman, and armed.",
+    choices:[
+      {label:"Question why a heavenly being needs a firearm", tag:"independent-eye"},
+      {label:"Trace who painted it, and who trained them", tag:"methodical"}
+    ]
+  },
+  {
+    id:"treasury", name:"The Viceregal Palace Treasury", accent:"amber", glyph:"\uD83D\uDC51",
+    subtitle:"Where the Viceroy's finest goods are kept",
+    works:["screenSiege"], vocabIntro:["biombos","enconchados","viceroy"],
+    intro:"A folding screen, shimmering faintly even in low light, stands folded against the treasury wall. Its surface seems to hold tiny fragments of something like pearl.",
+    choices:[
+      {label:"Examine the shimmering inlay up close", tag:"independent-eye"},
+      {label:"Ask the treasurer where such materials could possibly come from", tag:"methodical"}
+    ]
+  },
+  {
+    id:"shrine", name:"The Basilica Shrine", accent:"amber", glyph:"\u2728",
+    subtitle:"Mexico City's most sacred ground",
+    works:["guadalupe"], vocabIntro:["enconchados"],
+    intro:"Pilgrims kneel before an image that shimmers the same way the treasury screen did. The connection cannot be coincidence.",
+    choices:[
+      {label:"Compare this shimmer directly to the palace screen", tag:"independent-eye"},
+      {label:"Interview a pilgrim about what the image means to them", tag:"methodical"}
+    ]
+  },
+  {
+    id:"studio", name:"The Portrait Studio", accent:"amber", glyph:"\uD83D\uDD8C\uFE0F",
+    subtitle:"Where the city's likenesses are made \u2014 and its people, ranked",
+    works:["mestizoPainting"], vocabIntro:["mestizo","castaPaintings"],
+    intro:"On the easel: a painting that quietly does something troubling \u2014 it sorts a family into a category, and a category into a rank.",
+    choices:[
+      {label:"Ask the painter directly why this system exists", tag:"critical-eye"},
+      {label:"Note it in your case file without comment, for now", tag:"methodical"}
+    ]
+  },
+  {
+    id:"library", name:"The Convent Library", accent:"amber", glyph:"\uD83D\uDCD6",
+    subtitle:"Sor Juana's own shelves",
+    works:["sorJuana"], vocabIntro:["escudo"],
+    intro:"Books, ink, and a portrait of a nun who looks directly back at you \u2014 as if she already knows what you're investigating.",
+    choices:[
+      {label:"Read what she wrote in her own defense", tag:"critical-eye"},
+      {label:"Ask the convent's archivist about her life", tag:"methodical"}
+    ]
+  }
+];
+
+var ENDINGS = [
+  {min:0.9, tag:null, title:"Inspector of the Whole Network", desc:"You didn't just close six case files \u2014 you saw the pattern behind them: a colony stitched together from Aztec paper, Andean paint, Japanese screens, and Roman theology. That's the real conspiracy, and you cracked it."},
+  {min:0.75, tag:"critical-eye", title:"Champion of the Overlooked", desc:"You kept asking who these images left out, silenced, or ranked \u2014 and refused to let the paperwork speak for itself. The case file is better for it."},
+  {min:0.75, tag:"independent-eye", title:"The Sharp-Eyed Investigator", desc:"You trusted the evidence in front of you before trusting anyone's explanation of it \u2014 and you were right more often than not tonight."},
+  {min:0.75, tag:null, title:"The Viceroy's Favorite Inspector", desc:"Thorough, sharp, and quick with the facts \u2014 your report will be read at court by morning."},
+  {min:0.5, tag:"methodical", title:"The Careful Archivist", desc:"You built your case slowly and by the book, tracing every provenance and every name. A little slower than some \u2014 but nothing in your file is wrong."},
+  {min:0.5, tag:null, title:"A Promising Recruit", desc:"You closed every site, though a few details slipped past you along the way. The Audiencia will want a second report."},
+  {min:0, tag:null, title:"Back to the Files", desc:"The galleon sails at dawn whether your report is ready or not. Tonight, it sails without you \u2014 but the files aren't going anywhere."}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+var state = null;
+var SAVE_KEY = "galleonConspiracySave_v1";
+
+function freshState(mode){
+  return {
+    mode: mode,
+    screen: "map",
+    sitesCompleted: [],
+    renownCorrect: 0,
+    renownTotal: 0,
+    seals: [],
+    choiceTags: [],
+    currentSite: null,
+    currentWorkIdx: 0,
+    currentMatchState: null,
+    currentQuizQueue: [],
+    quizIdx: 0,
+    vocabRoundKeys: null,
+    vocabLocked: [],
+    vocabDoneForSite: false,
+    pairedTurn: "inspector",
+    pairedScores: {inspector:0, scribe:0},
+    finaleQueue: [],
+    finaleIdx: 0,
+    finaleLives: 3,
+    finaleCorrect: 0,
+    startedAt: Date.now(),
+    speedrunEndTime: mode === "speedrun" ? Date.now() + 10*60*1000 : null,
+    gameOverByClock: false
+  };
+}
+
+var speedrunInterval = null;
+function startSpeedrunClock(){
+  if(speedrunInterval) clearInterval(speedrunInterval);
+  speedrunInterval = setInterval(function(){
+    if(!state || state.mode !== "speedrun" || !state.speedrunEndTime) return;
+    var remaining = state.speedrunEndTime - Date.now();
+    if(remaining <= 0 && state.screen !== "ending"){
+      state.gameOverByClock = true;
+      clearInterval(speedrunInterval);
+      state.screen = "ending";
+      transition("The galleon's horn sounds\u2026", renderScreen);
+      return;
+    }
+    renderTopbar();
+  }, 1000);
+}
+function stopSpeedrunClock(){
+  if(speedrunInterval){ clearInterval(speedrunInterval); speedrunInterval = null; }
+}
+
+function saveGame(){
+  if(state.mode !== "study") return;
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadGame(){
+  try{ var raw = localStorage.getItem(SAVE_KEY); if(!raw) return null; return JSON.parse(raw); }catch(e){ return null; }
+}
+function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function $(sel){ return document.querySelector(sel); }
+function el(tag, opts){
+  var e = document.createElement(tag);
+  opts = opts || {};
+  if(opts.cls) e.className = opts.cls;
+  if(opts.text !== undefined) e.textContent = opts.text;
+  if(opts.html !== undefined) e.innerHTML = opts.html;
+  if(opts.attrs) for(var k in opts.attrs) e.setAttribute(k, opts.attrs[k]);
+  return e;
+}
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+function sample(arr, n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+function transition(text, cb){
+  var curtain = $("#curtain");
+  var curtainText = $("#curtainText");
+  curtainText.textContent = text || "\u2026";
+  curtain.classList.remove("hidden");
+  setTimeout(function(){
+    cb();
+    setTimeout(function(){ curtain.classList.add("hidden"); }, 60);
+  }, 420);
+}
+function renderTopbar(){
+  var bar = $("#topbar");
+  if(!state){ bar.classList.add("hidden"); return; }
+  bar.classList.remove("hidden");
+  var left = $("#topbarLeft");
+  var modeLabel = state.mode === "speedrun" ? "The Night Watch" : state.mode === "paired" ? "Partners in the Field" : "The Archive";
+  var timeStr = "";
+  if(state.mode === "speedrun" && state.speedrunEndTime){
+    var remaining = Math.max(0, state.speedrunEndTime - Date.now());
+    var mins = Math.floor(remaining/60000);
+    var secs = Math.floor((remaining%60000)/1000);
+    timeStr = "  \u00b7  \u23F3 " + mins + ":" + (secs<10?"0":"")+secs + " to dawn";
+  }
+  left.textContent = modeLabel + " \u00b7 " + state.sitesCompleted.length + "/6 sites" + timeStr;
+  var track = $("#track");
+  track.innerHTML = "";
+  var pct = state.renownTotal ? state.renownCorrect/state.renownTotal : 0;
+  var lit = Math.round(pct*10);
+  for(var i=0;i<10;i++){ track.appendChild(el("span",{cls:"track-dot"+(i<lit?" lit":"")})); }
+}
+
+/* ============================================================
+   TITLE / MODE SELECT
+   ============================================================ */
+function renderTitle(){
+  state = null;
+  stopSpeedrunClock();
+  var stage = $("#stage"); stage.innerHTML = "";
+  renderTopbar();
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("span",{cls:"eyebrow",text:"AP Art History \u00b7 Unit 3.12"}));
+  frame.appendChild(el("h1",{text:"The Manila Galleon Conspiracy"}));
+  var p = el("p",{cls:"dim"});
+  p.innerHTML = "Mexico City, before dawn. A shipment on the next Manila galleon has been flagged for the Real Audiencia \u2014 and you've been sent to find out why, before the ship sails. Six sites. One night. A story bigger than anyone expects.";
+  frame.appendChild(p);
+  var btnRow = el("div",{cls:"btn-row"});
+  var startBtn = el("button",{text:"Begin the Investigation"});
+  startBtn.onclick = renderModeSelect;
+  btnRow.appendChild(startBtn);
+  var saved = loadGame();
+  if(saved && saved.mode === "study" && saved.sitesCompleted && saved.sitesCompleted.length < 6){
+    var contBtn = el("button",{cls:"secondary", text:"Continue the Case File"});
+    contBtn.onclick = function(){
+      state = saved;
+      transition("Reopening the case file\u2026", function(){ renderScreen(); });
+    };
+    btnRow.appendChild(contBtn);
+  }
+  frame.appendChild(btnRow);
+  stage.appendChild(frame);
+}
+
+function renderModeSelect(){
+  var stage = $("#stage"); stage.innerHTML = "";
+  renderTopbar();
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow",text:"Choose your assignment"}));
+  frame.appendChild(el("h2",{text:"How will you run this investigation?"}));
+  var grid = el("div",{cls:"mode-grid"});
+  var modes = [
+    {id:"speedrun", title:"The Night Watch", desc:"A 10-minute clock to dawn. Six sites, one finale, no saving mid-run. Fast, replayable, great for a solo review sprint.", icon:"\u23F1\uFE0F"},
+    {id:"paired", title:"Partners in the Field", desc:"Pair up on one device as Inspector and Scribe. Partners alternate turns with different prompts each time \u2014 no copying allowed.", icon:"\uD83E\uDD1D"},
+    {id:"study", title:"The Archive", desc:"No clock, no pressure. Revisit any site, any vocabulary, any interrogation, as many times as you like. Progress saves automatically.", icon:"\uD83D\uDDC3\uFE0F"}
+  ];
+  modes.forEach(function(m){
+    var card = el("div",{cls:"mode-card"});
+    card.appendChild(el("div",{html:"<span style='font-size:1.8rem'>"+m.icon+"</span>"}));
+    card.appendChild(el("h3",{text:m.title}));
+    card.appendChild(el("p",{cls:"dim small",text:m.desc}));
+    card.onclick = function(modeId){
+      return function(){
+        transition("Stepping into the night\u2026", function(){
+          clearSave();
+          state = freshState(modeId);
+          if(modeId === "speedrun") startSpeedrunClock();
+          renderScreen();
+        });
+      };
+    }(m.id);
+    grid.appendChild(card);
+  });
+  frame.appendChild(grid);
+  var back = el("button",{cls:"secondary", text:"\u2190 Back"});
+  back.style.marginTop = "18px";
+  back.onclick = renderTitle;
+  frame.appendChild(back);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   SCREEN ROUTER
+   ============================================================ */
+function renderScreen(){
+  renderTopbar();
+  saveGame();
+  switch(state.screen){
+    case "map": renderMap(); break;
+    case "siteIntro": renderSiteIntro(); break;
+    case "match": renderMatch(); break;
+    case "vocab": renderVocab(); break;
+    case "quiz": renderQuiz(); break;
+    case "siteComplete": renderSiteComplete(); break;
+    case "finale": renderFinaleIntro(); break;
+    case "finaleQuiz": renderFinaleQuiz(); break;
+    case "ending": renderEnding(); break;
+    case "passScreen": renderPassScreen(); break;
+    default: renderMap();
+  }
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+function renderMap(){
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow",text:"Mexico City, before dawn"}));
+  frame.appendChild(el("h2",{text:"Six sites are open to you tonight."}));
+  frame.appendChild(el("p",{cls:"dim", text:"Investigate them in any order. The Archive mode lets you revisit as often as you like."}));
+  var grid = el("div",{cls:"map-grid"});
+  SITES.forEach(function(s){
+    var done = state.sitesCompleted.indexOf(s.id) !== -1;
+    var canRevisit = state.mode === "study";
+    var door = el("div",{cls:"site-door" + (done && !canRevisit ? " done" : "")});
+    door.appendChild(el("span",{cls:"glyph", text:s.glyph}));
+    door.appendChild(el("span",{cls:"name", text:s.name}));
+    door.appendChild(el("span",{cls:"status", text: done ? (canRevisit ? "Revisit" : "Filed") : "Investigate"}));
+    if(!done || canRevisit){
+      door.onclick = function(site){
+        return function(){
+          state.currentSite = site.id;
+          state.currentWorkIdx = 0;
+          state.screen = "siteIntro";
+          transition("Making your way through the city\u2026", renderScreen);
+        };
+      }(s);
+    }
+    grid.appendChild(door);
+  });
+  frame.appendChild(grid);
+  if(state.sitesCompleted.length >= 6){
+    var finaleBtn = el("button",{text:"Report to the Viceroy's Chamber"});
+    finaleBtn.style.marginTop = "20px";
+    finaleBtn.onclick = function(){
+      state.screen = "finale";
+      transition("The palace doors open\u2026", renderScreen);
+    };
+    frame.appendChild(finaleBtn);
+  }
+  var quitBtn = el("button",{cls:"secondary", text:"Suspend the Investigation"});
+  quitBtn.style.marginTop = "12px";
+  quitBtn.onclick = function(){ transition("Slipping back into the shadows\u2026", renderTitle); };
+  frame.appendChild(quitBtn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   SITE INTRO (flavor choice)
+   ============================================================ */
+function renderSiteIntro(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow", text: site.subtitle}));
+  frame.appendChild(el("h2",{text: site.name}));
+  frame.appendChild(el("p",{text: site.intro}));
+  frame.appendChild(el("h3",{text:"How do you proceed?"}));
+  var list = el("div",{cls:"card-list"});
+  site.choices.forEach(function(c){
+    var card = el("button",{cls:"choice-card", text:c.label});
+    card.onclick = function(choice){
+      return function(){
+        state.choiceTags.push(choice.tag);
+        state.currentWorkIdx = 0;
+        state.vocabDoneForSite = false;
+        state.screen = "match";
+        transition("You get to work\u2026", renderScreen);
+      };
+    }(c);
+    list.appendChild(card);
+  });
+  frame.appendChild(list);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   MATCH GAME (Evidence Log: label -> value pairing)
+   ============================================================ */
+function buildMatchPairs(work){
+  return [
+    {label:"Artist / Culture", value:work.artist},
+    {label:"Title", value:work.title},
+    {label:"Date", value:work.date},
+    {label:"Medium", value:work.medium},
+    {label:"Location", value:work.location}
+  ];
+}
+function renderMatch(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  var workId = site.works[state.currentWorkIdx];
+  var work = WORKS[workId];
+  var pairs = buildMatchPairs(work);
+  state.currentMatchState = {
+    workId: workId,
+    labels: shuffle(pairs.map(function(p,i){return {idx:i, text:p.label};})),
+    values: shuffle(pairs.map(function(p,i){return {idx:i, text:p.value};})),
+    selectedLabel: null, selectedValue: null, lockedIdx: [], pairs: pairs
+  };
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow", text: site.name + " \u00b7 Evidence " + (state.currentWorkIdx+1) + " of " + site.works.length}));
+  frame.appendChild(el("h2",{text:"Build the evidence log"}));
+  frame.appendChild(el("p",{cls:"dim", text:"Click a label, then click the value that belongs with it."}));
+  var cols = el("div",{cls:"match-cols", attrs:{id:"matchCols"}});
+  frame.appendChild(cols);
+  frame.appendChild(el("p",{cls:"small dim", attrs:{id:"matchMsg"}, text:"\u00a0"}));
+  stage.appendChild(frame);
+  drawMatchColumns();
+}
+function drawMatchColumns(){
+  var ms = state.currentMatchState;
+  var cols = $("#matchCols"); cols.innerHTML = "";
+  var colA = el("div"), colB = el("div");
+  ms.labels.forEach(function(item){
+    var locked = ms.lockedIdx.indexOf(item.idx) !== -1;
+    var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(ms.selectedLabel===item?" selected":""), text:item.text});
+    if(!locked) tile.onclick = function(){ ms.selectedLabel = item; tryMatch(); };
+    colA.appendChild(tile);
+  });
+  ms.values.forEach(function(item){
+    var locked = ms.lockedIdx.indexOf(item.idx) !== -1;
+    var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(ms.selectedValue===item?" selected":""), text:item.text});
+    if(!locked) tile.onclick = function(){ ms.selectedValue = item; tryMatch(); };
+    colB.appendChild(tile);
+  });
+  cols.appendChild(colA); cols.appendChild(colB);
+}
+function tryMatch(){
+  var ms = state.currentMatchState;
+  if(!ms.selectedLabel || !ms.selectedValue){ drawMatchColumns(); return; }
+  if(ms.selectedLabel.idx === ms.selectedValue.idx){
+    ms.lockedIdx.push(ms.selectedLabel.idx);
+    ms.selectedLabel = null; ms.selectedValue = null;
+    drawMatchColumns();
+    if(ms.lockedIdx.length === ms.pairs.length){
+      $("#matchMsg").textContent = "Evidence logged \u2014 moving on\u2026";
+      setTimeout(afterMatchComplete, 700);
+    }
+  } else {
+    $("#matchMsg").textContent = "Not quite \u2014 try again.";
+    ms.selectedLabel = null; ms.selectedValue = null;
+    drawMatchColumns();
+  }
+}
+function afterMatchComplete(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  var workId = site.works[state.currentWorkIdx];
+  var work = WORKS[workId];
+  showFactsThenContinue(work, site, function(){
+    if(site.vocabIntro.length && !state.vocabDoneForSite){
+      state.screen = "vocab";
+      state.vocabDoneForSite = true;
+    } else {
+      state.screen = "quiz";
+      state.currentQuizQueue = sample(work.quiz, 3);
+      state.quizIdx = 0;
+      state.pendingQuizWork = work;
+    }
+    transition("Reading the case notes\u2026", renderScreen);
+  });
+}
+function showFactsThenContinue(work, site, cb){
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow", text: work.artist}));
+  frame.appendChild(el("h2",{text: work.title}));
+  frame.appendChild(el("p",{cls:"dim", text: work.date + " \u00b7 " + work.medium + " \u00b7 " + work.location}));
+  frame.appendChild(el("h3",{text:"Case notes: Form, Function, Content, Context"}));
+  var list = el("div",{cls:"card-list"});
+  work.facts.forEach(function(f){ list.appendChild(el("div",{cls:"choice-card disabled", text: f})); });
+  frame.appendChild(list);
+  var btn = el("button",{text:"Continue"});
+  btn.style.marginTop = "16px";
+  btn.onclick = cb;
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   VOCAB MINI-GAME
+   ============================================================ */
+function renderVocab(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  var workId = site.works[state.currentWorkIdx];
+  var work = WORKS[workId];
+  if(!state.vocabRoundKeys){ state.vocabRoundKeys = site.vocabIntro.slice(); state.vocabLocked = []; }
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow", text:"Vocabulary of the Case"}));
+  frame.appendChild(el("h2",{text:"Match each term to its definition"}));
+  var terms = shuffle(state.vocabRoundKeys.map(function(k){ return {key:k, text:VOCAB[k].term}; }));
+  var defs = shuffle(state.vocabRoundKeys.map(function(k){ return {key:k, text:VOCAB[k].def}; }));
+  var cols = el("div",{cls:"match-cols"});
+  var colA = el("div"), colB = el("div");
+  var selTerm = null, selDef = null;
+  function redraw(){
+    colA.innerHTML=""; colB.innerHTML="";
+    terms.forEach(function(t){
+      var locked = state.vocabLocked.indexOf(t.key) !== -1;
+      var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(selTerm===t?" selected":""), text:t.text});
+      if(!locked) tile.onclick = function(){ selTerm=t; check(); };
+      colA.appendChild(tile);
+    });
+    defs.forEach(function(d){
+      var locked = state.vocabLocked.indexOf(d.key) !== -1;
+      var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(selDef===d?" selected":""), text:d.text});
+      if(!locked) tile.onclick = function(){ selDef=d; check(); };
+      colB.appendChild(tile);
+    });
+  }
+  function check(){
+    if(!selTerm || !selDef){ redraw(); return; }
+    if(selTerm.key === selDef.key){
+      state.vocabLocked.push(selTerm.key);
+      selTerm=null; selDef=null;
+      redraw();
+      if(state.vocabLocked.length === state.vocabRoundKeys.length){
+        setTimeout(function(){
+          state.vocabRoundKeys = null;
+          state.screen = "quiz";
+          state.currentQuizQueue = sample(work.quiz, 3);
+          state.quizIdx = 0;
+          state.pendingQuizWork = work;
+          transition("The terms go into the file\u2026", renderScreen);
+        }, 650);
+      }
+    } else { selTerm=null; selDef=null; redraw(); }
+  }
+  redraw();
+  cols.appendChild(colA); cols.appendChild(colB);
+  frame.appendChild(cols);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   QUIZ (Interrogation)
+   ============================================================ */
+function renderQuiz(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  var work = state.pendingQuizWork;
+  var q = state.currentQuizQueue[state.quizIdx];
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow", text: work.title + " \u00b7 Question " + (state.quizIdx+1) + " of " + state.currentQuizQueue.length}));
+  frame.appendChild(el("h2",{text: q.q}));
+  var list = el("div",{cls:"card-list"});
+  var answered = false;
+  var order = shuffle(q.choices.map(function(c,i){return {text:c, isAns:i===q.a};}));
+  order.forEach(function(opt){
+    var card = el("button",{cls:"choice-card", text:opt.text});
+    card.onclick = function(){
+      if(answered) return;
+      answered = true;
+      state.renownTotal++;
+      Array.prototype.forEach.call(list.children, function(c){ c.classList.add("disabled"); });
+      if(opt.isAns){
+        card.classList.add("correct");
+        state.renownCorrect++;
+        if(state.mode==="paired") state.pairedScores[state.pairedTurn]++;
+      } else {
+        card.classList.add("wrong");
+        Array.prototype.forEach.call(list.children, function(c2,i2){ if(order[i2].isAns) c2.classList.add("correct"); });
+      }
+      frame.appendChild(el("div",{cls:"quiz-explain", text:q.explain}));
+      var nextBtn = el("button",{text: state.quizIdx+1 < state.currentQuizQueue.length ? "Next Question" : "Continue"});
+      nextBtn.style.marginTop="14px";
+      nextBtn.onclick = advanceQuiz;
+      frame.appendChild(nextBtn);
+      renderTopbar();
+      saveGame();
+    };
+    list.appendChild(card);
+  });
+  frame.appendChild(list);
+  stage.appendChild(frame);
+}
+function advanceQuiz(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  state.quizIdx++;
+  if(state.quizIdx < state.currentQuizQueue.length){
+    if(state.mode === "paired"){
+      state.pairedTurn = state.pairedTurn === "inspector" ? "scribe" : "inspector";
+      state.screen = "passScreen";
+      state.afterPass = "quiz";
+      transition("Passing the notebook\u2026", renderScreen);
+    } else {
+      transition("\u2026", renderScreen);
+    }
+    return;
+  }
+  state.currentWorkIdx++;
+  if(state.currentWorkIdx < site.works.length){
+    state.screen = "match";
+    transition("On to the next piece of evidence\u2026", renderScreen);
+  } else {
+    state.screen = "siteComplete";
+    transition("The site falls quiet\u2026", renderScreen);
+  }
+}
+
+/* ============================================================
+   PASS SCREEN (paired mode)
+   ============================================================ */
+function renderPassScreen(){
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame pass-screen"});
+  frame.appendChild(el("div",{cls:"big", text: state.pairedTurn === "inspector" ? "\uD83D\uDD75\uFE0F" : "\u270D\uFE0F"}));
+  frame.appendChild(el("h2",{text: "Pass the notebook to the " + (state.pairedTurn === "inspector" ? "Inspector" : "Scribe")}));
+  frame.appendChild(el("p",{cls:"dim", text:"Different questions await \u2014 no peeking at each other's screens."}));
+  var btn = el("button",{text:"Ready"});
+  btn.onclick = function(){ state.screen = state.afterPass || "quiz"; transition("\u2026", renderScreen); };
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   SITE COMPLETE
+   ============================================================ */
+function renderSiteComplete(){
+  var site = SITES.filter(function(s){return s.id===state.currentSite;})[0];
+  if(state.sitesCompleted.indexOf(site.id) === -1){
+    state.sitesCompleted.push(site.id);
+    state.seals.push(site.id);
+  }
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("div",{html:"<span class='seal'>\u2713</span>", attrs:{style:"margin-bottom:14px;"}}));
+  frame.appendChild(el("h2",{text: site.name + " \u2014 Case Filed"}));
+  frame.appendChild(el("p",{cls:"dim", text: "This site's evidence is sealed into your report. " + (6-state.sitesCompleted.length) + " site(s) remain before the galleon sails."}));
+  var btn = el("button",{text:"Return to the City Map"});
+  btn.onclick = function(){ state.screen = "map"; transition("Back into the streets\u2026", renderScreen); };
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   GRAND FINALE
+   ============================================================ */
+function renderFinaleIntro(){
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("span",{cls:"eyebrow", text:"Dawn is close"}));
+  frame.appendChild(el("h2",{text:"The Viceroy's Chamber"}));
+  frame.appendChild(el("p",{text:"All six case files are spread across the table. Now you must defend your full report, question by question, before the Real Audiencia decides whether the galleon sails. You have three witnesses to your credibility \u2014 lose them all, and the hearing ends early."}));
+  var btn = el("button",{text:"Present Your Report"});
+  btn.onclick = function(){
+    var allQ = [];
+    Object.keys(WORKS).forEach(function(wid){ WORKS[wid].quiz.forEach(function(q){ allQ.push({q:q, work:WORKS[wid]}); }); });
+    state.finaleQueue = sample(allQ, 14);
+    state.finaleIdx = 0; state.finaleLives = 3; state.finaleCorrect = 0;
+    state.screen = "finaleQuiz";
+    transition("The Audiencia falls silent\u2026", renderScreen);
+  };
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+function renderFinaleQuiz(){
+  if(state.finaleLives <= 0 || state.finaleIdx >= state.finaleQueue.length){
+    state.screen = "ending";
+    transition("The hearing concludes\u2026", renderScreen);
+    return;
+  }
+  var item = state.finaleQueue[state.finaleIdx];
+  var q = item.q;
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  var topRow = el("div",{cls:"btn-row", attrs:{style:"justify-content:space-between;margin-top:0;"}});
+  topRow.appendChild(el("span",{cls:"eyebrow", text:"Question " + (state.finaleIdx+1) + " of " + state.finaleQueue.length}));
+  var livesEl = el("span",{cls:"lives"});
+  for(var i=0;i<3;i++){ livesEl.appendChild(el("span",{text: i<state.finaleLives ? "\uD83D\uDD6F\uFE0F" : "\uD83D\uDCA8"})); }
+  topRow.appendChild(livesEl);
+  frame.appendChild(topRow);
+  frame.appendChild(el("h2",{text:q.q}));
+  frame.appendChild(el("p",{cls:"dim small", text:"From: " + item.work.title}));
+  var list = el("div",{cls:"card-list"});
+  var answered = false;
+  var order = shuffle(q.choices.map(function(c,i){return {text:c, isAns:i===q.a};}));
+  order.forEach(function(opt){
+    var card = el("button",{cls:"choice-card", text:opt.text});
+    card.onclick = function(){
+      if(answered) return;
+      answered = true;
+      Array.prototype.forEach.call(list.children, function(c){ c.classList.add("disabled"); });
+      if(opt.isAns){ card.classList.add("correct"); state.finaleCorrect++; }
+      else {
+        card.classList.add("wrong"); state.finaleLives--;
+        Array.prototype.forEach.call(list.children, function(c2,i2){ if(order[i2].isAns) c2.classList.add("correct"); });
+      }
+      var nextBtn = el("button",{text:"Next"});
+      nextBtn.style.marginTop="14px";
+      nextBtn.onclick = function(){ state.finaleIdx++; transition("\u2026", renderScreen); };
+      frame.appendChild(nextBtn);
+    };
+    list.appendChild(card);
+  });
+  frame.appendChild(list);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   ENDING
+   ============================================================ */
+function renderEnding(){
+  stopSpeedrunClock();
+  clearSave();
+  var pct = state.renownTotal ? (state.renownCorrect + state.finaleCorrect) / (state.renownTotal + state.finaleQueue.length) : 0;
+  var tagCounts = {};
+  state.choiceTags.forEach(function(t){ tagCounts[t] = (tagCounts[t]||0)+1; });
+  var dominantTag = null, best = 0;
+  for(var t in tagCounts){ if(tagCounts[t] > best){ best = tagCounts[t]; dominantTag = t; } }
+  var candidates = ENDINGS.filter(function(e){ return pct >= e.min; });
+  var tagMatch = candidates.filter(function(e){ return e.tag === dominantTag; });
+  var chosen = tagMatch.length ? tagMatch[0] : (candidates.filter(function(e){return e.tag===null;})[0] || ENDINGS[ENDINGS.length-1]);
+
+  var stage = $("#stage"); stage.innerHTML = "";
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("span",{cls:"eyebrow", text:"The report is closed"}));
+  frame.appendChild(el("h2",{cls:"ending-title", text: chosen.title}));
+  frame.appendChild(el("p",{text: chosen.desc}));
+  frame.appendChild(el("p",{cls:"dim small", text: "Accuracy tonight: " + Math.round(pct*100) + "%  \u00b7  Sites sealed: " + state.seals.length + "/6"}));
+  if(state.gameOverByClock){ frame.appendChild(el("p",{cls:"dim small", text:"(Dawn broke before the investigation was through.)"})); }
+  if(state.mode === "paired"){ frame.appendChild(el("p",{cls:"dim small", text:"Inspector score: " + state.pairedScores.inspector + "  \u00b7  Scribe score: " + state.pairedScores.scribe})); }
+  var btnRow = el("div",{cls:"btn-row"});
+  var again = el("button",{text:"Open a New Case"});
+  again.onclick = function(){ transition("Filing the report away\u2026", renderTitle); };
+  btnRow.appendChild(again);
+  frame.appendChild(btnRow);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", function(){
+  renderTitle();
+});
+</script>
+</body>
+</html>

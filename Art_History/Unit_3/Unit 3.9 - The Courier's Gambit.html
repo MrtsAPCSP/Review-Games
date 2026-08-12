@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Courier's Gambit — Unit 3.9 Review</title>
+<style>
+:root{
+  --parchment:#EDE3CE;
+  --parchment-dark:#DCC9A3;
+  --parchment-darker:#C9B48C;
+  --ink:#2B211B;
+  --ink-soft:#4A3C30;
+  --venetian:#8C2F27;
+  --venetian-dark:#6E241D;
+  --gold:#B8892B;
+  --gold-light:#D9AE55;
+  --verdigris:#4C6B5A;
+  --verdigris-dark:#38503F;
+  --sky:#3F6C8A;
+  --shadow: rgba(43,33,27,0.35);
+  --good:#3F6C4A;
+  --bad:#8C2F27;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background: radial-gradient(ellipse at top, #f4ecd8 0%, var(--parchment) 45%, var(--parchment-dark) 100%);
+  color:var(--ink);
+  font-family: 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.display{
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: 0.06em;
+  font-variant: small-caps;
+  font-weight:700;
+}
+.mono{
+  font-family:'Courier New', Courier, monospace;
+  letter-spacing:0.02em;
+}
+#app{
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 18px 16px 60px;
+  min-height:100vh;
+}
+.paper{
+  background: linear-gradient(180deg, #f7f0dc, #efe2c2);
+  border: 1px solid var(--parchment-darker);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px var(--shadow), inset 0 0 60px rgba(184,137,43,0.06);
+  padding: 22px;
+  position:relative;
+}
+.paper::before{
+  content:"";
+  position:absolute; inset:6px;
+  border:1px solid rgba(140,47,39,0.25);
+  border-radius:4px;
+  pointer-events:none;
+}
+h1,h2,h3{margin:0 0 8px;}
+h1.display{font-size:1.7rem;color:var(--venetian-dark);}
+h2.display{font-size:1.25rem;color:var(--venetian-dark);}
+h3.display{font-size:1.02rem;color:var(--ink-soft);}
+p{line-height:1.5;margin:0 0 10px;}
+.small{font-size:0.82rem;color:var(--ink-soft);}
+.center{text-align:center;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.row.center{justify-content:center;}
+.spacer{height:14px;}
+.btn{
+  font-family:Georgia, serif;
+  font-weight:700;
+  letter-spacing:0.03em;
+  background: linear-gradient(180deg,var(--venetian),var(--venetian-dark));
+  color:#f6ead0;
+  border:1px solid #5a1c16;
+  padding:11px 18px;
+  border-radius:5px;
+  cursor:pointer;
+  box-shadow: 0 3px 0 #4a1712, 0 5px 10px rgba(0,0,0,0.25);
+  transition: transform .08s ease;
+  font-size:0.95rem;
+}
+.btn:hover{transform: translateY(-1px);}
+.btn:active{transform: translateY(1px); box-shadow:0 1px 0 #4a1712;}
+.btn.secondary{
+  background: linear-gradient(180deg,#c9b48c,#b39d6d);
+  color:var(--ink);
+  border-color:#8a7548;
+  box-shadow: 0 3px 0 #6d5c37, 0 5px 10px rgba(0,0,0,0.2);
+}
+.btn.gold{
+  background: linear-gradient(180deg,var(--gold-light),var(--gold));
+  color:#3a2a05;
+  border-color:#8a6820;
+  box-shadow: 0 3px 0 #6e5116, 0 5px 10px rgba(0,0,0,0.2);
+}
+.btn.green{
+  background: linear-gradient(180deg,#5f8a6d,var(--verdigris-dark));
+  color:#eef5ee;
+  border-color:#2a3d31;
+  box-shadow: 0 3px 0 #22301a, 0 5px 10px rgba(0,0,0,0.2);
+}
+.btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+.btn.wide{width:100%;}
+.pill{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:20px;
+  background:var(--parchment-darker);
+  font-size:0.75rem;
+  font-weight:700;
+  color:var(--ink-soft);
+  border:1px solid var(--gold);
+}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px; gap:10px; flex-wrap:wrap;
+}
+.stat{
+  background:var(--ink);
+  color:var(--parchment);
+  border-radius:5px;
+  padding:6px 10px;
+  font-size:0.78rem;
+  font-family:'Courier New',monospace;
+  display:flex;gap:6px;align-items:center;
+}
+.stat b{color:var(--gold-light);}
+.seal-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+.seal{
+  width:34px;height:34px;border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--venetian) 70%);
+  border:2px solid #5a1c16;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;color:#fff6e0;font-weight:700;
+  box-shadow:0 2px 4px rgba(0,0,0,0.3);
+  opacity:0.25;
+}
+.seal.earned{opacity:1;}
+.card{
+  background:#fbf5e6;
+  border:1px solid var(--parchment-darker);
+  border-radius:6px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.card.hoverable{cursor:pointer;transition:box-shadow .15s, transform .1s;}
+.card.hoverable:hover{box-shadow:0 4px 10px var(--shadow);transform:translateY(-2px);}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media (max-width:560px){.choice-grid{grid-template-columns:1fr;}}
+.choice{
+  background:#fbf5e6;border:2px solid var(--parchment-darker);
+  border-radius:6px;padding:12px 14px;cursor:pointer;text-align:left;
+  font-family:inherit;font-size:0.95rem;color:var(--ink);
+}
+.choice:hover{border-color:var(--gold);}
+.choice.correct{border-color:var(--good);background:#e9f3ea;}
+.choice.wrong{border-color:var(--bad);background:#f7e6e4;}
+.choice.disabled{pointer-events:none;}
+.badge-icon{width:100%;max-width:220px;display:block;margin:0 auto 8px;}
+.divider{border:none;border-top:1px dashed var(--parchment-darker);margin:12px 0;}
+.feedback{
+  padding:10px 12px;border-radius:6px;font-size:0.9rem;margin-top:8px;
+}
+.feedback.good{background:#e9f3ea;border:1px solid var(--good);color:#2a4a30;}
+.feedback.bad{background:#f7e6e4;border:1px solid var(--bad);color:#6b1f18;}
+#map-wrap{position:relative;width:100%;}
+svg{width:100%;display:block;}
+.map-city{cursor:pointer;}
+.map-city:hover .city-dot{filter:brightness(1.2);}
+.route-btn-group{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+.route-card{
+  border:2px solid var(--parchment-darker);border-radius:6px;padding:12px;background:#fbf5e6;cursor:pointer;
+}
+.route-card:hover{border-color:var(--gold);}
+.route-card h4{margin:0 0 4px;font-family:Georgia,serif;color:var(--venetian-dark);}
+.flex-between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.timer-box{
+  font-family:'Courier New',monospace;font-size:1.05rem;font-weight:700;
+  background:var(--ink);color:var(--gold-light);padding:6px 12px;border-radius:5px;
+}
+.rival-bar-outer{
+  background:#d8c69e;border:1px solid var(--parchment-darker);border-radius:20px;height:14px;overflow:hidden;margin:6px 0 2px;
+}
+.rival-bar-inner{
+  background: linear-gradient(90deg,var(--venetian),var(--venetian-dark));
+  height:100%;border-radius:20px;transition: width .5s ease;
+}
+.slider-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+.slider-row input[type=range]{flex:1;}
+.swatch{width:46px;height:46px;border-radius:5px;border:2px solid var(--ink);flex-shrink:0;}
+.matchbank{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+.matchtoken{
+  padding:8px 12px;border-radius:20px;background:var(--parchment-darker);border:1px solid var(--ink-soft);
+  cursor:pointer;font-size:0.85rem;
+}
+.matchtoken.selected{background:var(--gold);border-color:#8a6820;}
+.matchtoken.used{opacity:0.35;pointer-events:none;}
+.matchzone{
+  border:2px dashed var(--parchment-darker);border-radius:6px;padding:10px;min-height:44px;margin:6px 0;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.matchzone.filled{border-style:solid;border-color:var(--gold);}
+.matchzone.correct{border-color:var(--good);background:#e9f3ea;}
+.matchzone.wrong{border-color:var(--bad);background:#f7e6e4;}
+.vocab-flip{
+  background:#fbf5e6;border:1px solid var(--parchment-darker);border-radius:6px;padding:14px;margin-bottom:8px;cursor:pointer;
+}
+.vocab-term{font-family:Georgia,serif;font-weight:700;color:var(--venetian-dark);}
+.vocab-def{display:none;margin-top:6px;font-size:0.88rem;}
+.vocab-flip.open .vocab-def{display:block;}
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(43,33,27,0.55);z-index:50;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.modal-box{max-width:480px;width:100%;}
+footer.note{text-align:center;margin-top:22px;font-size:0.75rem;color:var(--ink-soft);}
+.city-label{font-family:Georgia,serif;font-weight:700;font-size:13px;fill:var(--ink);}
+.progress-track{display:flex;gap:4px;margin:6px 0 14px;}
+.progress-seg{flex:1;height:6px;border-radius:3px;background:var(--parchment-darker);}
+.progress-seg.done{background:var(--verdigris);}
+.progress-seg.active{background:var(--gold);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================== DATA ============================== */
+
+const VOCAB = [
+  {term:"Buon Fresco", def:"\u201cTrue fresco\u201d \u2014 pigment mixed with water and applied directly to wet (fresh) plaster, so the color bonds chemically as the wall dries. Michelangelo used it on the Sistine Chapel ceiling."},
+  {term:"Canvas", def:"A woven cloth support, usually linen, stretched over a frame and prepared with a ground layer for painting. Venetian painters like Titian favored it over wood panel or wall fresco."},
+  {term:"Chiaroscuro", def:"The use of strong contrasts between light and dark to model three-dimensional form and build dramatic mood."},
+  {term:"Cinquecento", def:"Italian for \u201cthe 1500s\u201d \u2014 the term used for the 16th century, spanning the High Renaissance into Mannerism."},
+  {term:"Di Sotto in Su", def:"\u201cFrom below, upward\u201d \u2014 an illusionistic ceiling technique making painted figures appear to soar into real space above the viewer."},
+  {term:"Entombment", def:"The placement of Christ's body into his tomb after the Crucifixion \u2014 a common devotional subject in Christian art."},
+  {term:"Glazes", def:"Thin, translucent layers of oil paint built up over one another to create luminous depth of color and subtle tonal transitions."},
+  {term:"Ignudi", def:"The idealized nude male youths Michelangelo painted flanking the narrative scenes on the Sistine Chapel ceiling."},
+  {term:"Neoplatonism", def:"A Renaissance philosophy blending Plato's ideas with Christian theology, holding that earthly beauty reflects divine, ideal beauty."},
+  {term:"Orthogonals", def:"Imaginary diagonal lines in linear perspective that recede toward the vanishing point, guiding the eye into pictorial depth."},
+  {term:"Sfumato", def:"A painting technique of subtle, smoky blending between tones and colors that eliminates harsh outlines \u2014 perfected by Leonardo da Vinci."},
+  {term:"Sibyl", def:"In classical tradition, a female prophet believed to have foretold the coming of Christ. Several appear among the figures on the Sistine ceiling."}
+];
+
+// Stops. type: 'milan' | 'florence' | 'venice' | roman sub-stops
+const STOPS = {
+  milan: {
+    id:"milan", city:"Milan", icon:"lastSupper",
+    title:"The Last Supper", artist:"Leonardo da Vinci", dates:"c. 1494\u20131498",
+    medium:"Tempera and oil on plaster (mural)", location:"Santa Maria delle Grazie, Milan",
+    fccf:{
+      form:"Christ and the twelve apostles sit around a long table in a unified perspectival room; apostles cluster in groups of three, reacting with waves of gesture; orthogonals converge on Christ's head at the vanishing point; sfumato softens every face.",
+      func:"Painted on the end wall of the monks' refectory (dining hall), so the monks would dine in Christ's presence.",
+      content:"The instant after Christ announces \u201cone of you will betray me\u201d \u2014 psychological drama, not a static ceremonial scene.",
+      context:"Commissioned by Ludovico Sforza. Leonardo used an experimental oil-and-tempera technique on dry plaster rather than true fresco, which caused the mural to deteriorate almost immediately \u2014 it has been restored many times since."
+    },
+    vocabIds:["Sfumato","Orthogonals","Chiaroscuro"],
+    quiz:[
+      {q:"Who commissioned The Last Supper?",a:["Ludovico Sforza, Duke of Milan","Pope Julius II","Lorenzo de\u2019 Medici","The Doge of Venice"],c:0},
+      {q:"Where is The Last Supper physically located?",a:["A monastery refectory (dining hall) in Milan","The Sistine Chapel","A private Venetian bedchamber","A Florentine funerary chapel"],c:0},
+      {q:"What exact moment does Leonardo depict?",a:["The instant Christ announces a betrayer is present","The Last Judgment","Christ's entombment","Christ blessing the bread alone"],c:0},
+      {q:"Why has the painting deteriorated so severely over time?",a:["Leonardo painted with oil/tempera on dry plaster instead of true fresco","It was moved several times","It was painted on unstretched canvas","It was painted outdoors"],c:0},
+      {q:"What device pulls the eye toward Christ's head?",a:["Orthogonal lines converging at the vanishing point","A bright halo only","Repeated color blocking","A mirror technique"],c:0},
+      {q:"How are the twelve apostles visually organized?",a:["In clusters of three, each reacting differently","In one continuous row facing forward","Kneeling in a circle","Standing behind Christ"],c:0},
+      {q:"What technique softens the figures' facial features?",a:["Sfumato","Di sotto in su","Fresco secco","Encaustic"],c:0},
+      {q:"What kind of room originally held this mural?",a:["A monastic refectory (dining hall)","A private study","A basilica nave","A ducal bedchamber"],c:0}
+    ],
+    minigame:"vanishing"
+  },
+  florence: {
+    id:"florence", city:"Florence", icon:"entombment",
+    title:"Entombment of Christ", artist:"Pontormo (Jacopo Carucci)", dates:"c. 1525\u20131528",
+    medium:"Oil on wood panel", location:"Capponi Chapel, Santa Felicita, Florence",
+    fccf:{
+      form:"Elongated, weightless figures in acidic pastel pinks, blues, and coral swirl through a tight, ambiguous, shallow space \u2014 no ground line, horizon, or setting is shown at all.",
+      func:"An altarpiece for a private funerary chapel, meant for close, intimate devotional contemplation.",
+      content:"Christ's body is lowered or carried while the Virgin Mary and attendants mourn; it is deliberately unclear whether this shows a Deposition, an Entombment, or a Piet\u00e0 \u2014 no tomb appears anywhere.",
+      context:"A landmark of early Mannerism, reacting against the balance and naturalism of the High Renaissance; its instability echoes the religious anxiety of an era approaching the Reformation."
+    },
+    vocabIds:["Entombment","Cinquecento"],
+    quiz:[
+      {q:"Who painted this altarpiece?",a:["Pontormo","Raphael","Titian","Michelangelo"],c:0},
+      {q:"Where does the work survive today?",a:["The Capponi Chapel, Santa Felicita, Florence","The Sistine Chapel","The Uffizi's main hall","Santa Maria delle Grazie"],c:0},
+      {q:"What is unusual about the setting of the scene?",a:["There is no ground line, horizon, or tomb shown at all","It is set inside a grand cathedral","It shows a busy city street","It is set at night with visible stars"],c:0},
+      {q:"What color palette defines the painting?",a:["Acidic pastels \u2014 pinks, blues, coral","Somber browns and blacks","Bold primary colors","Muted earth tones only"],c:0},
+      {q:"What art historical style does this painting exemplify?",a:["Mannerism","Baroque","Early Christian","Gothic"],c:0},
+      {q:"What figural quality creates instability in the composition?",a:["Elongated, contorted, weightless-looking bodies","Perfectly symmetrical, calm poses","Heavy, squat proportions","Rigid frontal poses"],c:0},
+      {q:"What was this painting's original function?",a:["A devotional altarpiece for a private funerary chapel","A ceiling fresco for a public dining hall","A secular bedroom painting","A civic government mural"],c:0},
+      {q:"Mannerism is generally understood as a reaction against what?",a:["The balanced naturalism of the High Renaissance","Byzantine iconography","Northern European printmaking","Ancient Roman sculpture"],c:0}
+    ],
+    minigame:"untangle"
+  },
+  venice: {
+    id:"venice", city:"Venice", icon:"venus",
+    title:"Venus of Urbino", artist:"Titian", dates:"1538",
+    medium:"Oil on canvas", location:"Painted in Venice; now the Uffizi Gallery, Florence",
+    fccf:{
+      form:"A reclining nude rendered in rich oil glazes, warm flesh tones set against dark drapery and a sunlit background; the composition splits between an intimate foreground bed and a busy background chamber.",
+      func:"A private, secular painting likely meant for a Duke's bedchamber \u2014 possibly a model of ideal marital beauty for his young bride.",
+      content:"A nude woman gazes directly at the viewer; a sleeping dog at her feet symbolizes fidelity; in the background two maids search a cassone (marriage chest) for clothing.",
+      context:"Descends from the reclining-Venus type established by Giorgione, but is far more direct and sensual in its gaze. Venice's humid climate made large-scale fresco impractical, and the city's textile trade made canvas the medium of choice."
+    },
+    vocabIds:["Canvas","Glazes"],
+    quiz:[
+      {q:"What is the support and medium of this painting?",a:["Oil on canvas","Tempera on wood panel","Fresco on plaster","Oil on copper"],c:0},
+      {q:"Why did Venetian painters favor canvas over fresco?",a:["Venice's humid climate made fresco impractical, and canvas suited the local textile trade","Canvas was cheaper than any other material","Fresco was banned by the Venetian government","Canvas dried faster than any other support"],c:0},
+      {q:"What does the small sleeping dog symbolize?",a:["Marital fidelity","Death and mourning","Wealth and luxury","Wisdom"],c:0},
+      {q:"What are the maids doing in the background?",a:["Searching a cassone (marriage chest) for clothing","Preparing a meal","Praying at an altar","Bathing another woman"],c:0},
+      {q:"For what likely purpose was this painting commissioned?",a:["To celebrate a marriage / model ideal beauty for a young bride","As a public altarpiece","As a portrait of a real ruling Duchess only","As a gift for the Pope"],c:0},
+      {q:"How does the woman's gaze function compared to earlier reclining nudes?",a:["She looks directly and boldly at the viewer","She looks away, asleep","She looks upward toward heaven","Her eyes are closed entirely"],c:0},
+      {q:"What technique gives Titian's flesh tones their glowing depth?",a:["Layered oil glazes","Encaustic wax","Buon fresco","Egg tempera alone"],c:0},
+      {q:"What earlier Venetian painting is this composition often compared to?",a:["Giorgione's Sleeping Venus","Raphael's School of Athens","Michelangelo's Sistine ceiling","Leonardo's Last Supper"],c:0}
+    ],
+    minigame:"glaze"
+  },
+  sistine: {
+    id:"sistine", city:"Rome", icon:"sistine",
+    title:"Sistine Chapel Ceiling", artist:"Michelangelo", dates:"1508\u20131512",
+    medium:"Buon fresco", location:"Sistine Chapel, Vatican City",
+    fccf:{
+      form:"Over 300 figures span the vault: a central spine of nine Genesis scenes framed by illusionistic painted architecture, flanked by pairs of ignudi, with sibyls and prophets seated in painted thrones around the perimeter.",
+      func:"Ceiling decoration for the Pope's private chapel, used for papal ceremonies and conclaves that elect new popes.",
+      content:"The Genesis narrative runs from Creation to the Flood and the Drunkenness of Noah; pagan sibyls alternate with Hebrew prophets, uniting classical and Christian traditions of prophecy.",
+      context:"Commissioned by Pope Julius II; painted almost single-handedly by Michelangelo \u2014 primarily a sculptor \u2014 over roughly four years using true (buon) fresco, which demanded speed since pigment had to be applied to wet plaster in day-sized patches."
+    },
+    vocabIds:["Cinquecento","Sibyl","Ignudi","Buon Fresco"],
+    quiz:[
+      {q:"Who commissioned the Sistine Chapel ceiling?",a:["Pope Julius II","Pope Paul III","Ludovico Sforza","Cosimo de\u2019 Medici"],c:0},
+      {q:"What fresco technique did Michelangelo use?",a:["Buon fresco (pigment on wet plaster)","Fresco secco (pigment on dry plaster)","Encaustic","Oil on plaster"],c:0},
+      {q:"What subject occupies the central spine of the ceiling?",a:["Nine scenes from Genesis","Scenes from the Last Judgment","The life of St. Peter","The Twelve Apostles"],c:0},
+      {q:"What are the idealized nude youths flanking the narrative scenes called?",a:["Ignudi","Putti","Sibyls","Atlantes"],c:0},
+      {q:"What pagan prophetic female figures alternate with Hebrew prophets?",a:["Sibyls","Nymphs","Muses","Vestals"],c:0},
+      {q:"What major papal events take place in this chapel?",a:["Papal ceremonies and conclaves that elect new popes","Public weddings","University lectures","Coronations of Holy Roman Emperors"],c:0},
+      {q:"What Renaissance philosophy links classical sibyls with Christian prophecy?",a:["Neoplatonism","Stoicism","Scholasticism","Epicureanism"],c:0},
+      {q:"About how long did the ceiling take to complete?",a:["Roughly four years","About six months","Nearly thirty years","Two weeks"],c:0}
+    ],
+    minigame:"vault"
+  },
+  stpeters: {
+    id:"stpeters", city:"Rome", icon:"stpeters",
+    title:"St. Peter's Basilica", artist:"Bramante, Raphael, Michelangelo, Maderno, della Porta (successive architects)", dates:"begun 1506; dome and nave completed by 1626",
+    medium:"Brick, marble, and travertine", location:"Vatican City",
+    fccf:{
+      form:"A vast basilica crowned by an enormous ribbed dome, drawing on ancient Roman engineering (the Pantheon) and Renaissance geometric harmony; a colossal order of pilasters unifies the exterior.",
+      func:"The principal church of the Roman Catholic Church, built over the traditional burial site of St. Peter and used for the Church's most important ceremonies.",
+      content:"There is no single narrative image \u2014 the architecture itself expresses papal authority and the triumph of the Counter-Reformation Church.",
+      context:"Multiple architects reshaped the design over more than a century: Bramante's original Greek-cross plan, Raphael's Latin-cross revision, Michelangelo's simplified centralized plan and dome, and Carlo Maderno's later extended nave, with Giacomo della Porta completing the dome after Michelangelo's death."
+    },
+    vocabIds:["Cinquecento"],
+    quiz:[
+      {q:"Whose traditional burial site does the basilica sit over?",a:["St. Peter\u2019s","St. Paul\u2019s","St. Francis\u2019s","St. Mark\u2019s"],c:0},
+      {q:"Who designed the dome (completed after his death)?",a:["Michelangelo","Bramante","Raphael","Vignola"],c:0},
+      {q:"What ancient Roman building inspired the dome's engineering?",a:["The Pantheon","The Colosseum","The Baths of Caracalla","The Arch of Constantine"],c:0},
+      {q:"Which architect first proposed a centralized Greek-cross plan?",a:["Donato Bramante","Carlo Maderno","Giacomo della Porta","Titian"],c:0},
+      {q:"Who later extended the plan into a Latin cross with a long nave?",a:["Carlo Maderno","Michelangelo","Bramante","Vignola"],c:0},
+      {q:"What does the basilica's immense scale primarily communicate?",a:["The authority and triumph of the papacy / Counter-Reformation Church","The wealth of a single Florentine banking family","Venetian maritime power","Republican civic pride"],c:0},
+      {q:"Roughly how long did construction span?",a:["More than a century","About ten years","Two centuries and a half","Six months"],c:0},
+      {q:"What architectural feature unifies the exterior walls?",a:["A colossal (giant) order of pilasters","Flying buttresses","Pointed lancet windows","A single unbroken row of columns"],c:0}
+    ],
+    minigame:"architects"
+  },
+  schoolofathens: {
+    id:"schoolofathens", city:"Rome", icon:"school",
+    title:"School of Athens", artist:"Raphael", dates:"1509\u20131511",
+    medium:"Fresco", location:"Stanza della Segnatura, Apostolic Palace, Vatican",
+    fccf:{
+      form:"An illusionistic classical hall with barrel vaults and coffered ceilings recedes via strong orthogonals to a distant sky at the vanishing point, framed between two central figures; dozens of figures form balanced, harmonious groups.",
+      func:"Painted for the Pope's private library/study, symbolically pairing Philosophy with Theology, Poetry, and Law painted elsewhere in the same room.",
+      content:"An idealized gathering of ancient philosophers and scientists across time: Plato (pointing upward, toward ideal Forms) and Aristotle (gesturing outward, toward the empirical world) stand centrally, surrounded by figures such as Pythagoras, Diogenes, and Euclid.",
+      context:"Embodies Renaissance Neoplatonism and humanism, reconciling classical philosophy with Christian faith; commissioned by Pope Julius II as part of a decorative program celebrating human knowledge."
+    },
+    vocabIds:["Neoplatonism","Orthogonals"],
+    quiz:[
+      {q:"Who commissioned the School of Athens?",a:["Pope Julius II","Pope Leo X","Ludovico Sforza","The Medici Bank"],c:0},
+      {q:"In what room does the fresco appear?",a:["The Stanza della Segnatura (the Pope\u2019s library/study)","The Sistine Chapel","St. Peter\u2019s nave","The Capponi Chapel"],c:0},
+      {q:"What do Plato's and Aristotle's central gestures represent?",a:["Plato points to ideal Forms above; Aristotle gestures to the empirical world","Both point to the viewer","Plato blesses the crowd; Aristotle prays","Aristotle points up; Plato points down"],c:0},
+      {q:"What kind of architectural space does Raphael depict?",a:["An idealized classical hall with vaults, echoing new St. Peter\u2019s designs","A Gothic cathedral interior","A rustic outdoor market","A Byzantine domed church"],c:0},
+      {q:"What Renaissance philosophy does the fresco embody?",a:["Neoplatonism / humanism","Stoicism","Scholastic nominalism","Epicureanism"],c:0},
+      {q:"What compositional device leads the eye toward the vanishing point?",a:["Orthogonal linear perspective","Repeated color blocks","A spiral staircase motif","Diagonal cloud shapes"],c:0},
+      {q:"What other subjects decorate the same room alongside Philosophy?",a:["Theology, Poetry, and Law","Music, Astronomy, and Medicine","War, Trade, and Agriculture","Only Theology"],c:0},
+      {q:"Name a philosopher (besides Plato and Aristotle) depicted in the fresco.",a:["Pythagoras, Euclid, or Diogenes","Augustine","Aquinas","Dante"],c:0}
+    ],
+    minigame:"philosophers"
+  },
+  ilgesu: {
+    id:"ilgesu", city:"Rome", icon:"gesu",
+    title:"Il Ges\u00f9 (Church of the Ges\u00f9)", artist:"Vignola (plan) and Giacomo della Porta (fa\u00e7ade)", dates:"1568\u20131584",
+    medium:"Brick, marble, stucco, and gilding", location:"Rome",
+    fccf:{
+      form:"A wide nave with side chapels rather than aisles, a single dominant barrel vault directing attention to the altar; a dramatic fa\u00e7ade uses paired pilasters and scroll-shaped volutes to link a wide lower story to a narrower upper story.",
+      func:"The mother church of the Jesuit order, designed to maximize sightlines and acoustics for large congregations gathered to hear Counter-Reformation preaching.",
+      content:"The building itself, rather than a single image, communicates triumphant, theatrical Catholic authority; a later Baroque ceiling fresco uses di sotto in su illusionism to seem to open into heaven above worshippers.",
+      context:"Built for the Jesuits, a new order central to the Counter-Reformation's push to re-engage the faithful through dramatic, persuasive art and architecture. Its plan became the model for Jesuit churches worldwide and is often seen as a bridge from Mannerism into the Baroque."
+    },
+    vocabIds:["Di Sotto in Su"],
+    quiz:[
+      {q:"For which religious order was Il Ges\u00f9 built?",a:["The Jesuits","The Dominicans","The Franciscans","The Benedictines"],c:0},
+      {q:"Who designed the plan, and who designed the fa\u00e7ade?",a:["Vignola designed the plan; della Porta designed the fa\u00e7ade","Bramante designed both","Michelangelo designed both","Raphael designed the plan; Titian the fa\u00e7ade"],c:0},
+      {q:"Why does the nave use side chapels instead of side aisles?",a:["To maximize sightlines and acoustics for preaching","To create more storage space","To match Gothic tradition","To reduce construction costs only"],c:0},
+      {q:"What scroll-shaped elements link the fa\u00e7ade's two stories?",a:["Volutes","Pendentives","Flying buttresses","Pilotis"],c:0},
+      {q:"What illusionistic technique makes a ceiling seem to open into heaven?",a:["Di sotto in su","Sfumato","Chiaroscuro","Grisaille"],c:0},
+      {q:"What movement does Il Ges\u00f9's dramatic design primarily serve?",a:["The Catholic Counter-Reformation","The Protestant Reformation","Venetian secular government","Florentine republicanism"],c:0},
+      {q:"Why is Il Ges\u00f9 historically significant for later architecture?",a:["Its plan became the model for Jesuit churches worldwide, bridging Mannerism into the Baroque","It was the first basilica ever built in Rome","It introduced the pointed arch to Italy","It was never copied elsewhere"],c:0},
+      {q:"What is this church commonly called for short?",a:["The Ges\u00f9","San Pietro","Il Duomo","La Sapienza"],c:0}
+    ],
+    minigame:"disotto"
+  }
+};
+
+const ROME_STOPS = ["sistine","stpeters","schoolofathens","ilgesu"];
+
+const RIVAL_NAMES = [
+  "Bianca \u201cSwift-Foot\u201d Contarini","Cesare of the Sforza Post","Brother Anselmo the Silent",
+  "Marguerite the Flemish Rider","Old Pietro of the Twelve Roads","The Masked Rider of Ferrara"
+];
+
+const EVENTS = [
+  {name:"A Kind Innkeeper", text:"An innkeeper along the road recognizes your master's seal and points out a faster fork.", effect:-20, type:"bonus"},
+  {name:"Muddy Road", text:"Overnight rain has turned the road to mud. Your cart wheels sink and slow you down.", effect:25, type:"penalty"},
+  {name:"A Generous Merchant", text:"A merchant, impressed by your errand, lends you a fresh horse for a stretch of the road.", effect:-30, type:"bonus"},
+  {name:"Broken Wheel", text:"A wheel splits on a rocky stretch. You lose time making repairs.", effect:35, type:"penalty"},
+  {name:"Lost Map", text:"Your map page tears loose in the wind and you backtrack to retrieve it.", effect:20, type:"penalty"},
+  {name:"Rival Resting", text:"You spot your rival's courier asleep at a roadside well \u2014 you slip past quietly.", effect:-15, type:"bonus"},
+  {name:"Market Day Crowd", text:"A market-day crowd clogs the road ahead.", effect:15, type:"penalty"},
+  {name:"A Patron's Letter", text:"A rider from your patron catches up just to deliver an encouraging note. No time lost, no time gained \u2014 but your spirits lift.", effect:0, type:"flavor"}
+];
+
+const CHECKPOINT_QS = [
+  {q:"A term for the 1500s in Italian art history is:", a:["Cinquecento","Trecento","Quattrocento","Seicento"], c:0},
+  {q:"The smoky blending of tones with no harsh outlines is called:", a:["Sfumato","Impasto","Grisaille","Tenebrism"], c:0},
+  {q:"Lines that recede toward a vanishing point are called:", a:["Orthogonals","Volutes","Pendentives","Spandrels"], c:0},
+  {q:"A woven cloth support for painting is called:", a:["Canvas","Vellum","Stucco","Terracotta"], c:0},
+  {q:"Painting on wet plaster so pigment bonds chemically is:", a:["Buon fresco","Fresco secco","Encaustic","Grisaille"], c:0},
+  {q:"An illusionistic ceiling technique meaning \u201cfrom below, upward\u201d is:", a:["Di sotto in su","Trompe l\u2019oeil only","Chiaroscuro","Contrapposto"], c:0}
+];
+
+const RIVAL_TAUNTS = [
+  "You hear hoofbeats behind you \u2014 your rival is closing in!",
+  "A traveler mentions passing a courier riding hard just an hour ahead of you.",
+  "Word reaches you that your rival stopped to rest. Good \u2014 push on!",
+  "Your rival's banner was spotted at the last crossroads. Time to move.",
+  "Someone swears they saw your rival's cart overturned in a ditch \u2014 rumor, or truth?"
+];
+
+const ARCHITECT_ORDER = [
+  {id:"bramante", label:"Bramante", note:"original Greek-cross plan"},
+  {id:"raphael", label:"Raphael", note:"Latin-cross revision"},
+  {id:"michelangelo", label:"Michelangelo", note:"centralized plan & dome design"},
+  {id:"maderno", label:"Maderno / della Porta", note:"extended nave, fa\u00e7ade, completed dome"}
+];
+
+const PHILOSOPHER_POOL = [
+  {name:"Plato", clue:"Points upward \u2014 toward the eternal, ideal Forms."},
+  {name:"Aristotle", clue:"Gestures outward \u2014 toward the empirical, observable world."},
+  {name:"Pythagoras", clue:"Bent over a writing tablet, absorbed in mathematics and music theory."},
+  {name:"Diogenes", clue:"Sprawled alone on the steps, indifferent to social convention."},
+  {name:"Euclid (or Archimedes)", clue:"Bends down with a compass, demonstrating geometry to students."},
+  {name:"Heraclitus", clue:"Sits apart, brooding \u2014 often thought to bear Michelangelo\u2019s features."}
+];
+
+const VAULT_ZONES = [
+  {id:"genesis", label:"Central Genesis narrative scenes"},
+  {id:"ignudi", label:"Ignudi (idealized nude youths)"},
+  {id:"sibyls", label:"Sibyls & prophets in painted thrones"},
+  {id:"spandrels", label:"Corner spandrels (Old Testament ancestors)"}
+];
+
+const UNTANGLE_LABELS = [
+  {id:"virgin", label:"The Virgin Mary, swooning at left"},
+  {id:"christ", label:"Christ\u2019s pale, weightless body"},
+  {id:"youth", label:"A straining youth supporting the body"},
+  {id:"attendant", label:"A grieving attendant figure"}
+];
+
+/* ============================== STATE ============================== */
+
+let S = null;
+
+function freshState(){
+  return {
+    screen:"title",
+    mode:null, // solo | duel | study | speed
+    macroOrder:[], // e.g. ["milan","florence","venice","rome"]
+    romeOrder:[],
+    stopQueue:[], // flattened queue of stop ids to visit in order
+    stopIndex:0,
+    subStep:"arrival", // arrival | fccf | quiz | vocab | minigame | seal
+    quizSet:[], quizIndex:0, quizCorrect:0,
+    rivalName:"", rivalPct:14,
+    elapsed:0, timerId:null, startTime:0,
+    seals:[], totalCorrect:0, totalQuestions:0,
+    duel:{turn:0, roles:["Navigator","Scholar"], names:["Partner A","Partner B"]},
+    pendingEvent:null,
+    romeSubIndex:0,
+    speed:{timeLeft:75, score:0, qIndex:0, pool:[], timerId:null},
+    lastMiniOk:false,
+    edgeChoices:{}
+  };
+}
+
+function saveBest(mode, val){
+  try{
+    const key = "courier_gambit_best_"+mode;
+    let arr = JSON.parse(localStorage.getItem(key) || "[]");
+    arr.push(val);
+    arr.sort((a,b)=> mode==="speed" ? b-a : a-b);
+    arr = arr.slice(0,5);
+    localStorage.setItem(key, JSON.stringify(arr));
+  }catch(e){}
+}
+function getBest(mode){
+  try{ return JSON.parse(localStorage.getItem("courier_gambit_best_"+mode) || "[]"); }catch(e){ return []; }
+}
+
+/* ============================== UTIL ============================== */
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pick(arr,n){ return shuffle(arr).slice(0,n); }
+function one(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function fmtTime(sec){
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec/60), s = sec%60;
+  return m+":"+(s<10?"0":"")+s;
+}
+function shuffleChoices(q){
+  const order = shuffle(q.a.map((txt,i)=>({txt,i})));
+  const correctNewIndex = order.findIndex(o=>o.i===q.c);
+  return {q:q.q, choices:order.map(o=>o.txt), correct:correctNewIndex};
+}
+function esc(s){ return String(s); }
+
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+function on(sel, evt, fn){
+  $all(sel).forEach(el=> el.addEventListener(evt, fn));
+}
+
+/* ============================== ICONS (inline SVG, non-photographic) ============================== */
+
+function icon(name, size){
+  size = size || 90;
+  const box = `viewBox="0 0 100 100" width="${size}" height="${size}"`;
+  const stroke = 'stroke="#2B211B" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  switch(name){
+    case "lastSupper":
+      return `<svg ${box}><rect x="8" y="55" width="84" height="8" rx="2" fill="#B8892B"/><g ${stroke}>
+        <circle cx="50" cy="30" r="9"/><path d="M42 46 L58 46 L58 55 L42 55 Z"/>
+        <circle cx="26" cy="34" r="6"/><path d="M20 46h12v9h-12z"/>
+        <circle cx="74" cy="34" r="6"/><path d="M68 46h12v9h-12z"/>
+        <circle cx="12" cy="38" r="5"/><circle cx="88" cy="38" r="5"/>
+      </g></svg>`;
+    case "entombment":
+      return `<svg ${box}><g ${stroke}>
+        <path d="M50 15 C 30 25, 25 55, 40 78" />
+        <path d="M50 15 C 70 25, 75 55, 60 78" />
+        <ellipse cx="50" cy="20" rx="7" ry="9"/>
+        <path d="M25 60 C 35 70, 65 70, 75 60" />
+      </g></svg>`;
+    case "venus":
+      return `<svg ${box}><g ${stroke}>
+        <path d="M15 70 C 15 55, 25 45, 45 45 C 70 45, 85 55, 85 65 L 85 78 L 15 78 Z"/>
+        <ellipse cx="30" cy="42" rx="9" ry="7"/>
+        <path d="M40 44 C 55 50, 70 50, 82 44"/>
+      </g></svg>`;
+    case "sistine":
+      return `<svg ${box}><g ${stroke}>
+        <path d="M10 55 Q50 15 90 55" />
+        <path d="M20 55 Q50 30 80 55" />
+        <circle cx="35" cy="47" r="4"/><circle cx="65" cy="47" r="4"/>
+        <path d="M10 55h80" />
+      </g></svg>`;
+    case "stpeters":
+      return `<svg ${box}><g ${stroke}>
+        <ellipse cx="50" cy="35" rx="22" ry="14"/>
+        <path d="M50 21 v-10" /><circle cx="50" cy="9" r="2.5" fill="#B8892B"/>
+        <rect x="20" y="49" width="60" height="30"/>
+        <path d="M20 49h60" />
+        <rect x="30" y="60" width="8" height="19"/><rect x="62" y="60" width="8" height="19"/>
+      </g></svg>`;
+    case "school":
+      return `<svg ${box}><g ${stroke}>
+        <path d="M10 78 Q50 20 90 78" />
+        <path d="M22 78 Q50 34 78 78" />
+        <circle cx="42" cy="60" r="5"/><circle cx="58" cy="60" r="5"/>
+        <path d="M42 65v13M58 65v13"/>
+      </g></svg>`;
+    case "gesu":
+      return `<svg ${box}><g ${stroke}>
+        <path d="M25 78 V45 h50 V78" />
+        <path d="M25 45 Q50 20 75 45" />
+        <path d="M18 78h64" />
+        <circle cx="50" cy="30" r="3" fill="#B8892B"/>
+      </g></svg>`;
+    case "seal":
+      return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="42" fill="#8C2F27" stroke="#5a1c16" stroke-width="3"/><circle cx="50" cy="50" r="32" fill="none" stroke="#D9AE55" stroke-width="2"/></svg>`;
+    default: return "";
+  }
+}
+
+/* ============================== RENDER SHELL ============================== */
+
+function render(){
+  const app = $("#app");
+  app.innerHTML = screenHTML();
+  bindEvents();
+  window.scrollTo(0,0);
+}
+
+function topStat(){
+  if(!S.mode || S.screen==="title" || S.screen==="modeSelect") return "";
+  const sealCount = S.seals.length;
+  const totalStops = S.mode==="duel" || S.mode==="solo" ? 7 : 0;
+  let timerHtml = "";
+  if(S.mode==="solo" || S.mode==="duel"){
+    timerHtml = `<div class="timer-box">\u23F1 ${fmtTime(S.elapsed)}</div>`;
+  }
+  return `<div class="topbar">
+    <div class="pill">${S.mode==="solo"?"Solo Speedrun":S.mode==="duel"?"Courier Duel":S.mode==="study"?"Study Hall":"Speed Round"}</div>
+    ${timerHtml}
+    ${(S.mode==="solo"||S.mode==="duel") ? `<div class="stat">Seals: <b>${sealCount}/7</b></div>` : ""}
+  </div>`;
+}
+
+/* ============================== SCREENS ============================== */
+
+function screenHTML(){
+  switch(S.screen){
+    case "title": return titleScreen();
+    case "modeSelect": return modeSelectScreen();
+    case "duelSetup": return duelSetupScreen();
+    case "howto": return howtoScreen();
+    case "travelIntro": return travelIntroScreen();
+    case "map": return mapScreen();
+    case "event": return eventScreen();
+    case "checkpoint": return checkpointScreen();
+    case "romeMap": return romeMapScreen();
+    case "stop": return stopScreen();
+    case "delivery": return deliveryScreen();
+    case "results": return resultsScreen();
+    case "studyHall": return studyHallScreen();
+    case "studyStop": return studyStopScreen();
+    case "vocabVault": return vocabVaultScreen();
+    case "speedIntro": return speedIntroScreen();
+    case "speedPlay": return speedPlayScreen();
+    case "speedResults": return speedResultsScreen();
+    case "pause": return pauseScreen();
+    default: return titleScreen();
+  }
+}
+
+function titleScreen(){
+  return `
+  <div class="paper center">
+    <div style="margin-bottom:6px;">${icon("seal",70)}</div>
+    <h1 class="display" style="font-size:2rem;">The Courier's Gambit</h1>
+    <p class="small" style="margin-top:-4px;">A Race Across Renaissance Italy &mdash; Unit 3.9: High Renaissance &amp; Mannerism</p>
+    <hr class="divider">
+    <p style="text-align:left;">Milan, 1538. Your master entrusts you with a portfolio of secret commissions bound for the workshops and courts of Italy. A rival courier races to beat you there &mdash; and to deliver false word to your patrons first. Every city holds a masterwork you must study before you can move on. Choose your roads wisely. Time is against you.</p>
+    <div class="spacer"></div>
+    <div class="row center">
+      <button class="btn wide" data-go="modeSelect" style="max-width:320px;">Begin the Journey</button>
+    </div>
+    <div class="row center" style="margin-top:8px;">
+      <button class="btn secondary" data-go="howto">How to Play</button>
+    </div>
+  </div>
+  <footer class="note">Unit 3.9 &middot; 7 required works &middot; 12 vocabulary terms &middot; Mr. Taylor's AP Art History</footer>
+  `;
+}
+
+function howtoScreen(){
+  return `
+  <div class="paper">
+    <h2 class="display">How to Play</h2>
+    <p>You'll travel between four Italian cities &mdash; <b>Milan, Florence, Venice,</b> and <b>Rome</b> &mdash; delivering a secret commission. Rome holds four stops of its own.</p>
+    <p>At every stop you'll study a required work (Form, Function, Content, Context), answer content questions, review key vocabulary, and solve a short puzzle unique to that artwork. Correct, fast work shortens your time; mistakes and bad luck on the road cost you time.</p>
+    <p>Your route order, road events, and question sets are randomized every playthrough &mdash; no two journeys are the same.</p>
+    <ul>
+      <li><b>Solo Speedrun</b> &mdash; race the clock and a rival courier alone.</li>
+      <li><b>Courier Duel</b> &mdash; two partners alternate roles: the Navigator picks roads and solves puzzles, the Scholar handles quizzes and vocabulary.</li>
+      <li><b>Study Hall</b> &mdash; no clock, browse all seven works and flashcards freely.</li>
+      <li><b>Speed Round</b> &mdash; a fast vocabulary &amp; ID drill against a countdown.</li>
+    </ul>
+    <div class="row center"><button class="btn" data-go="modeSelect">Back to Modes</button></div>
+  </div>`;
+}
+
+function modeSelectScreen(){
+  return `
+  <div class="paper">
+    <h2 class="display center">Choose Your Path</h2>
+    <div class="choice-grid">
+      <div class="card hoverable" data-mode="solo">
+        <h3 class="display">Solo Speedrun</h3>
+        <p class="small">Race alone against the clock and a randomized rival. Best times saved on this device.</p>
+      </div>
+      <div class="card hoverable" data-mode="duel">
+        <h3 class="display">Courier Duel (Pairs)</h3>
+        <p class="small">Two partners alternate: Navigator vs. Scholar. Great for in-class pairs.</p>
+      </div>
+      <div class="card hoverable" data-mode="study">
+        <h3 class="display">Study Hall</h3>
+        <p class="small">No timer. Explore all 7 works, flip flashcards, replay any puzzle.</p>
+      </div>
+      <div class="card hoverable" data-mode="speed">
+        <h3 class="display">Speed Round</h3>
+        <p class="small">75 seconds. Rapid-fire vocabulary and ID questions. Beat your high score.</p>
+      </div>
+    </div>
+    <div class="row center" style="margin-top:14px;">
+      <button class="btn secondary" data-go="title">Back</button>
+    </div>
+  </div>`;
+}
+
+function duelSetupScreen(){
+  return `
+  <div class="paper">
+    <h2 class="display center">Courier Duel Setup</h2>
+    <p>Two partners will alternate roles at every stop. Enter your names (optional):</p>
+    <div class="row">
+      <div style="flex:1;">
+        <label class="small"><b>Partner A (starts as Navigator)</b></label><br>
+        <input id="nameA" type="text" placeholder="Partner A" style="width:100%;padding:8px;font-size:1rem;border:1px solid var(--parchment-darker);border-radius:5px;background:#fbf5e6;">
+      </div>
+      <div style="flex:1;">
+        <label class="small"><b>Partner B (starts as Scholar)</b></label><br>
+        <input id="nameB" type="text" placeholder="Partner B" style="width:100%;padding:8px;font-size:1rem;border:1px solid var(--parchment-darker);border-radius:5px;background:#fbf5e6;">
+      </div>
+    </div>
+    <p class="small" style="margin-top:10px;"><b>Navigator</b>: picks the road at every crossroads and solves the artwork puzzle.<br><b>Scholar</b>: answers the content quiz and vocabulary challenge. Roles swap after every stop.</p>
+    <div class="row center" style="margin-top:12px;">
+      <button class="btn secondary" data-go="modeSelect">Back</button>
+      <button class="btn gold" id="startDuel">Start the Duel</button>
+    </div>
+  </div>`;
+}
+
+function travelIntroScreen(){
+  const rival = S.rivalName;
+  return `
+  <div class="paper">
+    <h2 class="display">Your Commission Begins</h2>
+    <p>Word has reached the courier houses: <b>${rival}</b> races the same roads, carrying rumors meant to undercut your master's good name. You must reach every workshop first, prove your knowledge to wary gatekeepers, and deliver the true commission to Rome.</p>
+    <p class="small">Your first stop: <b>Milan</b>, where Leonardo's mural still dries on a monastery wall.</p>
+    <div class="row center"><button class="btn gold" data-go="stop">Set Out</button></div>
+  </div>`;
+}
+
+function progressTrack(){
+  const total = S.stopQueue.length;
+  let html = `<div class="progress-track">`;
+  for(let i=0;i<total;i++){
+    const cls = i<S.stopIndex ? "done" : (i===S.stopIndex?"active":"");
+    html += `<div class="progress-seg ${cls}"></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function rivalBar(){
+  return `<div class="small">Rival progress: <b>${S.rivalName}</b></div>
+  <div class="rival-bar-outer"><div class="rival-bar-inner" style="width:${Math.min(100,S.rivalPct)}%;"></div></div>`;
+}
+
+function currentDuelRole(){
+  if(S.mode!=="duel") return null;
+  const navIdx = S.duel.turn % 2;
+  return {
+    navigator: S.duel.names[navIdx] || S.duel.roles[0],
+    scholar: S.duel.names[1-navIdx] || S.duel.roles[1]
+  };
+}
+
+function mapScreen(){
+  const nextStopId = S.stopQueue[S.stopIndex];
+  const roles = currentDuelRole();
+  const roleLine = roles ? `<p class="small">This leg: <b>${roles.navigator}</b> navigates the road; <b>${roles.scholar}</b> will handle the quiz at the next stop.</p>` : "";
+  // The "map" screen is only ever shown for macro-city-to-macro-city road legs
+  // (Milan has no incoming road choice, and Rome's four stops are reached via romeMap instead).
+  const edgeKey = "edge_"+S.stopIndex;
+  const body = routeChoiceOrContinue(nextStopId, edgeKey);
+  return `
+  <div class="paper">
+    ${topStat()}
+    ${progressTrack()}
+    <h2 class="display">On the Road</h2>
+    ${rivalBar()}
+    ${roleLine}
+    <hr class="divider">
+    ${body}
+  </div>`;
+}
+
+function routeChoiceOrContinue(nextStopId, edgeKey){
+  const stop = STOPS[nextStopId];
+  const cityName = stop ? stop.city : "Rome";
+  const already = S.edgeChoices[edgeKey];
+  if(already){
+    return `<p>You chose the <b>${already}</b> road. It leads onward to <b>${cityName}</b>.</p>
+      <div class="row center"><button class="btn gold" data-go="stop">Arrive in ${cityName}</button></div>`;
+  }
+  return `
+    <p>The road ahead splits before <b>${cityName}</b>.</p>
+    <div class="route-btn-group">
+      <div class="route-card" data-route="safe" data-edge="${edgeKey}">
+        <h4>The Safe Road</h4>
+        <p class="small">Longer, but well-traveled. Low risk, no time bonus.</p>
+      </div>
+      <div class="route-card" data-route="risky" data-edge="${edgeKey}">
+        <h4>The Shortcut</h4>
+        <p class="small">Faster if it pays off &mdash; but shortcuts invite trouble.</p>
+      </div>
+    </div>
+  `;
+}
+
+function eventScreen(){
+  const ev = S.pendingEvent;
+  let effectText = "";
+  if(ev.type==="bonus") effectText = `<span style="color:var(--good);font-weight:700;">\u2212${Math.abs(ev.effect)}s</span>`;
+  else if(ev.type==="penalty") effectText = `<span style="color:var(--bad);font-weight:700;">+${ev.effect}s</span>`;
+  else effectText = `<span class="small">No time effect.</span>`;
+  return `
+  <div class="paper">
+    ${topStat()}
+    <h2 class="display">${ev.name}</h2>
+    <p>${ev.text}</p>
+    <p>${effectText}</p>
+    <div class="row center"><button class="btn gold" id="ackEvent">Continue</button></div>
+  </div>`;
+}
+
+function checkpointScreen(){
+  const cq = S._checkpointQ;
+  if(S._cpResult){
+    const good = S._cpResult==="good";
+    return `
+    <div class="paper">
+      ${topStat()}
+      <h2 class="display">Guard Checkpoint</h2>
+      <div class="card"><b>${cq.q}</b></div>
+      <div class="choice-grid">
+        ${cq.choices.map((txt,i)=>`<button class="choice disabled ${i===cq.correct?'correct':(i===S._cpChosen?'wrong':'')}">${txt}</button>`).join("")}
+      </div>
+      <div class="feedback ${good?'good':'bad'}">${good?"Correct! The guard waves you through, and knocks 15 seconds off your journey.":"Not quite. The guard makes you wait \u2014 you lose 30 seconds."}</div>
+      <div class="row center" style="margin-top:8px;"><button class="btn gold" data-go="map">Continue</button></div>
+    </div>`;
+  }
+  return `
+  <div class="paper">
+    ${topStat()}
+    <h2 class="display">Guard Checkpoint</h2>
+    <p>A city guard eyes your papers with suspicion. "Prove you serve a house of learning," he grunts.</p>
+    <div class="card"><b>${cq.q}</b></div>
+    <div class="choice-grid" id="cpChoices">
+      ${cq.choices.map((txt,i)=>`<button class="choice" data-i="${i}">${txt}</button>`).join("")}
+    </div>
+    <div id="cpFeedback"></div>
+  </div>`;
+}
+
+function romeMapScreen(){
+  const done = S.romeOrder ? S.stopQueue.slice(0,S.stopIndex).filter(id=>ROME_STOPS.includes(id)) : [];
+  const remaining = ROME_STOPS.filter(id => !S._romeDone || !S._romeDone.includes(id));
+  return `
+  <div class="paper">
+    ${topStat()}
+    ${progressTrack()}
+    <h2 class="display">Within the Walls of Rome</h2>
+    ${rivalBar()}
+    <p>Four commissions await. Choose your order:</p>
+    <div class="choice-grid">
+      ${remaining.map(id=>{
+        const st = STOPS[id];
+        return `<div class="card hoverable" data-romego="${id}">
+          <div style="width:56px;margin:0 auto 6px;">${icon(st.icon,56)}</div>
+          <h3 class="display" style="text-align:center;font-size:0.95rem;">${st.title}</h3>
+          <p class="small" style="text-align:center;">${st.artist}</p>
+        </div>`;
+      }).join("")}
+    </div>
+    ${remaining.length===0 ? `<div class="row center" style="margin-top:10px;"><button class="btn gold" data-go="delivery">Deliver the Commission</button></div>` : ""}
+  </div>`;
+}
+
+function stopScreen(){
+  const id = S.stopQueue[S.stopIndex];
+  const st = STOPS[id];
+  if(!st){ return romeMapScreen(); }
+  switch(S.subStep){
+    case "arrival": return stopArrival(st);
+    case "fccf": return stopFccf(st);
+    case "quiz": return stopQuiz(st);
+    case "vocab": return stopVocab(st);
+    case "minigame": return stopMinigame(st);
+    case "seal": return stopSeal(st);
+    default: return stopArrival(st);
+  }
+}
+
+const ARRIVAL_FLAVORS = [
+  "Dust from the road still clings to your cloak as you knock at the workshop door.",
+  "The bells of the city ring the hour as you slip inside, portfolio tucked under your arm.",
+  "A servant eyes you warily before letting you pass into the workshop.",
+  "You catch your breath in the doorway; the smell of fresh plaster and pigment fills the air."
+];
+
+function stopArrival(st){
+  const roles = currentDuelRole();
+  return `
+  <div class="paper">
+    ${topStat()}
+    ${progressTrack()}
+    ${rivalBar()}
+    <h2 class="display">${st.city}: ${st.title}</h2>
+    <p class="small">${st.artist} &middot; ${st.dates} &middot; ${st.medium}<br>${st.location}</p>
+    <p>${one(ARRIVAL_FLAVORS)}</p>
+    ${roles ? `<p class="small"><b>${roles.navigator}</b> studies the puzzle; <b>${roles.scholar}</b> will answer for the workshop's gatekeeper.</p>`:""}
+    <div class="row center"><button class="btn gold" data-substep="fccf">Examine the Work</button></div>
+  </div>`;
+}
+
+function stopFccf(st){
+  return `
+  <div class="paper">
+    ${topStat()}
+    <h2 class="display">${st.title}</h2>
+    <div class="card"><b>Form:</b> ${st.fccf.form}</div>
+    <div class="card"><b>Function:</b> ${st.fccf.func}</div>
+    <div class="card"><b>Content:</b> ${st.fccf.content}</div>
+    <div class="card"><b>Context:</b> ${st.fccf.context}</div>
+    <div class="row center"><button class="btn gold" data-substep="quiz">The Gatekeeper Questions You</button></div>
+  </div>`;
+}
+
+function stopQuiz(st){
+  if(S.quizSet.length===0){
+    S.quizSet = pick(st.quiz, 3).map(shuffleChoices);
+    S.quizIndex = 0; S.quizCorrect = 0;
+  }
+  if(S.quizIndex >= S.quizSet.length){
+    return `<div class="paper">
+      ${topStat()}
+      <h2 class="display">Quiz Complete</h2>
+      <p>You answered <b>${S.quizCorrect} / ${S.quizSet.length}</b> correctly.</p>
+      <div class="row center"><button class="btn gold" data-substep="vocab">Continue to Vocabulary</button></div>
+    </div>`;
+  }
+  const q = S.quizSet[S.quizIndex];
+  return `
+  <div class="paper">
+    ${topStat()}
+    <h2 class="display">${st.city} Gatekeeper &mdash; Question ${S.quizIndex+1} of ${S.quizSet.length}</h2>
+    <div class="card"><b>${q.q}</b></div>
+    <div class="choice-grid" id="quizChoices">
+      ${q.choices.map((txt,i)=>`<button class="choice" data-i="${i}">${txt}</button>`).join("")}
+    </div>
+    <div id="quizFeedback"></div>
+  </div>`;
+}
+
+function stopVocab(st){
+  const terms = VOCAB.filter(v=> st.vocabIds.includes(v.term));
+  if(!S._vocabDone){
+    return `
+    <div class="paper">
+      ${topStat()}
+      <h2 class="display">Vocabulary of the Workshop</h2>
+      <p class="small">Tap each term to reveal its meaning before moving on.</p>
+      ${terms.map((v,i)=>`<div class="vocab-flip" data-vflip="${i}">
+        <span class="vocab-term">${v.term}</span>
+        <div class="vocab-def">${v.def}</div>
+      </div>`).join("")}
+      <div class="row center" style="margin-top:10px;"><button class="btn gold" data-substep="minigame">Continue to the Puzzle</button></div>
+    </div>`;
+  }
+}
+
+function stopMinigame(st){
+  return `
+  <div class="paper">
+    ${topStat()}
+    <h2 class="display">${st.title}: The Puzzle</h2>
+    ${minigameHTML(st)}
+  </div>`;
+}
+
+function minigameHTML(st){
+  switch(st.minigame){
+    case "vanishing": return vanishingGame();
+    case "untangle": return untangleGame();
+    case "glaze": return glazeGame();
+    case "vault": return vaultGame();
+    case "architects": return architectsGame();
+    case "philosophers": return philosophersGame();
+    case "disotto": return disottoGame();
+    default: return `<div class="row center"><button class="btn gold" data-substep="seal">Continue</button></div>`;
+  }
+}
+
+function vanishingGame(){
+  if(!S._vg){
+    const correctX = 50, correctY = 42;
+    const decoys = [];
+    while(decoys.length<3){
+      const x = 15 + Math.random()*70, y = 20+Math.random()*55;
+      if(Math.hypot(x-correctX,y-correctY) > 18) decoys.push({x,y});
+    }
+    const points = shuffle([{x:correctX,y:correctY,correct:true}, ...decoys.map(d=>({...d,correct:false}))]);
+    S._vg = {points, done:false};
+  }
+  const pts = S._vg.points;
+  const solved = S._vg.solved;
+  return `
+  <p>Leonardo built this composition around a single vanishing point. Click the mark where all the orthogonal lines &mdash; the table's edges, the ceiling beams &mdash; truly converge, just above Christ's head.</p>
+  <div id="map-wrap">
+  <svg viewBox="0 0 100 70">
+    <rect x="0" y="0" width="100" height="70" fill="#f7f0dc" stroke="#C9B48C"/>
+    ${[10,20,30,90,80,70].map(x=>`<line x1="${x}" y1="70" x2="50" y2="42" stroke="#B8892B" stroke-width="0.6" opacity="0.5"/>`).join("")}
+    <line x1="0" y1="15" x2="50" y2="42" stroke="#B8892B" stroke-width="0.6" opacity="0.5"/>
+    <line x1="100" y1="15" x2="50" y2="42" stroke="#B8892B" stroke-width="0.6" opacity="0.5"/>
+    ${pts.map((p,i)=>`<circle class="vgpoint" data-i="${i}" cx="${p.x}" cy="${p.y}" r="3.2" fill="#8C2F27" opacity="0.85" style="cursor:pointer;"/>`).join("")}
+  </svg>
+  </div>
+  <div id="vgFeedback">
+    ${solved===true ? `<div class="feedback good">Exactly right &mdash; every orthogonal in the room converges there. <div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue</button></div></div>`
+      : solved===false ? `<div class="feedback bad">Look again &mdash; trace the lines of the ceiling and table edges more carefully.</div>` : ""}
+  </div>
+  `;
+}
+
+function untangleGame(){
+  if(!S._ug){
+    S._ug = {labels: shuffle(UNTANGLE_LABELS), placed:{}, zones: UNTANGLE_LABELS.map(l=>l.id), selected:null};
+  }
+  const ug = S._ug;
+  return `
+  <p>Pontormo's figures interlock so tightly they're hard to separate. Match each description to a position in the huddle (1&ndash;4, top to bottom).</p>
+  <div class="matchbank">
+    ${ug.labels.map(l=>`<div class="matchtoken ${ug.placed[l.id]?'used':''} ${ug.selected===l.id?'selected':''}" data-token="${l.id}">${l.label}</div>`).join("")}
+  </div>
+  ${ug.zones.map((zid,idx)=>{
+    const placedLabelId = Object.keys(ug.placed).find(k=>ug.placed[k]===zid);
+    const filled = placedLabelId ? UNTANGLE_LABELS.find(l=>l.id===placedLabelId).label : "";
+    return `<div class="matchzone ${filled?'filled':''}" data-zone="${zid}"><span>Position ${idx+1}</span><span>${filled}</span></div>`;
+  }).join("")}
+  <div id="ugFeedback"></div>
+  <div class="row center" id="ugContinueWrap" style="display:none;"><button class="btn gold" data-substep="seal">Continue</button></div>
+  `;
+}
+
+function glazeGame(){
+  if(!S._gg){
+    S._gg = {target: Math.floor(Math.random()*60)+20, layers:[30,30,30]};
+  }
+  const gg = S._gg;
+  const mix = Math.round((gg.layers[0]+gg.layers[1]+gg.layers[2])/3);
+  const close = Math.abs(mix-gg.target) <= 4;
+  return `
+  <p>Titian built luminous flesh tones from layered translucent glazes. Adjust the three glaze layers until their blended warmth matches the target swatch.</p>
+  <div class="row" style="align-items:center;">
+    <div>
+      <div class="small">Target</div>
+      <div class="swatch" style="background:hsl(28,60%,${100-gg.target}%);"></div>
+    </div>
+    <div>
+      <div class="small">Your blend</div>
+      <div class="swatch" style="background:hsl(28,60%,${100-mix}%);"></div>
+    </div>
+  </div>
+  <div class="slider-row"><span class="small" style="width:70px;">Layer 1</span><input type="range" min="0" max="100" value="${gg.layers[0]}" data-layer="0"></div>
+  <div class="slider-row"><span class="small" style="width:70px;">Layer 2</span><input type="range" min="0" max="100" value="${gg.layers[1]}" data-layer="1"></div>
+  <div class="slider-row"><span class="small" style="width:70px;">Layer 3</span><input type="range" min="0" max="100" value="${gg.layers[2]}" data-layer="2"></div>
+  ${close ? `<div class="feedback good">The glazes match! A luminous tone, worthy of the master. <br><br><button class="btn gold" data-substep="seal">Continue</button></div>` : `<p class="small">Keep adjusting &mdash; get all three layers close to the target average.</p>`}
+  `;
+}
+
+function vaultGame(){
+  if(!S._vault){
+    S._vault = {labels: shuffle(VAULT_ZONES), placed:{}, selected:null};
+  }
+  const v = S._vault;
+  const allPlaced = Object.keys(v.placed).length===VAULT_ZONES.length;
+  const allCorrect = allPlaced && Object.entries(v.placed).every(([k,val])=>k===val);
+  return `
+  <p>Label the four zones of Michelangelo's ceiling scheme.</p>
+  <div class="matchbank">
+    ${v.labels.map(l=>`<div class="matchtoken ${v.placed[l.id]?'used':''} ${v.selected===l.id?'selected':''}" data-vtoken="${l.id}">${l.label}</div>`).join("")}
+  </div>
+  ${VAULT_ZONES.map((z,idx)=>{
+    const placedLabelId = Object.keys(v.placed).find(k=>v.placed[k]===z.id);
+    const filled = placedLabelId ? VAULT_ZONES.find(x=>x.id===placedLabelId).label : "";
+    return `<div class="matchzone ${filled?'filled':''}" data-vzone="${z.id}"><span>Zone ${idx+1}</span><span>${filled}</span></div>`;
+  }).join("")}
+  <div id="vaultFeedback">
+    ${allPlaced ? (allCorrect
+      ? `<div class="feedback good">Perfectly labeled! <div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue</button></div></div>`
+      : `<div class="feedback bad">Some zones are mismatched. Review the FCCF notes above, then try Study Hall later to practice again.</div><div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue Anyway</button></div>`) : ""}
+  </div>
+  `;
+}
+
+function architectsGame(){
+  if(!S._arch){
+    S._arch = {order: shuffle(ARCHITECT_ORDER.map(a=>a.id)), checked:null};
+  }
+  const isCorrect = S._arch.checked==="good";
+  return `
+  <p>Tap a card to move it up one position. Arrange the architects of St. Peter's from earliest design to final completion.</p>
+  <div id="archList">
+    ${S._arch.order.map((id,idx)=>{
+      const a = ARCHITECT_ORDER.find(x=>x.id===id);
+      return `<div class="card hoverable" data-arch="${id}" style="padding:10px;"><b>${idx+1}.</b> ${a.label} <span class="small">&mdash; ${a.note}</span></div>`;
+    }).join("")}
+  </div>
+  <div class="row center"><button class="btn secondary" id="archCheck">Check Order</button></div>
+  <div id="archFeedback">
+    ${S._arch.checked==="good" ? `<div class="feedback good">That's the correct design sequence! <div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue</button></div></div>`
+      : S._arch.checked==="bad" ? `<div class="feedback bad">Not quite the right sequence yet &mdash; keep reordering and check again.</div>` : ""}
+  </div>
+  `;
+}
+
+function philosophersGame(){
+  if(!S._phil){
+    const chosen = pick(PHILOSOPHER_POOL, 4);
+    S._phil = {names: shuffle(chosen.map(c=>c.name)), clues: shuffle(chosen), matched:{}, selectedName:null};
+  }
+  const p = S._phil;
+  const allPlaced = Object.keys(p.matched).length === p.clues.length;
+  const allCorrect = allPlaced && Object.entries(p.matched).every(([k,v])=>k===v);
+  return `
+  <p>Match each philosopher to their clue.</p>
+  <div class="matchbank">
+    ${p.names.map(n=>`<div class="matchtoken ${p.matched[n]?'used':''} ${p.selectedName===n?'selected':''}" data-pname="${n}">${n}</div>`).join("")}
+  </div>
+  ${p.clues.map((c,idx)=>{
+    const matchedName = Object.keys(p.matched).find(k=>p.matched[k]===c.name);
+    return `<div class="matchzone" data-pclue="${c.name}"><span class="small">${c.clue}</span><span><b>${matchedName||""}</b></span></div>`;
+  }).join("")}
+  <div id="philFeedback">
+    ${allPlaced ? (allCorrect
+      ? `<div class="feedback good">All matched correctly! <div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue</button></div></div>`
+      : `<div class="feedback bad">A few pairs are mismatched. Review and continue when ready.</div><div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue Anyway</button></div>`) : ""}
+  </div>
+  `;
+}
+
+function disottoGame(){
+  if(!S._diso){
+    const correct = Math.floor(Math.random()*3);
+    S._diso = {correct};
+  }
+  const cones = [0,1,2].map(i=>{
+    const strength = i===S._diso.correct ? 40 : (10+i*8);
+    return `<svg viewBox="0 0 60 60" width="90" data-cone="${i}" style="cursor:pointer;background:#f7f0dc;border:1px solid #C9B48C;border-radius:6px;">
+      <circle cx="30" cy="30" r="4" fill="#8C2F27"/>
+      ${[0,60,120,180,240,300].map(ang=>{
+        const rad = ang*Math.PI/180;
+        const x2 = 30+Math.cos(rad)*strength, y2 = 30+Math.sin(rad)*strength;
+        return `<line x1="30" y1="30" x2="${x2}" y2="${y2}" stroke="#4C6B5A" stroke-width="1.4"/>`;
+      }).join("")}
+    </svg>`;
+  }).join("");
+  const result = S._diso.result;
+  return `
+  <p>Which sketch best shows <b>di sotto in su</b> &mdash; figures believably soaring upward, away from the viewer below, rather than a flat, timid pattern?</p>
+  <div class="row center">${cones}</div>
+  <div id="disoFeedback">
+    ${result==="good" ? `<div class="feedback good">Right &mdash; the strongest upward burst reads as soaring into real space. <div class="row center" style="margin-top:8px;"><button class="btn gold" data-substep="seal">Continue</button></div></div>`
+      : result==="bad" ? `<div class="feedback bad">That one reads too flat. Try the one with the boldest upward burst.</div>` : ""}
+  </div>
+  `;
+}
+
+function stopSeal(st){
+  return `
+  <div class="paper center">
+    ${topStat()}
+    <div style="width:90px;margin:0 auto;">${icon("seal",90)}</div>
+    <h2 class="display">Commission Sealed</h2>
+    <p>You've proven your knowledge of <b>${st.title}</b>. The workshop grants safe passage onward.</p>
+    <div class="row center"><button class="btn gold" data-advance="1">Onward</button></div>
+  </div>`;
+}
+
+function deliveryScreen(){
+  const totalTime = S.elapsed;
+  let tier, epilogues;
+  if(S.mode==="solo" || S.mode==="duel"){
+    if(totalTime < 420){ tier="Gold"; }
+    else if(totalTime < 620){ tier="Silver"; }
+    else { tier="Bronze"; }
+  } else { tier="Complete"; }
+  const goldEpi = [
+    "You burst through the Vatican gates well ahead of your rival, portfolio intact and every seal gleaming. Your master's name is secured for a generation.",
+    "The Pope's own steward remarks he has never seen a courier arrive so composed, so quick, and so well-informed. Word of your journey spreads through every workshop in Italy."
+  ];
+  const silverEpi = [
+    "You arrive tired but triumphant, your rival's rumors arriving mere minutes after the truth. Close enough to call it a victory.",
+    "The gates close behind you just as your rival's cart rattles into the piazza. You made it &mdash; barely, but truly."
+  ];
+  const bronzeEpi = [
+    "You stumble into Rome late, mud on your boots and questions on your mind, but the commission is delivered all the same. Slow and steady still finished the race.",
+    "Your rival's rumors reached Rome first, but your master's true seal carries more weight in the end. The commission is safe."
+  ];
+  const epi = tier==="Gold" ? one(goldEpi) : tier==="Silver" ? one(silverEpi) : tier==="Complete" ? "The commission is delivered, and your understanding of the High Renaissance and Mannerism travels with it." : one(bronzeEpi);
+  return `
+  <div class="paper center">
+    <div style="width:90px;margin:0 auto;">${icon("seal",90)}</div>
+    <h1 class="display">Delivered to Rome</h1>
+    <div class="pill">${tier} Courier</div>
+    <p style="text-align:left;margin-top:12px;">${epi}</p>
+    <div class="seal-row" style="justify-content:center;">
+      ${Object.keys(STOPS).map(id=>`<div class="seal earned" title="${STOPS[id].title}">${STOPS[id].city[0]}</div>`).join("")}
+    </div>
+    <div class="row center"><button class="btn gold" data-go="results">See Your Journey Log</button></div>
+  </div>`;
+}
+
+function resultsScreen(){
+  const acc = S.totalQuestions ? Math.round(100*S.totalCorrect/S.totalQuestions) : 0;
+  if(S.mode==="solo"){ saveBest("solo", S.elapsed); }
+  if(S.mode==="duel"){ saveBest("duel", S.elapsed); }
+  const bestList = getBest(S.mode);
+  return `
+  <div class="paper">
+    <h2 class="display center">Journey Log</h2>
+    <div class="row center">
+      <div class="stat">Total Time: <b>${fmtTime(S.elapsed)}</b></div>
+      <div class="stat">Accuracy: <b>${acc}%</b> (${S.totalCorrect}/${S.totalQuestions})</div>
+      <div class="stat">Seals Earned: <b>${S.seals.length}/7</b></div>
+    </div>
+    ${bestList.length ? `<p class="small center" style="margin-top:10px;">Personal bests (this device): ${bestList.map(fmtTime).join(" \u00b7 ")}</p>` : ""}
+    <hr class="divider">
+    <h3 class="display">Route You Traveled</h3>
+    <p class="small">${S.stopQueue.map(id=>STOPS[id]?STOPS[id].city+": "+STOPS[id].title:"").filter(Boolean).join(" \u2192 ")}</p>
+    <div class="row center" style="margin-top:14px;">
+      <button class="btn gold" data-go="modeSelect">Play Again</button>
+      <button class="btn secondary" data-go="vocabVault">Review Vocabulary</button>
+    </div>
+  </div>`;
+}
+
+function studyHallScreen(){
+  return `
+  <div class="paper">
+    ${topStat()}
+    <h2 class="display center">Study Hall</h2>
+    <p class="center small">No timer, no rival. Pick a work to review, or open the Vocabulary Vault.</p>
+    <div class="choice-grid">
+      ${Object.values(STOPS).map(st=>`<div class="card hoverable" data-studygo="${st.id}">
+        <div style="width:56px;margin:0 auto 6px;">${icon(st.icon,56)}</div>
+        <h3 class="display" style="text-align:center;font-size:0.9rem;">${st.title}</h3>
+        <p class="small" style="text-align:center;">${st.city} &middot; ${st.artist}</p>
+      </div>`).join("")}
+    </div>
+    <div class="row center" style="margin-top:14px;">
+      <button class="btn secondary" data-go="vocabVault">Vocabulary Vault</button>
+      <button class="btn secondary" data-go="modeSelect">Back to Modes</button>
+    </div>
+  </div>`;
+}
+
+function studyStopScreen(){
+  const st = STOPS[S._studyId];
+  return `
+  <div class="paper">
+    <h2 class="display">${st.title}</h2>
+    <p class="small">${st.artist} &middot; ${st.dates} &middot; ${st.medium}<br>${st.location}</p>
+    <div class="card"><b>Form:</b> ${st.fccf.form}</div>
+    <div class="card"><b>Function:</b> ${st.fccf.func}</div>
+    <div class="card"><b>Content:</b> ${st.fccf.content}</div>
+    <div class="card"><b>Context:</b> ${st.fccf.context}</div>
+    <h3 class="display">Try the Puzzle</h3>
+    ${minigameHTML(st).replace('data-substep="seal"','data-go="studyHall"')}
+    <hr class="divider">
+    <h3 class="display">Quick Quiz</h3>
+    <div id="studyQuizArea">${studyQuizHTML(st)}</div>
+    <div class="row center" style="margin-top:12px;"><button class="btn secondary" data-go="studyHall">Back to Study Hall</button></div>
+  </div>`;
+}
+
+function studyQuizHTML(st){
+  if(!S._studyQuiz){ S._studyQuiz = pick(st.quiz,4).map(shuffleChoices); S._studyQIdx=0; }
+  if(S._studyQIdx>=S._studyQuiz.length) return `<p class="feedback good">Nice work! That's all the sample questions for this stop.</p>`;
+  const q = S._studyQuiz[S._studyQIdx];
+  return `<div class="card"><b>${q.q}</b></div>
+  <div class="choice-grid" id="studyChoices">${q.choices.map((t,i)=>`<button class="choice" data-si="${i}">${t}</button>`).join("")}</div>
+  <div id="studyFeedback"></div>`;
+}
+
+function vocabVaultScreen(){
+  return `
+  <div class="paper">
+    <h2 class="display center">Vocabulary Vault</h2>
+    <p class="center small">Tap any term to reveal its definition.</p>
+    ${shuffle(VOCAB).map((v,i)=>`<div class="vocab-flip" data-vvflip="${i}" data-term="${v.term}">
+      <span class="vocab-term">${v.term}</span>
+      <div class="vocab-def">${v.def}</div>
+    </div>`).join("")}
+    <div class="row center" style="margin-top:10px;">
+      <button class="btn secondary" data-go="studyHall">Back to Study Hall</button>
+      <button class="btn secondary" data-go="modeSelect">Back to Modes</button>
+    </div>
+  </div>`;
+}
+
+function speedIntroScreen(){
+  const best = getBest("speed");
+  return `
+  <div class="paper center">
+    <h2 class="display">Speed Round</h2>
+    <p>75 seconds. Rapid vocabulary and identification questions drawn from all seven works. Answer fast &mdash; every correct answer is worth more than the last if you're on a streak!</p>
+    ${best.length ? `<p class="small">High scores (this device): ${best.join(" \u00b7 ")}</p>`:""}
+    <div class="row center"><button class="btn gold" id="startSpeed">Start the Clock</button></div>
+    <div class="row center"><button class="btn secondary" data-go="modeSelect">Back</button></div>
+  </div>`;
+}
+
+function speedPlayScreen(){
+  const sp = S.speed;
+  const q = sp.pool[sp.qIndex];
+  if(!q) return speedResultsScreen();
+  return `
+  <div class="paper">
+    <div class="topbar">
+      <div class="timer-box">\u23F1 ${sp.timeLeft}s</div>
+      <div class="stat">Score: <b>${sp.score}</b></div>
+    </div>
+    <div class="card"><b>${q.q}</b></div>
+    <div class="choice-grid" id="speedChoices">
+      ${q.choices.map((t,i)=>`<button class="choice" data-spi="${i}">${t}</button>`).join("")}
+    </div>
+  </div>`;
+}
+
+function speedResultsScreen(){
+  if(S.speed.timerId){ clearInterval(S.speed.timerId); S.speed.timerId=null; }
+  if(!S._speedSaved){ saveBest("speed", S.speed.score); S._speedSaved=true; }
+  const best = getBest("speed");
+  return `
+  <div class="paper center">
+    <h2 class="display">Time's Up!</h2>
+    <p>Final score: <b>${S.speed.score}</b></p>
+    <p class="small">High scores (this device): ${best.join(" \u00b7 ")}</p>
+    <div class="row center">
+      <button class="btn gold" data-go="speedIntro">Play Again</button>
+      <button class="btn secondary" data-go="modeSelect">Back to Modes</button>
+    </div>
+  </div>`;
+}
+
+function pauseScreen(){
+  return `
+  <div class="modal-overlay">
+    <div class="paper modal-box">
+      <h2 class="display center">Paused</h2>
+      <div class="row center" style="flex-direction:column;">
+        <button class="btn gold wide" id="resumeBtn">Resume</button>
+        <button class="btn secondary wide" data-go="modeSelect">Quit to Menu</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================== FLOW / TRANSITIONS ============================== */
+
+function startGame(mode){
+  S = freshState();
+  S.mode = mode;
+  S.rivalName = one(RIVAL_NAMES);
+  buildRoute();
+  S.screen = "travelIntro";
+  if(mode==="solo" || mode==="duel"){
+    startTimer();
+  }
+  render();
+}
+
+function buildRoute(){
+  const secondCity = one(["florence","venice"]);
+  const thirdCity = secondCity==="florence" ? "venice" : "florence";
+  S.macroOrder = ["milan", secondCity, thirdCity];
+  S.romeOrder = shuffle(ROME_STOPS.slice());
+  S.stopQueue = ["milan", secondCity, thirdCity, ...S.romeOrder];
+  S.stopIndex = 0;
+  S._romeDone = [];
+}
+
+function startTimer(){
+  S.startTime = Date.now() - S.elapsed*1000;
+  if(S.timerId) clearInterval(S.timerId);
+  S.timerId = setInterval(()=>{
+    S.elapsed = (Date.now()-S.startTime)/1000;
+    S.rivalPct = Math.min(96, 14 + S.elapsed/6.5);
+    if(S.screen!=="pause"){
+      const tb = document.querySelector(".timer-box");
+      if(tb) tb.textContent = "\u23F1 "+fmtTime(S.elapsed);
+      const rb = document.querySelector(".rival-bar-inner");
+      if(rb) rb.style.width = Math.min(100,S.rivalPct)+"%";
+    }
+  }, 500);
+}
+
+function adjustTime(delta){
+  S.elapsed = Math.max(0, S.elapsed + delta);
+  S.startTime = Date.now() - S.elapsed*1000;
+}
+
+function goToNextLeg(){
+  // clear per-stop caches
+  S._vg=null; S._ug=null; S._gg=null; S._vault=null; S._arch=null; S._phil=null; S._diso=null;
+  S._vocabDone=false; S.quizSet=[]; S.quizIndex=0; S.quizCorrect=0;
+  S.subStep="arrival";
+
+  const currentId = S.stopQueue[S.stopIndex];
+  if(currentId && ROME_STOPS.includes(currentId)){
+    S._romeDone.push(currentId);
+  }
+  S.stopIndex++;
+  if(S.mode==="duel") S.duel.turn++;
+
+  if(S.stopIndex >= S.stopQueue.length){
+    S.screen = "delivery";
+    if(S.timerId){ clearInterval(S.timerId); S.timerId=null; }
+    render();
+    return;
+  }
+
+  const nextId = S.stopQueue[S.stopIndex];
+  if(ROME_STOPS.includes(nextId) && S.stopIndex===3){
+    // entering rome for first time
+    S.screen = "romeMap";
+    render();
+    return;
+  }
+  if(ROME_STOPS.includes(nextId)){
+    S.screen = "romeMap";
+    render();
+    return;
+  }
+  // maybe trigger random event before showing map, ~45% chance, but not more than twice per game
+  S._eventCount = S._eventCount || 0;
+  if(S._eventCount < 2 && Math.random() < 0.45){
+    S._eventCount++;
+    S.pendingEvent = one(EVENTS);
+    S.screen = "event";
+    render();
+    return;
+  }
+  S.screen = "map";
+  render();
+}
+
+function applyEventAndContinue(){
+  const ev = S.pendingEvent;
+  if(ev.effect){ adjustTime(ev.effect); }
+  S.pendingEvent = null;
+  S.screen = "map";
+  render();
+}
+
+function chooseRoute(route, edgeKey){
+  S.edgeChoices[edgeKey] = route==="safe" ? "Safe Road" : "Shortcut";
+  if(route==="safe"){
+    adjustTime(10); // slightly longer but guaranteed
+    S.screen = "map";
+    render();
+  } else {
+    // risky: 55% chance of a time bonus, 45% chance of checkpoint challenge
+    if(Math.random() < 0.55){
+      adjustTime(-22);
+      S.screen = "map";
+      render();
+    } else {
+      S._checkpointQ = shuffleChoices(one(CHECKPOINT_QS));
+      S._cpResult = null; S._cpChosen = null;
+      S.screen = "checkpoint";
+      render();
+    }
+  }
+}
+
+function enterRomeStop(id){
+  // insert this id to play now: find its index in queue and swap to current position
+  const idx = S.stopQueue.indexOf(id);
+  [S.stopQueue[S.stopIndex], S.stopQueue[idx]] = [S.stopQueue[idx], S.stopQueue[S.stopIndex]];
+  S.screen = "stop";
+  S.subStep = "arrival";
+  render();
+}
+
+/* ============================== EVENT BINDING ============================== */
+
+function bindEvents(){
+  $all("[data-go]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const target = el.getAttribute("data-go");
+      handleGo(target, el);
+    });
+  });
+  $all("[data-mode]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const mode = el.getAttribute("data-mode");
+      if(mode==="duel"){ S = freshState(); S.mode="duel"; S.screen="duelSetup"; render(); }
+      else if(mode==="study"){ S = freshState(); S.mode="study"; S.screen="studyHall"; render(); }
+      else if(mode==="speed"){ S = freshState(); S.mode="speed"; S.screen="speedIntro"; render(); }
+      else { startGame(mode); }
+    });
+  });
+  const startDuelBtn = $("#startDuel");
+  if(startDuelBtn){
+    startDuelBtn.addEventListener("click", ()=>{
+      const a = ($("#nameA").value||"Partner A").trim() || "Partner A";
+      const b = ($("#nameB").value||"Partner B").trim() || "Partner B";
+      const mode = "duel";
+      S = freshState(); S.mode = mode;
+      S.duel.names = [a,b];
+      S.rivalName = one(RIVAL_NAMES);
+      buildRoute();
+      S.screen = "travelIntro";
+      startTimer();
+      render();
+    });
+  }
+
+  $all("[data-substep]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      S.subStep = el.getAttribute("data-substep");
+      if(S.subStep==="minigame"){ S._vocabDone = true; }
+      render();
+    });
+  });
+
+  $all("[data-advance]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const id = S.stopQueue[S.stopIndex];
+      if(!S.seals.includes(id)) S.seals.push(id);
+      goToNextLeg();
+    });
+  });
+
+  $all(".route-card").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      chooseRoute(el.getAttribute("data-route"), el.getAttribute("data-edge"));
+    });
+  });
+
+  const ackEvent = $("#ackEvent");
+  if(ackEvent) ackEvent.addEventListener("click", applyEventAndContinue);
+
+  $all("#cpChoices .choice").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const i = parseInt(el.getAttribute("data-i"),10);
+      const correct = S._checkpointQ.correct;
+      S._cpChosen = i;
+      if(i===correct){
+        adjustTime(-15);
+        S._cpResult = "good";
+      } else {
+        adjustTime(30);
+        S._cpResult = "bad";
+      }
+      render();
+    });
+  });
+
+  $all("[data-romego]").forEach(el=>{
+    el.addEventListener("click", ()=> enterRomeStop(el.getAttribute("data-romego")));
+  });
+
+  $all("[data-studygo]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      S._studyId = el.getAttribute("data-studygo");
+      S._studyQuiz = null; S._studyQIdx = 0;
+      S._vg=null; S._ug=null; S._gg=null; S._vault=null; S._arch=null; S._phil=null; S._diso=null;
+      S.screen = "studyStop";
+      render();
+    });
+  });
+
+  $all("#quizChoices .choice").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const q = S.quizSet[S.quizIndex];
+      const i = parseInt(el.getAttribute("data-i"),10);
+      $all("#quizChoices .choice").forEach(c=>c.classList.add("disabled"));
+      S.totalQuestions++;
+      if(i===q.correct){
+        el.classList.add("correct");
+        S.quizCorrect++; S.totalCorrect++;
+        if(S.mode==="solo"||S.mode==="duel") adjustTime(-6);
+        $("#quizFeedback").innerHTML = `<div class="feedback good">Correct!</div><div class="row center" style="margin-top:8px;"><button class="btn gold" id="nextQ">Next</button></div>`;
+      } else {
+        el.classList.add("wrong");
+        $all("#quizChoices .choice")[q.correct].classList.add("correct");
+        if(S.mode==="solo"||S.mode==="duel") adjustTime(8);
+        $("#quizFeedback").innerHTML = `<div class="feedback bad">Not quite &mdash; the correct answer is highlighted.</div><div class="row center" style="margin-top:8px;"><button class="btn gold" id="nextQ">Next</button></div>`;
+      }
+      const nq = $("#nextQ");
+      if(nq) nq.addEventListener("click", ()=>{ S.quizIndex++; render(); });
+    });
+  });
+
+  $all(".vocab-flip[data-vflip]").forEach(el=>{
+    el.addEventListener("click", ()=> el.classList.toggle("open"));
+  });
+  $all(".vocab-flip[data-vvflip]").forEach(el=>{
+    el.addEventListener("click", ()=> el.classList.toggle("open"));
+  });
+
+  bindMinigameEvents();
+  bindStudyQuizEvents();
+  bindSpeedEvents();
+}
+
+function bindMinigameEvents(){
+  // vanishing point
+  $all(".vgpoint").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const i = parseInt(el.getAttribute("data-i"),10);
+      const pt = S._vg.points[i];
+      S._vg.solved = !!pt.correct;
+      render();
+    });
+  });
+
+  // untangle
+  $all("[data-token]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const id = el.getAttribute("data-token");
+      if(S._ug.placed[id]) return;
+      S._ug.selected = S._ug.selected===id ? null : id;
+      render();
+    });
+  });
+  $all("[data-zone]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const zid = el.getAttribute("data-zone");
+      if(!S._ug.selected) return;
+      const already = Object.values(S._ug.placed).includes(zid);
+      if(already) return;
+      S._ug.placed[S._ug.selected] = zid;
+      S._ug.selected = null;
+      if(Object.keys(S._ug.placed).length===UNTANGLE_LABELS.length){
+        S._ugDone = true;
+      }
+      render();
+      if(Object.keys(S._ug.placed).length===UNTANGLE_LABELS.length){
+        $("#ugFeedback").innerHTML = `<div class="feedback good">All positions placed. There's no single "correct" arrangement here &mdash; the point is how tightly interwoven Pontormo made his figures.</div>`;
+        $("#ugContinueWrap").style.display = "block";
+      }
+    });
+  });
+
+  // glaze sliders
+  $all("[data-layer]").forEach(el=>{
+    el.addEventListener("input", ()=>{
+      const idx = parseInt(el.getAttribute("data-layer"),10);
+      S._gg.layers[idx] = parseInt(el.value,10);
+      render();
+    });
+  });
+
+  // vault matching
+  $all("[data-vtoken]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const id = el.getAttribute("data-vtoken");
+      if(S._vault.placed[id]) return;
+      S._vault.selected = S._vault.selected===id?null:id;
+      render();
+    });
+  });
+  $all("[data-vzone]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const zid = el.getAttribute("data-vzone");
+      if(!S._vault.selected) return;
+      const already = Object.values(S._vault.placed).includes(zid);
+      if(already) return;
+      S._vault.placed[S._vault.selected] = zid;
+      S._vault.selected = null;
+      render();
+    });
+  });
+
+  // architects reorder (tap to move up)
+  $all("[data-arch]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const id = el.getAttribute("data-arch");
+      const arr = S._arch.order;
+      const idx = arr.indexOf(id);
+      if(idx>0){ [arr[idx-1],arr[idx]]=[arr[idx],arr[idx-1]]; render(); }
+    });
+  });
+  const archCheck = $("#archCheck");
+  if(archCheck){
+    archCheck.addEventListener("click", ()=>{
+      const correctOrder = ARCHITECT_ORDER.map(a=>a.id);
+      const isCorrect = JSON.stringify(S._arch.order)===JSON.stringify(correctOrder);
+      S._arch.checked = isCorrect ? "good" : "bad";
+      render();
+    });
+  }
+
+  // philosophers
+  $all("[data-pname]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const name = el.getAttribute("data-pname");
+      if(S._phil.matched[name]) return;
+      S._phil.selectedName = S._phil.selectedName===name?null:name;
+      render();
+    });
+  });
+  $all("[data-pclue]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const clueName = el.getAttribute("data-pclue");
+      if(!S._phil.selectedName) return;
+      const already = Object.values(S._phil.matched).includes(clueName);
+      if(already) return;
+      S._phil.matched[S._phil.selectedName] = clueName;
+      S._phil.selectedName = null;
+      render();
+    });
+  });
+
+  // di sotto in su cones
+  $all("[data-cone]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const i = parseInt(el.getAttribute("data-cone"),10);
+      S._diso.result = (i===S._diso.correct) ? "good" : "bad";
+      render();
+    });
+  });
+}
+
+function bindStudyQuizEvents(){
+  $all("#studyChoices .choice").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const q = S._studyQuiz[S._studyQIdx];
+      const i = parseInt(el.getAttribute("data-si"),10);
+      $all("#studyChoices .choice").forEach(c=>c.classList.add("disabled"));
+      if(i===q.correct){
+        el.classList.add("correct");
+        $("#studyFeedback").innerHTML = `<div class="feedback good">Correct!</div><div class="row center" style="margin-top:8px;"><button class="btn gold" id="studyNext">Next</button></div>`;
+      } else {
+        el.classList.add("wrong");
+        $all("#studyChoices .choice")[q.correct].classList.add("correct");
+        $("#studyFeedback").innerHTML = `<div class="feedback bad">Correct answer highlighted.</div><div class="row center" style="margin-top:8px;"><button class="btn gold" id="studyNext">Next</button></div>`;
+      }
+      const sn = $("#studyNext");
+      if(sn) sn.addEventListener("click", ()=>{ S._studyQIdx++; render(); });
+    });
+  });
+}
+
+function buildSpeedPool(){
+  let all = [];
+  Object.values(STOPS).forEach(st=>{
+    st.quiz.forEach(q=> all.push(q));
+  });
+  VOCAB.forEach(v=>{
+    const distractors = pick(VOCAB.filter(x=>x.term!==v.term), 3).map(x=>x.term);
+    all.push({q:"Which term means: \u201c"+v.def.split(" \u2014")[0].replace(/^\u201c|\u201d$/g,"")+"\u2026\u201d?", a: shuffle([v.term,...distractors]).length? [v.term,...distractors]:[v.term], c:0, isVocab:true});
+  });
+  return shuffle(all).map(q=>{
+    const sc = shuffleChoices({q:q.q, a:q.a, c: q.isVocab ? q.a.indexOf(q.a[0])===undefined?0:0 : q.c});
+    if(q.isVocab){
+      // recompute correct index for vocab-style since a[0] was the term originally before shuffleChoices shuffles a copy
+      const orig = {q:q.q, a:q.a, c:0};
+      return shuffleChoices(orig);
+    }
+    return shuffleChoices({q:q.q,a:q.a,c:q.c});
+  });
+}
+
+function bindSpeedEvents(){
+  const startBtn = $("#startSpeed");
+  if(startBtn){
+    startBtn.addEventListener("click", ()=>{
+      S.speed = {timeLeft:75, score:0, qIndex:0, pool: buildSpeedPool()};
+      S._speedSaved = false;
+      S.screen = "speedPlay";
+      render();
+      S.speed.timerId = setInterval(()=>{
+        S.speed.timeLeft--;
+        const tb = document.querySelector(".timer-box");
+        if(tb) tb.textContent = "\u23F1 "+S.speed.timeLeft+"s";
+        if(S.speed.timeLeft<=0){
+          clearInterval(S.speed.timerId);
+          S.screen = "speedResults";
+          render();
+        }
+      },1000);
+    });
+  }
+  $all("#speedChoices .choice").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const q = S.speed.pool[S.speed.qIndex];
+      const i = parseInt(el.getAttribute("data-spi"),10);
+      if(i===q.correct){ S.speed.score += 10; }
+      else { S.speed.score = Math.max(0, S.speed.score-3); }
+      S.speed.qIndex++;
+      if(S.speed.qIndex >= S.speed.pool.length){ S.speed.qIndex = 0; S.speed.pool = buildSpeedPool(); }
+      render();
+    });
+  });
+}
+
+function handleGo(target, el){
+  if(target==="modeSelect" && (S.timerId)){ clearInterval(S.timerId); S.timerId=null; }
+  if(target==="results"){
+    if(S.timerId){ clearInterval(S.timerId); S.timerId=null; }
+  }
+  if(target==="map" && S.pendingEvent){ S.pendingEvent=null; }
+  S.screen = target;
+  render();
+}
+
+/* ============================== INIT ============================== */
+
+document.addEventListener("DOMContentLoaded", function(){
+  S = freshState();
+  render();
+});
+
+})();
+</script>
+</body>
+</html>

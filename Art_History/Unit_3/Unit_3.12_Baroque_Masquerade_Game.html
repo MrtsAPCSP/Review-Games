@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Masquerade of Shadow and Splendor</title>
+<style>
+  :root{
+    --bg: #0b0906;
+    --bg-2: #16110d;
+    --bg-3: #1f1712;
+    --gold: #c9a24d;
+    --gold-bright: #f0cf7f;
+    --gold-dim: #8a6e33;
+    --wine: #5c1a24;
+    --wine-light: #8a2c3a;
+    --parchment: #ecdfc2;
+    --parchment-dim: #b9ab8c;
+    --ink: #150f0c;
+    --teal: #1f4741;
+    --teal-light: #35695f;
+    --danger: #a13232;
+    --success: #4a7c4e;
+    --italian: #7a2634;
+    --spanish: #6b1414;
+    --flemish: #2d5233;
+    --dutch: #1f4741;
+    --french: #4a5568;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+    --font-label: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    --radius: 6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background: radial-gradient(ellipse at 50% -10%, #241a12 0%, var(--bg) 55%, #050403 100%);
+    color:var(--parchment);
+    font-family:var(--font-body);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:24px 16px 60px;
+    position:relative;
+  }
+  /* ambient candle flicker vignette */
+  #app::before{
+    content:"";
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    pointer-events:none;
+    background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(0,0,0,0.55) 100%);
+    animation: flicker 6s infinite ease-in-out;
+    z-index:1;
+  }
+  @keyframes flicker{
+    0%,100%{opacity:0.9;}
+    25%{opacity:1;}
+    50%{opacity:0.85;}
+    75%{opacity:0.97;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #app::before{animation:none;}
+  }
+  .stage{
+    position:relative;z-index:2;
+    width:100%;max-width:880px;
+  }
+  h1,h2,h3{
+    font-family:var(--font-display);
+    font-weight:700;
+    margin:0 0 8px 0;
+    color:var(--gold-bright);
+    text-shadow: 0 0 18px rgba(240,207,127,0.25), 0 2px 2px rgba(0,0,0,0.6);
+  }
+  h1{font-size:2.6rem;font-style:italic;letter-spacing:0.5px;}
+  h2{font-size:1.7rem;font-style:italic;}
+  h3{font-size:1.25rem;}
+  .eyebrow{
+    font-family:var(--font-label);
+    text-transform:uppercase;
+    letter-spacing:3px;
+    font-size:0.72rem;
+    color:var(--gold);
+    margin-bottom:10px;
+    display:block;
+  }
+  p{line-height:1.6;color:var(--parchment);}
+  .dim{color:var(--parchment-dim);}
+  .frame{
+    background: linear-gradient(160deg, var(--bg-3), var(--bg-2));
+    border:1px solid var(--gold-dim);
+    border-radius:var(--radius);
+    padding:28px 30px;
+    margin:18px 0;
+    box-shadow: 0 0 0 1px rgba(201,162,77,0.08) inset, 0 18px 40px rgba(0,0,0,0.5);
+    position:relative;
+  }
+  .frame::before, .frame::after{
+    content:"";
+    position:absolute;
+    width:22px;height:22px;
+    border:2px solid var(--gold);
+    opacity:0.55;
+  }
+  .frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .frame::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+  .center{text-align:center;}
+  .btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+  button{
+    font-family:var(--font-label);
+    background:linear-gradient(160deg,var(--gold),var(--gold-dim));
+    color:#20160a;
+    border:none;
+    padding:13px 26px;
+    border-radius:3px;
+    font-size:0.95rem;
+    font-weight:700;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    transition:transform 0.15s, box-shadow 0.15s;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4);
+  }
+  button:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(201,162,77,0.35);}
+  button:active{transform:translateY(0);}
+  button:focus-visible{outline:3px solid var(--parchment);outline-offset:2px;}
+  button.secondary{
+    background:transparent;
+    color:var(--parchment);
+    border:1px solid var(--gold-dim);
+  }
+  button.secondary:hover{box-shadow:0 6px 16px rgba(0,0,0,0.4);}
+  button:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .card-list{display:grid;gap:14px;margin-top:18px;}
+  .choice-card{
+    display:block;width:100%;text-align:left;
+    background:var(--bg-3);
+    border:1px solid var(--gold-dim);
+    color:var(--parchment);
+    padding:16px 18px;
+    border-radius:4px;
+    font-family:var(--font-body);
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .choice-card:hover{border-color:var(--gold);background:#241b13;}
+  .choice-card.correct{border-color:var(--success);background:#1c2b1d;}
+  .choice-card.wrong{border-color:var(--danger);background:#2c1616;animation:shake 0.4s;}
+  .choice-card.disabled{pointer-events:none;opacity:0.6;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    75%{transform:translateX(6px);}
+  }
+  .badge{
+    display:inline-block;
+    font-family:var(--font-label);
+    font-size:0.72rem;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:20px;
+    border:1px solid var(--gold);
+    color:var(--gold-bright);
+    margin:2px 4px;
+  }
+  .map-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin-top:22px;
+  }
+  .salon-door{
+    border-radius:6px;
+    padding:22px 16px;
+    text-align:center;
+    cursor:pointer;
+    border:2px solid var(--gold-dim);
+    background:linear-gradient(180deg, var(--bg-3), var(--bg-2));
+    transition: transform 0.15s;
+    position:relative;
+  }
+  .salon-door:hover{transform:translateY(-4px);}
+  .salon-door.done{opacity:0.55;cursor:default;}
+  .salon-door .glyph{font-size:2.1rem;display:block;margin-bottom:8px;}
+  .salon-door .name{font-family:var(--font-display);font-style:italic;font-size:1.05rem;color:var(--gold-bright);}
+  .salon-door .status{font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--parchment-dim);margin-top:6px;display:block;}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    width:100%;max-width:880px;margin-bottom:6px;font-family:var(--font-label);
+    font-size:0.8rem;color:var(--parchment-dim);letter-spacing:0.5px;
+    flex-wrap:wrap;gap:8px;
+  }
+  .renown-track{display:flex;align-items:center;gap:8px;}
+  .renown-dot{width:9px;height:9px;border-radius:50%;background:var(--gold-dim);}
+  .renown-dot.lit{background:var(--gold-bright);box-shadow:0 0 8px var(--gold-bright);}
+  .curtain{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:linear-gradient(180deg,var(--wine),#2c0b10);
+    z-index:50;display:flex;align-items:center;justify-content:center;
+    transition:opacity 0.5s, visibility 0.5s;
+  }
+  .curtain.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+  .curtain span{font-family:var(--font-display);font-style:italic;font-size:1.6rem;color:var(--gold-bright);}
+  .timerbar-wrap{width:100%;height:8px;background:var(--bg-3);border-radius:4px;overflow:hidden;margin:12px 0;border:1px solid var(--gold-dim);}
+  .timerbar{height:100%;background:linear-gradient(90deg,var(--gold),var(--wine-light));transition:width 0.3s linear;}
+  .lives{display:flex;gap:6px;font-size:1.1rem;}
+  .fact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+  @media (max-width:560px){.fact-grid{grid-template-columns:1fr;}}
+  .fact-tile{
+    background:var(--bg-3);border:1px solid var(--gold-dim);border-radius:4px;
+    padding:10px 12px;cursor:pointer;min-height:52px;display:flex;flex-direction:column;justify-content:center;
+  }
+  .fact-tile .flabel{font-family:var(--font-label);font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold);}
+  .fact-tile .fvalue{font-size:0.92rem;margin-top:2px;}
+  .fact-tile.hidden-value .fvalue{filter:blur(4px);opacity:0.4;}
+  .match-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  @media (max-width:560px){.match-cols{grid-template-columns:1fr;}}
+  .match-tile{
+    background:var(--bg-3);border:1px solid var(--gold-dim);color:var(--parchment);
+    padding:12px 14px;border-radius:4px;margin-bottom:10px;cursor:pointer;font-size:0.92rem;
+    text-align:left;width:100%;font-family:var(--font-body);
+  }
+  .match-tile:hover{border-color:var(--gold);}
+  .match-tile.selected{border-color:var(--gold-bright);box-shadow:0 0 0 2px rgba(240,207,127,0.3);}
+  .match-tile.locked{border-color:var(--success);background:#1c2b1d;opacity:0.75;cursor:default;pointer-events:none;}
+  .match-tile.wrongflash{border-color:var(--danger);background:#2c1616;animation:shake 0.4s;}
+  .footer-note{margin-top:26px;font-size:0.75rem;color:var(--parchment-dim);text-align:center;font-family:var(--font-label);letter-spacing:0.3px;}
+  .pair-banner{
+    background:var(--wine);color:var(--parchment);text-align:center;padding:10px;border-radius:4px;
+    font-family:var(--font-label);letter-spacing:1px;font-size:0.8rem;margin-bottom:10px;text-transform:uppercase;
+  }
+  .pass-screen{text-align:center;padding:60px 20px;}
+  .pass-screen .big{font-size:3rem;margin-bottom:14px;}
+  .quiz-explain{background:#14100c;border-left:3px solid var(--gold);padding:10px 14px;margin-top:14px;border-radius:0 4px 4px 0;font-size:0.9rem;}
+  .mode-card{
+    background:var(--bg-3);border:1px solid var(--gold-dim);border-radius:6px;padding:20px;text-align:left;cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .mode-card:hover{transform:translateY(-3px);border-color:var(--gold);}
+  .mode-card h3{margin-bottom:6px;}
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+  @media (max-width:600px){.mode-grid{grid-template-columns:1fr;}}
+  .ending-title{font-size:2.2rem;}
+  .accent-italian{border-color:var(--italian) !important;}
+  .accent-spanish{border-color:var(--spanish) !important;}
+  .accent-flemish{border-color:var(--flemish) !important;}
+  .accent-dutch{border-color:var(--dutch) !important;}
+  .accent-french{border-color:var(--french) !important;}
+  input[type="text"]{
+    font-family:var(--font-body);font-size:1rem;padding:10px 12px;border-radius:4px;border:1px solid var(--gold-dim);
+    background:var(--bg-3);color:var(--parchment);width:100%;max-width:280px;
+  }
+  .hidden{display:none !important;}
+  .small{font-size:0.85rem;}
+  .link-btn{background:none;border:none;color:var(--gold);text-decoration:underline;font-family:var(--font-label);font-size:0.8rem;cursor:pointer;padding:6px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar hidden" id="topbar">
+    <span id="topbarLeft"></span>
+    <span class="renown-track" id="renownTrack"></span>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="footer-note">The Masquerade of Shadow and Splendor &middot; AP Art History &middot; Unit 3.12: The Baroque</div>
+</div>
+<div class="curtain hidden" id="curtain"><span id="curtainText">&hellip;</span></div>
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+
+var VOCAB = {
+  tenebrism: {term:"Tenebrism / Tenebroso", def:"Dramatic dark-and-light contrast in painting, used to heighten emotion and focus attention."},
+  curvilinear: {term:"Curvilinear", def:"Contained by or consisting of a curved line or lines."},
+  etching: {term:"Etching", def:"An intaglio printmaking process: a wax ground on a metal plate is cut with a tool, the plate is bathed in acid, then inked and pressed to paper."},
+  intaglio: {term:"Intaglio", def:"A general printmaking category in which the image is cut or incised below the surface of the plate."},
+  woodcut: {term:"Woodcut", def:"A relief printmaking process in which an image is carved into a block of wood."},
+  engraving: {term:"Engraving", def:"An intaglio process in which lines are cut directly into a metal plate with a burin \u2014 no acid used."},
+  drypoint: {term:"Drypoint", def:"An intaglio process using a sharp needle to scratch a metal plate directly, producing soft, velvety lines from the raised burr."},
+  genre: {term:"Genre Painting", def:"A painting depicting scenes of everyday, ordinary life."},
+  vanitas: {term:"Vanitas", def:"A still-life theme stressing the brevity of life and the folly of human vanity."}
+};
+
+var WORKS = {
+  caravaggio: {
+    id:"caravaggio", salon:"italian",
+    artist:"Caravaggio", title:"The Calling of Saint Matthew", date:"c. 1597\u20131601",
+    medium:"Oil on canvas", location:"Contarelli Chapel, San Luigi dei Francesi, Rome",
+    vocabKey:"tenebrism", func:"Religious",
+    facts:[
+      "A single dramatic beam of light cuts across a dim tavern, falling on Matthew and pointing to Christ's outstretched hand.",
+      "Christ's beckoning hand directly echoes the hand of Adam in Michelangelo's Sistine Chapel ceiling \u2014 casting Christ as a 'second Adam.'",
+      "The tax collectors around the table wear fashionable 17th-century Roman clothing, not biblical robes \u2014 Caravaggio drags a sacred story into his own present.",
+      "Painted for the Counter-Reformation Catholic Church, meant to make a distant biblical moment feel immediate and real to Roman worshippers."
+    ],
+    quiz:[
+      {q:"What technique does Caravaggio use to focus the viewer's eye on Matthew and Christ?", choices:["Linear perspective vanishing point","A single dramatic beam of light (tenebrism)","Bright, even lighting across the whole scene","A curved, undulating composition"], a:1, explain:"Caravaggio uses tenebrism \u2014 a sharp beam of light against deep shadow \u2014 to stage the moment of the calling."},
+      {q:"Christ's gesture in this painting deliberately recalls which earlier masterpiece?", choices:["Michelangelo's Sistine Chapel ceiling","Raphael's School of Athens","Leonardo's Last Supper","Botticelli's Birth of Venus"], a:0, explain:"Christ's hand mirrors Adam's hand in Michelangelo's Creation of Adam, framing Christ as a 'second Adam.'"},
+      {q:"Why do the tax collectors wear contemporary 17th-century clothing?", choices:["Caravaggio ran out of biblical reference material","To make the sacred narrative feel immediate and real to viewers","Because the patron demanded it for fashion reasons","It was a printing error later corrected"], a:1, explain:"Caravaggio's realism collapses the distance between the biblical past and the Counter-Reformation present."},
+      {q:"What is the FUNCTION of The Calling of Saint Matthew?", choices:["Still-life","Genre","Religious","Landscape"], a:2, explain:"It depicts a religious narrative rooted in the Gospel of Matthew, made dramatic for Counter-Reformation worship."},
+      {q:"Where does this painting reside today?", choices:["Museo del Prado, Madrid","Contarelli Chapel, San Luigi dei Francesi, Rome","Louvre, Paris","Uffizi Gallery, Florence"], a:1, explain:"It remains in the Contarelli Chapel of San Luigi dei Francesi in Rome, its original setting."}
+    ]
+  },
+  bernini: {
+    id:"bernini", salon:"italian",
+    artist:"Gian Lorenzo Bernini", title:"Ecstasy of Saint Teresa", date:"1645\u20131652",
+    medium:"Marble, stucco, and gilt bronze", location:"Cornaro Chapel, Santa Maria della Vittoria, Rome",
+    vocabKey:null, func:"Religious",
+    facts:[
+      "Gilt bronze rays represent divine light pouring down on Saint Teresa as she swoons in mystical rapture.",
+      "Teresa's drapery churns in violently animated folds \u2014 the marble itself seems to move.",
+      "Bernini stages the scene like theater: members of the Cornaro family are sculpted into box seats on either wall, watching the vision as an audience would watch a play.",
+      "Commissioned for the Counter-Reformation Church, the sculpture makes an interior mystical experience visible and emotionally overwhelming for viewers."
+    ],
+    quiz:[
+      {q:"How does Bernini stage the Ecstasy of Saint Teresa within its chapel?", choices:["As a quiet, isolated moment with no viewers implied","Like a theater, with sculpted Cornaro family members watching from box seats","Surrounded entirely by still water","In total darkness with no light source"], a:1, explain:"Bernini turns the chapel into a theater, with patrons sculpted as an onlooking audience."},
+      {q:"What material combination does Bernini use for this sculpture group?", choices:["Bronze and terracotta only","Marble, stucco, and gilt bronze","Wood and gold leaf","Cast iron and marble"], a:1, explain:"Bernini combines marble, stucco, and gilt bronze to create light, motion, and texture."},
+      {q:"What do the gilt bronze rays behind Teresa represent?", choices:["Sunlight streaming through a window","Divine light accompanying her mystical vision","Flames of punishment","Decorative gold trim with no symbolic meaning"], a:1, explain:"The rays visualize divine light, making Teresa's interior spiritual ecstasy visible."},
+      {q:"This sculpture is located in which chapel?", choices:["Sistine Chapel","Cornaro Chapel, Santa Maria della Vittoria","Contarelli Chapel","Pazzi Chapel"], a:1, explain:"It is the centerpiece of the Cornaro Chapel in Santa Maria della Vittoria, Rome."},
+      {q:"What is the FUNCTION of Ecstasy of Saint Teresa?", choices:["Genre","Still-life","Religious","Landscape"], a:2, explain:"It depicts a religious/mystical narrative meant to inspire Counter-Reformation devotion."}
+    ]
+  },
+  borromini: {
+    id:"borromini", salon:"italian",
+    artist:"Francesco Borromini", title:"San Carlo alle Quattro Fontane", date:"c. 1638\u20131667",
+    medium:"Stone and stucco", location:"Rome, Italy",
+    vocabKey:"curvilinear", func:"Religious (architecture)",
+    facts:[
+      "The façade undulates in alternating concave and convex curves \u2014 a hallmark of Baroque curvilinear design.",
+      "The ground plan has no right angles: two triangles form a diamond shape, with two circles set inside it.",
+      "The church is dedicated to St. Charles Borromeo and the Holy Trinity, built for the Trinitarian order, who worked to rescue Christian captives and care for the poor and sick.",
+      "Borromini was known as introverted and geometrically obsessive \u2014 he based this design on mathematics rather than traditional classical templates."
+    ],
+    quiz:[
+      {q:"What defines the façade of San Carlo alle Quattro Fontane as 'curvilinear'?", choices:["A perfectly flat, rectangular front","Alternating concave and convex curves","A single circular dome with no walls","Straight classical columns only"], a:1, explain:"Curvilinear means built from curved lines \u2014 exactly what Borromini's undulating façade does."},
+      {q:"What unusual feature defines the building's ground plan?", choices:["A perfect square with four equal sides","Two triangles forming a diamond, with two circles inside, and no right angles","A single long rectangle","A five-pointed star"], a:1, explain:"Borromini based the plan on interlocking triangles and circles rather than standard right angles."},
+      {q:"Which religious order commissioned this church?", choices:["The Jesuits","The Trinitarians, dedicated to rescuing Christian captives","The Franciscans","The Dominicans"], a:1, explain:"The Trinitarian order, focused on captive rescue and care for the poor and sick, commissioned the church."},
+      {q:"What material was used to build San Carlo alle Quattro Fontane?", choices:["Marble and gilt bronze","Stone and stucco","Wood and iron","Brick and glass"], a:1, explain:"The building is constructed of stone and stucco."},
+      {q:"Which vocabulary term best describes Borromini's design approach here?", choices:["Tenebrism","Vanitas","Curvilinear","Genre"], a:2, explain:"Curvilinear \u2014 built from curved lines \u2014 is the defining term for this façade and plan."}
+    ]
+  },
+  velazquez: {
+    id:"velazquez", salon:"spanish",
+    artist:"Diego Vel\u00e1zquez", title:"Las Meninas", date:"1656",
+    medium:"Oil on canvas, approx. 10'5\" x 9'", location:"Museo del Prado, Madrid",
+    vocabKey:null, func:"Portrait",
+    facts:[
+      "The Infanta Margaret Theresa stands at the center, surrounded by her ladies-in-waiting (meninas) and attendants.",
+      "A mirror on the back wall reflects King Philip IV and Queen Mariana \u2014 implying they (and the viewer) stand exactly where the royal couple would.",
+      "Vel\u00e1zquez includes himself in the scene, painting at his easel, blurring the line between artist, subject, and viewer.",
+      "In a lit doorway in the background stands Don Jos\u00e9 Nieto Vel\u00e1zquez, the Queen's chamberlain \u2014 possibly a relative of the artist."
+    ],
+    quiz:[
+      {q:"Who stands at the visual center of Las Meninas?", choices:["King Philip IV","The Infanta Margaret Theresa","Vel\u00e1zquez himself","Queen Mariana"], a:1, explain:"The young Infanta Margaret Theresa is the compositional focus, surrounded by her attendants."},
+      {q:"What does the mirror on the back wall of Las Meninas reflect?", choices:["The viewer's own face","A window to the garden","King Philip IV and Queen Mariana","Nothing \u2014 it is unpainted"], a:2, explain:"The mirror reflects the King and Queen, suggesting they occupy the viewer's position, outside the picture plane."},
+      {q:"What unusual role does Vel\u00e1zquez give himself in this painting?", choices:["He is absent entirely","He appears painting at his easel within the scene","He appears only as a reflection","He is shown as a servant in the back"], a:1, explain:"Vel\u00e1zquez paints himself into the scene at his easel, blurring artist, subject, and viewer."},
+      {q:"What is the FUNCTION of Las Meninas?", choices:["Still-life","Landscape","Portrait","Genre"], a:2, explain:"Despite its complexity, it is fundamentally a royal portrait \u2014 of the Infanta and, by reflection, the King and Queen."},
+      {q:"Where is Las Meninas housed today?", choices:["The Louvre, Paris","Museo del Prado, Madrid","The Uffizi, Florence","The Escorial"], a:1, explain:"Las Meninas hangs in the Museo del Prado in Madrid."}
+    ]
+  },
+  rubens: {
+    id:"rubens", salon:"flemish",
+    artist:"Peter Paul Rubens", title:"Henri IV Receiving the Portrait of Marie de' Medici (from the Marie de' Medici Cycle)", date:"1621\u20131625",
+    medium:"Oil on canvas", location:"Marie de' Medici Cycle",
+    vocabKey:null, func:"Historical / Portrait (allegory)",
+    facts:[
+      "Rubens blends real historical figures \u2014 Henri IV and Marie de' Medici \u2014 with classical deities like Jupiter and Juno, who personify their union.",
+      "A personification of France looks on, elevating a political marriage into a cosmic, divinely sanctioned event.",
+      "The cycle was commissioned by Marie de' Medici herself, to legitimize and glorify her position as queen and later regent of France.",
+      "Rubens was famed for his mastery of texture \u2014 fabric, skin, and armor all rendered with tactile realism."
+    ],
+    quiz:[
+      {q:"Who commissioned the Marie de' Medici Cycle, and why?", choices:["King Louis XIV, to celebrate his birth","Marie de' Medici, to legitimize and glorify her own rule","The Pope, as Church propaganda","An anonymous Flemish guild"], a:1, explain:"Marie de' Medici commissioned the cycle to build a grand, mythologized narrative of her own life and authority."},
+      {q:"What artistic device does Rubens use to elevate Henri IV and Marie de' Medici's story?", choices:["Strict, unadorned realism with no symbolism","Blending them with classical deities like Jupiter and Juno as allegory","A purely geometric, abstract composition","Depicting them only as small background figures"], a:1, explain:"Rubens merges historical figures with mythological gods, turning a political marriage into cosmic allegory."},
+      {q:"Rubens was especially renowned for his mastery of which painterly quality?", choices:["Flattened, two-dimensional space","Rendering texture and material \u2014 fabric, skin, armor \u2014 with tactile realism","Extreme minimalism","Grid-based perspective systems"], a:1, explain:"Rubens' handling of texture and surface made his figures feel physically present."},
+      {q:"What is the general FUNCTION of this work?", choices:["Still-life","Historical/portrait allegory","Genre scene of peasant life","Landscape"], a:1, explain:"It merges historical portraiture with allegory to glorify its royal subjects."},
+      {q:"Rubens' style would later inspire a group of followers known as:", choices:["The Rub\u00e9nistes","The Caravaggisti","The Impressionists","The Mannerists"], a:0, explain:"Rubens' dynamic, colorful style inspired later followers called the Rub\u00e9nistes."}
+    ]
+  },
+  rembrandt: {
+    id:"rembrandt", salon:"dutch",
+    artist:"Rembrandt van Rijn", title:"Self-Portrait with Saskia", date:"1636",
+    medium:"Etching", location:"Leiden and Amsterdam, Dutch Republic",
+    vocabKey:"etching", func:"Portrait",
+    facts:[
+      "Rembrandt depicts himself alongside his wife, Saskia van Uylenburgh.",
+      "Saskia married 'below her station' when she wed Rembrandt, and was known for her independence.",
+      "The couple had four children together \u2014 only the fourth survived infancy; Saskia herself died at 29, a year after that birth.",
+      "As an etching, the work showcases Rembrandt's mastery of printmaking as much as portraiture."
+    ],
+    quiz:[
+      {q:"What printmaking process is Self-Portrait with Saskia made with?", choices:["Woodcut","Engraving","Etching","Lithography"], a:2, explain:"It is an etching \u2014 an intaglio process using acid to bite lines into a metal plate."},
+      {q:"Who is Saskia, depicted alongside Rembrandt?", choices:["His mother","His patron","His wife, Saskia van Uylenburgh","His art dealer"], a:2, explain:"Saskia van Uylenburgh was Rembrandt's wife, known for marrying 'below her station' and for her independence."},
+      {q:"In an etching, how is the image transferred to paper?", choices:["Carved into wood and pressed in relief","Cut into a wax ground on metal, bitten by acid, then inked and pressed","Painted directly with a brush","Photographed onto a plate"], a:1, explain:"Etching uses a wax ground cut by a tool, an acid bath to bite the exposed lines, then ink and pressure to print."},
+      {q:"Which of these is true about Saskia's life?", choices:["She lived to old age surrounded by grandchildren","She died at 29, a year after her fourth child's birth","She never had children","She left Rembrandt for another artist"], a:1, explain:"Saskia died at 29, one year after the birth of her fourth child, the only one to survive."},
+      {q:"What is the FUNCTION of this etching?", choices:["Still-life","Landscape","Portrait","Historical narrative"], a:2, explain:"It is a portrait, though its medium (etching) is equally significant to its meaning."}
+    ]
+  },
+  vermeer: {
+    id:"vermeer", salon:"dutch",
+    artist:"Johannes Vermeer", title:"Woman Holding a Balance", date:"c. 1664",
+    medium:"Oil on canvas", location:"Delft, Dutch Republic",
+    vocabKey:"genre", func:"Genre",
+    facts:[
+      "An unidentified woman weighs jewelry \u2014 worldly possessions \u2014 on a small balance scale.",
+      "A mirror on the wall may suggest vanity, or self-knowledge and truth.",
+      "Behind her hangs a painting of the Last Judgment, hinting at a moral tension between wealth and piety.",
+      "Vermeer's soft, raking light and precise optical realism have led scholars to wonder whether he used a camera obscura."
+    ],
+    quiz:[
+      {q:"What is the woman doing in Woman Holding a Balance?", choices:["Reading a letter","Weighing jewelry on a balance scale","Playing a musical instrument","Painting a portrait"], a:1, explain:"She weighs jewelry \u2014 worldly possessions \u2014 raising questions about wealth and vanity."},
+      {q:"What painting appears on the wall behind her, and why might it matter?", choices:["A landscape, purely decorative","A Last Judgment scene, hinting at a tension between wealth and piety","A portrait of her husband","An empty frame"], a:1, explain:"The Last Judgment behind her suggests a moral commentary on material wealth versus spiritual piety."},
+      {q:"What vocabulary term describes this kind of everyday domestic scene?", choices:["Vanitas","Genre painting","Tenebrism","Curvilinear"], a:1, explain:"Genre painting depicts scenes of ordinary, everyday life \u2014 exactly what Vermeer shows here."},
+      {q:"Vermeer's precise light and optical realism have led some scholars to suggest he used:", choices:["A telescope","A camera obscura","Colored glass lenses only for sketching","Photography, which did not yet exist"], a:1, explain:"Some scholars believe Vermeer used a camera obscura to achieve his precise optical effects."},
+      {q:"Where was Vermeer working when he painted this piece?", choices:["Amsterdam","Delft, Dutch Republic","Antwerp","Rome"], a:1, explain:"Vermeer worked in Delft, in the Dutch Republic."}
+    ]
+  },
+  ruysch: {
+    id:"ruysch", salon:"dutch",
+    artist:"Rachel Ruysch", title:"Still Life: Fruit and Insects", date:"after 1711",
+    medium:"Oil on wood", location:"Amsterdam, Dutch Republic, and D\u00fcsseldorf, Germany",
+    vocabKey:"vanitas", func:"Still-life",
+    facts:[
+      "Ruysch renders fruit and insects with meticulous, almost scientific precision.",
+      "Beneath the surface beauty lurks a reminder of decay and mortality \u2014 the vanitas theme.",
+      "Ruysch was one of the few female artists of her era to achieve major recognition and lasting professional success.",
+      "Her attention to natural detail reflects the Dutch Republic's broader fascination with science, botany, and observation."
+    ],
+    quiz:[
+      {q:"What vocabulary term describes the underlying theme of Ruysch's still life?", choices:["Genre painting","Vanitas","Tenebrism","Curvilinear"], a:1, explain:"Vanitas stresses the brevity of life and the folly of vanity \u2014 fitting for decaying fruit and insects."},
+      {q:"What made Rachel Ruysch notable among her contemporaries?", choices:["She was one of the few female artists of her time to achieve major recognition","She only painted portraits of royalty","She refused to sign her work","She worked exclusively in fresco"], a:0, explain:"Ruysch achieved significant professional success and recognition as a female artist in a male-dominated field."},
+      {q:"What does the presence of insects and imperfect fruit typically symbolize in vanitas painting?", choices:["Abundance and permanent prosperity","Decay, mortality, and the passage of time","Pure decoration with no symbolism","Religious salvation"], a:1, explain:"Insects and decaying fruit are reminders of mortality and the transience of earthly pleasures."},
+      {q:"What is the medium of Still Life: Fruit and Insects?", choices:["Oil on canvas","Oil on wood","Etching","Marble"], a:1, explain:"Ruysch painted this piece in oil on wood."},
+      {q:"Ruysch worked in which two cities?", choices:["Rome and Venice","Amsterdam and D\u00fcsseldorf","Madrid and Seville","Paris and Antwerp"], a:1, explain:"Ruysch worked in Amsterdam, Dutch Republic, and D\u00fcsseldorf, Germany."}
+    ]
+  },
+  versailles: {
+    id:"versailles", salon:"french",
+    artist:"Louis Le Vau & Jules Hardouin-Mansart (architects); Andr\u00e9 Le N\u00f4tre (gardens); Charles Le Brun (interiors)",
+    title:"Palace of Versailles", date:"begun 1669",
+    medium:"Masonry, stone, wood, iron, and gold leaf", location:"Versailles, France",
+    vocabKey:null, func:"Palace (royal residence)",
+    facts:[
+      "Versailles symbolizes the absolute power of Louis XIV, the 'Sun King' \u2014 famously credited with the phrase 'L'\u00e9tat, c'est moi' (I am the state).",
+      "The palace holds roughly 2,153 windows and 700 rooms, spread across 2,000 acres of gardens.",
+      "The exterior façade is comparatively restrained and classical, while the interior \u2014 especially the Hall of Mirrors \u2014 is dazzlingly ornate.",
+      "Andr\u00e9 Le N\u00f4tre's gardens use long axial views and strategically placed 'key windows' to frame the sprawling grounds."
+    ],
+    quiz:[
+      {q:"What does the Palace of Versailles primarily symbolize?", choices:["Religious devotion of the clergy","The absolute power of the French monarchy under Louis XIV","Democratic government","Trade wealth of Dutch merchants"], a:1, explain:"Versailles was built to project the absolute authority of Louis XIV, the 'Sun King.'"},
+      {q:"How do the palace's exterior and interior compare?", choices:["Both are equally plain","The exterior is more ornate than the interior","The exterior is comparatively restrained; the interior, like the Hall of Mirrors, is dazzlingly ornate","Neither has any ornamentation"], a:2, explain:"Versailles' façade is classical and restrained compared to its lavish interior spaces."},
+      {q:"Who designed the palace's extensive gardens?", choices:["Charles Le Brun","Andr\u00e9 Le N\u00f4tre","Jules Hardouin-Mansart","Francesco Borromini"], a:1, explain:"Andr\u00e9 Le N\u00f4tre designed the gardens, using long views and strategic 'key windows.'"},
+      {q:"Roughly how many rooms does the Palace of Versailles contain?", choices:["About 50","About 700","About 2,153","About 12"], a:1, explain:"Versailles contains roughly 700 rooms across its sprawling complex."},
+      {q:"Which French king is most associated with expanding Versailles into the palace we know today?", choices:["Louis XIII","Louis XIV, the Sun King","Louis XVI","Napoleon"], a:1, explain:"Louis XIV expanded the palace over roughly 50 years and moved the government there."}
+    ]
+  }
+};
+
+var SALONS = [
+  {
+    id:"italian", name:"The Italian Salon", accent:"italian", glyph:"\uD83C\uDFAD",
+    subtitle:"Rome \u2014 where drama first took the stage",
+    works:["caravaggio","bernini","borromini"],
+    vocabIntro:["tenebrism","curvilinear"],
+    intro:"Candlelight gutters across gilded frames. In this salon, Roman masters taught shadow itself to perform \u2014 and taught stone to curve like breath.",
+    choices:[
+      {label:"Follow the beam of candlelight toward the paintings", tag:"seeker-of-light"},
+      {label:"Study the strange, curving architecture model on the pedestal", tag:"architect-eye"}
+    ]
+  },
+  {
+    id:"spanish", name:"The Spanish Salon", accent:"spanish", glyph:"\uD83D\uDC51",
+    subtitle:"Madrid \u2014 a court that paints itself painting",
+    works:["velazquez"],
+    vocabIntro:[],
+    intro:"A single vast canvas dominates the room, said to contain a riddle: somewhere within it, you are already being watched.",
+    choices:[
+      {label:"Search the canvas for the mirror's reflection", tag:"riddle-solver"},
+      {label:"Ask the attendant who truly stands where the King should stand", tag:"riddle-solver"}
+    ]
+  },
+  {
+    id:"flemish", name:"The Flemish Salon", accent:"flemish", glyph:"\u2694\uFE0F",
+    subtitle:"Antwerp \u2014 where politics wears the robes of the gods",
+    works:["rubens"],
+    vocabIntro:[],
+    intro:"Painted deities crowd a canvas meant to flatter a queen. Somewhere between myth and history, a marriage becomes cosmic.",
+    choices:[
+      {label:"Admire the god and goddess presiding over the scene", tag:"myth-reader"},
+      {label:"Study the true historical figures hidden among the allegory", tag:"myth-reader"}
+    ]
+  },
+  {
+    id:"dutch", name:"The Dutch Salon", accent:"dutch", glyph:"\u2696\uFE0F",
+    subtitle:"Amsterdam & Delft \u2014 quiet rooms, loud consciences",
+    works:["rembrandt","vermeer","ruysch"],
+    vocabIntro:["etching","genre","vanitas"],
+    intro:"No saints ascend here. Instead: a wife's portrait, a woman weighing her jewelry, and fruit already beginning to rot beneath its own beauty.",
+    choices:[
+      {label:"Examine the etched portrait pinned near the door", tag:"quiet-observer"},
+      {label:"Lean close to the still-life and count the insects", tag:"quiet-observer"}
+    ]
+  },
+  {
+    id:"french", name:"The French Salon", accent:"french", glyph:"\u26EA",
+    subtitle:"Versailles \u2014 where a garden becomes a declaration",
+    works:["versailles"],
+    vocabIntro:[],
+    intro:"The walls here are lined with mirrors and gold. Somewhere beyond the doors, two thousand acres of garden insist that one king rules all of it.",
+    choices:[
+      {label:"Walk the Hall of Mirrors", tag:"court-favorite"},
+      {label:"Study the model of the gardens' long axial views", tag:"court-favorite"}
+    ]
+  }
+];
+
+var ENDINGS = [
+  {min:0.9, tag:null, title:"Master of Chiaroscuro", desc:"You commanded every shadow and every fact with equal precision. The whole ballroom speaks of nothing else tonight."},
+  {min:0.75, tag:"seeker-of-light", title:"The Ambassador of Rome", desc:"You gravitated toward drama and light all evening \u2014 and it showed. Rome itself seems to follow you from room to room."},
+  {min:0.75, tag:"riddle-solver", title:"Keeper of the Mirror's Secret", desc:"You saw what most guests missed \u2014 the reflection, the riddle, the hidden vantage point. Vel\u00e1zquez would approve."},
+  {min:0.75, tag:null, title:"Toast of the Ball", desc:"Charming, sharp, and well-informed \u2014 by midnight, half the room is asking who you are."},
+  {min:0.5, tag:"quiet-observer", title:"The Quiet Observer", desc:"You lingered in the Dutch salon longest, noticing the small, ordinary truths everyone else rushed past."},
+  {min:0.5, tag:null, title:"A Promising Guest", desc:"You held your own tonight, though a few details slipped past you in the candlelight. Worth another visit to the ball."},
+  {min:0, tag:null, title:"The Wallflower in the Shadows", desc:"Tenebrism, it turns out, worked a little too well on you tonight. Come back before the candles are lit again."}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+var state = null;
+var SAVE_KEY = "baroqueMasqueradeSave_v1";
+
+function freshState(mode){
+  return {
+    mode: mode,
+    screen: "map",
+    salonsCompleted: [],
+    salonOrderChosen: [],
+    renownCorrect: 0,
+    renownTotal: 0,
+    masks: [],
+    choiceTags: [],
+    currentSalon: null,
+    currentWorkIdx: 0,
+    currentMatchState: null,
+    currentQuizQueue: [],
+    quizIdx: 0,
+    pairedTurn: "host",
+    pairedScores: {host:0, guest:0},
+    finaleQueue: [],
+    finaleIdx: 0,
+    finaleLives: 3,
+    finaleCorrect: 0,
+    startedAt: Date.now(),
+    speedrunEndTime: mode === "speedrun" ? Date.now() + 12*60*1000 : null,
+    gameOverByClock: false
+  };
+}
+
+var speedrunInterval = null;
+function startSpeedrunClock(){
+  if(speedrunInterval) clearInterval(speedrunInterval);
+  speedrunInterval = setInterval(function(){
+    if(!state || state.mode !== "speedrun" || !state.speedrunEndTime) return;
+    var remaining = state.speedrunEndTime - Date.now();
+    if(remaining <= 0 && state.screen !== "ending"){
+      state.gameOverByClock = true;
+      clearInterval(speedrunInterval);
+      state.screen = "ending";
+      transition("The last candle burns out\u2026", renderScreen);
+      return;
+    }
+    renderTopbar();
+  }, 1000);
+}
+function stopSpeedrunClock(){
+  if(speedrunInterval){ clearInterval(speedrunInterval); speedrunInterval = null; }
+}
+
+function saveGame(){
+  if(state.mode !== "study") return;
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadGame(){
+  try{
+    var raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function $(sel){ return document.querySelector(sel); }
+function el(tag, opts){
+  var e = document.createElement(tag);
+  opts = opts || {};
+  if(opts.cls) e.className = opts.cls;
+  if(opts.text !== undefined) e.textContent = opts.text;
+  if(opts.html !== undefined) e.innerHTML = opts.html;
+  if(opts.attrs) for(var k in opts.attrs) e.setAttribute(k, opts.attrs[k]);
+  return e;
+}
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+  }
+  return a;
+}
+function sample(arr, n){
+  return shuffle(arr).slice(0, Math.min(n, arr.length));
+}
+function transition(text, cb){
+  var curtain = $("#curtain");
+  var curtainText = $("#curtainText");
+  curtainText.textContent = text || "\u2026";
+  curtain.classList.remove("hidden");
+  setTimeout(function(){
+    cb();
+    setTimeout(function(){ curtain.classList.add("hidden"); }, 60);
+  }, 420);
+}
+function renderTopbar(){
+  var bar = $("#topbar");
+  if(!state){ bar.classList.add("hidden"); return; }
+  bar.classList.remove("hidden");
+  var left = $("#topbarLeft");
+  var modeLabel = state.mode === "speedrun" ? "Solo Speedrun" : state.mode === "paired" ? "Masquerade for Two" : "Study Salon";
+  var timeStr = "";
+  if(state.mode === "speedrun" && state.speedrunEndTime){
+    var remaining = Math.max(0, state.speedrunEndTime - Date.now());
+    var mins = Math.floor(remaining/60000);
+    var secs = Math.floor((remaining%60000)/1000);
+    timeStr = "  \u00b7  \u23F3 " + mins + ":" + (secs<10?"0":"")+secs;
+  }
+  left.textContent = modeLabel + " \u00b7 " + state.salonsCompleted.length + "/5 salons" + timeStr;
+  var track = $("#renownTrack");
+  track.innerHTML = "";
+  var pct = state.renownTotal ? state.renownCorrect/state.renownTotal : 0;
+  var lit = Math.round(pct*10);
+  for(var i=0;i<10;i++){
+    var dot = el("span",{cls:"renown-dot"+(i<lit?" lit":"")});
+    track.appendChild(dot);
+  }
+}
+
+/* ============================================================
+   SCREENS: TITLE / MODE SELECT
+   ============================================================ */
+function renderTitle(){
+  state = null;
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  renderTopbar();
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("span",{cls:"eyebrow",text:"AP Art History \u00b7 Unit 3.12"}));
+  frame.appendChild(el("h1",{text:"The Masquerade of Shadow and Splendor"}));
+  var p = el("p",{cls:"dim"});
+  p.innerHTML = "The candles are lit. Beyond five gilded doors, the courts of Baroque Europe wait to be studied, questioned, and remembered \u2014 in whatever order you dare to enter them.";
+  frame.appendChild(p);
+  var btnRow = el("div",{cls:"btn-row"});
+  var startBtn = el("button",{text:"Enter the Ballroom"});
+  startBtn.onclick = renderModeSelect;
+  btnRow.appendChild(startBtn);
+  stopSpeedrunClock();
+  var saved = loadGame();
+  if(saved && saved.mode === "study" && saved.salonsCompleted && saved.salonsCompleted.length < 5){
+    var contBtn = el("button",{cls:"secondary", text:"Continue Saved Ball"});
+    contBtn.onclick = function(){
+      state = saved;
+      transition("Resuming the masquerade\u2026", function(){ renderScreen(); });
+    };
+    btnRow.appendChild(contBtn);
+  }
+  frame.appendChild(btnRow);
+  stage.appendChild(frame);
+}
+
+function renderModeSelect(){
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  renderTopbar();
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow",text:"Choose your evening"}));
+  frame.appendChild(el("h2",{text:"How will you attend the ball?"}));
+  var grid = el("div",{cls:"mode-grid"});
+
+  var modes = [
+    {id:"speedrun", title:"Solo Speedrun", desc:"Race the candles. A 12-minute clock across all five salons and the finale \u2014 no saving mid-run. Best for a quick, replayable review session at home.", icon:"\u23F1\uFE0F"},
+    {id:"paired", title:"Masquerade for Two", desc:"Pair up on one device. Partners alternate as Host and Guest \u2014 different prompts each turn, so no one can simply copy the other's answers.", icon:"\uD83E\uDD1D"},
+    {id:"study", title:"Study Salon", desc:"No clock, no pressure. Revisit any salon, any vocabulary, any quiz, as many times as you like.", icon:"\uD83D\uDD6F\uFE0F"}
+  ];
+  modes.forEach(function(m){
+    var card = el("div",{cls:"mode-card"});
+    card.appendChild(el("div",{html:"<span style='font-size:1.8rem'>"+m.icon+"</span>"}));
+    card.appendChild(el("h3",{text:m.title}));
+    card.appendChild(el("p",{cls:"dim small",text:m.desc}));
+    card.onclick = function(modeId){
+      return function(){
+        transition("The doors open\u2026", function(){
+          clearSave();
+          state = freshState(modeId);
+          if(modeId === "speedrun") startSpeedrunClock();
+          renderScreen();
+        });
+      };
+    }(m.id);
+    grid.appendChild(card);
+  });
+  frame.appendChild(grid);
+  var back = el("button",{cls:"secondary", text:"\u2190 Back"});
+  back.style.marginTop = "18px";
+  back.onclick = renderTitle;
+  frame.appendChild(back);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   SCREEN ROUTER
+   ============================================================ */
+function renderScreen(){
+  renderTopbar();
+  saveGame();
+  switch(state.screen){
+    case "map": renderMap(); break;
+    case "salonIntro": renderSalonIntro(); break;
+    case "match": renderMatch(); break;
+    case "vocab": renderVocab(); break;
+    case "quiz": renderQuiz(); break;
+    case "salonComplete": renderSalonComplete(); break;
+    case "finale": renderFinaleIntro(); break;
+    case "finaleQuiz": renderFinaleQuiz(); break;
+    case "ending": renderEnding(); break;
+    case "passScreen": renderPassScreen(); break;
+    default: renderMap();
+  }
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+function renderMap(){
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  frame.appendChild(el("span",{cls:"eyebrow",text:"The Ballroom"}));
+  frame.appendChild(el("h2",{text:"Five doors stand open tonight."}));
+  frame.appendChild(el("p",{cls:"dim", text:"Enter them in any order you like. Study mode lets you revisit as often as you wish."}));
+
+  var grid = el("div",{cls:"map-grid"});
+  SALONS.forEach(function(s){
+    var done = state.salonsCompleted.indexOf(s.id) !== -1;
+    var canRevisit = state.mode === "study";
+    var door = el("div",{cls:"salon-door accent-"+s.accent + (done && !canRevisit ? " done" : "")});
+    door.appendChild(el("span",{cls:"glyph", text:s.glyph}));
+    door.appendChild(el("span",{cls:"name", text:s.name}));
+    door.appendChild(el("span",{cls:"status", text: done ? (canRevisit ? "Revisit" : "Attended") : "Enter"}));
+    if(!done || canRevisit){
+      door.onclick = function(salon){
+        return function(){
+          state.currentSalon = salon.id;
+          state.currentWorkIdx = 0;
+          state.screen = "salonIntro";
+          transition("Crossing the ballroom floor\u2026", renderScreen);
+        };
+      }(s);
+    }
+    grid.appendChild(door);
+  });
+  frame.appendChild(grid);
+
+  if(state.salonsCompleted.length >= 5){
+    var finaleBtn = el("button",{text:"The Clock Strikes \u2014 Enter the Grand Finale"});
+    finaleBtn.style.marginTop = "20px";
+    finaleBtn.onclick = function(){
+      state.screen = "finale";
+      transition("Midnight approaches\u2026", renderScreen);
+    };
+    frame.appendChild(finaleBtn);
+  }
+
+  var quitBtn = el("button",{cls:"secondary", text:"Leave the Ball"});
+  quitBtn.style.marginTop = "12px";
+  quitBtn.onclick = function(){
+    transition("Slipping out into the night\u2026", renderTitle);
+  };
+  frame.appendChild(quitBtn);
+
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   SALON INTRO (flavor choice)
+   ============================================================ */
+function renderSalonIntro(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame accent-"+salon.accent});
+  frame.appendChild(el("span",{cls:"eyebrow", text: salon.subtitle}));
+  frame.appendChild(el("h2",{text: salon.name}));
+  frame.appendChild(el("p",{text: salon.intro}));
+  frame.appendChild(el("h3",{text:"What draws your attention first?"}));
+  var list = el("div",{cls:"card-list"});
+  salon.choices.forEach(function(c){
+    var card = el("button",{cls:"choice-card", text:c.label});
+    card.onclick = function(choice){
+      return function(){
+        state.choiceTags.push(choice.tag);
+        state.currentWorkIdx = 0;
+        state.vocabDoneForSalon = false;
+        state.screen = "match";
+        transition("You lean in closer\u2026", renderScreen);
+      };
+    }(c);
+    list.appendChild(card);
+  });
+  frame.appendChild(list);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   MATCH GAME (FCCF-lite: label -> value pairing)
+   ============================================================ */
+function buildMatchPairs(work){
+  var pairs = [
+    {label:"Artist", value:work.artist},
+    {label:"Title", value:work.title},
+    {label:"Date", value:work.date},
+    {label:"Medium", value:work.medium},
+    {label:"Location", value:work.location}
+  ];
+  return pairs;
+}
+
+function renderMatch(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  var workId = salon.works[state.currentWorkIdx];
+  var work = WORKS[workId];
+  var pairs = buildMatchPairs(work);
+
+  state.currentMatchState = {
+    workId: workId,
+    labels: shuffle(pairs.map(function(p,i){return {idx:i, text:p.label};})),
+    values: shuffle(pairs.map(function(p,i){return {idx:i, text:p.value};})),
+    selectedLabel: null,
+    selectedValue: null,
+    lockedIdx: [],
+    pairs: pairs
+  };
+
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame accent-"+salon.accent});
+  frame.appendChild(el("span",{cls:"eyebrow", text: salon.name + " \u00b7 Work " + (state.currentWorkIdx+1) + " of " + salon.works.length}));
+  frame.appendChild(el("h2",{text:"Match the details"}));
+  frame.appendChild(el("p",{cls:"dim", text:"Click a label, then click the value that belongs with it."}));
+
+  var cols = el("div",{cls:"match-cols", attrs:{id:"matchCols"}});
+  frame.appendChild(cols);
+  var msg = el("p",{cls:"small dim", attrs:{id:"matchMsg"}, text:"\u00a0"});
+  frame.appendChild(msg);
+
+  stage.appendChild(frame);
+  drawMatchColumns();
+}
+
+function drawMatchColumns(){
+  var ms = state.currentMatchState;
+  var cols = $("#matchCols");
+  cols.innerHTML = "";
+  var colA = el("div");
+  var colB = el("div");
+  ms.labels.forEach(function(item){
+    var locked = ms.lockedIdx.indexOf(item.idx) !== -1;
+    var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(ms.selectedLabel===item?" selected":""), text:item.text});
+    if(!locked){
+      tile.onclick = function(){
+        ms.selectedLabel = item;
+        tryMatch();
+      };
+    }
+    colA.appendChild(tile);
+  });
+  ms.values.forEach(function(item){
+    var locked = ms.lockedIdx.indexOf(item.idx) !== -1;
+    var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(ms.selectedValue===item?" selected":""), text:item.text});
+    if(!locked){
+      tile.onclick = function(){
+        ms.selectedValue = item;
+        tryMatch();
+      };
+    }
+    colB.appendChild(tile);
+  });
+  cols.appendChild(colA);
+  cols.appendChild(colB);
+}
+
+function tryMatch(){
+  var ms = state.currentMatchState;
+  if(!ms.selectedLabel || !ms.selectedValue) { drawMatchColumns(); return; }
+  if(ms.selectedLabel.idx === ms.selectedValue.idx){
+    ms.lockedIdx.push(ms.selectedLabel.idx);
+    ms.selectedLabel = null;
+    ms.selectedValue = null;
+    drawMatchColumns();
+    if(ms.lockedIdx.length === ms.pairs.length){
+      $("#matchMsg").textContent = "All matched \u2014 moving on\u2026";
+      setTimeout(afterMatchComplete, 700);
+    }
+  } else {
+    $("#matchMsg").textContent = "Not quite \u2014 try again.";
+    var lbl = ms.selectedLabel, val = ms.selectedValue;
+    ms.selectedLabel = null;
+    ms.selectedValue = null;
+    drawMatchColumns();
+  }
+}
+
+function afterMatchComplete(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  var workId = salon.works[state.currentWorkIdx];
+  var work = WORKS[workId];
+  showFactsThenContinue(work, salon, function(){
+    if(salon.vocabIntro.length && !state.vocabDoneForSalon){
+      state.screen = "vocab";
+      state.vocabDoneForSalon = true;
+    } else {
+      state.screen = "quiz";
+      state.currentQuizQueue = sample(work.quiz, 3);
+      state.quizIdx = 0;
+      state.pendingQuizWork = work;
+    }
+    transition("Reading further\u2026", renderScreen);
+  });
+}
+
+function showFactsThenContinue(work, salon, cb){
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame accent-"+salon.accent});
+  frame.appendChild(el("span",{cls:"eyebrow", text: work.artist}));
+  frame.appendChild(el("h2",{text: work.title}));
+  frame.appendChild(el("p",{cls:"dim", text: work.date + " \u00b7 " + work.medium + " \u00b7 " + work.location}));
+  frame.appendChild(el("h3",{text:"Form, Function, Content, Context"}));
+  var list = el("div",{cls:"card-list"});
+  work.facts.forEach(function(f){
+    list.appendChild(el("div",{cls:"choice-card disabled", text: f}));
+  });
+  frame.appendChild(list);
+  var btn = el("button",{text:"Continue"});
+  btn.style.marginTop = "16px";
+  btn.onclick = cb;
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   VOCAB MINI-GAME
+   ============================================================ */
+function renderVocab(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  var workId = salon.works[state.currentWorkIdx];
+  var work = WORKS[workId];
+  var vocabKeys = salon.vocabIntro.filter(function(k){ return !state.masks.some ? true : true; });
+  // Build vocab set: all vocabIntro terms for this salon not yet matched this visit
+  if(!state.vocabRoundKeys){
+    state.vocabRoundKeys = salon.vocabIntro.slice();
+    state.vocabLocked = [];
+  }
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame accent-"+salon.accent});
+  frame.appendChild(el("span",{cls:"eyebrow", text:"Vocabulary of the Salon"}));
+  frame.appendChild(el("h2",{text:"Match each term to its definition"}));
+
+  var terms = shuffle(state.vocabRoundKeys.map(function(k){ return {key:k, text:VOCAB[k].term}; }));
+  var defs = shuffle(state.vocabRoundKeys.map(function(k){ return {key:k, text:VOCAB[k].def}; }));
+
+  var cols = el("div",{cls:"match-cols"});
+  var colA = el("div"), colB = el("div");
+  var selTerm = null, selDef = null;
+
+  function redraw(){
+    colA.innerHTML=""; colB.innerHTML="";
+    terms.forEach(function(t){
+      var locked = state.vocabLocked.indexOf(t.key) !== -1;
+      var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(selTerm===t?" selected":""), text:t.text});
+      if(!locked) tile.onclick = function(){ selTerm=t; check(); };
+      colA.appendChild(tile);
+    });
+    defs.forEach(function(d){
+      var locked = state.vocabLocked.indexOf(d.key) !== -1;
+      var tile = el("button",{cls:"match-tile"+(locked?" locked":"")+(selDef===d?" selected":""), text:d.text});
+      if(!locked) tile.onclick = function(){ selDef=d; check(); };
+      colB.appendChild(tile);
+    });
+  }
+  function check(){
+    if(!selTerm || !selDef){ redraw(); return; }
+    if(selTerm.key === selDef.key){
+      state.vocabLocked.push(selTerm.key);
+      selTerm=null; selDef=null;
+      redraw();
+      if(state.vocabLocked.length === state.vocabRoundKeys.length){
+        setTimeout(function(){
+          state.vocabRoundKeys = null;
+          state.screen = "quiz";
+          state.currentQuizQueue = sample(work.quiz, 3);
+          state.quizIdx = 0;
+          state.pendingQuizWork = work;
+          transition("The terms settle into place\u2026", renderScreen);
+        }, 650);
+      }
+    } else {
+      selTerm=null; selDef=null;
+      redraw();
+    }
+  }
+  redraw();
+  cols.appendChild(colA);
+  cols.appendChild(colB);
+  frame.appendChild(cols);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   QUIZ (per-work, sampled)
+   ============================================================ */
+function renderQuiz(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  var work = state.pendingQuizWork;
+  var q = state.currentQuizQueue[state.quizIdx];
+
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame accent-"+salon.accent});
+  frame.appendChild(el("span",{cls:"eyebrow", text: work.title + " \u00b7 Question " + (state.quizIdx+1) + " of " + state.currentQuizQueue.length}));
+  frame.appendChild(el("h2",{text: q.q}));
+  var list = el("div",{cls:"card-list"});
+  var answered = false;
+  var order = shuffle(q.choices.map(function(c,i){return {text:c, isAns:i===q.a};}));
+  order.forEach(function(opt){
+    var card = el("button",{cls:"choice-card", text:opt.text});
+    card.onclick = function(){
+      if(answered) return;
+      answered = true;
+      state.renownTotal++;
+      Array.prototype.forEach.call(list.children, function(c){ c.classList.add("disabled"); });
+      if(opt.isAns){
+        card.classList.add("correct");
+        state.renownCorrect++;
+        if(state.mode==="paired") state.pairedScores[state.pairedTurn]++;
+      } else {
+        card.classList.add("wrong");
+        Array.prototype.forEach.call(list.children, function(c2, i2){
+          if(order[i2].isAns) c2.classList.add("correct");
+        });
+      }
+      var explain = el("div",{cls:"quiz-explain", text:q.explain});
+      frame.appendChild(explain);
+      var nextBtn = el("button",{text: state.quizIdx+1 < state.currentQuizQueue.length ? "Next Question" : "Continue"});
+      nextBtn.style.marginTop="14px";
+      nextBtn.onclick = advanceQuiz;
+      frame.appendChild(nextBtn);
+      renderTopbar();
+      saveGame();
+    };
+    list.appendChild(card);
+  });
+  frame.appendChild(list);
+  stage.appendChild(frame);
+}
+
+function advanceQuiz(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  state.quizIdx++;
+  if(state.quizIdx < state.currentQuizQueue.length){
+    if(state.mode === "paired"){
+      state.pairedTurn = state.pairedTurn === "host" ? "guest" : "host";
+      state.screen = "passScreen";
+      state.afterPass = "quiz";
+      transition("Passing the mask\u2026", renderScreen);
+    } else {
+      transition("\u2026", renderScreen);
+    }
+    return;
+  }
+  // done with this work's quiz
+  state.currentWorkIdx++;
+  if(state.currentWorkIdx < salon.works.length){
+    state.screen = "match";
+    transition("The next canvas awaits\u2026", renderScreen);
+  } else {
+    state.screen = "salonComplete";
+    transition("The salon quiets\u2026", renderScreen);
+  }
+}
+
+/* ============================================================
+   PASS SCREEN (paired mode)
+   ============================================================ */
+function renderPassScreen(){
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame pass-screen"});
+  frame.appendChild(el("div",{cls:"big", text: state.pairedTurn === "host" ? "\uD83C\uDFAD" : "\uD83E\uDD3F"}));
+  frame.appendChild(el("h2",{text: "Pass the device to the " + (state.pairedTurn === "host" ? "Host" : "Guest")}));
+  frame.appendChild(el("p",{cls:"dim", text:"Different questions await \u2014 no peeking at each other's screens."}));
+  var btn = el("button",{text:"I'm Ready"});
+  btn.onclick = function(){
+    state.screen = state.afterPass || "quiz";
+    transition("\u2026", renderScreen);
+  };
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   SALON COMPLETE
+   ============================================================ */
+function renderSalonComplete(){
+  var salon = SALONS.filter(function(s){return s.id===state.currentSalon;})[0];
+  if(state.salonsCompleted.indexOf(salon.id) === -1){
+    state.salonsCompleted.push(salon.id);
+    state.masks.push(salon.id);
+  }
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame center accent-"+salon.accent});
+  frame.appendChild(el("span",{cls:"glyph", html:"<div style='font-size:2.6rem'>"+salon.glyph+"</div>"}));
+  frame.appendChild(el("h2",{text: salon.name + " \u2014 Complete"}));
+  frame.appendChild(el("p",{cls:"dim", text:"You've earned a mask for this salon. " + (5-state.salonsCompleted.length) + " salon(s) remain before midnight."}));
+  var btn = el("button",{text:"Return to the Ballroom"});
+  btn.onclick = function(){
+    state.screen = "map";
+    transition("Back among the crowd\u2026", renderScreen);
+  };
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   GRAND FINALE
+   ============================================================ */
+function renderFinaleIntro(){
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("span",{cls:"eyebrow", text:"Midnight"}));
+  frame.appendChild(el("h2",{text:"The Grand Unmasking"}));
+  frame.appendChild(el("p",{text:"All five salons empty into the great hall. The questions come quickly now, drawn from everything you've seen tonight. You have three candles \u2014 lose them all, and the evening ends early."}));
+  var btn = el("button",{text:"Begin the Finale"});
+  btn.onclick = function(){
+    var allQ = [];
+    Object.keys(WORKS).forEach(function(wid){
+      WORKS[wid].quiz.forEach(function(q){ allQ.push({q:q, work:WORKS[wid]}); });
+    });
+    state.finaleQueue = sample(allQ, 14);
+    state.finaleIdx = 0;
+    state.finaleLives = 3;
+    state.finaleCorrect = 0;
+    state.screen = "finaleQuiz";
+    transition("The chandeliers dim\u2026", renderScreen);
+  };
+  frame.appendChild(btn);
+  stage.appendChild(frame);
+}
+
+function renderFinaleQuiz(){
+  if(state.finaleLives <= 0 || state.finaleIdx >= state.finaleQueue.length){
+    state.screen = "ending";
+    transition("The last candle goes out\u2026", renderScreen);
+    return;
+  }
+  var item = state.finaleQueue[state.finaleIdx];
+  var q = item.q;
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame"});
+  var topRow = el("div",{cls:"btn-row", attrs:{style:"justify-content:space-between;margin-top:0;"}});
+  topRow.appendChild(el("span",{cls:"eyebrow", text:"Question " + (state.finaleIdx+1) + " of " + state.finaleQueue.length}));
+  var livesEl = el("span",{cls:"lives"});
+  for(var i=0;i<3;i++){ livesEl.appendChild(el("span",{text: i<state.finaleLives ? "\uD83D\uDD6F\uFE0F" : "\uD83D\uDCA8"})); }
+  topRow.appendChild(livesEl);
+  frame.appendChild(topRow);
+  frame.appendChild(el("h2",{text:q.q}));
+  frame.appendChild(el("p",{cls:"dim small", text:"From: " + item.work.title}));
+  var list = el("div",{cls:"card-list"});
+  var answered = false;
+  var order = shuffle(q.choices.map(function(c,i){return {text:c, isAns:i===q.a};}));
+  order.forEach(function(opt){
+    var card = el("button",{cls:"choice-card", text:opt.text});
+    card.onclick = function(){
+      if(answered) return;
+      answered = true;
+      Array.prototype.forEach.call(list.children, function(c){ c.classList.add("disabled"); });
+      if(opt.isAns){
+        card.classList.add("correct");
+        state.finaleCorrect++;
+      } else {
+        card.classList.add("wrong");
+        state.finaleLives--;
+        Array.prototype.forEach.call(list.children, function(c2,i2){ if(order[i2].isAns) c2.classList.add("correct"); });
+      }
+      var nextBtn = el("button",{text:"Next"});
+      nextBtn.style.marginTop="14px";
+      nextBtn.onclick = function(){
+        state.finaleIdx++;
+        transition("\u2026", renderScreen);
+      };
+      frame.appendChild(nextBtn);
+    };
+    list.appendChild(card);
+  });
+  frame.appendChild(list);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   ENDING
+   ============================================================ */
+function renderEnding(){
+  stopSpeedrunClock();
+  clearSave();
+  var pct = state.renownTotal ? (state.renownCorrect + state.finaleCorrect) / (state.renownTotal + state.finaleQueue.length) : 0;
+  var tagCounts = {};
+  state.choiceTags.forEach(function(t){ tagCounts[t] = (tagCounts[t]||0)+1; });
+  var dominantTag = null, best = 0;
+  for(var t in tagCounts){ if(tagCounts[t] > best){ best = tagCounts[t]; dominantTag = t; } }
+
+  var candidates = ENDINGS.filter(function(e){ return pct >= e.min; });
+  var tagMatch = candidates.filter(function(e){ return e.tag === dominantTag; });
+  var chosen = tagMatch.length ? tagMatch[0] : candidates.filter(function(e){return e.tag===null;})[0] || ENDINGS[ENDINGS.length-1];
+
+  var stage = $("#stage");
+  stage.innerHTML = "";
+  var frame = el("div",{cls:"frame center"});
+  frame.appendChild(el("span",{cls:"eyebrow", text:"The masks come off"}));
+  frame.appendChild(el("h2",{cls:"ending-title", text: chosen.title}));
+  frame.appendChild(el("p",{text: chosen.desc}));
+  frame.appendChild(el("p",{cls:"dim small", text: "Accuracy tonight: " + Math.round(pct*100) + "%  \u00b7  Masks earned: " + state.masks.length + "/5"}));
+  if(state.gameOverByClock){
+    frame.appendChild(el("p",{cls:"dim small", text:"(The clock ran out before the evening was through.)"}));
+  }
+
+  if(state.mode === "paired"){
+    frame.appendChild(el("p",{cls:"dim small", text:"Host score: " + state.pairedScores.host + "  \u00b7  Guest score: " + state.pairedScores.guest}));
+  }
+
+  var btnRow = el("div",{cls:"btn-row"});
+  var again = el("button",{text:"Attend Another Ball"});
+  again.onclick = function(){ transition("Resetting the candles\u2026", renderTitle); };
+  btnRow.appendChild(again);
+  frame.appendChild(btnRow);
+  stage.appendChild(frame);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", function(){
+  renderTitle();
+});
+</script>
+</body>
+</html>
