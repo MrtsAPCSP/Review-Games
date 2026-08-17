@@ -88,6 +88,9 @@
   .mcq .opt{display:block; width:100%; text-align:left; margin:5px 0; font-family:'Lora',serif; font-size:14px; padding:8px 12px; border:1px solid var(--charcoal); border-radius:5px; background:#fff; cursor:pointer;}
   .mcq .opt.correct{background:#cdeccd; border-color:#1e6b3a;}
   .mcq .opt.wrong{background:#f2d0cd; border-color:var(--red-dark);}
+  .mcq-msg{font-family:'Courier Prime',monospace; font-size:11.5px; color:var(--red-dark); min-height:16px; margin:6px 0 0;}
+  .mcq-msg.revealed{font-weight:700; color:var(--red-dark);}
+  .mcq-msg.success{font-weight:700; color:#1e6b3a;}
 
   /* Case: Credit line */
   .cl-pool{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
@@ -354,7 +357,7 @@
     <div class="folder">
       <span class="case-tag">Bonus Case #0007 — Replayable</span>
       <h2 class="case-title">The Unsigned Canvas</h2>
-      <p class="brief">An unsigned painting just turned up with no records. The Agency has narrowed it to four suspects. Answer questions to unlock evidence — each correct answer reveals one real clue about the piece. Use Form, Content, Context, and Function (plus the Elements &amp; Principles) to clear names off the board, then make your accusation. Every new case reshuffles the suspects, the culprit, and the clue order.</p>
+      <p class="brief">An unsigned painting just turned up with no records. The Agency has narrowed it to four suspects. Every piece of evidence is locked behind <strong>two separate leads</strong> — you'll need to confirm both before it unlocks. Get a lead wrong and you get two more tries before the answer is revealed, so guessing isn't a shortcut. Use Form, Content, Context, and Function (plus the Elements &amp; Principles) to clear names off the board, then make your accusation. Every new case reshuffles the suspects, the culprit, and the clue order.</p>
 
       <h3 class="sub-title">Suspect Board</h3>
       <div class="suspect-grid" id="suspectBoard"></div>
@@ -638,7 +641,7 @@ const case3Flavors = [
   "Tonight's exhibit: a family photo album donated anonymously to the archive. Sort what's fact from what's guesswork.",
   "Tonight's exhibit: a sculpture pulled from a sunken cargo ship. Sort the evidence before it goes back underwater."
 ];
-let clues=[], c3idx=0, c3score=0;
+let clues=[], c3idx=0, c3score=0, c3wrong=0;
 function startCase3(){
   clues = pickRandom(fccfPool, 12);
   c3idx=0; c3score=0;
@@ -650,6 +653,7 @@ function startCase3(){
   showClue();
 }
 function showClue(){
+  c3wrong=0;
   if(c3idx>=clues.length){
     document.getElementById('clueCard').textContent = 'All evidence filed.';
     document.querySelector('#panel-case3 .cat-grid').style.display='none';
@@ -667,7 +671,13 @@ function answerClue(cat){
     fb.textContent='MATCH CONFIRMED ✔'; fb.className='feedback good'; c3score++;
     c3idx++; setTimeout(showClue, 450);
   } else {
-    fb.textContent='MISFILED — that clue belongs elsewhere. Try again.'; fb.className='feedback bad';
+    c3wrong++;
+    if(c3wrong>=3){
+      fb.textContent='MISFILED three times — hint: this one belongs under '+capitalize(clues[c3idx].cat)+'. Click it to file it correctly.';
+    } else {
+      fb.textContent='MISFILED — that clue belongs elsewhere. Try again ('+(3-c3wrong)+' left before a hint).';
+    }
+    fb.className='feedback bad';
   }
 }
 startCase3();
@@ -757,24 +767,44 @@ function renderRoundC(){
   document.getElementById('roundCScore').textContent = 'Score: 0 / 0 answered (out of '+roundCList.length+')';
 }
 
-/* Generic MCQ renderer, reused everywhere below */
+/* Generic MCQ renderer, reused everywhere below.
+   Wrong answers get up to 3 tries before the correct answer is revealed. */
 function renderMCQSet(containerEl, list, scoreCallback, lockRef){
   containerEl.innerHTML='';
   let score=0, count=0;
   list.forEach((item,i)=>{
     const div=document.createElement('div'); div.className='mcq';
     const qP=document.createElement('p'); qP.className='q'; qP.textContent=(i+1)+'. '+item.q; div.appendChild(qP);
+    const msg=document.createElement('p'); msg.className='mcq-msg'; div.appendChild(msg);
+    let wrongCount=0;
     shuffle(item.opts).forEach(opt=>{
       const b=document.createElement('button'); b.className='opt'; b.textContent=opt;
       b.onclick=()=>{
         if(div.dataset.locked) return;
         if(lockRef && lockRef.locked) return;
-        div.dataset.locked='1';
-        const allBtns=[...div.querySelectorAll('.opt')];
-        if(opt===item.a){ b.classList.add('correct'); score++; }
-        else { b.classList.add('wrong'); const c=allBtns.find(o=>o.textContent===item.a); if(c) c.classList.add('correct'); }
-        count++;
-        if(scoreCallback) scoreCallback(score,count,list.length);
+        if(opt===item.a){
+          div.dataset.locked='1';
+          b.classList.add('correct');
+          msg.textContent='';
+          score++; count++;
+          if(scoreCallback) scoreCallback(score,count,list.length);
+        } else {
+          wrongCount++;
+          b.classList.add('wrong');
+          setTimeout(()=>b.classList.remove('wrong'), 400);
+          if(wrongCount>=3){
+            div.dataset.locked='1';
+            const allBtns=[...div.querySelectorAll('.opt')];
+            const c=allBtns.find(o=>o.textContent===item.a); if(c) c.classList.add('correct');
+            msg.textContent='Answer revealed after 3 tries.';
+            msg.className='mcq-msg revealed';
+            count++;
+            if(scoreCallback) scoreCallback(score,count,list.length);
+          } else {
+            msg.textContent = 'Not quite — '+(3-wrongCount)+' attempt'+(3-wrongCount===1?'':'s')+' left before the answer is revealed.';
+            msg.className='mcq-msg';
+          }
+        }
       };
       div.appendChild(b);
     });
@@ -1044,27 +1074,68 @@ function renderEvidenceLocker(){
   mysteryClues.forEach((c,i)=>{
     const div=document.createElement('div'); div.className='eslot'+(c.revealed?' revealed':' locked');
     if(c.revealed){ div.innerHTML='<div class="eslot-num">EVIDENCE #'+(i+1)+'</div><div class="eslot-text">'+c.text+'</div>'; }
-    else { div.innerHTML='<div class="eslot-num">EVIDENCE #'+(i+1)+'</div><div class="eslot-lock">🔒 LOCKED</div><button class="btn small" onclick="investigate('+i+')">Investigate</button>'; }
+    else {
+      const progress = c.gate ? c.progress : 0;
+      const progressNote = progress>0 ? ' <span style="color:#1e6b3a;font-weight:bold;">('+progress+'/2 leads confirmed)</span>' : '';
+      div.innerHTML='<div class="eslot-num">EVIDENCE #'+(i+1)+'</div><div class="eslot-lock">🔒 LOCKED'+progressNote+'</div><button class="btn small" onclick="investigate('+i+')">Investigate</button>';
+    }
     wrap.appendChild(div);
   });
 }
+function buildGatePair(clue){
+  const q1 = buildGateQuestion(clue);
+  const pool = combinedCramPool().filter(q => q.q !== q1.q);
+  const q2 = pool[Math.floor(Math.random()*pool.length)];
+  return [q1, q2];
+}
 function investigate(i){
   const clue = mysteryClues[i];
-  const q = buildGateQuestion(clue);
+  if(!clue.gate){ clue.gate = buildGatePair(clue); clue.progress = 0; clue.wrongCount = 0; }
+  renderGateQuestion(i);
+}
+function renderGateQuestion(i){
+  const clue = mysteryClues[i];
+  const q = clue.gate[clue.progress];
   const area = document.getElementById('evidenceQuestion');
-  area.innerHTML = '<div class="mcq" id="gateMcq"><p class="q">Analyzing Evidence #'+(i+1)+' — '+q.q+'</p></div>';
+  area.innerHTML = '<div class="mcq" id="gateMcq"><p class="q">Analyzing Evidence #'+(i+1)+' — Lead '+(clue.progress+1)+' of 2: '+q.q+'</p><p class="mcq-msg" id="gateMsg"></p></div>';
   const mcqDiv = document.getElementById('gateMcq');
+  const msg = document.getElementById('gateMsg');
   shuffle(q.opts).forEach(opt=>{
     const b=document.createElement('button'); b.className='opt'; b.textContent=opt;
     b.onclick=()=>{
       if(mcqDiv.dataset.locked) return;
       if(opt===q.a){
         mcqDiv.dataset.locked='1'; b.classList.add('correct');
-        mysteryClues[i].revealed=true;
-        setTimeout(()=>{ renderEvidenceLocker(); updateEliminations(); area.innerHTML=''; },500);
+        clue.progress++; clue.wrongCount=0;
+        if(clue.progress>=2){
+          msg.textContent='Both leads confirmed — evidence unlocked!';
+          msg.className='mcq-msg success';
+          setTimeout(()=>{ clue.revealed=true; renderEvidenceLocker(); updateEliminations(); area.innerHTML=''; },700);
+        } else {
+          msg.textContent='Lead 1 of 2 confirmed. One more question to fully unlock this evidence.';
+          msg.className='mcq-msg success';
+          renderEvidenceLocker();
+          setTimeout(()=> renderGateQuestion(i), 700);
+        }
       } else {
+        clue.wrongCount++;
         b.classList.add('wrong');
-        setTimeout(()=>{ b.classList.remove('wrong'); },500);
+        setTimeout(()=>b.classList.remove('wrong'),400);
+        if(clue.wrongCount>=3){
+          mcqDiv.dataset.locked='1';
+          const allBtns=[...mcqDiv.querySelectorAll('.opt')];
+          const c=allBtns.find(o=>o.textContent===q.a); if(c) c.classList.add('correct');
+          msg.textContent='Answer revealed after 3 tries. Moving to the next lead...';
+          msg.className='mcq-msg revealed';
+          clue.progress++; clue.wrongCount=0;
+          setTimeout(()=>{
+            if(clue.progress>=2){ clue.revealed=true; renderEvidenceLocker(); updateEliminations(); area.innerHTML=''; }
+            else { renderEvidenceLocker(); renderGateQuestion(i); }
+          },1000);
+        } else {
+          msg.textContent = 'Not quite — '+(3-clue.wrongCount)+' attempt'+(3-clue.wrongCount===1?'':'s')+' left before this lead is revealed.';
+          msg.className='mcq-msg';
+        }
       }
     };
     mcqDiv.appendChild(b);
@@ -1141,29 +1212,43 @@ function generateCram(){
 }
 
 /* ============ FINALE ============ */
-function updateFinale(){
+function computeOverallStats(){
   const solvedCount = Object.values(solved).filter(Boolean).length;
+  const vocabTotal = window.__vocabTotal||0, vocabScore=window.__vocabScore||0;
+  const sortTotal = clues.length||0, sortScore=c3score||0;
+  const toolkitTotal = (window.__elTotal||0)+(window.__elCTotal||0), toolkitScore=(window.__elScore||0)+(window.__elCScore||0);
+  const gentTotal = (window.__judTotal||0)+(window.__verTotal||0), gentScore=(window.__judScore||0)+(window.__verScore||0);
+  const creditScore = window.__c5score||0, creditTotal=6;
+  let pct=null, rank=null;
+  if(solvedCount>=6){
+    const vocabFrac = vocabTotal? vocabScore/vocabTotal : 1;
+    const fccfFrac = sortTotal? sortScore/sortTotal : 1;
+    const elFrac = toolkitTotal? toolkitScore/toolkitTotal : 1;
+    const judFrac = gentTotal? gentScore/gentTotal : 1;
+    const credFrac = creditScore/creditTotal;
+    pct = (vocabFrac+fccfFrac+elFrac+judFrac+credFrac)/5*100;
+    rank = pct>=85?'MASTER CURATOR — CASE CLOSED WITH HONORS': pct>=65?'FIELD DETECTIVE — CASE CLOSED': pct>=45?'JUNIOR INVESTIGATOR — CASE CLOSED':'ROOKIE INVESTIGATOR';
+  }
+  return { solvedCount, pct, rank,
+    vocab:{score:vocabScore, total:vocabTotal},
+    sortEvidence:{score:sortScore, total:sortTotal},
+    toolkit:{score:toolkitScore, total:toolkitTotal},
+    gentileschiFile:{score:gentScore, total:gentTotal},
+    creditLine:{score:creditScore, total:creditTotal}
+  };
+}
+function updateFinale(){
+  const stats = computeOverallStats();
   const badge = document.getElementById('finaleBadge');
   const scoreLine = document.getElementById('finaleScore');
   const bonusLine = document.getElementById('finaleBonus');
   if(bonusLine) bonusLine.textContent = window.__c7solved ? '🕵️ Bonus Case #0007 — The Unsigned Canvas — SOLVED' : '🕵️ Bonus Case #0007 — The Unsigned Canvas — not yet attempted';
-  scoreLine.textContent = solvedCount + ' / 6 cases filed.';
-  if(solvedCount<6){ badge.textContent='— case in progress —'; return; }
-  const vocabFrac = (window.__vocabTotal? window.__vocabScore/window.__vocabTotal : 1);
-  const fccfFrac = (clues.length? c3score/clues.length : 1);
-  const elDen = (window.__elTotal||0)+(window.__elCTotal||0);
-  const elFrac = elDen? ((window.__elScore||0)+(window.__elCScore||0))/elDen : 1;
-  const judDen = (window.__judTotal||0)+(window.__verTotal||0);
-  const judFrac = judDen? ((window.__judScore||0)+(window.__verScore||0))/judDen : 1;
-  const credFrac = ((window.__c5score||0)/6);
-  const pct = (vocabFrac+fccfFrac+elFrac+judFrac+credFrac)/5*100;
-  let rank='ROOKIE INVESTIGATOR';
-  if(pct>=85) rank='MASTER CURATOR — CASE CLOSED WITH HONORS';
-  else if(pct>=65) rank='FIELD DETECTIVE — CASE CLOSED';
-  else if(pct>=45) rank='JUNIOR INVESTIGATOR — CASE CLOSED';
-  badge.innerHTML = rank + '<span class="stamp-graphic">FILED</span>';
-  scoreLine.textContent = solvedCount+' / 6 cases filed · overall accuracy ~'+Math.round(pct)+'%';
+  scoreLine.textContent = stats.solvedCount + ' / 6 cases filed.';
+  if(stats.solvedCount<6){ badge.textContent='— case in progress —'; return; }
+  badge.innerHTML = stats.rank + '<span class="stamp-graphic">FILED</span>';
+  scoreLine.textContent = stats.solvedCount+' / 6 cases filed · overall accuracy ~'+Math.round(stats.pct)+'%';
 }
 </script>
+
 </body>
 </html>
