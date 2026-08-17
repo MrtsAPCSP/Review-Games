@@ -634,6 +634,7 @@ document.getElementById('nextBtn').addEventListener('click', () => {
 document.getElementById('handbookBtn').addEventListener('click', ()=>{ document.getElementById('handbookOverlay').hidden = false; });
 document.getElementById('closeHandbook').addEventListener('click', ()=>{ document.getElementById('handbookOverlay').hidden = true; });
 document.getElementById('handbookOverlay').addEventListener('click', (e)=>{ if(e.target.id==='handbookOverlay') e.currentTarget.hidden = true; });
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') document.getElementById('handbookOverlay').hidden = true; });
 
 const HANDBOOK = [
   ['def', 'The keyword that starts a function definition. It names the function and lists its parameters.'],
