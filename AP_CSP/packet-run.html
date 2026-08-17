@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packet Run: Relay Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep: #050810;
+    --bg-panel: #0b1220;
+    --bg-panel-2: #101a2e;
+    --line: #1c2c4a;
+    --cyan: #4fd8e8;
+    --cyan-dim: #1f6b78;
+    --amber: #ffb347;
+    --red: #ff5d5d;
+    --green: #5ee6a0;
+    --purple: #b48cff;
+    --text: #d9e6f2;
+    --text-dim: #7b8bab;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background: radial-gradient(ellipse at 20% 10%, #0b1830 0%, var(--bg-deep) 55%);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #ffffff55 50%, transparent 51%),
+      radial-gradient(1px 1px at 80% 60%, #ffffff44 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 40% 80%, #ffffff66 50%, transparent 51%),
+      radial-gradient(1px 1px at 65% 15%, #ffffff33 50%, transparent 51%),
+      radial-gradient(1px 1px at 90% 90%, #ffffff55 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 25% 55%, #ffffff44 50%, transparent 51%);
+    background-size: 600px 600px;
+  }
+  h1,h2,h3{font-family:'Orbitron', sans-serif; margin:0;}
+  .screen{position:relative; z-index:1; display:none; min-height:100vh; flex-direction:column; align-items:center; padding:24px 16px 60px;}
+  .screen.active{display:flex;}
+  .eyebrow{color:var(--cyan); letter-spacing:3px; font-size:12px; text-transform:uppercase; margin-bottom:6px;}
+  .title-main{font-size:clamp(28px,7vw,48px); font-weight:900; letter-spacing:2px; color:#eaf6ff; text-shadow:0 0 18px #4fd8e866;}
+  .subtitle{color:var(--text-dim); margin-top:10px; max-width:480px; text-align:center; line-height:1.5; font-size:14px;}
+
+  .panel{
+    background: linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2));
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    width:100%;
+    max-width:480px;
+  }
+  .topic-grid{display:grid; grid-template-columns:1fr; gap:10px; width:100%; max-width:480px; margin-top:20px;}
+  .topic-btn{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; color:var(--text);
+    padding:14px 16px; text-align:left; font-family:'Share Tech Mono',monospace; font-size:14px; cursor:pointer;
+    transition:border-color .15s, transform .1s; display:flex; justify-content:space-between; align-items:center;
+  }
+  .topic-btn:hover{border-color:var(--cyan); transform:translateY(-1px);}
+  .topic-btn.selected{border-color:var(--cyan); background:#0d1b2e; box-shadow:0 0 0 1px var(--cyan) inset;}
+  .topic-btn .tag{color:var(--cyan); font-size:11px; letter-spacing:1px;}
+
+  input[type=text]{
+    background:var(--bg-deep); border:1px solid var(--line); border-radius:6px; color:var(--text);
+    padding:10px 12px; font-family:'Share Tech Mono',monospace; font-size:14px; width:100%; margin-top:6px;
+  }
+  input[type=text]:focus{outline:none; border-color:var(--cyan);}
+
+  .btn{
+    font-family:'Orbitron', sans-serif; font-weight:700; letter-spacing:1px; font-size:14px;
+    background:linear-gradient(180deg, #1a4a56, #0c2a33); color:#c8f7ff; border:1px solid var(--cyan);
+    padding:14px 22px; border-radius:8px; cursor:pointer; margin-top:18px; width:100%; max-width:480px;
+    transition:transform .1s, box-shadow .15s;
+  }
+  .btn:hover{box-shadow:0 0 16px #4fd8e855; transform:translateY(-1px);}
+  .btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none; transform:none;}
+  .btn.secondary{background:linear-gradient(180deg, #2a2a3a, #16161f); border-color:var(--text-dim); color:var(--text);}
+  .btn.warn{border-color:var(--red); color:#ffd6d6;}
+
+  /* HUD */
+  .hud{
+    width:100%; max-width:760px; display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
+    margin-bottom:14px; font-size:12px;
+  }
+  .hud-item{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px; flex:1; min-width:110px;
+  }
+  .hud-label{color:var(--text-dim); letter-spacing:1px; font-size:10px; text-transform:uppercase;}
+  .hud-value{font-family:'Orbitron',sans-serif; font-size:18px; color:var(--cyan); margin-top:2px;}
+  .meter-track{background:#0a1220; border:1px solid var(--line); border-radius:5px; height:8px; margin-top:6px; overflow:hidden;}
+  .meter-fill{height:100%; background:linear-gradient(90deg, var(--red), var(--amber), var(--green)); transition:width .3s;}
+
+  .game-wrap{width:100%; max-width:760px; display:flex; flex-direction:column; gap:12px;}
+  .packet-banner{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px;
+    display:flex; justify-content:space-between; align-items:center; font-size:13px; flex-wrap:wrap; gap:6px;
+  }
+  .packet-badge{
+    display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; font-size:11px;
+    letter-spacing:1px; font-family:'Orbitron',sans-serif;
+  }
+  .badge-text{background:#1c3a2e; color:var(--green); border:1px solid var(--green);}
+  .badge-file{background:#3a2e1c; color:var(--amber); border:1px solid var(--amber);}
+  .badge-voice{background:#3a1c33; color:var(--purple); border:1px solid var(--purple);}
+
+  svg#graph{width:100%; height:auto; background:radial-gradient(circle at 50% 40%, #0c1830 0%, #050810 80%); border:1px solid var(--line); border-radius:10px;}
+  .node-label{fill:var(--text-dim); font-size:9px; font-family:'Share Tech Mono',monospace;}
+  .edge-label{fill:var(--text-dim); font-size:8px;}
+  .hint{color:var(--text-dim); font-size:12px; text-align:center; margin-top:4px;}
+
+  /* Overlay */
+  .overlay{
+    position:fixed; inset:0; background:#020509d9; z-index:20; display:none;
+    align-items:center; justify-content:center; padding:16px;
+  }
+  .overlay.active{display:flex;}
+  .overlay-box{
+    background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2)); border:1px solid var(--cyan);
+    border-radius:12px; padding:22px; max-width:480px; width:100%; box-shadow:0 0 40px #4fd8e833;
+  }
+  .overlay-tag{color:var(--cyan); font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;}
+  .overlay-q{font-size:15px; line-height:1.5; margin-bottom:16px;}
+  .opt-btn{
+    display:block; width:100%; text-align:left; background:var(--bg-deep); border:1px solid var(--line); color:var(--text);
+    padding:12px 14px; border-radius:8px; margin-bottom:8px; font-family:'Share Tech Mono',monospace; font-size:13px; cursor:pointer;
+  }
+  .opt-btn:hover{border-color:var(--cyan);}
+  .opt-btn.correct{border-color:var(--green); background:#0f2a1e; color:var(--green);}
+  .opt-btn.wrong{border-color:var(--red); background:#2a0f0f; color:#ffb3b3;}
+  .opt-btn.disabled{pointer-events:none;}
+  .explain{font-size:12px; color:var(--text-dim); margin-top:10px; line-height:1.5; border-top:1px solid var(--line); padding-top:10px;}
+  .dns-table{width:100%; border-collapse:collapse; margin-bottom:14px; font-size:12px;}
+  .dns-table th, .dns-table td{border:1px solid var(--line); padding:6px 8px; text-align:left;}
+  .dns-table th{color:var(--cyan); font-weight:normal;}
+
+  .stat-row{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-val{color:var(--cyan); font-family:'Orbitron',sans-serif;}
+
+  .flash-fail{
+    position:fixed; inset:0; background:#ff5d5d22; z-index:5; pointer-events:none; opacity:0; transition:opacity .2s;
+  }
+  .flash-fail.show{opacity:1;}
+
+  @media (min-width:600px){
+    .topic-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="flash-fail" id="flashFail"></div>
+
+<!-- TITLE / TOPIC SELECT -->
+<div class="screen active" id="screen-title">
+  <div class="eyebrow">// relay network operations</div>
+  <h1 class="title-main">PACKET RUN</h1>
+  <p class="subtitle">You're the on-duty relay operator aboard Deep Station Kestrel. Route packets across the station network, keep the signal alive when relays go dark, and prove you know how the network actually works.</p>
+
+  <div class="panel" style="margin-top:22px;">
+    <label class="hud-label">Operator callsign</label>
+    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+  </div>
+
+  <div class="topic-grid" id="topicGrid"></div>
+
+  <button class="btn" id="startBtn" disabled>Report for Duty</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="screen-game">
+  <div class="hud" id="hud"></div>
+  <div class="game-wrap">
+    <div class="packet-banner" id="packetBanner"></div>
+    <svg id="graph" viewBox="0 0 800 480"></svg>
+    <div class="hint" id="routeHint">Click the highlighted source relay, then click adjacent relays to build a path to the destination.</div>
+    <button class="btn secondary" id="endRunBtn" style="max-width:200px; align-self:center;">End Shift Early</button>
+  </div>
+</div>
+
+<!-- FAILURE RECOVERY SCREEN -->
+<div class="screen" id="screen-recovery">
+  <div class="eyebrow" style="color:var(--red);">// signal integrity critical</div>
+  <h2 class="title-main" style="color:var(--red); font-size:32px;">CONNECTION LOST</h2>
+  <p class="subtitle">Signal integrity dropped to zero. Ground Control is rebooting the relay array — you'll resume with integrity restored, but your streak resets.</p>
+  <button class="btn" id="rebootBtn">Reboot Relay Array</button>
+  <button class="btn secondary" id="recoveryEndBtn">End Shift Instead</button>
+</div>
+
+<!-- SUMMARY SCREEN -->
+<div class="screen" id="screen-summary">
+  <div class="eyebrow">// end of shift report</div>
+  <h2 class="title-main">SHIFT COMPLETE</h2>
+  <div class="panel" style="margin-top:20px;" id="summaryPanel"></div>
+  <button class="btn" id="playAgainBtn">Start New Shift</button>
+</div>
+
+<!-- QUESTION / DNS OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box" id="overlayBox"></div>
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+
+const TOPICS = [
+  {id:'all', name:'All Topics', tag:'FULL SHIFT'},
+  {id:'dns', name:'Addressing & DNS', tag:'IP / DOMAINS'},
+  {id:'packets', name:'Packets & Protocols', tag:'TRANSMISSION'},
+  {id:'bandwidth', name:'Bandwidth & Latency', tag:'CAPACITY'},
+  {id:'fault', name:'Fault Tolerance', tag:'REDUNDANCY'},
+  {id:'abstraction', name:'Abstraction & Layers', tag:'SYSTEM DESIGN'}
+];
+
+const QUESTION_BANK = [
+  // --- DNS / Addressing ---
+  {cat:'dns', q:"A relay operator types a station name instead of a numeric address. What system translates that name into the address the network actually uses?", opts:["DNS (Domain Name System)","A firewall","A packet header","A router's cache"], correct:0, exp:"DNS maps human-readable names to the numeric addresses devices use to route data."},
+  {cat:'dns', q:"Why does the internet use both domain names AND numeric IP addresses instead of just one?", opts:["Domains are for security, IPs are for speed","Names are easier for people; numeric addresses are efficient for routers","IP addresses are being phased out","There's no real difference, it's just tradition"], correct:1, exp:"This is a classic abstraction: humans work with meaningful names, machines route on numeric addresses."},
+  {cat:'dns', q:"Every device connected to a network needs a unique identifier so data reaches the right destination. What is this identifier called?", opts:["A cookie","An IP address","A protocol","A bandwidth token"], correct:1, exp:"An IP address uniquely identifies a device on a network, similar to a mailing address."},
+  {cat:'dns', q:"A station's DNS lookup fails and returns no address. What is the most likely immediate consequence?", opts:["The packet is automatically encrypted","The requested connection cannot be established", "Bandwidth doubles automatically", "The packet is compressed instead"], correct:1, exp:"Without resolving a name to an address, the network has no destination to route the data to."},
+  {cat:'dns', q:"Why might a system cache (temporarily store) recent DNS lookups?", opts:["To increase encryption strength","To avoid repeating the same lookup and speed up future requests","To reduce the number of unique IP addresses needed","To make packets larger"], correct:1, exp:"Caching avoids redundant lookups, reducing delay for repeated requests to the same name."},
+  {cat:'dns', q:"Which of these is functioning most like a 'directory service' for the internet?", opts:["A router","DNS","A packet","A bandwidth limiter"], correct:1, exp:"DNS acts like a directory, looking up an address given a name."},
+
+  // --- Packets & Protocols ---
+  {cat:'packets', q:"Large messages sent across a network are broken into smaller pieces before transmission. What are these pieces called?", opts:["Frames only","Packets","Bandwidth units","Domains"], correct:1, exp:"Data is broken into packets, which travel independently and get reassembled at the destination."},
+  {cat:'packets', q:"Why does the internet break messages into packets instead of sending them as one continuous stream?", opts:["Packets can take different paths and be reassembled, improving reliability and efficiency","It's required by law","It makes messages permanently encrypted","It guarantees zero data loss"], correct:0, exp:"Packet switching lets data take independent, even different, routes and still be reassembled correctly."},
+  {cat:'packets', q:"A packet arrives at its destination out of order compared to when it was sent. What allows the receiving system to reconstruct the original message correctly?", opts:["Sequence information included in the packet","Random guessing by the router","The packet's file size","The sender resending everything"], correct:0, exp:"Packets carry sequencing info (like a header) so the destination can reassemble them in the right order."},
+  {cat:'packets', q:"What is a 'protocol' in the context of computer networks?", opts:["A physical cable standard only","An agreed-upon set of rules for how data is formatted and exchanged","A type of firewall","A brand of router"], correct:1, exp:"A protocol is a shared set of rules that lets different systems communicate reliably."},
+  {cat:'packets', q:"Why do protocols need to be standardized and agreed upon across many different devices and networks?", opts:["So devices from different manufacturers can still communicate with each other","To make hardware more expensive","To prevent any data from being lost, ever","Standardization is optional and rarely used"], correct:0, exp:"Standard protocols let a huge variety of devices interoperate, which is core to the internet's scalability."},
+  {cat:'packets', q:"A packet's header typically contains metadata such as source, destination, and sequence number. Why is this metadata necessary?", opts:["It makes the packet heavier for no reason","It allows routing and reassembly without needing to interpret the actual content", "It replaces the need for IP addresses", "It compresses the data automatically"], correct:1, exp:"Header metadata lets routers move packets and lets destinations reassemble them, independent of the content itself."},
+
+  // --- Bandwidth & Latency ---
+  {cat:'bandwidth', q:"A relay link has high latency but high bandwidth. What does this mean in practice?", opts:["It can move a lot of data, but each individual piece takes a while to arrive","It moves very little data, and slowly","It moves data instantly with no limits","Latency and bandwidth always move together"], correct:0, exp:"Bandwidth measures capacity (how much data over time); latency measures delay (how long a single piece takes to arrive)."},
+  {cat:'bandwidth', q:"Which best describes 'bandwidth'?", opts:["The delay before data starts arriving","The maximum amount of data that can be transmitted in a given time","The number of devices on a network","The physical length of a cable"], correct:1, exp:"Bandwidth is a measure of data-carrying capacity, often described in bits per second."},
+  {cat:'bandwidth', q:"A real-time voice call is far more sensitive to high latency than a large file download is. Why?", opts:["Voice calls need immediate delivery for smooth conversation; delayed file bits just queue up fine","Voice calls use less bandwidth so latency doesn't matter","Files are always more time-sensitive","There's no real difference between the two"], correct:0, exp:"Real-time communication depends on low delay, while a file transfer can tolerate some delay since it's reassembled after arrival anyway."},
+  {cat:'bandwidth', q:"Several devices share one relay link with limited bandwidth. What's the likely effect of many devices using it heavily at once?", opts:["Overall speed for everyone increases","Congestion, causing slower transmission for everyone sharing that link","The link automatically duplicates itself","Nothing changes since bandwidth is unlimited"], correct:1, exp:"Shared, limited bandwidth means heavy simultaneous use creates congestion and slows transmission."},
+  {cat:'bandwidth', q:"If a relay path shows low bandwidth, what is the most likely real-world consequence for large file transfers?", opts:["The transfer will take longer to complete","The file will be automatically deleted","The file will arrive out of order every time","Latency becomes irrelevant"], correct:0, exp:"Lower bandwidth means less data can move per unit time, so large transfers take longer."},
+
+  // --- Fault Tolerance / Redundancy ---
+  {cat:'fault', q:"A relay node goes offline mid-transmission, but the packet still reaches its destination via a different path. What design principle made this possible?", opts:["Redundancy — multiple possible paths exist between points","Compression","A faster processor","Increased bandwidth alone"], correct:0, exp:"Redundant paths mean the network can route around a failure instead of losing the connection entirely."},
+  {cat:'fault', q:"Why is the internet designed with many overlapping connections between nodes rather than a single central path?", opts:["It's cheaper to build that way","It increases fault tolerance so failures don't take down the whole network","It's purely historical and no longer useful","Overlapping connections are required by international law"], correct:1, exp:"Redundant, overlapping connections mean no single failure can isolate the network — a core fault-tolerance design goal."},
+  {cat:'fault', q:"What is a 'single point of failure'?", opts:["A part of a system that, if it fails, brings down the whole system","A backup power supply","A type of packet header","A fully redundant relay"], correct:0, exp:"A single point of failure is a weak spot with no backup — losing it can disable the entire system."},
+  {cat:'fault', q:"A network engineer wants to reduce the risk of a single point of failure. What's the most direct fix?", opts:["Remove all but one path to simplify things","Add redundant paths and backup nodes","Increase the size of packets","Disable DNS caching"], correct:1, exp:"Adding redundancy directly reduces reliance on any one component."},
+  {cat:'fault', q:"Fault tolerance in computing systems generally refers to what?", opts:["A system's ability to continue operating even when part of it fails","A system that never fails under any circumstance","A method for compressing files","A rule for assigning IP addresses"], correct:0, exp:"Fault tolerance means the system keeps working, perhaps at reduced capacity, despite a failure."},
+
+  // --- Abstraction & Layers ---
+  {cat:'abstraction', q:"When you send a message online, you don't have to think about routers, cables, or protocols. What concept explains why?", opts:["Abstraction — complexity is hidden behind simpler layers you interact with","Bandwidth throttling","DNS caching","Packet loss"], correct:0, exp:"Abstraction hides lower-level complexity so users and even other systems can work at a simpler level."},
+  {cat:'abstraction', q:"Why is it useful for network systems to be built in layers (e.g., physical transmission, addressing, application-level data)?", opts:["Each layer can change or improve independently without breaking the others","It makes the network slower on purpose","Layers eliminate the need for protocols","It's purely a marketing term with no technical benefit"], correct:0, exp:"Layered design lets each layer evolve independently, which supports scalability and easier troubleshooting."},
+  {cat:'abstraction', q:"A software developer builds an app that sends data online without writing any code to manage physical cables or signal voltages. This is possible because of what?", opts:["Abstraction layers handling the lower-level details","Illegal shortcuts in the code","Sheer luck","Reduced security"], correct:0, exp:"Abstraction lets developers build on top of existing layers instead of re-solving low-level problems each time."},
+  {cat:'abstraction', q:"What is one major benefit of abstraction in large computing systems?", opts:["It manages complexity so people can reason about and build systems without tracking every low-level detail","It always makes systems faster","It eliminates the need for testing","It removes the need for standardized protocols"], correct:0, exp:"Abstraction's core benefit is managing complexity, not speed or protocol elimination."},
+];
+
+const CALLSIGN_PREFIXES = ["RELAY","HUB","NODE","STATION","BEACON","GATE","LINK","OUTPOST","JUNCTION","ANCHOR"];
+const DOMAIN_NAMES = ["kestrel-ops.net","deepstation.io","relay-control.sys","hydra-array.net","voidlink.station","cargo-bay-7.net","medbay-station.io","command-deck.sys"];
+
+/* ============================ STATE ============================ */
+
+let state = {
+  playerName: "",
+  topicFocus: "all",
+  level: 1,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  integrity: 100,
+  totalAnswered: 0,
+  totalCorrect: 0,
+  network: null,
+  currentPos: null,
+  destination: null,
+  offlineNodes: new Set(),
+  visited: [],
+  packet: null,
+  runEnded: false
+};
+
+/* ============================ HELPERS ============================ */
+
+function rand(min, max){ return Math.random() * (max - min) + min; }
+function randInt(min, max){ return Math.floor(rand(min, max+1)); }
+function choice(arr){ return arr[randInt(0, arr.length-1)]; }
+
+function weightedQuestion(topicFocus){
+  const pool = topicFocus === 'all' ? QUESTION_BANK : QUESTION_BANK.filter(q => q.cat === topicFocus);
+  return choice(pool);
+}
+
+/* ============================ NETWORK GENERATION ============================ */
+
+function generateNetwork(level){
+  const nodeCount = Math.min(6 + level, 16);
+  const extraRatio = 0.15 + Math.min(level * 0.02, 0.3);
+
+  const nodes = [];
+  const usedNames = new Set();
+  for(let i=0;i<nodeCount;i++){
+    let name;
+    do { name = choice(CALLSIGN_PREFIXES) + "-" + randInt(1,99); } while(usedNames.has(name));
+    usedNames.add(name);
+    nodes.push({ id:i, name, x:0, y:0 });
+  }
+
+  // circular layout with jitter for visual clarity
+  const cx=400, cy=240, radius=180;
+  for(let i=0;i<nodeCount;i++){
+    const angle = (2*Math.PI*i)/nodeCount;
+    nodes[i].x = cx + Math.cos(angle)*radius + rand(-18,18);
+    nodes[i].y = cy + Math.sin(angle)*radius*0.85 + rand(-14,14);
+  }
+
+  const edges = [];
+  const edgeSet = new Set();
+  function addEdge(a,b){
+    const key = a<b ? a+'_'+b : b+'_'+a;
+    if(edgeSet.has(key)) return false;
+    edgeSet.add(key);
+    edges.push({a,b,bandwidth:2+randInt(0,2)});
+    return true;
+  }
+
+  // spanning tree for guaranteed connectivity
+  const connected=[0];
+  const remaining=[];
+  for(let i=1;i<nodeCount;i++) remaining.push(i);
+  while(remaining.length>0){
+    const idx = randInt(0, remaining.length-1);
+    const newNode = remaining[idx];
+    const connNode = choice(connected);
+    addEdge(newNode, connNode);
+    connected.push(newNode);
+    remaining.splice(idx,1);
+  }
+
+  const extraEdges = Math.floor(nodeCount*extraRatio);
+  let attempts=0, added=0;
+  while(added<extraEdges && attempts<extraEdges*20){
+    attempts++;
+    const a=randInt(0,nodeCount-1), b=randInt(0,nodeCount-1);
+    if(a===b) continue;
+    if(addEdge(a,b)) added++;
+  }
+
+  const source = 0;
+  const destination = nodeCount-1;
+
+  return {nodes, edges, source, destination, nodeCount};
+}
+
+function buildAdjacency(net, offlineSet){
+  const adj = Array.from({length:net.nodeCount}, ()=>[]);
+  for(const e of net.edges){
+    if(offlineSet && (offlineSet.has(e.a)||offlineSet.has(e.b))) continue;
+    adj[e.a].push({to:e.b, edge:e});
+    adj[e.b].push({to:e.a, edge:e});
+  }
+  return adj;
+}
+
+function bfsPathLen(net, start, end, offlineSet){
+  const adj = buildAdjacency(net, offlineSet);
+  const visited = new Set([start]);
+  const queue=[[start,0]];
+  while(queue.length){
+    const [cur,d] = queue.shift();
+    if(cur===end) return d;
+    for(const {to} of adj[cur]){
+      if(!visited.has(to)){ visited.add(to); queue.push([to,d+1]); }
+    }
+  }
+  return null;
+}
+
+function findSafeToFailNodes(net, source, destination){
+  const safe=[];
+  for(let n=0;n<net.nodeCount;n++){
+    if(n===source||n===destination) continue;
+    const d = bfsPathLen(net, source, destination, new Set([n]));
+    if(d!==null) safe.push(n);
+  }
+  return safe;
+}
+
+/* ============================ GAME FLOW ============================ */
+
+function initTopicGrid(){
+  const grid = document.getElementById('topicGrid');
+  TOPICS.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className='topic-btn'+(t.id==='all'?' selected':'');
+    btn.innerHTML = `<span>${t.name}</span><span class="tag">${t.tag}</span>`;
+    btn.onclick = ()=>{
+      document.querySelectorAll('.topic-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.topicFocus = t.id;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+document.getElementById('playerName').addEventListener('input', e=>{
+  document.getElementById('startBtn').disabled = e.target.value.trim().length===0;
+});
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  state.playerName = document.getElementById('playerName').value.trim();
+  state.level=1; state.score=0; state.streak=0; state.bestStreak=0; state.integrity=100;
+  state.totalAnswered=0; state.totalCorrect=0; state.runEnded=false;
+  showScreen('screen-game');
+  startLevel();
+});
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHUD(){
+  const acc = state.totalAnswered ? Math.round(100*state.totalCorrect/state.totalAnswered) : 100;
+  document.getElementById('hud').innerHTML = `
+    <div class="hud-item"><div class="hud-label">Level</div><div class="hud-value">${state.level}</div></div>
+    <div class="hud-item"><div class="hud-label">Score</div><div class="hud-value">${state.score}</div></div>
+    <div class="hud-item"><div class="hud-label">Streak</div><div class="hud-value">${state.streak}</div></div>
+    <div class="hud-item" style="flex:2;">
+      <div class="hud-label">Signal Integrity</div>
+      <div class="meter-track"><div class="meter-fill" style="width:${state.integrity}%;"></div></div>
+    </div>
+  `;
+}
+
+function packetTypeInfo(type){
+  if(type==='text') return {label:'TEXT PACKET', cls:'badge-text', note:'Small, tolerant of delay.'};
+  if(type==='file') return {label:'FILE TRANSFER', cls:'badge-file', note:'Large, needs bandwidth.'};
+  return {label:'VOICE STREAM', cls:'badge-voice', note:'Real-time, latency-sensitive.'};
+}
+
+function startLevel(){
+  state.network = generateNetwork(state.level);
+  state.currentPos = state.network.source;
+  state.destination = state.network.destination;
+  state.offlineNodes = new Set();
+  state.visited = [state.network.source];
+  state.packet = { type: choice(['text','file','voice']), domain: choice(DOMAIN_NAMES) };
+  state.failureArmed = Math.random() < Math.min(0.15 + state.level*0.05, 0.75);
+  state.failureUsedThisLevel = false;
+
+  updateHUD();
+  renderPacketBanner();
+  renderGraph();
+
+  // DNS sub-puzzle before routing begins
+  showDNSPuzzle(()=>{});
+}
+
+function renderPacketBanner(){
+  const info = packetTypeInfo(state.packet.type);
+  const destName = state.network.nodes[state.destination].name;
+  document.getElementById('packetBanner').innerHTML = `
+    <span class="packet-badge ${info.cls}">${info.label}</span>
+    <span>Destination: <strong style="color:var(--cyan);">${destName}</strong></span>
+    <span style="color:var(--text-dim); font-size:11px;">${info.note}</span>
+  `;
+}
+
+function renderGraph(){
+  const net = state.network;
+  const svg = document.getElementById('graph');
+  svg.innerHTML='';
+
+  const adj = buildAdjacency(net, state.offlineNodes);
+  const reachableFromCur = new Set(adj[state.currentPos].map(x=>x.to));
+
+  // edges
+  net.edges.forEach(e=>{
+    const a = net.nodes[e.a], b = net.nodes[e.b];
+    const offline = state.offlineNodes.has(e.a)||state.offlineNodes.has(e.b);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+    line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+    line.setAttribute('stroke', offline? '#3a1c1c' : '#2a3d5c');
+    line.setAttribute('stroke-width', offline? 1.5 : 2);
+    line.setAttribute('stroke-dasharray', offline? '4,3' : 'none');
+    svg.appendChild(line);
+
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',mx); label.setAttribute('y',my);
+    label.setAttribute('class','edge-label');
+    label.setAttribute('text-anchor','middle');
+    label.textContent = offline? '' : `BW ${e.bandwidth}`;
+    svg.appendChild(label);
+  });
+
+  // visited path highlight
+  for(let i=0;i<state.visited.length-1;i++){
+    const a = net.nodes[state.visited[i]], b = net.nodes[state.visited[i+1]];
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+    line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+    line.setAttribute('stroke','#4fd8e8'); line.setAttribute('stroke-width',3);
+    svg.appendChild(line);
+  }
+
+  // nodes
+  net.nodes.forEach(n=>{
+    const isOffline = state.offlineNodes.has(n.id);
+    const isCurrent = n.id===state.currentPos;
+    const isDest = n.id===state.destination;
+    const isSource = n.id===net.source;
+    const isReachable = reachableFromCur.has(n.id) && !isOffline;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',n.x); circle.setAttribute('cy',n.y);
+    circle.setAttribute('r', isCurrent||isDest ? 16 : 11);
+
+    let fill = '#16233d', stroke='#3a5580';
+    if(isOffline){ fill='#2a1010'; stroke='#ff5d5d'; }
+    else if(isCurrent){ fill='#0d3a44'; stroke='#4fd8e8'; }
+    else if(isDest){ fill='#1a2e14'; stroke='#5ee6a0'; }
+    else if(isReachable){ stroke='#ffb347'; }
+
+    circle.setAttribute('fill',fill);
+    circle.setAttribute('stroke',stroke);
+    circle.setAttribute('stroke-width', isCurrent||isDest||isReachable ? 2.5 : 1.5);
+    circle.style.cursor = (isReachable && !state.runEnded) ? 'pointer' : 'default';
+    if(isReachable && !state.runEnded){
+      circle.addEventListener('click', ()=>handleNodeClick(n.id));
+    }
+    g.appendChild(circle);
+
+    if(isOffline){
+      const x1 = document.createElementNS('http://www.w3.org/2000/svg','text');
+      x1.setAttribute('x',n.x); x1.setAttribute('y',n.y+4);
+      x1.setAttribute('text-anchor','middle'); x1.setAttribute('fill','#ff5d5d'); x1.setAttribute('font-size','12');
+      x1.textContent = 'X';
+      g.appendChild(x1);
+    }
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',n.x); label.setAttribute('y',n.y-18);
+    label.setAttribute('class','node-label'); label.setAttribute('text-anchor','middle');
+    label.textContent = n.name + (isDest?' (DEST)':'') + (isSource? ' (START)':'');
+    g.appendChild(label);
+
+    svg.appendChild(g);
+  });
+}
+
+function handleNodeClick(nodeId){
+  state.visited.push(nodeId);
+  state.currentPos = nodeId;
+  renderGraph();
+
+  // Chance to trigger a node failure event on a still-unvisited safe node
+  if(state.failureArmed && !state.failureUsedThisLevel && nodeId!==state.destination){
+    const safe = findSafeToFailNodes(state.network, state.currentPos, state.destination)
+      .filter(n => !state.visited.includes(n));
+    if(safe.length>0){
+      state.failureUsedThisLevel = true;
+      const failNode = choice(safe);
+      state.offlineNodes.add(failNode);
+      renderGraph();
+      setTimeout(()=>{
+        showQuestion('fault', ()=>{ renderGraph(); }, true);
+      }, 350);
+      return;
+    }
+  }
+
+  if(nodeId===state.destination){
+    setTimeout(()=>completeLevel(), 300);
+  }
+}
+
+function completeLevel(){
+  const optimal = bfsPathLen(state.network, state.network.source, state.destination, null);
+  const hops = state.visited.length-1;
+  const efficiency = optimal ? Math.max(0, 100 - (hops-optimal)*15) : 70;
+  const baseScore = 40 + Math.round(efficiency*0.6) + state.level*3;
+  state.score += baseScore;
+
+  const topic = state.topicFocus==='all' ? choice(['dns','packets','bandwidth','abstraction']) : state.topicFocus;
+  showQuestion(topic, ()=>{
+    state.level++;
+    startLevel();
+  }, false);
+}
+
+function showDNSPuzzle(onDone){
+  const domain = state.packet.domain;
+  const correctIP = `10.${randInt(0,9)}.${randInt(0,99)}.${randInt(1,254)}`;
+  const decoys = [];
+  while(decoys.length<2){
+    const ip = `10.${randInt(0,9)}.${randInt(0,99)}.${randInt(1,254)}`;
+    if(ip!==correctIP && !decoys.includes(ip)) decoys.push(ip);
+  }
+  const rows = [[domain, correctIP],[choice(DOMAIN_NAMES.filter(d=>d!==domain)), decoys[0]],[choice(DOMAIN_NAMES.filter(d=>d!==domain)), decoys[1]]];
+  rows.sort(()=>Math.random()-0.5);
+
+  const box = document.getElementById('overlayBox');
+  box.innerHTML = `
+    <div class="overlay-tag">DNS Lookup Required</div>
+    <div class="overlay-q">Your packet needs to reach <strong style="color:var(--cyan);">${domain}</strong>. Check the relay's DNS record table and select the correct IP address to route to.</div>
+    <table class="dns-table">
+      <tr><th>Domain</th><th>IP Address</th></tr>
+      ${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
+    </table>
+    <div id="dnsOpts"></div>
+  `;
+  const optDiv = box.querySelector('#dnsOpts');
+  const shuffledIPs = [correctIP, decoys[0], decoys[1]].sort(()=>Math.random()-0.5);
+  shuffledIPs.forEach(ip=>{
+    const b = document.createElement('button');
+    b.className='opt-btn';
+    b.textContent = ip;
+    b.onclick = ()=>{
+      const isCorrect = ip===correctIP;
+      Array.from(optDiv.children).forEach(c=>c.classList.add('disabled'));
+      b.classList.add(isCorrect?'correct':'wrong');
+      if(!isCorrect){
+        const explain = document.createElement('div');
+        explain.className='explain';
+        explain.textContent = `DNS resolves ${domain} to ${correctIP}. Routing anyway — real DNS failures would block the connection.`;
+        box.appendChild(explain);
+      }
+      adjustIntegrity(isCorrect ? 3 : -8);
+      setTimeout(()=>{ closeOverlay(); onDone(); }, isCorrect?500:1400);
+    };
+    optDiv.appendChild(b);
+  });
+  openOverlay();
+}
+
+function showQuestion(preferredCat, onDone, isFailureEvent){
+  const q = weightedQuestion(preferredCat);
+  const box = document.getElementById('overlayBox');
+  const tagText = isFailureEvent ? "Relay Down — Reroute Concept Check" : "Concept Check";
+  box.innerHTML = `
+    <div class="overlay-tag" style="${isFailureEvent?'color:var(--red);':''}">${tagText}</div>
+    <div class="overlay-q">${q.q}</div>
+    <div id="qOpts"></div>
+  `;
+  const optDiv = box.querySelector('#qOpts');
+  const order = q.opts.map((o,i)=>i).sort(()=>Math.random()-0.5);
+  order.forEach(idx=>{
+    const b = document.createElement('button');
+    b.className='opt-btn';
+    b.textContent = q.opts[idx];
+    b.onclick = ()=>{
+      const isCorrect = idx===q.correct;
+      Array.from(optDiv.children).forEach(c=>c.classList.add('disabled'));
+      b.classList.add(isCorrect?'correct':'wrong');
+      if(!isCorrect){
+        Array.from(optDiv.children)[q.opts.indexOf(q.opts[q.correct])];
+      }
+      const explain = document.createElement('div');
+      explain.className='explain';
+      explain.textContent = q.exp;
+      box.appendChild(explain);
+
+      state.totalAnswered++;
+      if(isCorrect){
+        state.totalCorrect++;
+        state.streak++;
+        state.bestStreak = Math.max(state.bestStreak, state.streak);
+        state.score += 15 + state.streak*2;
+        adjustIntegrity(5);
+      } else {
+        state.streak = 0;
+        adjustIntegrity(-15);
+      }
+      updateHUD();
+      setTimeout(()=>{
+        closeOverlay();
+        if(state.integrity<=0){
+          showScreen('screen-recovery');
+        } else {
+          onDone();
+        }
+      }, 1600);
+    };
+    optDiv.appendChild(b);
+  });
+  openOverlay();
+}
+
+function adjustIntegrity(delta){
+  state.integrity = Math.max(0, Math.min(100, state.integrity+delta));
+  updateHUD();
+  if(delta<0){
+    const flash = document.getElementById('flashFail');
+    flash.classList.add('show');
+    setTimeout(()=>flash.classList.remove('show'), 200);
+  }
+}
+
+function openOverlay(){ document.getElementById('overlay').classList.add('active'); }
+function closeOverlay(){ document.getElementById('overlay').classList.remove('active'); }
+
+document.getElementById('rebootBtn').addEventListener('click', ()=>{
+  state.integrity = 60;
+  showScreen('screen-game');
+  updateHUD();
+});
+document.getElementById('recoveryEndBtn').addEventListener('click', endRun);
+document.getElementById('endRunBtn').addEventListener('click', endRun);
+
+function endRun(){
+  state.runEnded = true;
+  const acc = state.totalAnswered ? Math.round(100*state.totalCorrect/state.totalAnswered) : 0;
+  document.getElementById('summaryPanel').innerHTML = `
+    <div class="stat-row"><span>Operator</span><span class="stat-val">${state.playerName}</span></div>
+    <div class="stat-row"><span>Levels Completed</span><span class="stat-val">${state.level-1}</span></div>
+    <div class="stat-row"><span>Final Score</span><span class="stat-val">${state.score}</span></div>
+    <div class="stat-row"><span>Best Streak</span><span class="stat-val">${state.bestStreak}</span></div>
+    <div class="stat-row"><span>Concept Accuracy</span><span class="stat-val">${acc}%</span></div>
+  `;
+  showScreen('screen-summary');
+}
+
+document.getElementById('playAgainBtn').addEventListener('click', ()=>{
+  showScreen('screen-title');
+});
+
+initTopicGrid();
+</script>
+</body>
+</html>

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>List Wrangler: Manifest Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep: #050810;
+    --bg-panel: #0b1220;
+    --bg-panel-2: #101a2e;
+    --line: #1c2c4a;
+    --cyan: #4fd8e8;
+    --amber: #ffb347;
+    --red: #ff5d5d;
+    --green: #5ee6a0;
+    --purple: #b48cff;
+    --text: #d9e6f2;
+    --text-dim: #7b8bab;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background: radial-gradient(ellipse at 20% 10%, #0b1830 0%, var(--bg-deep) 55%);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height:100vh;
+  }
+  .stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #ffffff55 50%, transparent 51%),
+      radial-gradient(1px 1px at 80% 60%, #ffffff44 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 40% 80%, #ffffff66 50%, transparent 51%),
+      radial-gradient(1px 1px at 65% 15%, #ffffff33 50%, transparent 51%),
+      radial-gradient(1px 1px at 90% 90%, #ffffff55 50%, transparent 51%);
+    background-size: 600px 600px;
+  }
+  h1,h2,h3{font-family:'Orbitron', sans-serif; margin:0;}
+  .screen{position:relative; z-index:1; display:none; min-height:100vh; flex-direction:column; align-items:center; padding:24px 16px 60px;}
+  .screen.active{display:flex;}
+  .eyebrow{color:var(--cyan); letter-spacing:3px; font-size:12px; text-transform:uppercase; margin-bottom:6px;}
+  .title-main{font-size:clamp(28px,7vw,48px); font-weight:900; letter-spacing:2px; color:#eaf6ff; text-shadow:0 0 18px #4fd8e866;}
+  .subtitle{color:var(--text-dim); margin-top:10px; max-width:480px; text-align:center; line-height:1.5; font-size:14px;}
+
+  .panel{ background: linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2)); border:1px solid var(--line); border-radius:10px; padding:18px; width:100%; max-width:520px; }
+  .topic-grid{display:grid; grid-template-columns:1fr; gap:10px; width:100%; max-width:520px; margin-top:20px;}
+  .topic-btn{ background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; color:var(--text); padding:14px 16px; text-align:left; font-family:'Share Tech Mono',monospace; font-size:14px; cursor:pointer; transition:border-color .15s, transform .1s; display:flex; justify-content:space-between; align-items:center; }
+  .topic-btn:hover{border-color:var(--cyan); transform:translateY(-1px);}
+  .topic-btn.selected{border-color:var(--cyan); background:#0d1b2e; box-shadow:0 0 0 1px var(--cyan) inset;}
+  .topic-btn .tag{color:var(--cyan); font-size:11px; letter-spacing:1px;}
+
+  input[type=text]{ background:var(--bg-deep); border:1px solid var(--line); border-radius:6px; color:var(--text); padding:10px 12px; font-family:'Share Tech Mono',monospace; font-size:14px; width:100%; margin-top:6px; }
+  input[type=text]:focus{outline:none; border-color:var(--cyan);}
+
+  .btn{ font-family:'Orbitron', sans-serif; font-weight:700; letter-spacing:1px; font-size:14px; background:linear-gradient(180deg, #1a4a56, #0c2a33); color:#c8f7ff; border:1px solid var(--cyan); padding:14px 22px; border-radius:8px; cursor:pointer; margin-top:18px; width:100%; max-width:520px; transition:transform .1s, box-shadow .15s; }
+  .btn:hover{box-shadow:0 0 16px #4fd8e855; transform:translateY(-1px);}
+  .btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none; transform:none;}
+  .btn.secondary{background:linear-gradient(180deg, #2a2a3a, #16161f); border-color:var(--text-dim); color:var(--text);}
+  .btn.small{padding:9px 14px; font-size:12px; margin-top:0; width:auto;}
+
+  .hud{ width:100%; max-width:820px; display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; margin-bottom:14px; font-size:12px; }
+  .hud-item{ background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px; flex:1; min-width:100px; }
+  .hud-label{color:var(--text-dim); letter-spacing:1px; font-size:10px; text-transform:uppercase;}
+  .hud-value{font-family:'Orbitron',sans-serif; font-size:18px; color:var(--cyan); margin-top:2px;}
+  .meter-track{background:#0a1220; border:1px solid var(--line); border-radius:5px; height:8px; margin-top:6px; overflow:hidden;}
+  .meter-fill{height:100%; background:linear-gradient(90deg, var(--red), var(--amber), var(--green)); transition:width .3s;}
+
+  .game-wrap{width:100%; max-width:820px; display:flex; flex-direction:column; gap:16px;}
+  .manifest-block{ background:var(--bg-panel); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .manifest-title{font-size:11px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;}
+  .list-row{display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; min-height:70px;}
+  .crate{
+    background:linear-gradient(180deg,#1c3350,#0f1e33); border:1.5px solid #3a5580; border-radius:6px;
+    padding:10px 12px; font-family:'Orbitron',sans-serif; font-size:13px; color:#eaf6ff; min-width:52px; text-align:center;
+    position:relative; cursor:default; transition:transform .15s, border-color .15s;
+  }
+  .crate .idx{position:absolute; top:-18px; left:0; right:0; text-align:center; font-size:9px; color:var(--text-dim); font-family:'Share Tech Mono',monospace;}
+  .crate.target-slot{ background:#0d1622; border:1.5px dashed #2a3d5c; color:var(--text-dim); }
+  .crate.match{ border-color:var(--green); }
+  .crate.removable{ cursor:pointer; border-color:var(--amber); }
+  .crate.removable:hover{ transform:translateY(-3px); border-color:var(--red); }
+  .gap-slot{
+    width:14px; align-self:stretch; display:flex; align-items:center; justify-content:center; cursor:default;
+  }
+  .gap-slot.insertable{ cursor:pointer; }
+  .gap-slot.insertable .gap-line{ background:var(--amber); }
+  .gap-slot.insertable:hover .gap-line{ background:var(--cyan); width:4px; }
+  .gap-line{ width:2px; height:44px; background:#2a3d5c; border-radius:2px; }
+
+  .cmd-tabs{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .cmd-tab{
+    flex:1; min-width:100px; background:var(--bg-deep); border:1px solid var(--line); border-radius:8px; color:var(--text-dim);
+    padding:10px; text-align:center; font-family:'Share Tech Mono',monospace; font-size:12px; cursor:pointer;
+  }
+  .cmd-tab.active{ border-color:var(--cyan); color:var(--cyan); background:#0d1b2e; }
+  .cmd-syntax{ font-size:11px; color:var(--text-dim); text-align:center; margin-bottom:10px; font-family:'Share Tech Mono',monospace; }
+  .value-palette{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .value-btn{
+    background:var(--bg-deep); border:1px solid var(--line); border-radius:6px; color:var(--text); padding:8px 12px;
+    font-family:'Orbitron',sans-serif; font-size:12px; cursor:pointer;
+  }
+  .value-btn:hover{border-color:var(--cyan);}
+  .value-btn.selected{border-color:var(--green); color:var(--green);}
+  .action-hint{color:var(--text-dim); font-size:12px; text-align:center; margin-top:8px;}
+
+  .controls-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+
+  .overlay{ position:fixed; inset:0; background:#020509d9; z-index:20; display:none; align-items:center; justify-content:center; padding:16px; }
+  .overlay.active{display:flex;}
+  .overlay-box{ background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2)); border:1px solid var(--cyan); border-radius:12px; padding:22px; max-width:480px; width:100%; box-shadow:0 0 40px #4fd8e833; }
+  .overlay-tag{color:var(--cyan); font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;}
+  .overlay-q{font-size:15px; line-height:1.5; margin-bottom:16px;}
+  .opt-btn{ display:block; width:100%; text-align:left; background:var(--bg-deep); border:1px solid var(--line); color:var(--text); padding:12px 14px; border-radius:8px; margin-bottom:8px; font-family:'Share Tech Mono',monospace; font-size:13px; cursor:pointer; }
+  .opt-btn:hover{border-color:var(--cyan);}
+  .opt-btn.correct{border-color:var(--green); background:#0f2a1e; color:var(--green);}
+  .opt-btn.wrong{border-color:var(--red); background:#2a0f0f; color:#ffb3b3;}
+  .opt-btn.disabled{pointer-events:none;}
+  .explain{font-size:12px; color:var(--text-dim); margin-top:10px; line-height:1.5; border-top:1px solid var(--line); padding-top:10px;}
+  .qcode{background:#0a1220; border:1px solid var(--line); border-radius:6px; padding:10px 12px; font-size:12px; margin-bottom:12px; white-space:pre-wrap;}
+
+  .stat-row{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-val{color:var(--cyan); font-family:'Orbitron',sans-serif;}
+
+  .flash-fail{ position:fixed; inset:0; background:#ff5d5d22; z-index:5; pointer-events:none; opacity:0; transition:opacity .2s; }
+  .flash-fail.show{opacity:1;}
+  .flash-win{ position:fixed; inset:0; background:#5ee6a022; z-index:5; pointer-events:none; opacity:0; transition:opacity .2s; }
+  .flash-win.show{opacity:1;}
+
+  @media (min-width:600px){ .topic-grid{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="flash-fail" id="flashFail"></div>
+<div class="flash-win" id="flashWin"></div>
+
+<!-- TITLE / TOPIC SELECT -->
+<div class="screen active" id="screen-title">
+  <div class="eyebrow">// manifest control ops</div>
+  <h1 class="title-main">LIST WRANGLER</h1>
+  <p class="subtitle">Station cargo bay manifests are out of sync. Use APPEND, INSERT, and REMOVE to transform each manifest into the target configuration — exactly as College Board pseudocode defines them.</p>
+
+  <div class="panel" style="margin-top:22px;">
+    <label class="hud-label">Operator callsign</label>
+    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+  </div>
+
+  <div class="topic-grid" id="topicGrid"></div>
+
+  <button class="btn" id="startBtn" disabled>Begin Manifest Shift</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="screen-game">
+  <div class="hud" id="hud"></div>
+  <div class="game-wrap">
+
+    <div class="manifest-block">
+      <div class="manifest-title">Target Manifest</div>
+      <div class="list-row" id="targetRow"></div>
+    </div>
+
+    <div class="manifest-block">
+      <div class="manifest-title">Current Manifest</div>
+      <div class="list-row" id="currentRow"></div>
+    </div>
+
+    <div class="manifest-block">
+      <div class="cmd-tabs" id="cmdTabs"></div>
+      <div class="cmd-syntax" id="cmdSyntax"></div>
+      <div id="cmdBody"></div>
+      <div class="action-hint" id="actionHint"></div>
+    </div>
+
+    <div class="controls-row">
+      <button class="btn secondary small" id="resetBtn">Reset Manifest</button>
+      <button class="btn secondary small" id="endRunBtn">End Shift Early</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECOVERY SCREEN -->
+<div class="screen" id="screen-recovery">
+  <div class="eyebrow" style="color:var(--red);">// system stability critical</div>
+  <h2 class="title-main" style="color:var(--red); font-size:32px;">MANIFEST CORRUPTED</h2>
+  <p class="subtitle">System stability dropped to zero. Ground Control is restoring the manifest system — you'll resume with stability restored, but your streak resets.</p>
+  <button class="btn" id="rebootBtn">Restore System</button>
+  <button class="btn secondary" id="recoveryEndBtn">End Shift Instead</button>
+</div>
+
+<!-- SUMMARY SCREEN -->
+<div class="screen" id="screen-summary">
+  <div class="eyebrow">// end of shift report</div>
+  <h2 class="title-main">SHIFT COMPLETE</h2>
+  <div class="panel" style="margin-top:20px;" id="summaryPanel"></div>
+  <button class="btn" id="playAgainBtn">Start New Shift</button>
+</div>
+
+<!-- QUESTION OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box" id="overlayBox"></div>
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+
+const TOPICS = [
+  {id:'all', name:'All Operations', tag:'FULL SHIFT'},
+  {id:'append', name:'APPEND Focus', tag:'ADD TO END'},
+  {id:'insert', name:'INSERT Focus', tag:'ADD AT INDEX'},
+  {id:'remove', name:'REMOVE Focus', tag:'DELETE AT INDEX'},
+  {id:'foreach', name:'FOR EACH Tracing', tag:'TRAVERSAL'},
+];
+
+const POOL = ["O2","FUEL","MED","TOOL","FOOD","PART","DATA","SEED","COMM","SPARE","CORE","LENS"];
+
+const QUESTION_BANK = [
+  // APPEND
+  {cat:'append', q:"A manifest list currently holds [\"FUEL\", \"MED\"]. After APPEND(manifest, \"TOOL\") runs, what does the list contain?", opts:['["FUEL", "MED", "TOOL"]','["TOOL", "FUEL", "MED"]','["FUEL", "TOOL", "MED"]','["FUEL", "MED"] (unchanged)'], correct:0, exp:"APPEND always adds the new item to the very end of the list, after all existing elements."},
+  {cat:'append', q:"What is the defining behavior of the APPEND operation on a list?", opts:["It adds a new element at a specific index","It adds a new element to the end of the list","It removes the last element","It searches for a matching element"], correct:1, exp:"APPEND(list, item) inserts item as the new last element — no index needs to be specified."},
+  {cat:'append', q:"If a list has length 4 and you APPEND one item, what is the length and index of the new last item?", opts:["Length 5, new item at index 5","Length 5, new item at index 4","Length 4, new item at index 5","Length 5, new item at index 1"], correct:0, exp:"APPEND increases length by 1, and since AP CSP lists are 1-indexed, the new item lands at the new length value."},
+  {cat:'append', q:"Which scenario is APPEND best suited for?", opts:["Adding a new record to the end of a growing log, without disturbing existing entries' positions","Replacing the first item in a list","Deleting duplicate entries","Reordering a list alphabetically"], correct:0, exp:"APPEND is ideal when you want to add new data without changing the position of any existing elements."},
+
+  // INSERT
+  {cat:'insert', q:"A manifest holds [\"FUEL\", \"MED\", \"TOOL\"]. After INSERT(manifest, 2, \"SPARE\") runs, what does the list contain?", opts:['["FUEL", "SPARE", "MED", "TOOL"]','["SPARE", "FUEL", "MED", "TOOL"]','["FUEL", "MED", "SPARE", "TOOL"]','["FUEL", "MED", "TOOL", "SPARE"]'], correct:0, exp:"INSERT(list, i, item) places item at index i, shifting the element that was at i (and everything after it) one position later."},
+  {cat:'insert', q:"After inserting a new element at index 3 in a list of length 6, what happens to the element that was previously at index 3?", opts:["It's deleted","It shifts to index 4","It stays at index 3","It moves to index 1"], correct:1, exp:"INSERT shifts the target index and every element after it one position later to make room."},
+  {cat:'insert', q:"What is the valid range of index values you could INSERT at into a list of length 5 (1-indexed, following AP CSP conventions)?", opts:["1 through 5 only","1 through 6","0 through 5","2 through 5 only"], correct:1, exp:"You can insert before any existing element (1 through 5) or after the last one (index 6), so valid positions run 1 to length+1."},
+  {cat:'insert', q:"How is INSERT different from APPEND?", opts:["INSERT can place an item at any valid index; APPEND always adds to the end only","They are functionally identical in every case","APPEND requires an index parameter and INSERT does not","INSERT deletes an item first"], correct:0, exp:"INSERT takes an index parameter so the new item can go anywhere in the list; APPEND has no index because it always targets the end."},
+
+  // REMOVE
+  {cat:'remove', q:"A manifest holds [\"FUEL\", \"MED\", \"TOOL\", \"SPARE\"]. After REMOVE(manifest, 2) runs, what does the list contain?", opts:['["FUEL", "TOOL", "SPARE"]','["FUEL", "MED", "SPARE"]','["MED", "TOOL", "SPARE"]','["FUEL", "MED", "TOOL"]'], correct:0, exp:"REMOVE(list, i) deletes the element at index i, and every later element shifts one position earlier to fill the gap."},
+  {cat:'remove', q:"After removing the element at index 2 from a list of length 5, what happens to the element that was at index 3?", opts:["It's deleted too","It shifts to index 2","It stays at index 3","It moves to index 5"], correct:1, exp:"REMOVE shifts every element after the removed index one position earlier, closing the gap."},
+  {cat:'remove', q:"What is the new length of a list after a single successful REMOVE operation on a list of length 6?", opts:["5","6","7","Length is unaffected by REMOVE"], correct:0, exp:"REMOVE deletes exactly one element, so the list's length decreases by 1."},
+  {cat:'remove', q:"Why must a REMOVE operation specify a valid index that currently exists in the list?", opts:["Because removing at a nonexistent index doesn't correspond to any real element to delete","Because REMOVE always deletes the first item regardless of index","Because index doesn't matter for REMOVE","Because REMOVE requires a value instead of an index"], correct:0, exp:"REMOVE targets a specific position, so the index must correspond to an element that's actually there."},
+
+  // FOR EACH
+  {cat:'foreach', q:"A procedure uses FOR EACH item IN manifest to print every item. If manifest is [\"FUEL\", \"MED\", \"TOOL\"], what gets printed, and in what order?", opts:['"FUEL", then "MED", then "TOOL"','"TOOL", then "MED", then "FUEL"','Only "FUEL"','The items print in a random order'], correct:0, exp:"FOR EACH traverses a list from the first element to the last, processing each one in order."},
+  {cat:'foreach', q:"Inside a FOR EACH loop over a manifest, a counter increases by 1 every time an item equal to \"SPARE\" is seen. If the manifest contains two \"SPARE\" entries among five items, what will the counter equal after the loop finishes?", opts:["2","5","1","0"], correct:0, exp:"FOR EACH visits every element exactly once, so the counter increments once per matching occurrence — twice here."},
+  {cat:'foreach', q:"What is the key difference between a FOR EACH loop and a REPEAT UNTIL loop when processing a list?", opts:["FOR EACH automatically visits every element of the list without manually tracking an index; REPEAT UNTIL needs an explicit condition to stop","They are exactly the same construct","REPEAT UNTIL can only be used on numbers","FOR EACH cannot be used with lists"], correct:0, exp:"FOR EACH is designed specifically for list traversal, handling the iteration automatically instead of requiring manual index management."},
+  {cat:'foreach', q:"A FOR EACH loop sums every numeric value in a list to compute a total. If the list is empty, what should the resulting sum be?", opts:["0, since the loop body never executes","An error is guaranteed","The sum of the previous list used","Undefined behavior in all cases"], correct:0, exp:"With an empty list, FOR EACH simply never runs its body, so an initialized sum variable remains at its starting value, typically 0."},
+  {cat:'foreach', q:"Why is FOR EACH considered a useful abstraction for working with lists?", opts:["It lets you process every element without manually managing indices or bounds checking","It automatically sorts the list first","It only works on lists of exactly length 1","It removes duplicate elements as a side effect"], correct:0, exp:"FOR EACH abstracts away manual index tracking, letting the programmer focus on what to do with each element."},
+];
+
+/* ============================ STATE ============================ */
+
+let state = {
+  playerName: "",
+  topicFocus: "all",
+  level: 1,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  stability: 100,
+  totalAnswered: 0,
+  totalCorrect: 0,
+  current: [],
+  target: [],
+  start: [],
+  moves: 0,
+  par: 0,
+  activeCmd: 'APPEND',
+  selectedValue: null,
+  runEnded: false,
+  lastOpsUsed: []
+};
+
+/* ============================ HELPERS ============================ */
+
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function choice(arr){ return arr[randInt(0,arr.length-1)]; }
+
+function weightedQuestion(topicFocus){
+  const pool = topicFocus==='all' ? QUESTION_BANK : QUESTION_BANK.filter(q=>q.cat===topicFocus);
+  return choice(pool);
+}
+
+/* ============================ PUZZLE GENERATION ============================ */
+
+function applyOp(list, op){
+  const copy = list.slice();
+  if(op.type==='APPEND') copy.push(op.value);
+  else if(op.type==='INSERT') copy.splice(op.index-1, 0, op.value);
+  else if(op.type==='REMOVE') copy.splice(op.index-1, 1);
+  return copy;
+}
+
+function genStart(len, allowDup){
+  const list=[];
+  for(let i=0;i<len;i++){
+    let v, tries=0;
+    do { v = choice(POOL); tries++; } while(!allowDup && list.includes(v) && tries<20);
+    list.push(v);
+  }
+  return list;
+}
+
+function genPuzzle(level){
+  const startLen = Math.min(3 + Math.floor(level/2), 7);
+  const allowDup = level > 5;
+  let attempts = 0;
+  let start, target, ops;
+
+  do {
+    start = genStart(startLen, allowDup);
+    let list = start.slice();
+    const opCount = Math.min(2 + Math.floor(level/3), 5);
+    ops = [];
+    for(let i=0;i<opCount;i++){
+      const possible = ['APPEND','INSERT'];
+      if(list.length>0) possible.push('REMOVE');
+      const type = choice(possible);
+      let op;
+      if(type==='APPEND'){ op = {type:'APPEND', value: choice(POOL)}; }
+      else if(type==='REMOVE'){ op = {type:'REMOVE', index: randInt(1, list.length)}; }
+      else { op = {type:'INSERT', index: randInt(1, list.length+1), value: choice(POOL)}; }
+      list = applyOp(list, op);
+      ops.push(op);
+      if(list.length > 9) break;
+    }
+    target = list;
+    attempts++;
+  } while(JSON.stringify(start)===JSON.stringify(target) && attempts<6);
+
+  return { start, target, par: ops.length };
+}
+
+/* ============================ GAME FLOW ============================ */
+
+function initTopicGrid(){
+  const grid = document.getElementById('topicGrid');
+  TOPICS.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className='topic-btn'+(t.id==='all'?' selected':'');
+    btn.innerHTML = `<span>${t.name}</span><span class="tag">${t.tag}</span>`;
+    btn.onclick = ()=>{
+      document.querySelectorAll('.topic-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.topicFocus = t.id;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+document.getElementById('playerName').addEventListener('input', e=>{
+  document.getElementById('startBtn').disabled = e.target.value.trim().length===0;
+});
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  state.playerName = document.getElementById('playerName').value.trim();
+  state.level=1; state.score=0; state.streak=0; state.bestStreak=0; state.stability=100;
+  state.totalAnswered=0; state.totalCorrect=0; state.runEnded=false;
+  showScreen('screen-game');
+  startLevel();
+});
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHUD(){
+  document.getElementById('hud').innerHTML = `
+    <div class="hud-item"><div class="hud-label">Level</div><div class="hud-value">${state.level}</div></div>
+    <div class="hud-item"><div class="hud-label">Score</div><div class="hud-value">${state.score}</div></div>
+    <div class="hud-item"><div class="hud-label">Streak</div><div class="hud-value">${state.streak}</div></div>
+    <div class="hud-item"><div class="hud-label">Moves</div><div class="hud-value">${state.moves}/${state.par}</div></div>
+    <div class="hud-item" style="flex:2;">
+      <div class="hud-label">System Stability</div>
+      <div class="meter-track"><div class="meter-fill" style="width:${state.stability}%;"></div></div>
+    </div>
+  `;
+}
+
+function startLevel(){
+  const puzzle = genPuzzle(state.level);
+  state.start = puzzle.start;
+  state.current = puzzle.start.slice();
+  state.target = puzzle.target;
+  state.par = puzzle.par;
+  state.moves = 0;
+  state.activeCmd = 'APPEND';
+  state.selectedValue = null;
+  state.lastOpsUsed = [];
+
+  updateHUD();
+  renderAll();
+}
+
+function renderAll(){
+  renderTarget();
+  renderCurrent();
+  renderCmdPanel();
+}
+
+function renderTarget(){
+  const row = document.getElementById('targetRow');
+  row.innerHTML='';
+  state.target.forEach((v,i)=>{
+    const el = document.createElement('div');
+    el.className='crate target-slot';
+    el.innerHTML = `<div class="idx">${i+1}</div>${v}`;
+    row.appendChild(el);
+  });
+}
+
+function renderCurrent(){
+  const row = document.getElementById('currentRow');
+  row.innerHTML='';
+  const isMatch = JSON.stringify(state.current)===JSON.stringify(state.target);
+
+  if(state.activeCmd==='INSERT'){
+    // leading gap
+    row.appendChild(makeGap(1));
+  }
+
+  state.current.forEach((v,i)=>{
+    const el = document.createElement('div');
+    el.className='crate';
+    if(isMatch) el.classList.add('match');
+    if(state.activeCmd==='REMOVE'){
+      el.classList.add('removable');
+      el.onclick = ()=>doRemove(i+1);
+    }
+    el.innerHTML = `<div class="idx">${i+1}</div>${v}`;
+    row.appendChild(el);
+    if(state.activeCmd==='INSERT'){
+      row.appendChild(makeGap(i+2));
+    }
+  });
+
+  if(state.current.length===0 && state.activeCmd!=='INSERT'){
+    const empty = document.createElement('div');
+    empty.style.color='var(--text-dim)';
+    empty.style.fontSize='12px';
+    empty.textContent = '(manifest empty)';
+    row.appendChild(empty);
+  }
+
+  if(isMatch && !state.runEnded){
+    setTimeout(()=>levelComplete(), 250);
+  }
+}
+
+function makeGap(index){
+  const gap = document.createElement('div');
+  const canInsert = state.selectedValue !== null;
+  gap.className = 'gap-slot' + (canInsert? ' insertable':'');
+  gap.innerHTML = '<div class="gap-line"></div>';
+  if(canInsert) gap.onclick = ()=>doInsert(index);
+  return gap;
+}
+
+function renderCmdPanel(){
+  const tabs = document.getElementById('cmdTabs');
+  tabs.innerHTML='';
+  [['APPEND','APPEND'],['INSERT','INSERT'],['REMOVE','REMOVE']].forEach(([key,label])=>{
+    const t = document.createElement('div');
+    t.className = 'cmd-tab' + (state.activeCmd===key?' active':'');
+    t.textContent = label;
+    t.onclick = ()=>{ state.activeCmd=key; state.selectedValue=null; renderAll(); };
+    tabs.appendChild(t);
+  });
+
+  const syntax = document.getElementById('cmdSyntax');
+  const body = document.getElementById('cmdBody');
+  const hint = document.getElementById('actionHint');
+  body.innerHTML='';
+
+  if(state.activeCmd==='APPEND'){
+    syntax.textContent = 'APPEND(manifest, value) — adds value to the end';
+    body.appendChild(makeValuePalette((v)=>{ doAppend(v); }));
+    hint.textContent = 'Choose a value to append to the end of the manifest.';
+  } else if(state.activeCmd==='INSERT'){
+    syntax.textContent = 'INSERT(manifest, i, value) — adds value at index i, shifting later items right';
+    body.appendChild(makeValuePalette((v)=>{ state.selectedValue=v; renderAll(); }));
+    hint.textContent = state.selectedValue ? `Selected "${state.selectedValue}" — click a gap in the Current Manifest to insert it.` : 'Select a value, then click a gap between crates to insert it there.';
+  } else {
+    syntax.textContent = 'REMOVE(manifest, i) — deletes the item at index i, shifting later items left';
+    hint.textContent = 'Click any crate in the Current Manifest to remove it.';
+  }
+}
+
+function makeValuePalette(onPick){
+  const wrap = document.createElement('div');
+  wrap.className='value-palette';
+  POOL.forEach(v=>{
+    const b = document.createElement('button');
+    b.className='value-btn' + (state.selectedValue===v?' selected':'');
+    b.textContent = v;
+    b.onclick = ()=>onPick(v);
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+function doAppend(value){
+  state.current.push(value);
+  state.moves++;
+  trackOp('append');
+  updateHUD();
+  renderAll();
+}
+
+function doInsert(index){
+  if(state.selectedValue===null) return;
+  state.current.splice(index-1, 0, state.selectedValue);
+  state.selectedValue = null;
+  state.moves++;
+  trackOp('insert');
+  updateHUD();
+  renderAll();
+}
+
+function doRemove(index){
+  state.current.splice(index-1, 1);
+  state.moves++;
+  trackOp('remove');
+  updateHUD();
+  renderAll();
+}
+
+function trackOp(type){
+  state.lastOpsUsed.push(type);
+  if(state.lastOpsUsed.length>10) state.lastOpsUsed.shift();
+}
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  state.current = state.start.slice();
+  state.moves = 0;
+  state.selectedValue = null;
+  updateHUD();
+  renderAll();
+});
+
+function levelComplete(){
+  const flash = document.getElementById('flashWin');
+  flash.classList.add('show');
+  setTimeout(()=>flash.classList.remove('show'), 300);
+
+  const efficiency = Math.max(0, 100 - Math.max(0, state.moves-state.par)*20);
+  const baseScore = 40 + Math.round(efficiency*0.6) + state.level*3;
+  state.score += baseScore;
+
+  let topic = state.topicFocus;
+  if(topic==='all'){
+    const opTopics = {append:'append', insert:'insert', remove:'remove'};
+    const usedTopics = [...new Set(state.lastOpsUsed)].map(o=>opTopics[o]).filter(Boolean);
+    topic = usedTopics.length && Math.random()<0.7 ? choice(usedTopics) : choice(['append','insert','remove','foreach']);
+  }
+
+  showQuestion(topic, ()=>{
+    state.level++;
+    startLevel();
+  });
+}
+
+function showQuestion(preferredCat, onDone){
+  const q = weightedQuestion(preferredCat);
+  const box = document.getElementById('overlayBox');
+  box.innerHTML = `
+    <div class="overlay-tag">Concept Check</div>
+    <div class="overlay-q">${q.q}</div>
+    <div id="qOpts"></div>
+  `;
+  const optDiv = box.querySelector('#qOpts');
+  const order = q.opts.map((o,i)=>i).sort(()=>Math.random()-0.5);
+  order.forEach(idx=>{
+    const b = document.createElement('button');
+    b.className='opt-btn';
+    b.textContent = q.opts[idx];
+    b.onclick = ()=>{
+      const isCorrect = idx===q.correct;
+      Array.from(optDiv.children).forEach(c=>c.classList.add('disabled'));
+      b.classList.add(isCorrect?'correct':'wrong');
+      const explain = document.createElement('div');
+      explain.className='explain';
+      explain.textContent = q.exp;
+      box.appendChild(explain);
+
+      state.totalAnswered++;
+      if(isCorrect){
+        state.totalCorrect++;
+        state.streak++;
+        state.bestStreak = Math.max(state.bestStreak, state.streak);
+        state.score += 15 + state.streak*2;
+        adjustStability(5);
+      } else {
+        state.streak = 0;
+        adjustStability(-15);
+      }
+      updateHUD();
+      setTimeout(()=>{
+        closeOverlay();
+        if(state.stability<=0){
+          showScreen('screen-recovery');
+        } else {
+          onDone();
+        }
+      }, 1600);
+    };
+    optDiv.appendChild(b);
+  });
+  openOverlay();
+}
+
+function adjustStability(delta){
+  state.stability = Math.max(0, Math.min(100, state.stability+delta));
+  updateHUD();
+  if(delta<0){
+    const flash = document.getElementById('flashFail');
+    flash.classList.add('show');
+    setTimeout(()=>flash.classList.remove('show'), 200);
+  }
+}
+
+function openOverlay(){ document.getElementById('overlay').classList.add('active'); }
+function closeOverlay(){ document.getElementById('overlay').classList.remove('active'); }
+
+document.getElementById('rebootBtn').addEventListener('click', ()=>{
+  state.stability = 60;
+  showScreen('screen-game');
+  updateHUD();
+});
+document.getElementById('recoveryEndBtn').addEventListener('click', endRun);
+document.getElementById('endRunBtn').addEventListener('click', endRun);
+
+function endRun(){
+  state.runEnded = true;
+  const acc = state.totalAnswered ? Math.round(100*state.totalCorrect/state.totalAnswered) : 0;
+  document.getElementById('summaryPanel').innerHTML = `
+    <div class="stat-row"><span>Operator</span><span class="stat-val">${state.playerName}</span></div>
+    <div class="stat-row"><span>Levels Completed</span><span class="stat-val">${state.level-1}</span></div>
+    <div class="stat-row"><span>Final Score</span><span class="stat-val">${state.score}</span></div>
+    <div class="stat-row"><span>Best Streak</span><span class="stat-val">${state.bestStreak}</span></div>
+    <div class="stat-row"><span>Concept Accuracy</span><span class="stat-val">${acc}%</span></div>
+  `;
+  showScreen('screen-summary');
+}
+
+document.getElementById('playAgainBtn').addEventListener('click', ()=>{
+  showScreen('screen-title');
+});
+
+initTopicGrid();
+</script>
+</body>
+</html>
