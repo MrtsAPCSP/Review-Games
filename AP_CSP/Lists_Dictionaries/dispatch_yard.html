@@ -2,1416 +2,1248 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Dispatch Yard — Lists vs. Dictionaries</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   TOKENS
-============================================================ */
-:root{
-  --bg-void: #14171B;
-  --bg-panel: #1D2126;
-  --bg-panel-raised: #262B31;
-  --bg-panel-hi: #2E343B;
-  --kraft: #C89B6D;
-  --kraft-dim: #7A6046;
-  --conveyor: #E8A33D;
-  --conveyor-soft: #4A3A22;
-  --conveyor-glow: rgba(232,163,61,0.35);
-  --locker: #5B8CA8;
-  --locker-soft: #223642;
-  --locker-glow: rgba(91,140,168,0.35);
-  --stamp-red: #C0472C;
-  --stamp-red-soft: #3A2320;
-  --success: #7A9B5C;
-  --success-soft: #263323;
-  --paper: #EDE7DA;
-  --paper-dim: #A8A296;
-  --ink: #14171B;
-  --font-display: 'Oswald', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-  --radius: 6px;
-}
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
-body{
-  background:
-    radial-gradient(ellipse at 20% -10%, rgba(232,163,61,0.06), transparent 45%),
-    radial-gradient(ellipse at 100% 110%, rgba(91,140,168,0.08), transparent 50%),
-    var(--bg-void);
-  color:var(--paper);
-  font-family:var(--font-body);
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  -webkit-font-smoothing:antialiased;
-}
-@media (prefers-reduced-motion: reduce){
-  *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
-}
-.app{
-  width:100%;
-  max-width:820px;
-  background:var(--bg-panel);
-  border:1px solid #33393f;
-  border-radius:10px;
-  overflow:hidden;
-  box-shadow:0 30px 80px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.02) inset;
-  position:relative;
-}
-.screen{display:none; padding:36px 40px 32px;}
-.screen.active{display:block; animation:fadein .35s ease;}
-@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
-button{font-family:var(--font-body); cursor:pointer; border:none;}
-button:focus-visible, .opt:focus-visible, .zone-btn:focus-visible{
-  outline:3px solid var(--paper); outline-offset:2px;
-}
-h1,h2,h3{margin:0; font-family:var(--font-display); letter-spacing:.02em;}
-.eyebrow{
-  font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--kraft); margin-bottom:8px; display:flex; align-items:center; gap:8px;
-}
-.eyebrow::before{content:''; width:16px; height:1px; background:var(--kraft-dim);}
+  :root{
+    --bg:#15181e;
+    --panel:#1f232b;
+    --panel-2:#262b35;
+    --line:#343b47;
+    --amber:#e8a33d;
+    --amber-dim:#5a4324;
+    --blue:#3da5d9;
+    --blue-dim:#1f3a49;
+    --red:#d9483d;
+    --green:#5cb85c;
+    --text:#edeff2;
+    --muted:#8a93a3;
+    --stencil: "Arial Black", Impact, "Segoe UI Black", sans-serif;
+    --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "SF Mono", "Consolas", "Menlo", monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--body);}
+  body{
+    background-image:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 14px);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+  .wrap{
+    width:100%;
+    max-width:900px;
+  }
+  .stencil{
+    font-family:var(--stencil);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  }
+  .screen{display:none;}
+  .screen.active{display:block;}
 
-/* ============================================================
-   HEADER STAMP / SIGNAGE BAR (shared)
-============================================================ */
-.yard-header{
-  background:repeating-linear-gradient(135deg, #21262c 0 14px, #1a1e23 14px 28px);
-  border-bottom:2px solid var(--kraft-dim);
-  padding:14px 40px;
-  display:flex; align-items:center; justify-content:space-between;
-  gap:16px;
-}
-.yard-header .brand{display:flex; align-items:center; gap:10px;}
-.brand-mark{
-  width:30px; height:30px; border:2px solid var(--kraft);
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--kraft);
-  transform:rotate(-4deg); flex-shrink:0;
-}
-.brand-title{font-family:var(--font-display); font-size:16px; letter-spacing:.05em; color:var(--paper); text-transform:uppercase;}
-.brand-sub{font-family:var(--font-mono); font-size:10px; color:var(--paper-dim); letter-spacing:.08em;}
-.help-btn{
-  background:transparent; border:1px solid #444b52; color:var(--paper-dim);
-  width:28px; height:28px; border-radius:50%; font-family:var(--font-mono); font-size:13px;
-  display:flex; align-items:center; justify-content:center;
-}
-.help-btn:hover{border-color:var(--kraft); color:var(--kraft);}
+  /* ---------- START SCREEN ---------- */
+  #screen-start .card{padding:32px;}
+  .hazard-strip{
+    height:8px;
+    border-radius:6px;
+    background:repeating-linear-gradient(45deg, var(--amber) 0 14px, #1a1a1a 14px 28px);
+    margin-bottom:22px;
+    opacity:0.9;
+  }
+  .title{font-size:30px;color:var(--text);margin:0 0 6px;}
+  .subtitle{color:var(--muted);margin:0 0 24px;font-size:14px;line-height:1.5;}
+  .legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:24px;
+  }
+  .legend-item{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px;
+  }
+  .legend-item.list{border-left:4px solid var(--amber);}
+  .legend-item.dict{border-left:4px solid var(--blue);}
+  .legend-item h3{margin:0 0 6px;font-size:13px;letter-spacing:0.06em;}
+  .legend-item.list h3{color:var(--amber);}
+  .legend-item.dict h3{color:var(--blue);}
+  .legend-item p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45;}
+  .legend-item code{color:var(--text);font-family:var(--mono);font-size:12px;}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;}
+  input[type=text]{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:12px 14px;
+    border-radius:8px;
+    font-size:15px;
+    margin-bottom:20px;
+  }
+  input[type=text]:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  button{
+    cursor:pointer;
+    border:none;
+    font-family:var(--body);
+  }
+  .btn-primary{
+    width:100%;
+    padding:15px;
+    border-radius:8px;
+    background:var(--amber);
+    color:#1a1508;
+    font-weight:800;
+    font-size:15px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+  }
+  .btn-primary:hover{background:#f0ad52;}
+  .btn-primary:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
+  .btn-secondary{
+    width:100%;
+    padding:14px;
+    border-radius:8px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text);
+    font-size:14px;
+    margin-top:10px;
+  }
+  .btn-secondary:hover{border-color:var(--muted);}
+  .btn-secondary:focus-visible, .opt-btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
 
-/* ============================================================
-   START SCREEN
-============================================================ */
-#screen-start .hero-line{
-  font-family:var(--font-display); font-size:34px; line-height:1.15; color:var(--paper);
-  margin:0 0 14px; text-transform:uppercase;
-}
-#screen-start .hero-line em{
-  font-style:normal; color:var(--conveyor); border-bottom:3px solid var(--conveyor-soft);
-}
-.lede{font-size:14.5px; line-height:1.65; color:var(--paper-dim); max-width:560px; margin-bottom:22px;}
-.legend-split{
-  display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:22px 0 26px;
-}
-.legend-card{
-  border-radius:var(--radius); padding:16px 16px 14px; position:relative; overflow:hidden;
-}
-.legend-card.list{background:var(--conveyor-soft); border:1px solid #5c4a28;}
-.legend-card.dict{background:var(--locker-soft); border:1px solid #2c4756;}
-.legend-card .tag{
-  font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
-  opacity:.85; margin-bottom:6px;
-}
-.legend-card.list .tag{color:var(--conveyor);}
-.legend-card.dict .tag{color:var(--locker);}
-.legend-card h3{font-size:19px; margin-bottom:6px;}
-.legend-card.list h3{color:var(--conveyor);}
-.legend-card.dict h3{color:var(--locker);}
-.legend-card p{font-size:12.5px; color:var(--paper-dim); line-height:1.5; margin:0;}
-.legend-card code{font-family:var(--font-mono); font-size:11.5px; color:var(--paper);}
-.name-row{display:flex; gap:10px; margin-bottom:18px;}
-.name-row input{
-  flex:1; background:var(--bg-panel-raised); border:1px solid #3a4046; color:var(--paper);
-  padding:12px 14px; border-radius:var(--radius); font-family:var(--font-mono); font-size:14px;
-}
-.name-row input::placeholder{color:#5c636a;}
-.name-row input:focus{outline:none; border-color:var(--kraft);}
-.btn-primary{
-  background:var(--conveyor); color:#241a08; font-family:var(--font-display); font-size:15px;
-  letter-spacing:.03em; text-transform:uppercase; padding:14px 26px; border-radius:var(--radius);
-  transition:transform .15s ease, box-shadow .15s ease; width:100%;
-}
-.btn-primary:hover{transform:translateY(-1px); box-shadow:0 8px 20px -6px var(--conveyor-glow);}
-.btn-primary:disabled{opacity:.4; cursor:not-allowed; transform:none; box-shadow:none;}
-.shift-preview{
-  display:flex; gap:6px; margin-top:20px; flex-wrap:wrap;
-}
-.shift-chip{
-  font-family:var(--font-mono); font-size:10.5px; color:var(--paper-dim);
-  border:1px solid #3a4046; border-radius:20px; padding:4px 11px;
-}
+  /* ---------- GAME SCREEN ---------- */
+  #screen-game .card{padding:20px 22px 24px;}
+  .hud{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .hud .shift-label{
+    font-size:12px;color:var(--muted);letter-spacing:0.05em;
+  }
+  .hud .shift-name{font-size:16px;color:var(--text);}
+  .hud-stat{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 10px;
+    font-size:12px;
+    color:var(--muted);
+    display:flex;
+    gap:6px;
+    align-items:baseline;
+  }
+  .hud-stat b{color:var(--text);font-size:14px;}
+  .hud-right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
 
-/* ============================================================
-   GAME SCREEN — HUD
-============================================================ */
-.hud{
-  display:flex; align-items:center; justify-content:space-between; gap:14px;
-  margin-bottom:20px; flex-wrap:wrap;
-}
-.hud-block{display:flex; flex-direction:column; gap:2px;}
-.hud-label{font-family:var(--font-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim);}
-.hud-value{font-family:var(--font-display); font-size:18px; color:var(--paper);}
-.backlog{display:flex; gap:4px; align-items:center;}
-.backlog-crate{
-  width:14px; height:14px; border:1.5px solid var(--kraft-dim); border-radius:2px; background:transparent;
-  transition:background .2s, border-color .2s;
-}
-.backlog-crate.filled{background:var(--stamp-red); border-color:var(--stamp-red);}
-.timer-ring{position:relative; width:46px; height:46px; flex-shrink:0;}
-.timer-ring svg{transform:rotate(-90deg);}
-.timer-ring circle{fill:none; stroke-width:4;}
-.timer-ring .track{stroke:#33393f;}
-.timer-ring .fill{stroke:var(--conveyor); stroke-linecap:round; transition:stroke-dashoffset .25s linear, stroke .25s;}
-.timer-ring .fill.warn{stroke:var(--stamp-red);}
-.timer-num{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-mono); font-size:13px; color:var(--paper);
-}
+  .gauge-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .gauge-label{font-size:11px;color:var(--muted);letter-spacing:0.05em;white-space:nowrap;}
+  .gauge-track{
+    flex:1;height:12px;border-radius:6px;background:var(--panel-2);
+    border:1px solid var(--line);overflow:hidden;
+  }
+  .gauge-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--amber),var(--red));width:0%;transition:width 0.35s ease;}
 
-/* ============================================================
-   SHIPMENT CARD
-============================================================ */
-.shipment{
-  background:var(--bg-panel-raised); border:1px solid #33393f; border-radius:8px;
-  padding:22px 24px; margin-bottom:22px; position:relative;
-}
-.shipment::before{
-  content:''; position:absolute; top:0; left:20px; width:36px; height:8px;
-  background:var(--kraft-dim); border-radius:0 0 4px 4px;
-}
-.q-type-tag{
-  font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--kraft); margin-bottom:10px; display:inline-block;
-}
-.q-prompt{font-size:15.5px; line-height:1.55; color:var(--paper); margin-bottom:14px;}
-.q-prompt strong{color:var(--paper); font-weight:600;}
-.code-block{
-  background:#0F1215; border:1px solid #2a2f34; border-radius:5px; padding:14px 16px;
-  font-family:var(--font-mono); font-size:13.5px; line-height:1.7; color:#D9D3C4;
-  overflow-x:auto; white-space:pre; margin-bottom:4px;
-}
-.code-block .cm{color:#6b7280;}
-.code-block .hl{background:rgba(192,71,44,0.18); display:inline-block; width:100%;}
-.code-block .kw{color:#E8A33D;}
-.code-block .str{color:#7A9B5C;}
+  .timer-track{
+    height:5px;border-radius:3px;background:var(--panel-2);overflow:hidden;margin-bottom:18px;
+  }
+  .timer-fill{height:100%;background:var(--blue);width:100%;transition:width 0.2s linear;}
 
-/* ============================================================
-   ANSWER ZONES
-============================================================ */
-.answer-zone{display:grid; gap:12px;}
-.split-zone{grid-template-columns:1fr 1fr;}
-.zone-btn{
-  border-radius:var(--radius); padding:20px 16px; text-align:left; position:relative;
-  transition:transform .12s ease, box-shadow .12s ease; overflow:hidden;
-}
-.zone-btn:hover{transform:translateY(-2px);}
-.zone-btn.conveyor-btn{
-  background:linear-gradient(135deg, var(--conveyor-soft), #382a16);
-  border:1.5px solid var(--kraft-dim);
-}
-.zone-btn.conveyor-btn:hover{box-shadow:0 10px 24px -8px var(--conveyor-glow); border-color:var(--conveyor);}
-.zone-btn.locker-btn{
-  background:linear-gradient(135deg, var(--locker-soft), #1a2a33);
-  border:1.5px solid #3a5566;
-}
-.zone-btn.locker-btn:hover{box-shadow:0 10px 24px -8px var(--locker-glow); border-color:var(--locker);}
-.zone-icon{font-family:var(--font-display); font-size:13px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; display:block;}
-.conveyor-btn .zone-icon{color:var(--conveyor);}
-.locker-btn .zone-icon{color:var(--locker);}
-.zone-sub{font-family:var(--font-mono); font-size:11.5px; color:var(--paper-dim);}
-.zone-btn .stripe{
-  position:absolute; bottom:0; left:0; right:0; height:6px;
-}
-.conveyor-btn .stripe{background:repeating-linear-gradient(-45deg, var(--conveyor) 0 8px, #241a08 8px 16px); opacity:.5;}
-.locker-btn .stripe{background:repeating-linear-gradient(0deg, var(--locker) 0 6px, #142028 6px 12px); opacity:.5;}
+  .progress-dots{display:flex;gap:5px;margin-bottom:14px;}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line);}
+  .dot.done-correct{background:var(--green);}
+  .dot.done-wrong{background:var(--red);}
+  .dot.current{background:var(--amber);box-shadow:0 0 0 3px var(--amber-dim);}
 
-.opt-grid{grid-template-columns:1fr 1fr; }
-.opt{
-  background:var(--bg-panel-hi); border:1.5px solid #3a4046; border-radius:var(--radius);
-  padding:13px 15px; font-family:var(--font-mono); font-size:13px; color:var(--paper);
-  text-align:left; transition:border-color .12s, transform .12s; line-height:1.5;
-}
-.opt:hover{border-color:var(--kraft); transform:translateY(-1px);}
-.opt.correct{border-color:var(--success); background:var(--success-soft); color:#cfe0bd;}
-.opt.wrong{border-color:var(--stamp-red); background:var(--stamp-red-soft); color:#e3b6ac;}
-.opt:disabled{cursor:default; transform:none;}
+  .qtype-tag{
+    display:inline-block;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;margin-bottom:10px;font-weight:700;
+  }
+  .qtype-tag.sort{background:var(--amber-dim);color:var(--amber);}
+  .qtype-tag.predict{background:var(--blue-dim);color:var(--blue);}
+  .qtype-tag.bug{background:#4a2222;color:#e88a82;}
+  .qtype-tag.convert{background:#2a3a2a;color:#8fd48a;}
 
-.feedback-strip{
-  margin-top:16px; padding:13px 16px; border-radius:var(--radius); font-size:13.5px; line-height:1.55;
-  display:none; font-family:var(--font-body);
-}
-.feedback-strip.show{display:block; animation:fadein .25s ease;}
-.feedback-strip.correct{background:var(--success-soft); border:1px solid #4d6a3c; color:#d7e6c6;}
-.feedback-strip.wrong{background:var(--stamp-red-soft); border:1px solid #7a3a2e; color:#eccbc4;}
-.feedback-strip strong{display:block; font-family:var(--font-display); text-transform:uppercase; font-size:12px; letter-spacing:.06em; margin-bottom:4px;}
+  .prompt{font-size:15.5px;line-height:1.55;margin:0 0 14px;color:var(--text);}
+  .prompt b{color:var(--amber);}
 
-.next-btn{
-  margin-top:16px; background:var(--kraft); color:#241a08; font-family:var(--font-display);
-  font-size:13.5px; text-transform:uppercase; letter-spacing:.04em; padding:11px 22px; border-radius:var(--radius);
-  display:none;
-}
-.next-btn.show{display:inline-block;}
+  .codebox{
+    background:#0e1015;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    font-family:var(--mono);
+    font-size:13.5px;
+    line-height:1.6;
+    color:#d7dbe0;
+    margin-bottom:16px;
+    overflow-x:auto;
+    white-space:pre;
+    position:relative;
+  }
+  .codebox::before{
+    content:"";
+    position:absolute;top:0;left:0;bottom:0;width:3px;
+    background:var(--amber);border-radius:3px 0 0 3px;
+  }
+  .codebox.dict::before{background:var(--blue);}
 
-/* ============================================================
-   TRANSITION / RESULT SCREENS
-============================================================ */
-.result-hero{text-align:center; padding:10px 0 6px;}
-.result-hero .stamp{
-  display:inline-block; font-family:var(--font-display); font-size:26px; text-transform:uppercase;
-  letter-spacing:.04em; padding:10px 24px; border:3px solid; border-radius:4px; transform:rotate(-2deg);
-  margin-bottom:18px;
-}
-.stamp.pass{border-color:var(--success); color:var(--success);}
-.stamp.fail{border-color:var(--stamp-red); color:var(--stamp-red);}
-.stat-grid{
-  display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:20px 0;
-}
-.stat-box{
-  background:var(--bg-panel-raised); border:1px solid #33393f; border-radius:var(--radius);
-  padding:14px 10px; text-align:center;
-}
-.stat-box .num{font-family:var(--font-display); font-size:24px; color:var(--paper);}
-.stat-box .lbl{font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; color:var(--paper-dim); letter-spacing:.08em; margin-top:2px;}
-.breakdown{margin:18px 0;}
-.breakdown-row{display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px;}
-.breakdown-row .name{width:130px; font-family:var(--font-mono); color:var(--paper-dim); flex-shrink:0;}
-.breakdown-bar{flex:1; height:7px; background:#2a2f34; border-radius:4px; overflow:hidden;}
-.breakdown-fill{height:100%; background:var(--kraft);}
-.breakdown-row .frac{font-family:var(--font-mono); color:var(--paper-dim); width:38px; text-align:right; flex-shrink:0;}
-.log-status{
-  font-family:var(--font-mono); font-size:11px; color:var(--paper-dim); text-align:center; margin-top:6px;
-}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:560px){.options{grid-template-columns:1fr;}}
+  .opt-btn{
+    text-align:left;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:13.5px;
+    font-family:var(--mono);
+    line-height:1.4;
+    transition:border-color 0.15s, background 0.15s;
+  }
+  .opt-btn:hover{border-color:var(--amber);}
+  .opt-btn.correct{background:#1f3a22;border-color:var(--green);color:#c9f0c9;}
+  .opt-btn.wrong{background:#3a1f1f;border-color:var(--red);color:#f0c9c9;}
+  .opt-btn.dim{opacity:0.5;}
+  .opt-btn:disabled{cursor:default;}
 
-/* ============================================================
-   HELP MODAL
-============================================================ */
-.modal-overlay{
-  position:fixed; inset:0; background:rgba(10,12,14,0.72); display:none;
-  align-items:center; justify-content:center; z-index:50; padding:20px;
-}
-.modal-overlay.show{display:flex;}
-.modal-box{
-  background:var(--bg-panel); border:1px solid var(--kraft-dim); border-radius:8px;
-  max-width:520px; padding:28px 28px 24px; max-height:80vh; overflow-y:auto;
-}
-.modal-box h3{color:var(--kraft); margin-bottom:14px; font-size:18px;}
-.modal-box p, .modal-box li{font-size:13px; line-height:1.6; color:var(--paper-dim);}
-.modal-box code{font-family:var(--font-mono); color:var(--paper); background:#0F1215; padding:1px 5px; border-radius:3px;}
-.modal-close{
-  margin-top:16px; background:transparent; border:1px solid #444b52; color:var(--paper);
-  padding:9px 18px; border-radius:var(--radius); font-family:var(--font-mono); font-size:12px;
-}
+  .stamp{
+    position:absolute;
+    top:40%;left:50%;
+    transform:translate(-50%,-50%) rotate(-12deg) scale(0.6);
+    font-family:var(--stencil);
+    font-size:34px;
+    padding:6px 18px;
+    border:5px solid currentColor;
+    border-radius:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.12s, transform 0.28s;
+  }
+  .stamp.show{opacity:0.92;transform:translate(-50%,-50%) rotate(-12deg) scale(1);}
+  .stamp.cleared{color:var(--green);}
+  .stamp.jammed{color:var(--red);}
 
-/* mobile */
-@media (max-width:560px){
-  .screen{padding:24px 20px 24px;}
-  .yard-header{padding:12px 20px;}
-  #screen-start .hero-line{font-size:26px;}
-  .legend-split{grid-template-columns:1fr;}
-  .stat-grid{grid-template-columns:repeat(3,1fr); gap:6px;}
-  .split-zone, .opt-grid{grid-template-columns:1fr;}
-  .breakdown-row .name{width:90px; font-size:11px;}
-}
+  .feedback-explain{
+    margin-top:14px;padding:12px 14px;border-radius:8px;
+    background:var(--panel-2);border:1px solid var(--line);
+    font-size:13px;color:var(--muted);line-height:1.5;display:none;
+  }
+  .feedback-explain.show{display:block;}
+  .feedback-explain b{color:var(--text);}
+
+  .next-row{margin-top:16px;text-align:right;}
+
+  .toast{
+    position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);
+    background:var(--red);color:#fff;padding:12px 20px;border-radius:8px;
+    font-weight:700;font-size:14px;letter-spacing:0.03em;opacity:0;
+    pointer-events:none;
+    transition:opacity 0.25s, transform 0.25s;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- INTERSTITIAL / COMPLETE ---------- */
+  #screen-interstitial .card, #screen-complete .card{padding:32px;text-align:center;}
+  .big-stat{font-size:44px;font-weight:800;color:var(--amber);margin:6px 0;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0;text-align:left;}
+  .stat-box{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;}
+  .stat-box .k{font-size:11px;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;}
+  .stat-box .v{font-size:20px;color:var(--text);margin-top:4px;}
+  .breakdown{text-align:left;margin:18px 0;}
+  .breakdown-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line);color:var(--muted);}
+  .breakdown-row b{color:var(--text);}
+  .footer-note{font-size:11px;color:var(--muted);margin-top:18px;line-height:1.5;}
 </style>
 </head>
 <body>
 
-<div class="app">
+<div id="errBanner" style="display:none;position:fixed;top:0;left:0;right:0;background:#7a1f1f;color:#fff;font-family:monospace;font-size:12px;padding:10px 14px;z-index:9999;white-space:pre-wrap;"></div>
+<script>
+window.addEventListener("error", function(e){
+  var b = document.getElementById("errBanner");
+  b.style.display = "block";
+  b.textContent = "Script error — please copy this and report it: " + e.message + " (" + (e.filename||"") + ":" + e.lineno + ":" + e.colno + ")";
+});
+</script>
 
-  <div class="yard-header">
-    <div class="brand">
-      <div class="brand-mark">DY</div>
-      <div>
-        <div class="brand-title">The Dispatch Yard</div>
-        <div class="brand-sub">CONVEYOR (list) &nbsp;·&nbsp; LOCKER WALL (dict)</div>
-      </div>
-    </div>
-    <button class="help-btn" id="btnHelp" aria-label="How to play">?</button>
-  </div>
+<div class="toast" id="toast"></div>
 
-  <!-- ============ START SCREEN ============ -->
+<div class="wrap">
+
+  <!-- START SCREEN -->
   <div class="screen active" id="screen-start">
-    <div class="eyebrow">Night shift · sorting clerk</div>
-    <h1 class="hero-line">Every shipment goes<br>on the <em>conveyor</em> or into a<br>locker. Never both.</h1>
-    <p class="lede">You just started at the depot. Shipments come down the chute one at a time — some belong on the sequential conveyor belt, some belong in the keyed locker wall. Sort wrong too often and the yard backs up.</p>
+    <div class="card">
+      <div class="hazard-strip"></div>
+      <h1 class="title stencil">The Dispatch Yard</h1>
+      <p class="subtitle">You're the new sorting clerk. Shipments come in fast, and every one has to land in the right place: the <b style="color:var(--amber)">Conveyor</b> if it's a Python <code>list</code>, or the <b style="color:var(--blue)">Locker Wall</b> if it's a Python <code>dict</code>. Mix them up and the yard jams.</p>
 
-    <div class="legend-split">
-      <div class="legend-card list">
-        <div class="tag">The Conveyor</div>
-        <h3>Python <code>list</code></h3>
-        <p>Ordered, walked start to end, reached by <code>position</code>. Duplicates ride the belt just fine.</p>
+      <div class="legend">
+        <div class="legend-item list">
+          <h3 class="stencil">Conveyor · list</h3>
+          <p>Ordered slots, numbered from <code>0</code>. Get to an item by <b>position</b>: <code>belt[0]</code>. Duplicates welcome.</p>
+        </div>
+        <div class="legend-item dict">
+          <h3 class="stencil">Locker Wall · dict</h3>
+          <p>Labeled lockers. Get to an item by its <b>key</b>: <code>lockers["A1"]</code>. Order isn't how you find things — the label is. Keys can't repeat.</p>
+        </div>
       </div>
-      <div class="legend-card dict">
-        <div class="tag">The Locker Wall</div>
-        <h3>Python <code>dict</code></h3>
-        <p>No order that matters — reached by its <code>label</code> (key). Every label on the wall is one-of-a-kind.</p>
-      </div>
-    </div>
 
-    <div class="name-row">
-      <input type="text" id="playerName" placeholder="Clerk name for the shift log…" maxlength="24" autocomplete="off">
-    </div>
-    <button class="btn-primary" id="btnStart">Clock In — Start Shift 1</button>
+      <label for="playerName">Clerk name (for the shift log)</label>
+      <input type="text" id="playerName" placeholder="e.g. Priya" maxlength="24">
 
-    <div class="shift-preview" id="shiftPreview"></div>
+      <button class="btn-primary stencil" id="btnStart">Start Shift 1</button>
+      <button class="btn-secondary" id="btnHow">How scoring works</button>
+    </div>
   </div>
 
-  <!-- ============ GAME SCREEN ============ -->
+  <!-- GAME SCREEN -->
   <div class="screen" id="screen-game">
-    <div class="hud">
-      <div class="hud-block">
-        <div class="hud-label" id="shiftLabel">Shift 1 · Sorting Basics</div>
-        <div class="hud-value" id="questionCounter">Shipment 1 / 8</div>
+    <div class="card">
+      <div class="hud">
+        <div>
+          <div class="shift-label stencil">Shift <span id="shiftNum">1</span> of 5</div>
+          <div class="shift-name" id="shiftName">Basics of the Belt</div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-stat">Score <b id="scoreVal">0</b></div>
+          <div class="hud-stat">Streak <b id="streakVal">0</b></div>
+          <div class="hud-stat">Question <b id="qCounter">1/8</b></div>
+        </div>
       </div>
-      <div class="hud-block">
-        <div class="hud-label">Backlog</div>
-        <div class="backlog" id="backlogTrack"></div>
+
+      <div class="gauge-row">
+        <span class="gauge-label stencil">Backlog</span>
+        <div class="gauge-track"><div class="gauge-fill" id="backlogFill"></div></div>
       </div>
-      <div class="hud-block">
-        <div class="hud-label">Score · Streak</div>
-        <div class="hud-value"><span id="scoreVal">0</span> <span style="color:var(--paper-dim); font-size:13px;">· x<span id="streakVal">0</span></span></div>
-      </div>
-      <div class="timer-ring">
-        <svg width="46" height="46" viewBox="0 0 46 46">
-          <circle class="track" cx="23" cy="23" r="19"></circle>
-          <circle class="fill" id="timerFill" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="0"></circle>
-        </svg>
-        <div class="timer-num" id="timerNum">20</div>
+
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+
+      <div class="progress-dots" id="progressDots"></div>
+
+      <div style="position:relative;">
+        <span class="qtype-tag" id="qtypeTag">Sort the Shipment</span>
+        <p class="prompt" id="qPrompt"></p>
+        <div class="codebox" id="qCode" style="display:none;"></div>
+        <div class="options" id="qOptions"></div>
+        <div class="stamp" id="stamp">CLEARED</div>
+        <div class="feedback-explain" id="qExplain"></div>
+        <div class="next-row">
+          <button class="btn-primary stencil" id="btnNext" style="display:none;width:auto;padding:12px 26px;">Next Shipment →</button>
+        </div>
       </div>
     </div>
-
-    <div class="shipment">
-      <div class="q-type-tag" id="qTypeTag">Sort the Shipment</div>
-      <div class="q-prompt" id="qPrompt">Loading…</div>
-      <div id="qCodeSlot"></div>
-    </div>
-
-    <div class="answer-zone" id="answerZone"></div>
-
-    <div class="feedback-strip" id="feedbackStrip">
-      <strong id="feedbackHead"></strong>
-      <span id="feedbackBody"></span>
-    </div>
-    <button class="next-btn" id="btnNext">Next Shipment →</button>
   </div>
 
-  <!-- ============ SHIFT TRANSITION SCREEN ============ -->
-  <div class="screen" id="screen-transition">
-    <div class="result-hero">
-      <div class="stamp" id="transStamp">CLEARED</div>
+  <!-- INTERSTITIAL -->
+  <div class="screen" id="screen-interstitial">
+    <div class="card">
+      <h2 class="stencil" id="interTitle">Shift Complete</h2>
+      <div class="big-stat" id="interAccuracy">0%</div>
+      <p class="subtitle" id="interSub">accuracy this shift</p>
+      <div class="stat-grid" id="interStats"></div>
+      <button class="btn-primary stencil" id="btnContinue">Continue</button>
     </div>
-    <h2 style="text-align:center; margin-bottom:4px;" id="transTitle">Shift 1 Complete</h2>
-    <p style="text-align:center; color:var(--paper-dim); font-size:13px;" id="transSub">Loading up the next shift…</p>
-    <div class="stat-grid">
-      <div class="stat-box"><div class="num" id="transAccuracy">--</div><div class="lbl">Accuracy</div></div>
-      <div class="stat-box"><div class="num" id="transScore">--</div><div class="lbl">Score</div></div>
-      <div class="stat-box"><div class="num" id="transStreak">--</div><div class="lbl">Best Streak</div></div>
-    </div>
-    <button class="btn-primary" id="btnTransContinue">Continue</button>
   </div>
 
-  <!-- ============ FINAL SCREEN ============ -->
-  <div class="screen" id="screen-final">
-    <div class="result-hero">
-      <div class="stamp pass" id="finalStamp">YARD CLEARED</div>
+  <!-- COMPLETE -->
+  <div class="screen" id="screen-complete">
+    <div class="card">
+      <h2 class="stencil">Yard Cleared — Shift Report</h2>
+      <div class="big-stat" id="finalScore">0</div>
+      <p class="subtitle">total score</p>
+      <div class="stat-grid" id="finalStats"></div>
+      <div class="breakdown" id="finalBreakdown"></div>
+      <button class="btn-primary stencil" id="btnReplay">Run Another Shift</button>
+      <p class="footer-note">Your results have been logged for your class. Nice work sorting the yard.</p>
     </div>
-    <h2 style="text-align:center;" id="finalTitle">End of Shift Report</h2>
-    <div class="stat-grid">
-      <div class="stat-box"><div class="num" id="finalAccuracy">--</div><div class="lbl">Accuracy</div></div>
-      <div class="stat-box"><div class="num" id="finalScore">--</div><div class="lbl">Total Score</div></div>
-      <div class="stat-box"><div class="num" id="finalPeak">--</div><div class="lbl">Peak Shift</div></div>
-    </div>
-    <div class="breakdown" id="finalBreakdown"></div>
-    <button class="btn-primary" id="btnPlayAgain">Start a New Shift</button>
-    <div class="log-status" id="logStatus"></div>
   </div>
 
-</div>
-
-<!-- ============ HELP MODAL ============ -->
-<div class="modal-overlay" id="helpModal">
-  <div class="modal-box">
-    <h3>How the yard works</h3>
-    <p><strong style="color:var(--conveyor)">Conveyor = list.</strong> Things ride it in order. You reach an item by its position: <code>belt[0]</code> is the first thing on the belt, no matter what it is. The belt doesn't care if two boxes look identical — duplicates are fine.</p>
-    <p><strong style="color:var(--locker)">Locker Wall = dict.</strong> Every locker has a label. You reach a locker by its label, not by where it physically sits: <code>lockers["driver_id"]</code>. Two lockers can never share a label — a repeated key just overwrites the old value.</p>
-    <p>Four kinds of shipments come down the chute:</p>
-    <ul>
-      <li><strong>Sort the Shipment</strong> — decide: does this belong on the conveyor or in the locker wall?</li>
-      <li><strong>Predict the Jam</strong> — read code touching a list or dict, predict what happens.</li>
-      <li><strong>Relabel</strong> — spot code that treats one structure like the other, and pick the fix.</li>
-      <li><strong>Convert the Manifest</strong> — pick the code that correctly rebuilds the data in the other form.</li>
-    </ul>
-    <p>Miss too many in one shift and the yard backs up — you'll retry the shift with a fresh set of shipments. No permanent game over.</p>
-    <button class="modal-close" id="btnCloseHelp">Got it</button>
-  </div>
 </div>
 
 <script>
 (function(){
 "use strict";
 
-/* ============================================================
-   CONFIG — Google Sheets logging endpoint
-   Replace with your Apps Script Web App URL. Leave blank to log
-   to localStorage only (still fully playable).
-============================================================ */
-const SHEETS_WEBHOOK_URL = "";
+/* =========================================================
+   CONFIG — Google Sheets logging (Apps Script Web App URL)
+   Paste your deployed Apps Script webhook URL below, same
+   pattern as Mission Control / Logic Vault logging.
+   ========================================================= */
+const GAS_WEBHOOK_URL = "PASTE_YOUR_APPS_SCRIPT_WEBHOOK_URL_HERE";
+const STORAGE_KEY = "dispatchYard_backup";
 
-/* ============================================================
-   UTILITIES
-============================================================ */
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+/* ---------------- Flavor pools ---------------- */
+const ITEMS = ["a brass compass","a rolled map","a sealed scroll","a wool blanket","a tin lantern",
+  "a coil of rope","an iron key","a paper parcel","a wooden crate","a glass jar",
+  "a silver locket","a leather satchel","a bundle of candles","a ceramic jug","a folded tent"];
+const CITIES = ["Marrakesh","Reykjavik","Kathmandu","Lisbon","Nairobi","Vladivostok","Cusco","Hanoi","Tangier","Dunedin","Zanzibar","Bergen"];
+const LETTERS = ["A","B","C","D","E","F","G","H"];
+
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[randInt(0,arr.length-1)]; }
 function pickN(arr,n){
-  const copy = arr.slice(); const out=[];
-  for(let i=0;i<n && copy.length;i++){ out.push(copy.splice(Math.floor(Math.random()*copy.length),1)[0]); }
+  const pool=arr.slice(), out=[];
+  for(let i=0;i<n && pool.length;i++){ out.push(pool.splice(randInt(0,pool.length-1),1)[0]); }
   return out;
 }
-function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function trackingCode(){ return pick(LETTERS)+randInt(1,9); }
 function shuffle(arr){
-  const a = arr.slice();
-  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; }
   return a;
 }
-function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-/* ============================================================
-   THEME DATA POOLS (randomized substitutions for variety)
-============================================================ */
-const CRATE_ITEMS = ["crates of citrus","steel drums","glass jars","paper bundles","spare rotors","canvas sacks","copper coils","wool bales","ceramic tiles","rope spools"];
-const ZONE_CODES = ["Bay 7","Dock C","Ramp 12","Bay 3","Dock A","Ramp 9","Bay 11"];
-const DRIVER_NAMES = ["Odette","Marsh","Kito","Priya","Renn","Ilsa","Cobb","Yuki","Dax","Nella"];
-const ROUTE_NAMES = ["Route 4","the Coast Line","Route 12","the Ridge Loop","Route 8","the River Run"];
-const LOCKER_LABELS = ["driver_id","route_code","manifest_id","zone","license_plate","crew_lead"];
-const SHIPMENT_IDS = ["SK-104","SK-207","SK-318","SK-455","SK-590","SK-612","SK-733"];
-
-/* ============================================================
+/* =========================================================
    QUESTION GENERATORS
-   Each returns: { type, prompt(html), code(html|null), options:[{label,correct}], explain }
-============================================================ */
+   Each returns: { qtype, kind, prompt, code(optional array of lines),
+                   options: [{label, correct}], explanation }
+   ========================================================= */
 
-// ---------- TYPE 1: Sort the Shipment ----------
-const sortTemplates = [
-  () => {
-    const item = pick(CRATE_ITEMS);
+function buildOptions(correctLabel, distractors){
+  const opts = shuffle([{label:correctLabel, correct:true}, ...distractors.map(d=>({label:d, correct:false}))]);
+  return opts;
+}
+
+/* ---- 1. SORT THE SHIPMENT ---- */
+function genSort(stage){
+  const templates = [];
+
+  templates.push({min:1, make(){
+    const item = pick(ITEMS);
     return {
-      prompt: `A truck is unloading ${item} one at a time onto the loading floor, and you need to remember the exact order they came off — first off, second off, and so on.`,
-      answer: "list",
-      why: "Order is the whole point here — there's no natural label for each crate, just its position in the unloading sequence. That's a job for a <code>list</code>."
+      prompt: `Shipments arrive one after another and must be processed in the exact order they showed up — first in, first out. Where do you file today's batch of ${item}s?`,
+      options: buildOptions("Conveyor — a list()", ["Locker Wall — a dict()"]),
+      explanation: "Order of arrival matters here, and you access things by position (1st, 2nd, 3rd...). That's a list."
     };
-  },
-  () => {
-    const label = pick(LOCKER_LABELS);
+  }});
+
+  templates.push({min:1, make(){
+    const code = trackingCode();
     return {
-      prompt: `You need to look up a driver's current status the instant dispatch radios in a ${label.replace('_',' ')} — no scanning through a line, straight to the record.`,
-      answer: "dict",
-      why: `You're going in by a known label (the ${label.replace('_',' ')}), not by position. Instant lookup-by-label is exactly what a <code>dict</code> is for.`
+      prompt: `Every shipment has a unique tracking code (like "${code}"), and clerks look items up by that code, never by "the 3rd one in." What structure fits?`,
+      options: buildOptions("Locker Wall — a dict()", ["Conveyor — a list()"]),
+      explanation: "You're looking things up by a unique label, not by position. That's a dict — the tracking code is the key."
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:1, make(){
+    const item = pick(ITEMS);
     return {
-      prompt: `The yard sheet tracks each unique zone code and, for every zone, how many pallets are currently sitting in it.`,
-      answer: "dict",
-      why: "Each zone code is a unique label mapped to a value (pallet count) — a classic key → value relationship, so <code>dict</code>."
+      prompt: `You need to store the belt's contents right now — just ${item}, then another ${item}, and duplicates are totally fine (two crates can be identical). No labels involved.`,
+      options: buildOptions("Conveyor — a list()", ["Locker Wall — a dict()"]),
+      explanation: "Duplicate values with no unique label and order that matters — a list handles this naturally. A dict would need unique keys."
     };
-  },
-  () => {
-    const n = randInt(3,6);
+  }});
+
+  templates.push({min:2, make(){
     return {
-      prompt: `A conveyor sensor logs every barcode scan of the shift in the exact order the boxes crossed the sensor. The same barcode can (and does) show up more than once if that box gets rerouted past the sensor again.`,
-      answer: "list",
-      why: "Duplicates need to be allowed, and the order they occurred in matters for the log. Dict keys can't repeat, so this has to be a <code>list</code>."
+      prompt: `You want to record each locker's <b>current contents</b> so you can ask "what's in locker B4?" instantly, without scanning every locker.`,
+      options: buildOptions("Locker Wall — a dict()", ["Conveyor — a list()"]),
+      explanation: "Instant lookup by a specific identifier (the locker label) is exactly what a dict is for — O(1) key access instead of scanning."
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:4, make(){
     return {
-      prompt: `You're building a lookup so that, given a shipment ID, dispatch can instantly pull up that one shipment's weight, destination, and driver — no id ever repeats.`,
-      answer: "dict",
-      why: "Unique id → bundle of details is a lookup table, which is what a <code>dict</code> models. A list would force you to scan every entry to find the right id."
+      prompt: `Each shipment record has several fields — tracking code, weight, destination — and you process many records in arrival order. How do you structure <b>all</b> of today's shipments?`,
+      options: buildOptions("A Conveyor of Lockers — a list of dicts", [
+        "A Locker Wall of Conveyors — a dict of lists",
+        "Locker Wall — a single dict()",
+        "Conveyor — a single list()"
+      ]),
+      explanation: "Each individual record (with named fields) is a dict. Many of them, kept in arrival order, go in a list — a list of dicts."
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:4, make(){
+    const city = pick(CITIES);
     return {
-      prompt: `The forklift's task queue: whichever job got added first should get done first, and jobs don't have individual names — just their place in line.`,
-      answer: "list",
-      why: "First-in-first-out only makes sense if position is tracked, and there's no per-item label — that's a <code>list</code>, walked in order."
+      prompt: `You want to group tracking codes by destination city — so <b>"${city}"</b> maps to a growing list of every code headed there.`,
+      options: buildOptions("A Locker Wall of Conveyors — a dict of lists", [
+        "A Conveyor of Lockers — a list of dicts",
+        "Locker Wall — a single dict()",
+        "Conveyor — a single list()"
+      ]),
+      explanation: "Each city (the key) needs a collection of codes that can grow — a list. So the whole thing is a dict of lists: dict values that are lists."
     };
-  },
-  () => {
+  }});
+
+  const pool = templates.filter(t=>t.min<=stage);
+  return {qtype:"sort", ...pick(pool).make()};
+}
+
+/* ---- 2. PREDICT THE JAM ---- */
+function genPredict(stage){
+  const templates = [];
+
+  templates.push({min:1, make(){
+    const items = pickN(ITEMS,3);
+    const idx = randInt(0,2);
     return {
-      prompt: `A rack of numbered lockers where each numbered slot might be empty or might hold exactly one item, and you never need to ask \"what's in slot 4\" unless you already know you want slot 4 specifically.`,
-      answer: "dict",
-      why: "Even though the labels look numeric, you're always going straight to a known label to retrieve one value — that's key-based lookup, so <code>dict</code>."
+      kind:"list",
+      code: [`belt = [${items.map(i=>`"${i}"`).join(", ")}]`, `print(belt[${idx}])`],
+      prompt: "What prints?",
+      options: buildOptions(`"${items[idx]}"`, [
+        `"${items[(idx+1)%3]}"`,
+        `IndexError`,
+        `${idx}`
+      ]),
+      explanation: `List indexing is 0-based, so belt[${idx}] is the item at position ${idx}: "${items[idx]}".`
     };
-  },
-  () => {
-    const item = pick(CRATE_ITEMS);
+  }});
+
+  templates.push({min:1, make(){
+    const codes = pickN([trackingCode(),trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
     return {
-      prompt: `The packing manifest for one truck: ${item}, listed top to bottom exactly in the order they'll be pulled off at the next stop.`,
-      answer: "list",
-      why: "The manifest's whole job is preserving pull-off order — that's positional, sequential data. <code>list</code>."
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `print(lockers["${codes[0]}"])`],
+      prompt: "What prints?",
+      options: buildOptions(`"${items[0]}"`, [
+        `"${items[1]}"`,
+        `KeyError`,
+        `"${codes[0]}"`
+      ]),
+      explanation: `Dict access by key returns the value stored under that key. lockers["${codes[0]}"] is "${items[0]}".`
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:2, make(){
+    const items = pickN(ITEMS,3);
     return {
-      prompt: `A settings record for one driver — name, license class, years on staff, home depot — where every piece of information has its own descriptive label.`,
-      answer: "dict",
-      why: "Each field has a distinct, named meaning (not \"the 3rd thing\") — labeled fields on a single record point to <code>dict</code>."
+      kind:"list",
+      code: [`belt = [${items.map(i=>`"${i}"`).join(", ")}]`, `belt.append("a spare crate")`, `print(len(belt))`],
+      prompt: "What prints?",
+      options: buildOptions("4", ["3", "TypeError", "None"]),
+      explanation: "append() adds one item to the end of the list. It started with 3 items, so len() is now 4."
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:2, make(){
+    const codes = pickN([trackingCode(),trackingCode(),trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    const newItem = pick(ITEMS);
     return {
-      prompt: `A tally of how many times each driver has clocked in late this month, checked by driver name.`,
-      answer: "dict",
-      why: "You're mapping a unique name to a count — key → value again, so <code>dict</code>."
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}"}`, `lockers["${codes[1]}"] = "${newItem}"`, `print(len(lockers))`],
+      prompt: "What prints?",
+      options: buildOptions("2", ["1", "KeyError", "TypeError"]),
+      explanation: "Assigning to a new key adds an entry to the dict, it doesn't overwrite anything — len() goes from 1 to 2."
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:2, make(){
+    const items = pickN(ITEMS,3);
     return {
-      prompt: `The exact sequence of stops on today's delivery route, where the same street could legitimately appear twice if the route loops back.`,
-      answer: "list",
-      why: "Repeats are allowed and sequence matters — a <code>dict</code> couldn't hold the same stop as a key twice, so this is a <code>list</code>."
+      kind:"list",
+      code: [`belt = [${items.map(i=>`"${i}"`).join(", ")}]`, `belt.pop(0)`, `print(belt[0])`],
+      prompt: "What prints?",
+      options: buildOptions(`"${items[1]}"`, [`"${items[0]}"`, `IndexError`, `"${items[2]}"`]),
+      explanation: `pop(0) removes the item at index 0 and shifts everything left. The item that was at index 1 ("${items[1]}") is now at index 0.`
     };
-  },
-  () => {
+  }});
+
+  templates.push({min:3, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    const missing = trackingCode();
     return {
-      prompt: `A record of which loading bay each of today's five trucks is currently parked in, looked up by truck plate number.`,
-      answer: "dict",
-      why: "Plate number → bay is a one-to-one lookup by a unique label, which means <code>dict</code>."
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `print(lockers["${missing}"])`],
+      prompt: "What happens?",
+      options: buildOptions("KeyError", ["IndexError", "None", '"" (empty string)']),
+      explanation: `Looking up a key that doesn't exist raises a KeyError. (lockers.get("${missing}") would instead return None — no crash.)`
     };
-  }
+  }});
+
+  templates.push({min:3, make(){
+    const items = pickN(ITEMS,3);
+    return {
+      kind:"list",
+      code: [`belt = [${items.map(i=>`"${i}"`).join(", ")}]`, `print(belt[5])`],
+      prompt: "What happens?",
+      options: buildOptions("IndexError", ["KeyError", "None", '"" (empty string)']),
+      explanation: "There's no index 5 in a 3-item list. Out-of-range indexing on a list raises IndexError (not KeyError — that's for dicts)."
+    };
+  }});
+
+  templates.push({min:3, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `print("${codes[0]}" in lockers)`],
+      prompt: "What prints?",
+      options: buildOptions("True", ["False", "KeyError", `"${items[0]}"`]),
+      explanation: `"in" on a dict checks the KEYS, not the values. "${codes[0]}" is a key here, so this is True.`
+    };
+  }});
+
+  templates.push({min:3, make(){
+    const items = pickN(ITEMS,3);
+    const searchItem = pick(items);
+    return {
+      kind:"list",
+      code: [`belt = [${items.map(i=>`"${i}"`).join(", ")}]`, `print("${searchItem}" in belt)`],
+      prompt: "What prints?",
+      options: buildOptions("True", ["False", "0", "IndexError"]),
+      explanation: `"in" on a list scans the VALUES looking for a match. "${searchItem}" is one of the values, so this is True.`
+    };
+  }});
+
+  templates.push({min:4, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `print(list(lockers.keys()))`],
+      prompt: "What prints?",
+      options: buildOptions(`['${codes[0]}', '${codes[1]}']`, [
+        `dict_keys(['${codes[0]}', '${codes[1]}'])`,
+        `['${items[0]}', '${items[1]}']`,
+        `('${codes[0]}', '${codes[1]}')`
+      ]),
+      explanation: "lockers.keys() alone gives a dict_keys view. Wrapping it in list() converts that view into an actual list you can print or index like [ ... ]."
+    };
+  }});
+
+  templates.push({min:4, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `print(lockers.keys())`],
+      prompt: "What prints?",
+      options: buildOptions(`dict_keys(['${codes[0]}', '${codes[1]}'])`, [
+        `['${codes[0]}', '${codes[1]}']`,
+        `('${codes[0]}', '${codes[1]}')`,
+        `{'${codes[0]}', '${codes[1]}'}`
+      ]),
+      explanation: "keys() returns a dict_keys view object, not a plain list — Python shows it as dict_keys([...]) unless you convert it with list()."
+    };
+  }});
+
+  const pool = templates.filter(t=>t.min<=stage);
+  const chosen = pick(pool).make();
+  return {qtype:"predict", ...chosen};
+}
+
+/* ---- 3. RELABEL THE MANIFEST (bug fix) ---- */
+function genBug(stage){
+  const templates = [];
+
+  templates.push({min:1, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `print(lockers[0])`],
+      prompt: `The clerk wants the item stored under locker <code>"${codes[0]}"</code>, but this code crashes. What's the correct fix?`,
+      options: buildOptions(`lockers["${codes[0]}"]`, [
+        `lockers.get(0)`,
+        `lockers[0:1]`,
+        `list(lockers)[1]`
+      ]),
+      explanation: `Dicts aren't indexed by position — lockers[0] tries to use 0 as a KEY, and there isn't one. Use the actual key: lockers["${codes[0]}"].`
+    };
+  }});
+
+  templates.push({min:1, make(){
+    const items = pickN(ITEMS,2);
+    const code = trackingCode();
+    return {
+      kind:"list",
+      code: [`belt = ["${items[0]}", "${items[1]}"]`, `belt["${code}"] = "a rush order"`],
+      prompt: "The clerk is trying to add a labeled item to the belt. Why does this fail, and what's the correct fix?",
+      options: buildOptions('Lists use numeric positions, not labels — use belt.append("a rush order") or switch to a dict', [
+        "Nothing is wrong, this works fine",
+        'Use belt.insert("a rush order")',
+        "Add quotes around the whole line"
+      ]),
+      explanation: "Lists are indexed by integer position, not by arbitrary labels. To attach a label to a value, you need a dict — or if order is all that matters, just append()."
+    };
+  }});
+
+  templates.push({min:2, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `lockers.pop(0)`],
+      prompt: "The clerk wants to remove the first locker they added. Why does this fail, and what's the fix?",
+      options: buildOptions(`lockers.pop("${codes[0]}") — dict.pop() needs a key, not a position`, [
+        "del lockers[0] instead",
+        "lockers.remove(0) instead",
+        "Nothing is wrong, this works fine"
+      ]),
+      explanation: `dict.pop() removes by key, not position. There's no key "0" here — it should be lockers.pop("${codes[0]}").`
+    };
+  }});
+
+  templates.push({min:2, make(){
+    const items = pickN(ITEMS,3);
+    return {
+      kind:"list",
+      code: [`belt = [${items.map(i=>`"${i}"`).join(", ")}]`, `belt.remove(1)`],
+      prompt: `The clerk wants to remove whatever is at position 1 (the "${items[1]}"). Why might this go wrong, and what's the correct call?`,
+      options: buildOptions(`belt.pop(1) — remove() deletes by VALUE, pop() deletes by INDEX`, [
+        `del belt("${items[1]}")`,
+        `belt.delete(1)`,
+        "Nothing is wrong, this works fine"
+      ]),
+      explanation: `belt.remove(1) searches for the VALUE 1 in the list (and likely raises ValueError since 1 isn't in it). To delete by position, use belt.pop(1) or del belt[1].`
+    };
+  }});
+
+  templates.push({min:3, make(){
+    return {
+      kind:"list",
+      code: [`belt = ["a compass", "a scroll", "a lantern"]`, `belt.sort()`, `lockers = {"${trackingCode()}": "x"}`, `lockers.sort()`],
+      prompt: "One of these two sort() calls will crash. Which fix is correct?",
+      options: buildOptions("Remove lockers.sort() — dicts have no sort() method; use sorted(lockers) to get sorted keys", [
+        "Remove belt.sort() — lists have no sort() method",
+        "Both calls are fine as written",
+        "Use lockers.sort(key=True) instead"
+      ]),
+      explanation: "list.sort() sorts a list in place — that's fine. dict has no .sort() method at all; sorted(some_dict) will sort its keys and return a list."
+    };
+  }});
+
+  templates.push({min:3, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `lockers["${codes[0]}"] = "${items[0]}"`, `lockers["${codes[0]}"] = "a replacement item"`, `print(len(lockers))`],
+      prompt: "The clerk expected len(lockers) to be 3 after these lines, but it won't be. Why?",
+      options: buildOptions(`Assigning to an existing key overwrites its value instead of adding a new entry — keys stay unique`, [
+        `Dicts silently drop the third assignment for no reason`,
+        `This actually does raise an error`,
+        `len() doesn't work on dicts`
+      ]),
+      explanation: `Dict keys are unique. Assigning to "${codes[0]}" twice just updates the value stored there — it never grows the dict past its original entries.`
+    };
+  }});
+
+  templates.push({min:4, make(){
+    const item = pick(ITEMS);
+    return {
+      kind:"mixed",
+      code: [`shipments = [{"code": "A1", "item": "${item}"}, {"code": "B2", "item": "a scroll"}]`, `print(shipments["A1"])`],
+      prompt: "The clerk wants the record with tracking code A1 out of this list of dicts. What's the correct fix?",
+      options: buildOptions(`Loop through shipments and check each dict's "code" field — a list of dicts isn't looked up by code directly`, [
+        `shipments.get("A1")`,
+        `shipments["code"]["A1"]`,
+        "Nothing is wrong, this works fine"
+      ]),
+      explanation: "shipments is a list, so it's indexed by position (shipments[0]), not by a value stored inside one of its dicts. Finding by code means checking each record's \"code\" key, e.g. with a loop or a comprehension."
+    };
+  }});
+
+  const pool = templates.filter(t=>t.min<=stage);
+  return {qtype:"bug", ...pick(pool).make()};
+}
+
+/* ---- 4. CONVERT THE MANIFEST ---- */
+function genConvert(stage){
+  const templates = [];
+
+  templates.push({min:2, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"mixed",
+      code: [`pairs = [("${codes[0]}", "${items[0]}"), ("${codes[1]}", "${items[1]}")]`, `# Turn this list of (code, item) pairs into a dict`],
+      prompt: "Which line correctly builds the dict?",
+      options: buildOptions("lockers = dict(pairs)", [
+        "lockers = list(pairs)",
+        "lockers = pairs.items()",
+        "lockers = {pairs}"
+      ]),
+      explanation: "dict() can build a dictionary directly from a list of 2-item tuples — each tuple becomes a (key, value) pair."
+    };
+  }});
+
+  templates.push({min:2, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `# Get a real list of just the tracking codes`],
+      prompt: "Which line correctly produces a list of the keys?",
+      options: buildOptions("codes = list(lockers.keys())", [
+        "codes = lockers.keys()",
+        "codes = lockers[:]",
+        "codes = list(lockers)[0]"
+      ]),
+      explanation: "lockers.keys() gives a view object; wrapping it in list() makes it an actual, independent list. (lockers.keys() alone isn't wrong to iterate, but it prints as dict_keys([...]), not a list.)"
+    };
+  }});
+
+  templates.push({min:3, make(){
+    const codes = pickN([trackingCode(),trackingCode(),trackingCode()],3);
+    const items = pickN(ITEMS,3);
+    return {
+      kind:"mixed",
+      code: [`codes = ["${codes[0]}", "${codes[1]}", "${codes[2]}"]`, `items = ["${items[0]}", "${items[1]}", "${items[2]}"]`, `# Pair these up into one dict: code -> item`],
+      prompt: "Which line correctly builds the dict from the two parallel lists?",
+      options: buildOptions("lockers = dict(zip(codes, items))", [
+        "lockers = dict(codes, items)",
+        "lockers = {codes: items}",
+        "lockers = codes + items"
+      ]),
+      explanation: "zip(codes, items) pairs up matching positions from both lists into tuples; dict() then turns those tuples into key/value pairs."
+    };
+  }});
+
+  templates.push({min:3, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `# Get a list of (code, item) tuples`],
+      prompt: "Which line correctly captures the dict's key/value pairs as tuples?",
+      options: buildOptions("pairs = list(lockers.items())", [
+        "pairs = list(lockers.keys())",
+        "pairs = lockers.values()",
+        "pairs = zip(lockers)"
+      ]),
+      explanation: "items() gives (key, value) tuples for each entry. list() converts that view into an actual list you can loop through or index."
+    };
+  }});
+
+  templates.push({min:4, make(){
+    const codes = pickN([trackingCode(),trackingCode()],2);
+    const items = pickN(ITEMS,2);
+    return {
+      kind:"dict",
+      code: [`lockers = {"${codes[0]}": "${items[0]}", "${codes[1]}": "${items[1]}"}`, `# You need a locker's contents but it might not exist — no crashing allowed`],
+      prompt: `Which line safely checks locker <code>"${codes[0]}"</code> without risking a KeyError?`,
+      options: buildOptions(`lockers.get("${codes[0]}")`, [
+        `lockers["${codes[0]}"]`,
+        `lockers.pop("${codes[0]}")`,
+        `lockers.index("${codes[0]}")`
+      ]),
+      explanation: ".get() returns None (or a default you provide) instead of raising KeyError when the key is missing — the safe way to check without guaranteeing the key exists."
+    };
+  }});
+
+  templates.push({min:4, make(){
+    const codes = pickN([trackingCode(),trackingCode(),trackingCode()],3);
+    return {
+      kind:"mixed",
+      code: [`codes = ["${codes[0]}", "${codes[1]}", "${codes[2]}"]`, `# Build a dict where each code maps to its length as a string`],
+      prompt: "Which line correctly builds { code: len(code) } for every code using a dict comprehension?",
+      options: buildOptions("lengths = {c: len(c) for c in codes}", [
+        "lengths = [c: len(c) for c in codes]",
+        "lengths = {len(c) for c in codes}",
+        "lengths = dict(c for c in codes)"
+      ]),
+      explanation: "A dict comprehension has the form {key_expr: value_expr for item in iterable}. {c: len(c) for c in codes} maps each code to its own length."
+    };
+  }});
+
+  const pool = templates.filter(t=>t.min<=stage);
+  return {qtype:"convert", ...pick(pool).make()};
+}
+
+/* ---------------- Stage / weighting config ---------------- */
+const STAGES = [
+  {name:"Basics of the Belt",       weights:{sort:0.6, predict:0.4, bug:0,   convert:0}},
+  {name:"Methods & Mutations",      weights:{sort:0.1, predict:0.45, bug:0.45, convert:0}},
+  {name:"Errors & Edge Cases",      weights:{sort:0.1, predict:0.45, bug:0.35, convert:0.1}},
+  {name:"Mixed Structures",         weights:{sort:0.4, predict:0.2, bug:0.3, convert:0.1}},
+  {name:"Conversions & Views",      weights:{sort:0.1, predict:0.2, bug:0.2, convert:0.5}},
 ];
+const QUESTIONS_PER_STAGE = 8;
+const PASS_ACCURACY = 0.7;
+const QUESTION_TIME = 28; // seconds, flat across stages
+const BACKLOG_MAX = 100;
+const BACKLOG_CORRECT = -8;
+const BACKLOG_WRONG = 20;
+const BACKLOG_TIMEOUT = 14;
+const BACKLOG_SUPERVISOR_RESET = 40;
 
-function genSortShipment(){
-  const t = pick(sortTemplates)();
-  const conveyorFirst = Math.random() < 0.5;
+function weightedPick(weights){
+  const entries = Object.entries(weights).filter(([,w])=>w>0);
+  const total = entries.reduce((s,[,w])=>s+w,0);
+  let r = Math.random()*total;
+  for(const [k,w] of entries){ if(r<w) return k; r-=w; }
+  return entries[entries.length-1][0];
+}
+
+function generateQuestion(stageIndex){
+  const stage = stageIndex+1;
+  const type = weightedPick(STAGES[stageIndex].weights);
+  if(type==="sort") return genSort(stage);
+  if(type==="predict") return genPredict(stage);
+  if(type==="bug") return genBug(stage);
+  return genConvert(stage);
+}
+
+/* ---------------- Game State ---------------- */
+let state = null;
+function freshState(){
   return {
-    type: "sort",
-    typeLabel: "Sort the Shipment",
-    prompt: `${t.prompt}<br><br><strong>Conveyor or Locker Wall?</strong>`,
-    code: null,
-    zoneMode: true,
-    options: [
-      {key:"list", label:"→ CONVEYOR", sub:"Python list — ordered, by position"},
-      {key:"dict", label:"▤ LOCKER WALL", sub:"Python dict — keyed, by label"}
-    ],
-    correctKey: t.answer,
-    explain: t.why
+    playerName: "Clerk",
+    stageIndex: 0,
+    score: 0,
+    streak: 0,
+    bestStreak: 0,
+    backlog: 0,
+    supervisorEvents: 0,
+    stageQuestions: [],
+    qIndex: 0,
+    stageCorrect: 0,
+    typeStats: {sort:{c:0,t:0}, predict:{c:0,t:0}, bug:{c:0,t:0}, convert:{c:0,t:0}},
+    overallCorrect: 0,
+    overallTotal: 0,
+    timerHandle: null,
+    timeLeft: QUESTION_TIME,
+    answered: false,
+    completed: false,
+    startedAt: Date.now(),
+    dotResults: [],
   };
 }
 
-// ---------- TYPE 2: Predict the Jam ----------
-function genPredictJam(){
-  const kinds = ["indexError","keyError","getDefault","inList","inDict","popList","popDict","iterList","iterDict","sortList","dupKeyOverwrite","lenBoth"];
-  const kind = pick(kinds);
-  const sid = pick(SHIPMENT_IDS);
-  const driver = pick(DRIVER_NAMES);
-  const zone = pick(ZONE_CODES);
-
-  if(kind === "indexError"){
-    const n = randInt(3,5);
-    const idx = n + randInt(0,2);
-    const list = pickN(SHIPMENT_IDS, n);
-    return mkPredict(
-      `queue = ${JSON.stringify(list)}\nprint(queue[${idx}])`,
-      [
-        {label:"Prints the item at that position", correct:false},
-        {label:"Raises an <code>IndexError</code> — position doesn't exist", correct:true},
-        {label:"Prints <code>None</code>", correct:false},
-        {label:"Raises a <code>KeyError</code>", correct:false}
-      ],
-      `<code>queue</code> only has ${n} positions (0 through ${n-1}). Asking for <code>queue[${idx}]</code> reaches past the end, so Python raises <code>IndexError</code> — not <code>KeyError</code>, which is a dict-only error.`
-    );
-  }
-  if(kind === "keyError"){
-    const zones = pickN(ZONE_CODES, 3);
-    const counts = zones.map(()=>randInt(1,40));
-    const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-    const missing = pick(ZONE_CODES.filter(z=>!zones.includes(z))) || "Bay 99";
-    return mkPredict(
-      `pallets = ${dictStr}\nprint(pallets["${missing}"])`,
-      [
-        {label:"Prints <code>0</code>", correct:false},
-        {label:"Prints <code>None</code>", correct:false},
-        {label:"Raises a <code>KeyError</code> — that label was never added", correct:true},
-        {label:"Raises an <code>IndexError</code>", correct:false}
-      ],
-      `"${missing}" was never used as a key in <code>pallets</code>. Square-bracket lookup on a missing key raises <code>KeyError</code> — it does not return a default like <code>0</code> or <code>None</code>.`
-    );
-  }
-  if(kind === "getDefault"){
-    const zones = pickN(ZONE_CODES, 3);
-    const counts = zones.map(()=>randInt(1,40));
-    const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-    const missing = pick(ZONE_CODES.filter(z=>!zones.includes(z))) || "Bay 99";
-    return mkPredict(
-      `pallets = ${dictStr}\nprint(pallets.get("${missing}", 0))`,
-      [
-        {label:"Raises a <code>KeyError</code>", correct:false},
-        {label:"Prints <code>0</code> — the fallback you supplied", correct:true},
-        {label:"Prints <code>None</code>", correct:false},
-        {label:"Raises an <code>IndexError</code>", correct:false}
-      ],
-      `<code>.get(key, default)</code> is the safe version of square brackets: if the key's missing, it hands back your fallback (<code>0</code>) instead of crashing.`
-    );
-  }
-  if(kind === "inList"){
-    const list = pickN(SHIPMENT_IDS, 4);
-    const target = Math.random()<0.5 ? pick(list) : pick(SHIPMENT_IDS.filter(s=>!list.includes(s)));
-    const isIn = list.includes(target);
-    return mkPredict(
-      `queue = ${JSON.stringify(list)}\nprint("${target}" in queue)`,
-      [
-        {label:"<code>True</code>", correct:isIn},
-        {label:"<code>False</code>", correct:!isIn},
-        {label:"Raises a <code>KeyError</code>", correct:false},
-        {label:"Raises an <code>IndexError</code>", correct:false}
-      ],
-      `On a <code>list</code>, <code>in</code> scans the <em>values</em> one by one. "${target}" ${isIn?"is":"is not"} one of the values stored in <code>queue</code>, so the result is <code>${isIn}</code>.`
-    );
-  }
-  if(kind === "inDict"){
-    const zones = pickN(ZONE_CODES, 3);
-    const counts = zones.map(()=>randInt(1,40));
-    const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-    const useKey = Math.random()<0.5;
-    const target = useKey ? pick(zones) : counts[0];
-    const isIn = useKey ? true : false; // checking a value with 'in' against a dict checks keys, so a count value is not "in" the dict unless it collides with a zone string (ignore edge case)
-    return mkPredict(
-      `pallets = ${dictStr}\nprint(${typeof target==="string" ? `"${target}"` : target} in pallets)`,
-      [
-        {label:"<code>True</code>", correct:isIn},
-        {label:"<code>False</code>", correct:!isIn},
-        {label:"Raises a <code>KeyError</code>", correct:false},
-        {label:"Raises a <code>TypeError</code>", correct:false}
-      ],
-      `On a <code>dict</code>, <code>in</code> checks against the <em>keys</em> only — never the values. ${useKey ? `"${target}" is one of the keys, so it's <code>True</code>.` : `${target} is a value (a count), not a key, so it's <code>False</code> even though it appears in the dict.`}`
-    );
-  }
-  if(kind === "popList"){
-    const list = pickN(SHIPMENT_IDS, 4);
-    return mkPredict(
-      `queue = ${JSON.stringify(list)}\nreleased = queue.pop(0)\nprint(released, queue)`,
-      [
-        {label:`<code>${list[0]} ${JSON.stringify(list.slice(1))}</code> — first item removed and returned`, correct:true},
-        {label:`<code>${list[list.length-1]} ${JSON.stringify(list.slice(0,-1))}</code> — last item removed`, correct:false},
-        {label:"Raises a <code>KeyError</code> because 0 isn't a valid key", correct:false},
-        {label:"Prints <code>None</code> and leaves the list unchanged", correct:false}
-      ],
-      `On a <code>list</code>, <code>.pop(0)</code> removes and returns the item at <em>position</em> 0 — the front of the queue. Everything after shifts down one spot.`
-    );
-  }
-  if(kind === "popDict"){
-    const zones = pickN(ZONE_CODES, 3);
-    const counts = zones.map(()=>randInt(1,40));
-    const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-    return mkPredict(
-      `pallets = ${dictStr}\nreleased = pallets.pop("${zones[0]}")\nprint(released)`,
-      [
-        {label:`<code>${counts[0]}</code> — the value that was stored under that key`, correct:true},
-        {label:`<code>"${zones[0]}"</code> — the key itself`, correct:false},
-        {label:"Raises an <code>IndexError</code>", correct:false},
-        {label:"Prints the whole dict", correct:false}
-      ],
-      `On a <code>dict</code>, <code>.pop(key)</code> removes that key and returns <em>its value</em> — not the key, and not a position.`
-    );
-  }
-  if(kind === "iterList"){
-    const list = pickN(SHIPMENT_IDS, 3);
-    return mkPredict(
-      `queue = ${JSON.stringify(list)}\nfor x in queue:\n    print(x)`,
-      [
-        {label:`Prints each id: ${list.join(", ")}`, correct:true},
-        {label:"Prints each position: 0, 1, 2", correct:false},
-        {label:"Prints the whole list three times", correct:false},
-        {label:"Raises a <code>TypeError</code>", correct:false}
-      ],
-      `Looping over a <code>list</code> hands you each <em>value</em> in order, not the positions.`
-    );
-  }
-  if(kind === "iterDict"){
-    const zones = pickN(ZONE_CODES, 3);
-    const counts = zones.map(()=>randInt(1,40));
-    const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-    return mkPredict(
-      `pallets = ${dictStr}\nfor x in pallets:\n    print(x)`,
-      [
-        {label:`Prints each key: ${zones.join(", ")}`, correct:true},
-        {label:`Prints each value: ${counts.join(", ")}`, correct:false},
-        {label:"Prints key-value pairs as tuples", correct:false},
-        {label:"Raises a <code>TypeError</code>", correct:false}
-      ],
-      `Looping over a <code>dict</code> by default hands you each <em>key</em>. To get values you'd loop over <code>.values()</code>, and for both, <code>.items()</code>.`
-    );
-  }
-  if(kind === "sortList"){
-    const nums = [randInt(1,9),randInt(10,19),randInt(20,29),randInt(30,39)];
-    const shuffled = shuffle(nums);
-    return mkPredict(
-      `weights = ${JSON.stringify(shuffled)}\nweights.sort()\nprint(weights)`,
-      [
-        {label:`<code>${JSON.stringify([...nums].sort((a,b)=>a-b))}</code>`, correct:true},
-        {label:`<code>${JSON.stringify(shuffled)}</code> — unchanged`, correct:false},
-        {label:"Raises a <code>TypeError</code> because lists can't be sorted", correct:false},
-        {label:"Returns a new sorted list, but <code>weights</code> stays shuffled", correct:false}
-      ],
-      `<code>.sort()</code> sorts a <code>list</code> in place — it rearranges <code>weights</code> itself and returns <code>None</code>, so the print shows the now-sorted list.`
-    );
-  }
-  if(kind === "dupKeyOverwrite"){
-    const z = pick(ZONE_CODES);
-    const v1 = randInt(1,20), v2 = randInt(21,40);
-    return mkPredict(
-      `pallets = {"${z}": ${v1}}\npallets["${z}"] = ${v2}\nprint(pallets)`,
-      [
-        {label:`<code>{"${z}": ${v2}}</code> — the second write overwrote the first`, correct:true},
-        {label:`<code>{"${z}": ${v1}, "${z}": ${v2}}</code> — both entries kept`, correct:false},
-        {label:"Raises a <code>KeyError</code> for reusing a key", correct:false},
-        {label:`<code>{"${z}": [${v1}, ${v2}]}</code> — values combined into a list`, correct:false}
-      ],
-      `A <code>dict</code> can't hold the same key twice. Assigning to an existing key just replaces its value — no duplicate, no error.`
-    );
-  }
-  if(kind === "lenBoth"){
-    const zones = pickN(ZONE_CODES, 4);
-    const counts = zones.map(()=>randInt(1,40));
-    const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-    return mkPredict(
-      `pallets = ${dictStr}\nprint(len(pallets))`,
-      [
-        {label:`<code>${zones.length}</code> — the number of key-value pairs`, correct:true},
-        {label:`<code>${zones.length*2}</code> — keys and values counted separately`, correct:false},
-        {label:"Raises a <code>TypeError</code>", correct:false},
-        {label:"The sum of all the values", correct:false}
-      ],
-      `<code>len()</code> on a <code>dict</code> counts entries (key-value pairs), same idea as counting positions in a list — it's ${zones.length} here, not double.`
-    );
-  }
+function buildStageQuestions(){
+  const qs = [];
+  for(let i=0;i<QUESTIONS_PER_STAGE;i++){ qs.push(generateQuestion(state.stageIndex)); }
+  return qs;
 }
 
-function mkPredict(code, options, explain){
-  return {
-    type:"predict",
-    typeLabel:"Predict the Jam",
-    prompt:"Here's a snippet from the yard's tracking script. What happens when it runs?",
-    code: code,
-    zoneMode:false,
-    options: shuffle(options.map(o=>({key:Math.random().toString(36).slice(2), label:o.label, correct:o.correct}))),
-    explain: explain
-  };
-}
-
-// ---------- TYPE 3: Relabel (bug + fix) ----------
-function genRelabel(){
-  const kinds = ["dictIndexZero","listGet","appendToDict","assumeOrderDict","indexInsteadOfKey","keyInsteadOfIndex"];
-  const kind = pick(kinds);
-  const zones = pickN(ZONE_CODES, 3);
-  const counts = zones.map(()=>randInt(1,40));
-  const dictStr = "{" + zones.map((z,i)=>`"${z}": ${counts[i]}`).join(", ") + "}";
-  const list = pickN(SHIPMENT_IDS, 4);
-
-  if(kind === "dictIndexZero"){
-    return mkRelabel(
-      `Intent: get the pallet count for "${zones[0]}" specifically.`,
-      `pallets = ${dictStr}\ncount = pallets[0]`,
-      [
-        {label:`<code>pallets["${zones[0]}"]</code>`, correct:true},
-        {label:`<code>pallets.get(0)</code>`, correct:false},
-        {label:`<code>list(pallets)[0]</code>`, correct:false},
-        {label:`<code>pallets[0:1]</code>`, correct:false}
-      ],
-      `A <code>dict</code> has no position 0 — <code>pallets[0]</code> only works if <code>0</code> happens to be a key, and here it isn't. To get "${zones[0]}"'s count, look it up by its actual key: <code>pallets["${zones[0]}"]</code>.`
-    );
-  }
-  if(kind === "listGet"){
-    return mkRelabel(
-      `Intent: get the shipment id sitting first in the queue.`,
-      `queue = ${JSON.stringify(list)}\nfirst = queue.get(0)`,
-      [
-        {label:`<code>queue[0]</code>`, correct:true},
-        {label:`<code>queue["0"]</code>`, correct:false},
-        {label:`<code>queue.get("first")</code>`, correct:false},
-        {label:`<code>queue.pop()</code>`, correct:false}
-      ],
-      `<code>.get()</code> is a <code>dict</code> method — lists don't have it at all, so this raises an <code>AttributeError</code>. To reach a <code>list</code> by position, use square brackets: <code>queue[0]</code>.`
-    );
-  }
-  if(kind === "appendToDict"){
-    const newZone = pick(ZONE_CODES.filter(z=>!zones.includes(z))) || "Bay 21";
-    const newCount = randInt(1,40);
-    return mkRelabel(
-      `Intent: add a new zone, "${newZone}", with a pallet count of ${newCount}, to the tracker.`,
-      `pallets = ${dictStr}\npallets.append("${newZone}", ${newCount})`,
-      [
-        {label:`<code>pallets["${newZone}"] = ${newCount}</code>`, correct:true},
-        {label:`<code>pallets.insert("${newZone}", ${newCount})</code>`, correct:false},
-        {label:`<code>pallets + ["${newZone}", ${newCount}]</code>`, correct:false},
-        {label:`<code>pallets[-1] = ${newCount}</code>`, correct:false}
-      ],
-      `<code>.append()</code> belongs to <code>list</code> — dicts don't have a "the end" to append to. Add a new key-value pair with assignment: <code>pallets["${newZone}"] = ${newCount}</code>.`
-    );
-  }
-  if(kind === "assumeOrderDict"){
-    return mkRelabel(
-      `Intent: reliably get whichever zone has the <em>lowest</em> pallet count.`,
-      `pallets = ${dictStr}\nlowest_zone = list(pallets.keys())[0]`,
-      [
-        {label:`<code>min(pallets, key=pallets.get)</code>`, correct:true},
-        {label:`<code>list(pallets.keys())[0]</code>`, correct:false},
-        {label:`<code>pallets[0]</code>`, correct:false},
-        {label:`<code>sorted(pallets)[0]</code>`, correct:false}
-      ],
-      `Taking the first key just gives you insertion order, not the lowest count — nothing about a dict's key order reflects its values. <code>min(pallets, key=pallets.get)</code> actually compares the values to find the smallest.`
-    );
-  }
-  if(kind === "indexInsteadOfKey"){
-    return mkRelabel(
-      `Intent: check whether "${zones[1]}" has been logged in the tracker at all.`,
-      `pallets = ${dictStr}\nfound = "${zones[1]}" in pallets.values()`,
-      [
-        {label:`<code>"${zones[1]}" in pallets</code>`, correct:true},
-        {label:`<code>"${zones[1]}" in pallets.values()</code>`, correct:false},
-        {label:`<code>pallets.index("${zones[1]}")</code>`, correct:false},
-        {label:`<code>"${zones[1]}" == pallets[0]</code>`, correct:false}
-      ],
-      `The code checks the <em>values</em> for something that's actually a <em>key</em>. To check whether a label has been logged, test membership against the keys directly: <code>"${zones[1]}" in pallets</code>.`
-    );
-  }
-  if(kind === "keyInsteadOfIndex"){
-    return mkRelabel(
-      `Intent: remove the shipment id in the very last position of the queue.`,
-      `queue = ${JSON.stringify(list)}\nqueue.pop("${list[list.length-1]}")`,
-      [
-        {label:`<code>queue.pop()</code>`, correct:true},
-        {label:`<code>queue.pop("${list[list.length-1]}")</code> — the original, unfixed line`, correct:false},
-        {label:`<code>queue.remove(len(queue))</code>`, correct:false},
-        {label:`<code>queue.pop(len(queue))</code>`, correct:false}
-      ],
-      `<code>list.pop()</code> takes a <em>position</em>, not a value — passing the id string tries to use it as an index and raises a <code>TypeError</code>. With no argument, <code>.pop()</code> already removes the last item; <code>.pop(-1)</code> also works.`
-    );
-  }
-}
-
-function mkRelabel(intent, code, options, explain){
-  return {
-    type:"relabel",
-    typeLabel:"Relabel",
-    prompt:`This code from the yard script doesn't do what it's supposed to. ${intent} Which line actually accomplishes that?`,
-    code: code,
-    zoneMode:false,
-    options: shuffle(options.map(o=>({key:Math.random().toString(36).slice(2), label:o.label, correct:o.correct}))),
-    explain: explain
-  };
-}
-
-// ---------- TYPE 4: Convert the Manifest ----------
-function genConvert(){
-  const kinds = ["tuplesToDict","dictToTuples","dictKeysList","dictValuesList","listOfDictsLookup"];
-  const kind = pick(kinds);
-  const ids = pickN(SHIPMENT_IDS, 3);
-  const weights = ids.map(()=>randInt(10,90));
-
-  if(kind === "tuplesToDict"){
-    const pairsStr = "[" + ids.map((id,i)=>`("${id}", ${weights[i]})`).join(", ") + "]";
-    const dictStr = "{" + ids.map((id,i)=>`"${id}": ${weights[i]}`).join(", ") + "}";
-    return mkConvert(
-      `pairs = ${pairsStr}`,
-      `Rebuild <code>pairs</code> as a dict mapping each shipment id to its weight.`,
-      [
-        {label:`<code>dict(pairs)</code>`, correct:true},
-        {label:`<code>list(pairs)</code>`, correct:false},
-        {label:`<code>{pairs}</code>`, correct:false},
-        {label:`<code>pairs.items()</code>`, correct:false}
-      ],
-      `<code>dict()</code> can build a dictionary straight from a list of 2-item tuples — each tuple becomes one key-value pair, giving <code>${dictStr}</code>.`
-    );
-  }
-  if(kind === "dictToTuples"){
-    const dictStr = "{" + ids.map((id,i)=>`"${id}": ${weights[i]}`).join(", ") + "}";
-    return mkConvert(
-      `manifest = ${dictStr}`,
-      `Get the id-weight pairs out as a list of tuples.`,
-      [
-        {label:`<code>list(manifest.items())</code>`, correct:true},
-        {label:`<code>list(manifest)</code>`, correct:false},
-        {label:`<code>manifest.values()</code>`, correct:false},
-        {label:`<code>dict(manifest)</code>`, correct:false}
-      ],
-      `<code>.items()</code> gives you key-value pairs as tuples; wrapping it in <code>list()</code> turns that view into an actual list of tuples. Plain <code>list(manifest)</code> would only grab the keys.`
-    );
-  }
-  if(kind === "dictKeysList"){
-    const dictStr = "{" + ids.map((id,i)=>`"${id}": ${weights[i]}`).join(", ") + "}";
-    return mkConvert(
-      `manifest = ${dictStr}`,
-      `Get just the shipment ids as a plain list, in whatever order they're stored.`,
-      [
-        {label:`<code>list(manifest)</code>`, correct:true},
-        {label:`<code>list(manifest.values())</code>`, correct:false},
-        {label:`<code>manifest.items()</code>`, correct:false},
-        {label:`<code>manifest[:]</code>`, correct:false}
-      ],
-      `Looping or listing a <code>dict</code> directly gives you its keys, so <code>list(manifest)</code> is the shortest way to pull out just the ids. <code>list(manifest.keys())</code> works identically and is often clearer.`
-    );
-  }
-  if(kind === "dictValuesList"){
-    const dictStr = "{" + ids.map((id,i)=>`"${id}": ${weights[i]}`).join(", ") + "}";
-    return mkConvert(
-      `manifest = ${dictStr}`,
-      `Get just the weights as a plain list, so they can be summed.`,
-      [
-        {label:`<code>list(manifest.values())</code>`, correct:true},
-        {label:`<code>list(manifest)</code>`, correct:false},
-        {label:`<code>manifest.items()</code>`, correct:false},
-        {label:`<code>list(manifest.keys())</code>`, correct:false}
-      ],
-      `<code>.values()</code> gives you a view of just the values; <code>list()</code> converts that view into a usable list you can sum or sort.`
-    );
-  }
-  if(kind === "listOfDictsLookup"){
-    const shipRecords = ids.map((id,i)=>`{"id": "${id}", "weight": ${weights[i]}}`);
-    const listStr = "[" + shipRecords.join(", ") + "]";
-    const targetIdx = randInt(0, ids.length-1);
-    return mkConvert(
-      `shipments = ${listStr}`,
-      `Turn this into a dict keyed by each shipment's own <code>"id"</code> field, mapping to its full record.`,
-      [
-        {label:`<code>{s["id"]: s for s in shipments}</code>`, correct:true},
-        {label:`<code>{s: s["id"] for s in shipments}</code>`, correct:false},
-        {label:`<code>dict(shipments)</code>`, correct:false},
-        {label:`<code>{shipments["id"]: shipments}</code>`, correct:false}
-      ],
-      `Each dict inside the list already carries its own id under <code>"id"</code>. A comprehension that pulls that field out as the key and keeps the whole record as the value — <code>{s["id"]: s for s in shipments}</code> — builds exactly that lookup.`
-    );
-  }
-}
-
-function mkConvert(setup, ask, options, explain){
-  return {
-    type:"convert",
-    typeLabel:"Convert the Manifest",
-    prompt: ask,
-    code: setup,
-    zoneMode:false,
-    options: shuffle(options.map(o=>({key:Math.random().toString(36).slice(2), label:o.label, correct:o.correct}))),
-    explain: explain
-  };
-}
-
-const GENERATORS = { sort: genSortShipment, predict: genPredictJam, relabel: genRelabel, convert: genConvert };
-
-/* ============================================================
-   SHIFT DEFINITIONS
-============================================================ */
-const SHIFTS = [
-  { name:"Shift 1 · Sorting Basics", count:8, need:6, backlogCap:4, timer:22, types:["sort","sort","sort","sort","sort","sort","sort","sort"] },
-  { name:"Shift 2 · Loading Dock", count:8, need:6, backlogCap:4, timer:20, types:["sort","sort","sort","predict","predict","predict","predict","sort"] },
-  { name:"Shift 3 · Night Audit", count:9, need:7, backlogCap:3, timer:20, types:["predict","predict","predict","relabel","relabel","relabel","predict","relabel","predict"] },
-  { name:"Shift 4 · Manifest Control", count:9, need:7, backlogCap:3, timer:19, types:["convert","convert","relabel","relabel","predict","convert","relabel","convert","predict"] },
-  { name:"Shift 5 · Closing Shift", count:10, need:8, backlogCap:3, timer:17, types:["sort","predict","relabel","convert","predict","relabel","convert","sort","predict","relabel"] }
-];
-
-/* ============================================================
-   GAME STATE
-============================================================ */
-let state = {
-  playerName:"",
-  shiftIndex:0,
-  qIndex:0,
-  questions:[],
-  correctCount:0,
-  backlog:0,
-  score:0,
-  streak:0,
-  bestStreak:0,
-  attempts:{sort:{a:0,c:0}, predict:{a:0,c:0}, relabel:{a:0,c:0}, convert:{a:0,c:0}},
-  peakShift:1,
-  startTime:null,
-  timerHandle:null,
-  timeLeft:0,
-  totalTime:0,
-  answered:false,
-  runComplete:false,
-  logged:false
+/* ---------------- DOM refs ---------------- */
+const $ = (id)=>document.getElementById(id);
+const screens = {
+  start: $("screen-start"), game: $("screen-game"),
+  interstitial: $("screen-interstitial"), complete: $("screen-complete")
 };
-
-/* ============================================================
-   DOM REFS
-============================================================ */
-const $ = id => document.getElementById(id);
-const screens = { start:$("screen-start"), game:$("screen-game"), transition:$("screen-transition"), final:$("screen-final") };
 function showScreen(name){
   Object.values(screens).forEach(s=>s.classList.remove("active"));
   screens[name].classList.add("active");
 }
-
-/* ============================================================
-   INIT / START SCREEN
-============================================================ */
-$("shiftPreview").innerHTML = SHIFTS.map(s=>`<div class="shift-chip">${esc(s.name)}</div>`).join("");
-
-$("btnStart").addEventListener("click", startRun);
-$("playerName").addEventListener("keydown", e=>{ if(e.key==="Enter") startRun(); });
-$("btnHelp").addEventListener("click", ()=> $("helpModal").classList.add("show"));
-$("btnCloseHelp").addEventListener("click", ()=> $("helpModal").classList.remove("show"));
-$("helpModal").addEventListener("click", e=>{ if(e.target.id==="helpModal") $("helpModal").classList.remove("show"); });
-
-function startRun(){
-  const nameVal = $("playerName").value.trim();
-  state.playerName = nameVal || "Anonymous Clerk";
-  state.shiftIndex = 0;
-  state.score = 0; state.streak=0; state.bestStreak=0;
-  state.attempts = {sort:{a:0,c:0}, predict:{a:0,c:0}, relabel:{a:0,c:0}, convert:{a:0,c:0}};
-  state.peakShift = 1;
-  state.startTime = Date.now();
-  state.runComplete = false;
-  state.logged = false;
-  startShift(0);
-  showScreen("game");
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
 }
 
-/* ============================================================
-   SHIFT FLOW
-============================================================ */
-function startShift(idx){
-  state.shiftIndex = idx;
-  state.peakShift = Math.max(state.peakShift, idx+1);
-  const shift = SHIFTS[idx];
-  state.qIndex = 0;
-  state.correctCount = 0;
-  state.backlog = 0;
-  state.questions = shift.types.map(t => { const q = GENERATORS[t](); q._type=t; return q; });
-  renderBacklog();
-  loadQuestion();
-}
-
-function renderBacklog(){
-  const shift = SHIFTS[state.shiftIndex];
-  const track = $("backlogTrack");
-  track.innerHTML = "";
-  for(let i=0;i<shift.backlogCap;i++){
-    const d = document.createElement("div");
-    d.className = "backlog-crate" + (i < state.backlog ? " filled" : "");
-    track.appendChild(d);
-  }
-}
-
-function loadQuestion(){
-  state.answered = false;
-  const shift = SHIFTS[state.shiftIndex];
-  $("shiftLabel").textContent = shift.name;
-  $("questionCounter").textContent = `Shipment ${state.qIndex+1} / ${shift.count}`;
+/* ---------------- Rendering ---------------- */
+function renderHUD(){
+  $("shiftNum").textContent = state.stageIndex+1;
+  $("shiftName").textContent = STAGES[state.stageIndex].name;
   $("scoreVal").textContent = state.score;
   $("streakVal").textContent = state.streak;
+  $("qCounter").textContent = `${state.qIndex+1}/${QUESTIONS_PER_STAGE}`;
+  $("backlogFill").style.width = Math.min(state.backlog,100)+"%";
+}
 
-  const q = state.questions[state.qIndex];
-  $("qTypeTag").textContent = q.typeLabel;
+function renderDots(){
+  const wrap = $("progressDots");
+  wrap.innerHTML = "";
+  for(let i=0;i<QUESTIONS_PER_STAGE;i++){
+    const d = document.createElement("div");
+    d.className = "dot";
+    if(i<state.qIndex){
+      d.classList.add(state.dotResults[i] ? "done-correct" : "done-wrong");
+    } else if(i===state.qIndex){
+      d.classList.add("current");
+    }
+    wrap.appendChild(d);
+  }
+}
+
+const QTYPE_LABEL = {
+  sort:"Sort the Shipment", predict:"Predict the Jam",
+  bug:"Relabel the Manifest", convert:"Convert the Manifest"
+};
+
+function renderQuestion(){
+  state.answered = false;
+  const q = state.stageQuestions[state.qIndex];
+  state.currentQ = q;
+
+  const tag = $("qtypeTag");
+  tag.textContent = QTYPE_LABEL[q.qtype];
+  tag.className = "qtype-tag "+q.qtype;
+
   $("qPrompt").innerHTML = q.prompt;
 
-  const codeSlot = $("qCodeSlot");
-  if(q.code){
-    codeSlot.innerHTML = `<div class="code-block">${esc(q.code)}</div>`;
+  const codeBox = $("qCode");
+  if(q.code && q.code.length){
+    codeBox.style.display = "block";
+    codeBox.className = "codebox"+(q.kind==="dict"?" dict":"");
+    codeBox.textContent = q.code.join("\n");
   } else {
-    codeSlot.innerHTML = "";
+    codeBox.style.display = "none";
   }
 
-  const zone = $("answerZone");
-  zone.innerHTML = "";
-  if(q.zoneMode){
-    zone.className = "answer-zone split-zone";
-    q.options.forEach(opt=>{
-      const btn = document.createElement("button");
-      btn.className = "zone-btn " + (opt.key==="list" ? "conveyor-btn":"locker-btn");
-      btn.innerHTML = `<span class="zone-icon">${opt.label}</span><span class="zone-sub">${opt.sub}</span><span class="stripe"></span>`;
-      btn.addEventListener("click", ()=> submitAnswer(opt.key===q.correctKey, btn, q));
-      zone.appendChild(btn);
-    });
-  } else {
-    zone.className = "answer-zone opt-grid";
-    q.options.forEach(opt=>{
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.innerHTML = opt.label;
-      btn.addEventListener("click", ()=> submitAnswer(opt.correct, btn, q));
-      zone.appendChild(btn);
-    });
-  }
+  const optWrap = $("qOptions");
+  optWrap.innerHTML = "";
+  q._shuffledOptions = shuffle(q.options);
+  q._shuffledOptions.forEach((opt)=>{
+    const b = document.createElement("button");
+    b.className = "opt-btn";
+    b.textContent = opt.label;
+    b.addEventListener("click", ()=>handleAnswer(opt, b));
+    optWrap.appendChild(b);
+  });
 
-  $("feedbackStrip").className = "feedback-strip";
-  $("btnNext").className = "next-btn";
+  $("stamp").className = "stamp";
+  $("qExplain").className = "feedback-explain";
+  $("qExplain").innerHTML = "";
+  $("btnNext").style.display = "none";
 
-  startTimer(shift.timer);
+  renderHUD();
+  renderDots();
+  startTimer();
 }
 
-/* ============================================================
-   TIMER
-============================================================ */
-const TIMER_CIRC = 2 * Math.PI * 19;
-function startTimer(seconds){
+function startTimer(){
   clearInterval(state.timerHandle);
-  state.timeLeft = seconds;
-  state.totalTime = seconds;
-  updateTimerUI();
+  state.timeLeft = QUESTION_TIME;
+  $("timerFill").style.width = "100%";
+  $("timerFill").style.background = "var(--blue)";
   state.timerHandle = setInterval(()=>{
-    state.timeLeft -= 0.1;
-    if(state.timeLeft <= 0){
-      state.timeLeft = 0;
-      updateTimerUI();
+    state.timeLeft -= 0.2;
+    const pct = Math.max(0,(state.timeLeft/QUESTION_TIME)*100);
+    $("timerFill").style.width = pct+"%";
+    if(state.timeLeft < QUESTION_TIME*0.25) $("timerFill").style.background = "var(--red)";
+    if(state.timeLeft<=0){
       clearInterval(state.timerHandle);
-      if(!state.answered) handleTimeout();
-      return;
+      handleTimeout();
     }
-    updateTimerUI();
-  }, 100);
-}
-function updateTimerUI(){
-  const frac = Math.max(0, state.timeLeft / state.totalTime);
-  const fill = $("timerFill");
-  fill.setAttribute("stroke-dasharray", TIMER_CIRC.toFixed(1));
-  fill.setAttribute("stroke-dashoffset", (TIMER_CIRC * (1-frac)).toFixed(1));
-  fill.classList.toggle("warn", frac < 0.3);
-  $("timerNum").textContent = Math.ceil(state.timeLeft);
+  }, 200);
 }
 
 function handleTimeout(){
+  if(state.answered) return;
   state.answered = true;
-  const q = state.questions[state.qIndex];
-  state.attempts[q._type].a++;
   state.streak = 0;
-  registerMiss();
-  disableAllOptions();
-  showFeedback(false, "Time's up — the belt kept moving.", q.explain);
+  registerResult(false, "timeout");
+  document.querySelectorAll(".opt-btn").forEach(b=>b.disabled=true);
+  showStamp(false);
+  showExplain(state.currentQ.explanation, false, true);
+  $("btnNext").style.display = "inline-block";
 }
 
-/* ============================================================
-   ANSWER HANDLING
-============================================================ */
-function submitAnswer(isCorrect, btnEl, q){
+function handleAnswer(opt, btnEl){
   if(state.answered) return;
   state.answered = true;
   clearInterval(state.timerHandle);
-  state.attempts[q._type].a++;
 
-  disableAllOptions();
+  const correct = !!opt.correct;
+  document.querySelectorAll(".opt-btn").forEach(b=>b.disabled=true);
+  document.querySelectorAll(".opt-btn").forEach(b=>{
+    if(b.textContent===opt.label && correct) b.classList.add("correct");
+    if(b.textContent===opt.label && !correct) b.classList.add("wrong");
+    if(b!==btnEl) b.classList.add("dim");
+  });
+  if(!correct){
+    const correctLabel = state.currentQ._shuffledOptions.find(o=>o.correct).label;
+    const correctBtn = Array.from(document.querySelectorAll(".opt-btn")).find(b=>b.textContent===correctLabel);
+    if(correctBtn){ correctBtn.classList.remove("dim"); correctBtn.classList.add("correct"); }
+  }
 
-  if(isCorrect){
-    state.attempts[q._type].c++;
-    state.correctCount++;
-    state.streak++;
-    state.bestStreak = Math.max(state.bestStreak, state.streak);
-    const speedBonus = Math.round(50 * Math.max(0, state.timeLeft/state.totalTime));
-    const streakBonus = Math.min(state.streak*5, 50);
-    state.score += 100 + speedBonus + streakBonus;
-    if(btnEl){ btnEl.classList.add(q.zoneMode ? "" : "correct"); if(q.zoneMode) btnEl.style.boxShadow = "0 0 0 2px var(--success) inset"; }
-    showFeedback(true, "Correctly sorted.", q.explain);
+  if(correct){ state.streak++; state.bestStreak = Math.max(state.bestStreak, state.streak); }
+  else { state.streak = 0; }
+
+  registerResult(correct, "answered");
+  showStamp(correct);
+  showExplain(state.currentQ.explanation, correct, false);
+  $("btnNext").style.display = "inline-block";
+}
+
+function registerResult(correct, mode){
+  const q = state.currentQ;
+  state.typeStats[q.qtype].t++;
+  if(correct) state.typeStats[q.qtype].c++;
+  state.overallTotal++;
+  if(correct) state.overallCorrect++;
+
+  state.dotResults[state.qIndex] = correct;
+
+  if(correct){
+    state.stageCorrect++;
+    const bonus = Math.min(state.streak*2, 20);
+    state.score += 10 + bonus;
+    state.backlog = Math.max(0, state.backlog + BACKLOG_CORRECT);
   } else {
-    state.streak = 0;
-    registerMiss();
-    if(btnEl){ btnEl.classList.add(q.zoneMode ? "" : "wrong"); if(q.zoneMode) btnEl.style.boxShadow = "0 0 0 2px var(--stamp-red) inset"; }
-    // reveal correct option
-    highlightCorrect(q);
-    showFeedback(false, "That's a mis-sort.", q.explain);
+    state.backlog += (mode==="timeout") ? BACKLOG_TIMEOUT : BACKLOG_WRONG;
   }
-  $("scoreVal").textContent = state.score;
-  $("streakVal").textContent = state.streak;
-}
 
-function highlightCorrect(q){
-  const zone = $("answerZone");
-  if(q.zoneMode){
-    [...zone.children].forEach((btn,i)=>{
-      if(q.options[i].key === q.correctKey){ btn.style.boxShadow = "0 0 0 2px var(--success) inset"; }
-    });
-  } else {
-    [...zone.children].forEach((btn,i)=>{
-      if(q.options[i].correct){ btn.classList.add("correct"); }
-    });
+  if(state.backlog >= BACKLOG_MAX){
+    state.supervisorEvents++;
+    state.backlog = BACKLOG_SUPERVISOR_RESET;
+    toast("Supervisor Review! Backlog cleared back, but pace yourself.");
   }
+  renderHUD();
 }
 
-function disableAllOptions(){
-  [...$("answerZone").children].forEach(b=> b.disabled = true );
+function showStamp(correct){
+  const s = $("stamp");
+  s.textContent = correct ? "CLEARED" : "JAMMED";
+  s.className = "stamp show "+(correct?"cleared":"jammed");
 }
 
-function registerMiss(){
-  state.backlog++;
-  renderBacklog();
+function showExplain(text, correct, timedOut){
+  const box = $("qExplain");
+  const prefix = timedOut ? "<b>Time's up.</b> " : (correct ? "<b>Correct.</b> " : "<b>Not quite.</b> ");
+  box.innerHTML = prefix + text;
+  box.classList.add("show");
 }
 
-function showFeedback(correct, head, body){
-  const strip = $("feedbackStrip");
-  strip.className = "feedback-strip show " + (correct ? "correct":"wrong");
-  $("feedbackHead").textContent = head;
-  $("feedbackBody").innerHTML = body;
-  const nextBtn = $("btnNext");
-  nextBtn.className = "next-btn show";
-  nextBtn.textContent = state.backlog >= SHIFTS[state.shiftIndex].backlogCap ? "See Yard Status →" : "Next Shipment →";
-}
-
-$("btnNext").addEventListener("click", advance);
-
-function advance(){
-  const shift = SHIFTS[state.shiftIndex];
-  if(state.backlog >= shift.backlogCap){
-    endShift(false);
-    return;
-  }
+function nextQuestion(){
   state.qIndex++;
-  if(state.qIndex >= shift.count){
-    endShift(state.correctCount >= shift.need);
-    return;
-  }
-  loadQuestion();
-}
-
-/* ============================================================
-   SHIFT END / TRANSITION
-============================================================ */
-function endShift(passed){
-  clearInterval(state.timerHandle);
-  const shift = SHIFTS[state.shiftIndex];
-  const accuracy = Math.round(100 * state.correctCount / Math.max(1,state.qIndex + (state.answered?1:0)));
-  const attempted = state.qIndex + (state.qIndex < shift.count ? 1 : 0);
-  const accPct = Math.round(100 * state.correctCount / Math.max(1, Math.min(shift.count, state.qIndex+1)));
-
-  $("transAccuracy").textContent = accPct + "%";
-  $("transScore").textContent = state.score;
-  $("transStreak").textContent = state.bestStreak;
-
-  if(passed){
-    $("transStamp").textContent = "CLEARED";
-    $("transStamp").className = "stamp pass";
-    $("transTitle").textContent = shift.name + " Complete";
-    const isLast = state.shiftIndex === SHIFTS.length - 1;
-    $("transSub").textContent = isLast ? "That's the whole yard, closed out clean." : "Next shift is loading up.";
-    $("btnTransContinue").textContent = isLast ? "See Final Report" : "Continue to " + SHIFTS[state.shiftIndex+1].name.split(" · ")[0];
-    $("btnTransContinue").onclick = ()=>{
-      if(isLast){ finishRun(); } else { startShift(state.shiftIndex+1); showScreen("game"); }
-    };
+  if(state.qIndex >= QUESTIONS_PER_STAGE){
+    finishStage();
   } else {
-    $("transStamp").textContent = "BACKED UP";
-    $("transStamp").className = "stamp fail";
-    $("transTitle").textContent = "Yard Shutdown — " + shift.name;
-    $("transSub").textContent = "Backlog maxed out before quota was hit. Fresh shipments, same shift.";
-    $("btnTransContinue").textContent = "Retry " + shift.name.split(" · ")[0];
-    $("btnTransContinue").onclick = ()=>{ startShift(state.shiftIndex); showScreen("game"); };
+    renderQuestion();
   }
-  showScreen("transition");
 }
 
-/* ============================================================
-   FINAL REPORT
-============================================================ */
-function finishRun(){
-  state.runComplete = true;
-  const totalAttempts = Object.values(state.attempts).reduce((s,x)=>s+x.a,0);
-  const totalCorrect = Object.values(state.attempts).reduce((s,x)=>s+x.c,0);
-  const accuracy = totalAttempts ? Math.round(100*totalCorrect/totalAttempts) : 0;
+function finishStage(){
+  clearInterval(state.timerHandle);
+  const accuracy = state.stageCorrect / QUESTIONS_PER_STAGE;
+  const passed = accuracy >= PASS_ACCURACY;
 
-  $("finalAccuracy").textContent = accuracy + "%";
+  $("interTitle").textContent = passed ? "Shift Complete" : "Reprocess This Shift";
+  $("interAccuracy").textContent = Math.round(accuracy*100)+"%";
+  $("interAccuracy").style.color = passed ? "var(--green)" : "var(--red)";
+  $("interSub").textContent = passed
+    ? `You cleared "${STAGES[state.stageIndex].name}" — the belt moves on.`
+    : `Below the ${Math.round(PASS_ACCURACY*100)}% target — the yard wants this batch resorted with a fresh set of shipments.`;
+
+  $("interStats").innerHTML = `
+    <div class="stat-box"><div class="k">Score</div><div class="v">${state.score}</div></div>
+    <div class="stat-box"><div class="k">Best Streak</div><div class="v">${state.bestStreak}</div></div>
+    <div class="stat-box"><div class="k">Correct</div><div class="v">${state.stageCorrect}/${QUESTIONS_PER_STAGE}</div></div>
+    <div class="stat-box"><div class="k">Supervisor Reviews</div><div class="v">${state.supervisorEvents}</div></div>
+  `;
+
+  $("btnContinue").textContent = passed ? "Next Shift →" : "Reprocess Shift";
+  $("btnContinue").onclick = ()=>{
+    if(passed){
+      state.stageIndex++;
+      if(state.stageIndex >= STAGES.length){
+        finishGame();
+        return;
+      }
+    }
+    state.qIndex = 0;
+    state.stageCorrect = 0;
+    state.dotResults = [];
+    state.stageQuestions = buildStageQuestions();
+    showScreen("game");
+    renderQuestion();
+  };
+
+  showScreen("interstitial");
+}
+
+function finishGame(){
+  state.completed = true;
+  const accuracy = state.overallTotal ? state.overallCorrect/state.overallTotal : 0;
+
   $("finalScore").textContent = state.score;
-  $("finalPeak").textContent = "Shift " + state.peakShift + " / " + SHIFTS.length;
-  $("finalStamp").textContent = "YARD CLEARED";
-  $("finalTitle").textContent = "End of Shift Report — " + state.playerName;
+  $("finalStats").innerHTML = `
+    <div class="stat-box"><div class="k">Overall Accuracy</div><div class="v">${Math.round(accuracy*100)}%</div></div>
+    <div class="stat-box"><div class="k">Best Streak</div><div class="v">${state.bestStreak}</div></div>
+    <div class="stat-box"><div class="k">Shifts Cleared</div><div class="v">${STAGES.length}/${STAGES.length}</div></div>
+    <div class="stat-box"><div class="k">Supervisor Reviews</div><div class="v">${state.supervisorEvents}</div></div>
+  `;
 
-  const bd = $("finalBreakdown");
-  const labels = {sort:"Sort the Shipment", predict:"Predict the Jam", relabel:"Relabel", convert:"Convert the Manifest"};
-  bd.innerHTML = Object.keys(labels).map(k=>{
-    const a = state.attempts[k];
-    const pct = a.a ? Math.round(100*a.c/a.a) : 0;
-    return `<div class="breakdown-row">
-      <div class="name">${labels[k]}</div>
-      <div class="breakdown-bar"><div class="breakdown-fill" style="width:${pct}%"></div></div>
-      <div class="frac">${a.c}/${a.a}</div>
-    </div>`;
+  const rows = Object.entries(state.typeStats).map(([type,s])=>{
+    const pct = s.t ? Math.round((s.c/s.t)*100) : 0;
+    return `<div class="breakdown-row"><span>${QTYPE_LABEL[type]}</span><b>${s.c}/${s.t} (${pct}%)</b></div>`;
   }).join("");
+  $("finalBreakdown").innerHTML = rows;
 
-  logRun("completed");
-  showScreen("final");
+  logResult("completed", accuracy);
+  showScreen("complete");
 }
 
-$("btnPlayAgain").addEventListener("click", ()=>{
-  $("playerName").value = state.playerName === "Anonymous Clerk" ? "" : state.playerName;
-  showScreen("start");
-});
-
-/* ============================================================
-   LOGGING — Google Sheets (Apps Script webhook) + localStorage backup
-============================================================ */
-function buildLogPayload(status){
-  const totalAttempts = Object.values(state.attempts).reduce((s,x)=>s+x.a,0);
-  const totalCorrect = Object.values(state.attempts).reduce((s,x)=>s+x.c,0);
-  const accuracy = totalAttempts ? Math.round(100*totalCorrect/totalAttempts) : 0;
+/* ---------------- Logging ---------------- */
+function buildLogPayload(status, accuracy){
   return {
+    player: state.playerName,
     game: "The Dispatch Yard",
-    player: state.playerName || "Anonymous Clerk",
-    timestamp: new Date().toISOString(),
-    peakShift: state.peakShift,
-    totalShifts: SHIFTS.length,
+    status: status,
+    stageReached: state.stageIndex+1,
+    stagesTotal: STAGES.length,
     score: state.score,
+    accuracy: Math.round((accuracy||0)*10000)/100,
     bestStreak: state.bestStreak,
-    accuracy: accuracy,
-    completionStatus: status,
-    sortAttempts: state.attempts.sort.a, sortCorrect: state.attempts.sort.c,
-    predictAttempts: state.attempts.predict.a, predictCorrect: state.attempts.predict.c,
-    relabelAttempts: state.attempts.relabel.a, relabelCorrect: state.attempts.relabel.c,
-    convertAttempts: state.attempts.convert.a, convertCorrect: state.attempts.convert.c,
-    durationSeconds: state.startTime ? Math.round((Date.now()-state.startTime)/1000) : 0
+    supervisorEvents: state.supervisorEvents,
+    typeBreakdown: state.typeStats,
+    startedAt: state.startedAt,
+    endedAt: Date.now(),
   };
 }
 
-function logRun(status){
-  if(state.logged) return;
-  state.logged = true;
-  const payload = buildLogPayload(status);
+function logResult(status, accuracy){
+  const payload = buildLogPayload(status, accuracy);
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); }catch(e){}
 
-  try{
-    const backup = JSON.parse(localStorage.getItem("dispatchYardLogs") || "[]");
-    backup.push(payload);
-    localStorage.setItem("dispatchYardLogs", JSON.stringify(backup.slice(-50)));
-  }catch(e){ /* localStorage unavailable, skip backup silently */ }
-
-  if(!SHEETS_WEBHOOK_URL){
-    $("logStatus").textContent = "Session saved locally. (No Sheets webhook configured.)";
-    return;
-  }
+  if(!GAS_WEBHOOK_URL || GAS_WEBHOOK_URL.indexOf("PASTE_YOUR")===0){ return; }
 
   const body = JSON.stringify(payload);
-  let sent = false;
   try{
     if(navigator.sendBeacon){
-      const blob = new Blob([body], {type:"application/json"});
-      sent = navigator.sendBeacon(SHEETS_WEBHOOK_URL, blob);
+      const blob = new Blob([body], {type:"text/plain"});
+      navigator.sendBeacon(GAS_WEBHOOK_URL, blob);
+    } else {
+      fetch(GAS_WEBHOOK_URL, {method:"POST", mode:"no-cors", body});
     }
-  }catch(e){ sent = false; }
-
-  if(!sent){
-    fetch(SHEETS_WEBHOOK_URL, { method:"POST", body: body, headers:{"Content-Type":"application/json"}, mode:"no-cors" })
-      .catch(()=>{ /* silent — localStorage backup already saved */ });
+  }catch(e){
+    fetch(GAS_WEBHOOK_URL, {method:"POST", mode:"no-cors", body}).catch(()=>{});
   }
-  $("logStatus").textContent = "Shift report sent to the depot log.";
 }
 
-// Abandoned-run logging: fires if the tab closes mid-run
 window.addEventListener("pagehide", ()=>{
-  if(state.startTime && !state.runComplete && !state.logged){
-    logRun("abandoned");
+  if(state && !state.completed && state.overallTotal>0){
+    const accuracy = state.overallTotal ? state.overallCorrect/state.overallTotal : 0;
+    logResult("abandoned", accuracy);
   }
+});
+
+/* ---------------- Wiring ---------------- */
+$("btnStart").addEventListener("click", ()=>{
+  const nameVal = $("playerName").value.trim();
+  state = freshState();
+  state.playerName = nameVal || "Clerk";
+  state.stageQuestions = buildStageQuestions();
+  showScreen("game");
+  renderQuestion();
+});
+
+$("btnHow").addEventListener("click", ()=>{
+  toast("Answer correctly to lower Backlog & build Streak. 5 shifts, 8 shipments each, 70% to clear a shift.");
+});
+
+$("btnNext").addEventListener("click", nextQuestion);
+
+$("btnReplay").addEventListener("click", ()=>{
+  showScreen("start");
 });
 
 })();
