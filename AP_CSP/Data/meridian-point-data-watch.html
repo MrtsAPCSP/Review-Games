@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Meridian Point Station &mdash; Data Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0e1319;
+    --panel: #171f27;
+    --panel-raised: #1e2830;
+    --screen: #0a0f14;
+    --amber: #e8a33d;
+    --amber-dim: #8a6626;
+    --teal: #4a919e;
+    --teal-bright: #6fc4d1;
+    --red: #d1495b;
+    --red-dim: #6e2b34;
+    --ink: #e8e3d8;
+    --ink-dim: #9aa5ac;
+    --ink-faint: #5c6870;
+    --line: #2a3540;
+    --font-display: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-deep);
+    color: var(--ink);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse at 50% -10%, rgba(232,163,61,0.06), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    display: flex;
+    justify-content: center;
+    padding: 18px 12px 40px;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 780px;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ---------- Header / Instrument strip ---------- */
+  .station-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: linear-gradient(180deg, var(--panel-raised), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+  }
+  .station-id {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .shift-name {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .stat-block { text-align: right; }
+  .stat-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--amber);
+  }
+  .streak-value { color: var(--teal-bright); }
+
+  /* ---------- Reliability gauge ---------- */
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+  .gauge-label {
+    font-family: var(--font-display);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+  #gaugeNeedle {
+    transition: transform 0.5s cubic-bezier(.4,1.4,.4,1);
+    transform-origin: 50px 50px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #gaugeNeedle { transition: none; }
+  }
+
+  /* ---------- Progress dots ---------- */
+  .progress-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .prog-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--line);
+    border: 1px solid var(--ink-faint);
+  }
+  .prog-dot.done { background: var(--teal); border-color: var(--teal-bright); }
+  .prog-dot.current { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 6px var(--amber); }
+
+  /* ---------- Monitor screen ---------- */
+  .monitor {
+    background: var(--screen);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+    min-height: 260px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+    margin-bottom: 14px;
+  }
+  .monitor::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 12px;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(111,196,209,0.02) 0px, transparent 2px, transparent 4px);
+  }
+  .mechanic-tag {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-bright);
+    margin-bottom: 8px;
+  }
+  .prompt-text {
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  canvas#chartCanvas {
+    width: 100%;
+    height: 220px;
+    display: block;
+  }
+
+  .meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-display);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .meta-table tr { border-bottom: 1px solid var(--line); }
+  .meta-table td { padding: 7px 6px; }
+  .meta-table td:first-child { color: var(--ink-faint); width: 45%; }
+  .meta-table td:last-child { color: var(--amber); text-align: right; }
+
+  /* ---------- Choices ---------- */
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .choice-btn {
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 13px 16px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .choice-btn:hover:not(:disabled) { background: var(--panel-raised); border-color: var(--teal); }
+  .choice-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .choice-btn:active:not(:disabled) { transform: scale(0.99); }
+  .choice-btn:disabled { cursor: default; opacity: 0.55; }
+  .choice-btn.correct { border-color: var(--teal-bright); background: rgba(74,145,158,0.18); opacity: 1; }
+  .choice-btn.wrong { border-color: var(--red); background: rgba(209,73,91,0.16); opacity: 1; }
+
+  /* ---------- Feedback panel ---------- */
+  .feedback {
+    margin-top: 14px;
+    padding: 13px 15px;
+    border-radius: 8px;
+    border-left: 3px solid var(--teal-bright);
+    background: rgba(111,196,209,0.06);
+    font-size: 14px;
+    line-height: 1.5;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.bad { border-left-color: var(--red); background: rgba(209,73,91,0.07); }
+  .feedback-verdict {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--teal-bright);
+    display: block;
+    margin-bottom: 5px;
+  }
+  .feedback.bad .feedback-verdict { color: var(--red); }
+
+  .continue-row { margin-top: 14px; text-align: right; }
+
+  button.primary-btn {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--amber);
+    color: #221605;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+  }
+  button.primary-btn:hover { filter: brightness(1.08); }
+  button.primary-btn:active { transform: scale(0.98); }
+  button.primary-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  /* ---------- Start / transition / gameover screens ---------- */
+  .card {
+    background: linear-gradient(180deg, var(--panel-raised), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 28px 26px;
+  }
+  .card h1 {
+    font-family: var(--font-body);
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+  .card .subtitle {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .card p { line-height: 1.6; color: var(--ink-dim); font-size: 14.5px; }
+  .mech-legend {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 18px 0;
+  }
+  .mech-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--screen);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .mech-icon {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--teal-bright);
+    width: 26px;
+    flex-shrink: 0;
+  }
+  .mech-item strong { color: var(--ink); display: block; font-size: 14px; margin-bottom: 2px; }
+  .mech-item span { color: var(--ink-dim); font-size: 13px; line-height: 1.45; }
+
+  .start-actions { margin-top: 20px; text-align: center; }
+
+  .transition-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 18px 0;
+  }
+  .summary-cell {
+    background: var(--screen);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .summary-cell .n { font-family: var(--font-display); font-size: 22px; color: var(--amber); }
+  .summary-cell .l { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px;}
+
+  .gameover-banner {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--red);
+    border: 1px solid var(--red-dim);
+    background: rgba(209,73,91,0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-bar-wrap {
+    flex: 1;
+    margin: 0 12px;
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .breakdown-bar {
+    height: 100%;
+    background: var(--teal);
+  }
+  .breakdown-pct { font-family: var(--font-display); color: var(--ink-dim); width: 42px; text-align: right; }
+
+  @media (max-width: 480px) {
+    .card { padding: 20px 16px; }
+    .card h1 { font-size: 21px; }
+    .transition-summary { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= START SCREEN ================= -->
+  <div class="screen active" id="screen-start">
+    <div class="card">
+      <div class="subtitle">Meridian Point Remote Station &mdash; Night Watch</div>
+      <h1>Data Watch</h1>
+      <p>You're on shift at a remote climate outpost during storm season. Sensors never stop talking &mdash; charts, compression logs, metadata records. Your job is to read what the data actually says before you sign off on it.</p>
+      <div class="mech-legend">
+        <div class="mech-item">
+          <div class="mech-icon">&#9636;</div>
+          <div><strong>Read the charts</strong><span>Spot real trends, tell noise from a true anomaly, and judge whether two readings actually relate &mdash; or don't.</span></div>
+        </div>
+        <div class="mech-item">
+          <div class="mech-icon">&#8644;</div>
+          <div><strong>Call the compression</strong><span>Decide when losing detail is an acceptable trade for space, and when exact values have to survive.</span></div>
+        </div>
+        <div class="mech-item">
+          <div class="mech-icon">&#9776;</div>
+          <div><strong>Check the metadata</strong><span>A reading is only as good as the record around it &mdash; timestamps, checksums, calibration. Sometimes it all checks out.</span></div>
+        </div>
+      </div>
+      <p style="margin-top:-6px;">Every call moves your station's <strong style="color:var(--amber)">reliability</strong>. Good calls hold the line. Bad calls cost you &mdash; and each shift gets tougher. Reliability hits zero, the station goes dark.</p>
+      <div class="start-actions">
+        <button class="primary-btn" id="btnStart">Begin Shift 1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GAME SCREEN ================= -->
+  <div class="screen" id="screen-game">
+    <div class="station-header">
+      <div>
+        <div class="station-id">Meridian Pt. // Shift <span id="shiftNum">1</span></div>
+        <div class="shift-name" id="shiftName">Calibration Shift</div>
+      </div>
+      <div class="gauge-wrap">
+        <svg width="70" height="42" viewBox="0 0 100 60">
+          <path d="M10,50 A40,40 0 0,1 90,50" fill="none" stroke="#2a3540" stroke-width="8" stroke-linecap="round"/>
+          <path d="M10,50 A40,40 0 0,1 36,15" fill="none" stroke="#6e2b34" stroke-width="8" stroke-linecap="round"/>
+          <path d="M36,15 A40,40 0 0,1 64,15" fill="none" stroke="#8a6626" stroke-width="8" stroke-linecap="round"/>
+          <path d="M64,15 A40,40 0 0,1 90,50" fill="none" stroke="#2f5b62" stroke-width="8" stroke-linecap="round"/>
+          <line id="gaugeNeedle" x1="50" y1="50" x2="50" y2="16" stroke="#e8e3d8" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="50" cy="50" r="4" fill="#e8e3d8"/>
+        </svg>
+        <div class="gauge-label">RELIABILITY <span id="reliabilityNum">100</span>%</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" id="scoreVal">0</div>
+        <div class="stat-label" style="margin-top:4px;">Streak</div>
+        <div class="stat-value streak-value" id="streakVal">0</div>
+      </div>
+    </div>
+
+    <div class="progress-row" id="progressRow"></div>
+
+    <div class="monitor">
+      <div class="mechanic-tag" id="mechanicTag">Visualization</div>
+      <div class="prompt-text" id="promptText">Loading...</div>
+      <canvas id="chartCanvas" style="display:none;"></canvas>
+      <table class="meta-table" id="metaTable" style="display:none;"></table>
+
+      <div class="feedback" id="feedback">
+        <span class="feedback-verdict" id="feedbackVerdict">Correct</span>
+        <span id="feedbackText"></span>
+      </div>
+    </div>
+
+    <div class="choices" id="choicesWrap"></div>
+
+    <div class="continue-row" id="continueRow" style="display:none;">
+      <button class="primary-btn" id="btnContinue">Continue</button>
+    </div>
+  </div>
+
+  <!-- ================= SHIFT TRANSITION SCREEN ================= -->
+  <div class="screen" id="screen-transition">
+    <div class="card">
+      <div class="subtitle" id="transitionSubtitle">Shift Complete</div>
+      <h1 id="transitionTitle">Calibration Shift</h1>
+      <p id="transitionBlurb">Solid work. The next watch is coming up.</p>
+      <div class="transition-summary">
+        <div class="summary-cell"><div class="n" id="tsAccuracy">--%</div><div class="l">Shift Accuracy</div></div>
+        <div class="summary-cell"><div class="n" id="tsReliability">--%</div><div class="l">Reliability Now</div></div>
+      </div>
+      <div class="start-actions">
+        <button class="primary-btn" id="btnNextShift">Start Next Shift</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GAME OVER SCREEN ================= -->
+  <div class="screen" id="screen-over">
+    <div class="card">
+      <div class="gameover-banner">&#9888; Station Offline &mdash; Reliability Depleted</div>
+      <h1>Shift Debrief</h1>
+      <p>You held the watch through <strong id="overShifts" style="color:var(--ink)">1</strong> shift(s) and scored <strong id="overScore" style="color:var(--amber)">0</strong> points.</p>
+      <div id="breakdownWrap" style="margin: 16px 0;"></div>
+      <p id="debriefNote" style="font-size:13.5px;"></p>
+      <div class="start-actions">
+        <button class="primary-btn" id="btnRestart">Start New Shift</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* ============================================================
+   GOOGLE SHEETS LOGGING SCAFFOLD (deferred / disabled by default)
+   To activate: paste your deployed Apps Script Web App URL below.
+   Pattern matches the rest of the suite: fetch w/ sendBeacon fallback,
+   localStorage backup queue, and a pagehide flush for abandoned sessions.
+   ============================================================ */
+  var SHEET_WEBHOOK_URL = ""; // <-- paste deployed Web App URL here to enable
+
+  function logEvent(payload) {
+    if (!SHEET_WEBHOOK_URL) return; // logging deferred for this game
+    var record = Object.assign({ ts: new Date().toISOString(), game: "Meridian Point: Data Watch" }, payload);
+    try {
+      var body = JSON.stringify(record);
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(SHEET_WEBHOOK_URL, new Blob([body], { type: "application/json" }));
+      } else {
+        fetch(SHEET_WEBHOOK_URL, { method: "POST", body: body, keepalive: true }).catch(function () {
+          queueLocal(record);
+        });
+      }
+    } catch (e) {
+      queueLocal(record);
+    }
+  }
+  function queueLocal(record) {
+    try {
+      var key = "meridianPointLogQueue";
+      var q = JSON.parse(localStorage.getItem(key) || "[]");
+      q.push(record);
+      localStorage.setItem(key, JSON.stringify(q));
+    } catch (e) { /* no-op */ }
+  }
+  window.addEventListener("pagehide", function () {
+    if (!SHEET_WEBHOOK_URL) return;
+    try {
+      var key = "meridianPointLogQueue";
+      var q = JSON.parse(localStorage.getItem(key) || "[]");
+      if (q.length && navigator.sendBeacon) {
+        navigator.sendBeacon(SHEET_WEBHOOK_URL, new Blob([JSON.stringify({ batch: q })], { type: "application/json" }));
+        localStorage.removeItem(key);
+      }
+    } catch (e) { /* no-op */ }
+  });
+
+/* ============================================================
+   RNG
+   ============================================================ */
+  function makeRng(seed) {
+    var s = seed >>> 0;
+    return function () {
+      s ^= s << 13; s >>>= 0;
+      s ^= s >>> 17;
+      s ^= s << 5; s >>>= 0;
+      return (s >>> 0) / 4294967296;
+    };
+  }
+  function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+  function randInt(rng, min, max) { return Math.floor(rng() * (max - min + 1)) + min; }
+  function shuffle(rng, arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+/* ============================================================
+   DIFFICULTY
+   ============================================================ */
+  function difficultyParams(shiftNum) {
+    var t = clamp(shiftNum, 1, 12);
+    return {
+      points: clamp(6 + Math.floor(t / 2), 6, 12),
+      noise: clamp(0.15 + t * 0.06, 0.15, 1.0),
+      outlierSubtlety: clamp(1.0 - t * 0.06, 0.35, 1.0),
+      distractorCloseness: clamp(t * 0.08, 0, 0.7),
+      metadataFlawCount: t <= 3 ? 1 : (t <= 8 ? 1 : 2)
+    };
+  }
+
+  var LETTERS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+
+/* ============================================================
+   MECHANIC 1: VISUALIZATION
+   ============================================================ */
+  function genTrendRound(rng, shiftNum) {
+    var dp = difficultyParams(shiftNum);
+    var n = dp.points;
+    var patternPool = ["rising","falling","flat","cyclical"];
+    var truth = pick(rng, patternPool);
+    var base = randInt(rng, 40, 70);
+    var values = [];
+    for (var i = 0; i < n; i++) {
+      var v = base;
+      if (truth === "rising") v = base + i * randInt(rng, 2, 5);
+      else if (truth === "falling") v = base - i * randInt(rng, 2, 5);
+      else if (truth === "cyclical") v = base + Math.round(10 * Math.sin(i * (Math.PI / 2.2)));
+      else v = base + randInt(rng, -2, 2);
+      v += Math.round((rng() - 0.5) * 10 * dp.noise);
+      values.push(v);
+    }
+    var label = pick(rng, ["Temperature (\u00b0F)", "Barometric Pressure (mb)", "Wind Speed (mph)", "Humidity (%)"]);
+    var xLabels = values.map(function (_, i) { return "Day " + (i + 1); });
+
+    var choiceDefs = shuffle(rng, [
+      { key: "rising", text: "Rising steadily over the period" },
+      { key: "falling", text: "Falling steadily over the period" },
+      { key: "flat", text: "Roughly stable \u2014 no significant trend" },
+      { key: "cyclical", text: "Rising and falling in a repeating (cyclical) pattern" }
+    ]);
+    var correctIndex = -1;
+    for (var k = 0; k < choiceDefs.length; k++) if (choiceDefs[k].key === truth) correctIndex = k;
+
+    return {
+      type: "trend", mechanic: "visualization",
+      chart: { kind: "line", values: values, xLabels: xLabels, yLabel: label, highlight: -1 },
+      prompt: 'Sensor readings for "' + label + '" over ' + n + ' days are shown. What best describes the overall trend?',
+      choices: choiceDefs.map(function (c) { return c.text; }),
+      correctIndex: correctIndex,
+      explanation: explainTrend(truth, label)
+    };
+  }
+
+  function explainTrend(truth, label) {
+    if (truth === "rising") return 'Each day\u2019s ' + label + ' value is consistently higher than the last \u2014 that\u2019s a rising trend, even with some noise.';
+    if (truth === "falling") return 'Each day\u2019s ' + label + ' value is consistently lower than the last \u2014 that\u2019s a falling trend, even with some noise.';
+    if (truth === "cyclical") return 'The values go up and down in a repeating pattern rather than moving in one direction \u2014 that\u2019s cyclical, not a true trend.';
+    return 'The values bounce around a similar level with no consistent direction \u2014 that\u2019s noise, not a trend. Not every dataset has one.';
+  }
+
+  function genOutlierRound(rng, shiftNum) {
+    var dp = difficultyParams(shiftNum);
+    var n = clamp(dp.points, 6, LETTERS.length);
+    var base = randInt(rng, 40, 70);
+    var values = [];
+    for (var i = 0; i < n; i++) values.push(base + Math.round((rng() - 0.5) * 8 * dp.noise));
+    var hasOutlier = rng() < 0.65;
+    var outlierIdx = -1;
+    if (hasOutlier) {
+      outlierIdx = randInt(rng, 1, n - 2);
+      var direction = rng() < 0.5 ? 1 : -1;
+      var magnitude = randInt(rng, 15, 30) * dp.outlierSubtlety;
+      values[outlierIdx] = Math.round(base + direction * magnitude);
+    }
+    var label = pick(rng, ["Rain Gauge #3", "Wind Sensor North", "Thermometer B", "Anemometer 2"]);
+    var xLabels = values.map(function (_, i) { return LETTERS[i]; });
+
+    var letterChoices = xLabels.map(function (l) { return "Point " + l; });
+    var noneText = "No anomaly \u2014 all readings look consistent";
+    var allChoiceTexts = letterChoices.concat([noneText]);
+    var correctText = hasOutlier ? ("Point " + LETTERS[outlierIdx]) : noneText;
+    var distractPool = allChoiceTexts.filter(function (t) { return t !== correctText; });
+    var distractors = shuffle(rng, distractPool).slice(0, 3);
+    var choices = shuffle(rng, [correctText].concat(distractors));
+    var correctIndex = choices.indexOf(correctText);
+
+    return {
+      type: "outlier", mechanic: "visualization",
+      chart: { kind: "line", values: values, xLabels: xLabels, yLabel: label, highlight: outlierIdx },
+      prompt: 'Readings from "' + label + '" are plotted, one point per letter. Which point, if any, looks like a sensor error rather than real weather?',
+      choices: choices,
+      correctIndex: correctIndex,
+      explanation: hasOutlier
+        ? ('Point ' + LETTERS[outlierIdx] + ' jumps far from the surrounding readings with no gradual buildup \u2014 that pattern usually means a sensor glitch, not real weather.')
+        : 'All the points stay within a similar range of each other \u2014 that\u2019s normal variation, not a sensor error. Not every chart has an anomaly.'
+    };
+  }
+
+  function genCorrelationRound(rng, shiftNum) {
+    var dp = difficultyParams(shiftNum);
+    var n = clamp(dp.points, 8, 14);
+    var truth = pick(rng, ["strongPos", "strongNeg", "none"]);
+    var pairs = [];
+    for (var i = 0; i < n; i++) {
+      var x = randInt(rng, 10, 90);
+      var y;
+      if (truth === "strongPos") y = clamp(x + Math.round((rng() - 0.5) * 12 * dp.noise), 0, 100);
+      else if (truth === "strongNeg") y = clamp(100 - x + Math.round((rng() - 0.5) * 12 * dp.noise), 0, 100);
+      else y = randInt(rng, 10, 90);
+      pairs.push([x, y]);
+    }
+    var varX = pick(rng, ["Humidity (%)", "Cloud Cover (%)", "Wind Speed (mph)"]);
+    var varY = pick(rng, ["Rainfall (mm)", "Visibility (mi)", "Temperature Drop (\u00b0F)"]);
+
+    var choiceDefs = shuffle(rng, [
+      { key: "strongPos", text: "Strong positive relationship \u2014 as " + varX + " rises, " + varY + " tends to rise too" },
+      { key: "strongNeg", text: "Strong negative relationship \u2014 as " + varX + " rises, " + varY + " tends to fall" },
+      { key: "none", text: "Little to no relationship between the two" }
+    ]);
+    var correctIndex = -1;
+    for (var k = 0; k < choiceDefs.length; k++) if (choiceDefs[k].key === truth) correctIndex = k;
+
+    return {
+      type: "correlation", mechanic: "visualization",
+      chart: { kind: "scatter", pairs: pairs, xLabel: varX, yLabel: varY },
+      prompt: "Each point compares " + varX + " to " + varY + " at a station. How would you describe the relationship?",
+      choices: choiceDefs.map(function (c) { return c.text; }),
+      correctIndex: correctIndex,
+      explanation: truth === "none"
+        ? 'The points are scattered without any clear upward or downward pattern \u2014 that\u2019s a healthy "no relationship" read. Not every pair of variables is connected.'
+        : 'The points form a clear diagonal pattern \u2014 that consistent slope is what a strong relationship looks like on a scatter plot.'
+    };
+  }
+
+  function genVisualizationRound(rng, shiftNum) {
+    var sub = pick(rng, ["trend", "outlier", "correlation"]);
+    if (sub === "trend") return genTrendRound(rng, shiftNum);
+    if (sub === "outlier") return genOutlierRound(rng, shiftNum);
+    return genCorrelationRound(rng, shiftNum);
+  }
+
+/* ============================================================
+   MECHANIC 2: COMPRESSION
+   ============================================================ */
+  var COMPRESSION_BANK = [
+    { prompt: "The station needs to archive 10 years of raw sensor logs for future scientific reanalysis, where every exact value must be recoverable.",
+      correct: "Use lossless compression \u2014 exact values matter for future analysis",
+      distractors: ["Use lossy compression to save more space", "Store the data uncompressed to guarantee no changes", "Delete older years to reduce total size"],
+      explanation: "When future analysis depends on exact recovered values, lossless compression is the right trade \u2014 it shrinks the file without discarding any data." },
+    { prompt: "Bandwidth to headquarters is extremely limited during the storm, and HQ only needs a general sense of cloud movement from the live camera feed, not pixel-perfect detail.",
+      correct: "Use lossy compression \u2014 losing fine detail is an acceptable trade for a much smaller file",
+      distractors: ["Use lossless compression to keep every pixel exact", "Send the feed uncompressed since it's urgent", "Stop sending video data entirely"],
+      explanation: "When perfect fidelity isn't needed and bandwidth is scarce, lossy compression trades some detail for a much bigger size reduction \u2014 a reasonable call here." },
+    { prompt: "A raw wind-speed dataset is 40 MB. Lossless compression brings it to 22 MB. A lossy option tuned for this data brings it to 4 MB but smooths out brief gust spikes. The team's goal is to study sudden gust spikes.",
+      correct: "Use lossless compression \u2014 the exact spikes are the data the team cares about",
+      distractors: ["Use the lossy option \u2014 smaller files are always better", "Use no compression \u2014 compression always distorts data", "Average the readings first, then compress either way"],
+      explanation: "The whole point of the analysis is the spikes \u2014 the exact outlier values. A lossy method that smooths them out would remove the very thing being studied, so lossless is the safer trade even though it saves less space." },
+    { prompt: "An hourly temperature log is just a long list of numbers with a fairly small range (e.g., 60\u201385). The technician assumes compression won't help much since there are no images or audio involved.",
+      correct: "Lossless compression can still shrink it significantly \u2014 repeated/similar numeric patterns compress well without losing any data",
+      distractors: ["Compression only works on images and audio, so skip it", "Only lossy compression can meaningfully shrink numeric data", "The file must be converted to an image first to compress it"],
+      explanation: "Compression isn't just for media \u2014 structured, repetitive numeric data often compresses very well losslessly, with zero data loss." },
+    { prompt: "The station currently stores all satellite snapshots uncompressed \u201cjust to be safe.\u201d Storage is filling up fast, but every snapshot is also used later for precise cloud-boundary measurements.",
+      correct: "Switch to lossless compression \u2014 it frees up space without risking the precise measurements the snapshots are used for",
+      distractors: ["Switch to lossy compression since any compression is risky", "Keep storing everything uncompressed \u2014 it's the only safe option", "Reduce the number of snapshots taken instead of compressing them"],
+      explanation: "Lossless compression is the fix here: it reduces storage pressure while preserving the exact pixel values the boundary measurements depend on." },
+    { prompt: "A field technician emails a 200 MB uncompressed audio recording of a storm-chaser's voice log. The recipient only needs to understand what was said, not analyze the audio waveform.",
+      correct: "Use lossy compression \u2014 removing inaudible detail is an acceptable trade to make the file much smaller",
+      distractors: ["Use lossless compression to preserve the full waveform", "Send it uncompressed since audio can't be compressed safely", "Transcribe it manually instead of sending any file"],
+      explanation: "Since only the spoken content matters, not exact waveform data, a lossy format is a reasonable trade \u2014 smaller file, imperceptible loss for this purpose." },
+    { prompt: "The station's current setup already compresses raw logs losslessly before nightly backup, and the science team has never reported missing or corrupted values.",
+      correct: "No change needed \u2014 the current lossless setup already fits the need for exact, recoverable data",
+      distractors: ["Switch to lossy compression to save even more space", "Turn off compression to be extra cautious", "Compress the data twice for extra savings"],
+      explanation: "Not every scenario needs a fix \u2014 when the current method already matches the need (exact data, reasonable size), the right call is to leave it alone." },
+    { prompt: "A new intern suggests: \u201cLet's just use lossy compression on everything \u2014 it always gives the smallest files, so it's always the best choice.\u201d",
+      correct: "That's a flawed rule \u2014 lossy is only appropriate when some data loss is acceptable; exact-value data needs lossless",
+      distractors: ["Agree \u2014 smallest file size should always be the top priority", "Agree, but only for text files", "Disagree \u2014 lossy compression never actually saves space"],
+      explanation: "Smaller isn't automatically better. The right compression choice depends on whether losing some detail is acceptable for that data's purpose." }
+  ];
+
+  function genCompressionRound(rng, shiftNum) {
+    var item = pick(rng, COMPRESSION_BANK);
+    var choices = shuffle(rng, [item.correct].concat(item.distractors));
+    var correctIndex = choices.indexOf(item.correct);
+    return {
+      type: "compression", mechanic: "compression",
+      prompt: item.prompt, choices: choices, correctIndex: correctIndex, explanation: item.explanation
+    };
+  }
+
+/* ============================================================
+   MECHANIC 3: METADATA FORENSICS
+   ============================================================ */
+  function genMetadataTrustRound(rng, shiftNum) {
+    var dp = difficultyParams(shiftNum);
+    var sensorId = pick(rng, ["WX-114", "WX-227", "WX-338", "WX-501"]);
+    var day = randInt(rng, 1, 28), hour = randInt(rng, 0, 23);
+
+    var possibleFlaws = ["checksum", "calibration", "timestamp"];
+    var numFlaws = rng() < 0.3 ? 0 : Math.min(dp.metadataFlawCount, possibleFlaws.length);
+    var chosenFlawKeys = numFlaws === 0 ? [] : shuffle(rng, possibleFlaws).slice(0, numFlaws);
+
+    var record = {
+      "Sensor ID": sensorId,
+      "Checksum": chosenFlawKeys.indexOf("checksum") !== -1 ? "INVALID" : "VALID",
+      "Last Calibrated": chosenFlawKeys.indexOf("calibration") !== -1 ? (randInt(rng, 13, 24) + " months ago") : (randInt(rng, 1, 6) + " months ago"),
+      "Timestamp": chosenFlawKeys.indexOf("timestamp") !== -1 ? ("Day " + day + ", " + ((hour + randInt(rng, 3, 6)) % 24) + ":00") : ("Day " + day + ", " + hour + ":00"),
+      "Report Window": "Day " + day + ", " + hour + ":00"
+    };
+
+    var correctText;
+    if (chosenFlawKeys.length === 0) correctText = "Yes \u2014 the metadata is consistent, so the reading can be trusted";
+    else if (chosenFlawKeys.indexOf("checksum") !== -1) correctText = "No \u2014 the checksum failed, so data integrity can't be confirmed";
+    else if (chosenFlawKeys.indexOf("timestamp") !== -1) correctText = "No \u2014 the timestamp falls outside the report window, so it doesn't apply here";
+    else correctText = "No \u2014 the sensor is overdue for calibration, so accuracy is in question";
+
+    var allOptions = [
+      "Yes \u2014 the metadata is consistent, so the reading can be trusted",
+      "No \u2014 the checksum failed, so data integrity can't be confirmed",
+      "No \u2014 the timestamp falls outside the report window, so it doesn't apply here",
+      "No \u2014 the sensor is overdue for calibration, so accuracy is in question"
+    ];
+    var distractorPool = allOptions.filter(function (t) { return t !== correctText; });
+    var choices = shuffle(rng, [correctText].concat(shuffle(rng, distractorPool).slice(0, 3)));
+    var correctIndex = choices.indexOf(correctText);
+
+    return {
+      type: "metadata-trust", mechanic: "metadata",
+      record: record,
+      prompt: "Should this reading from " + sensorId + " be trusted for today's report?",
+      choices: choices, correctIndex: correctIndex,
+      explanation: chosenFlawKeys.length === 0
+        ? "Every field lines up \u2014 valid checksum, recent calibration, timestamp inside the window. Not every record has a problem to find."
+        : "Look at the flagged field \u2014 that's what breaks trust in this reading, independent of what the actual sensor value says."
+    };
+  }
+
+  function genMetadataMissingRound(rng, shiftNum) {
+    var goals = [
+      { goal: "confirm the sensor's readings are currently accurate", missing: "Last Calibrated date", present: ["Sensor ID", "Timestamp", "Reading Value"] },
+      { goal: "confirm this reading happened during the storm window being reported", missing: "Timestamp", present: ["Sensor ID", "Checksum", "Reading Value"] },
+      { goal: "verify the data wasn't corrupted in transmission", missing: "Checksum", present: ["Sensor ID", "Timestamp", "Reading Value"] },
+      { goal: "know which physical station recorded this reading", missing: "Sensor ID / Location", present: ["Timestamp", "Checksum", "Reading Value"] }
+    ];
+    var item = pick(rng, goals);
+    var distractorAll = ["Sensor ID / Location", "Timestamp", "Checksum", "Last Calibrated date"].filter(function (f) { return f !== item.missing; });
+    var choices = shuffle(rng, [item.missing].concat(shuffle(rng, distractorAll).slice(0, 3)));
+    var correctIndex = choices.indexOf(item.missing);
+
+    var record = {};
+    item.present.forEach(function (f) { record[f] = f === "Reading Value" ? (randInt(rng, -5, 95) + "\u00b0F") : "(shown)"; });
+
+    return {
+      type: "metadata-missing", mechanic: "metadata",
+      record: record,
+      prompt: "You need to " + item.goal + ". Which useful metadata field is missing from this record that would help?",
+      choices: choices, correctIndex: correctIndex,
+      explanation: 'Without "' + item.missing + '," there\u2019s no way to ' + item.goal + ' from this record alone \u2014 the reading value by itself isn\u2019t enough context.'
+    };
+  }
+
+  function genMetadataRound(rng, shiftNum) {
+    return (rng() < 0.6) ? genMetadataTrustRound(rng, shiftNum) : genMetadataMissingRound(rng, shiftNum);
+  }
+
+  function genRound(rng, shiftNum, mechanicOverride) {
+    var mechanic = mechanicOverride || pick(rng, ["visualization", "compression", "metadata"]);
+    if (mechanic === "visualization") return genVisualizationRound(rng, shiftNum);
+    if (mechanic === "compression") return genCompressionRound(rng, shiftNum);
+    return genMetadataRound(rng, shiftNum);
+  }
+
+/* ============================================================
+   SHIFT DEFINITIONS
+   ============================================================ */
+  var SHIFT_NAMES = ["Calibration Shift", "Standard Watch", "Storm Watch", "Critical Systems"];
+  function shiftName(n) {
+    if (n <= SHIFT_NAMES.length) return SHIFT_NAMES[n - 1];
+    return "Extended Watch " + (n - SHIFT_NAMES.length);
+  }
+  var ROUNDS_PER_SHIFT = 6;
+
+/* ============================================================
+   CHART RENDERING (canvas)
+   ============================================================ */
+  var canvas = document.getElementById("chartCanvas");
+  var ctx = canvas.getContext("2d");
+
+  function sizeCanvas() {
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    var w = rect.width || 320;
+    var h = 220;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: w, h: h };
+  }
+
+  function drawLineChart(chart) {
+    canvas.style.display = "block";
+    document.getElementById("metaTable").style.display = "none";
+    var dim = sizeCanvas();
+    var w = dim.w, h = dim.h;
+    ctx.clearRect(0, 0, w, h);
+
+    var padL = 42, padR = 14, padT = 16, padB = 30;
+    var plotW = w - padL - padR, plotH = h - padT - padB;
+    var values = chart.values;
+    var minV = Math.min.apply(null, values), maxV = Math.max.apply(null, values);
+    var range = Math.max(maxV - minV, 1);
+    minV -= range * 0.15; maxV += range * 0.15;
+    range = maxV - minV;
+
+    // gridlines
+    ctx.strokeStyle = "rgba(74,145,158,0.18)";
+    ctx.lineWidth = 1;
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + (plotH * g / 4);
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(w - padR, gy); ctx.stroke();
+      var val = maxV - (range * g / 4);
+      ctx.fillStyle = "#5c6870";
+      ctx.font = "10px IBM Plex Mono, monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(Math.round(val), padL - 6, gy + 3);
+    }
+
+    function xPos(i) { return padL + (values.length === 1 ? plotW / 2 : plotW * i / (values.length - 1)); }
+    function yPos(v) { return padT + plotH - ((v - minV) / range) * plotH; }
+
+    // line
+    ctx.strokeStyle = "#e8a33d";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    values.forEach(function (v, i) {
+      var x = xPos(i), y = yPos(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // points
+    values.forEach(function (v, i) {
+      var x = xPos(i), y = yPos(v);
+      var isHi = chart.highlight === i;
+      ctx.beginPath();
+      ctx.arc(x, y, isHi ? 6 : 4, 0, Math.PI * 2);
+      ctx.fillStyle = isHi ? "#d1495b" : "#6fc4d1";
+      ctx.fill();
+      if (isHi) {
+        ctx.strokeStyle = "#d1495b"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.stroke();
+      }
+    });
+
+    // x labels
+    ctx.fillStyle = "#9aa5ac";
+    ctx.font = "10px IBM Plex Mono, monospace";
+    ctx.textAlign = "center";
+    var step = values.length > 9 ? 2 : 1;
+    chart.xLabels.forEach(function (lbl, i) {
+      if (i % step !== 0 && i !== values.length - 1) return;
+      ctx.fillText(lbl.replace("Day ", ""), xPos(i), h - 8);
+    });
+  }
+
+  function drawScatter(chart) {
+    canvas.style.display = "block";
+    document.getElementById("metaTable").style.display = "none";
+    var dim = sizeCanvas();
+    var w = dim.w, h = dim.h;
+    ctx.clearRect(0, 0, w, h);
+
+    var padL = 42, padR = 14, padT = 16, padB = 34;
+    var plotW = w - padL - padR, plotH = h - padT - padB;
+
+    ctx.strokeStyle = "rgba(74,145,158,0.18)";
+    ctx.lineWidth = 1;
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + (plotH * g / 4);
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(w - padR, gy); ctx.stroke();
+      var gx = padL + (plotW * g / 4);
+      ctx.beginPath(); ctx.moveTo(gx, padT); ctx.lineTo(gx, h - padB); ctx.stroke();
+    }
+
+    function xPos(v) { return padL + (v / 100) * plotW; }
+    function yPos(v) { return padT + plotH - (v / 100) * plotH; }
+
+    chart.pairs.forEach(function (p) {
+      ctx.beginPath();
+      ctx.arc(xPos(p[0]), yPos(p[1]), 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(111,196,209,0.85)";
+      ctx.fill();
+    });
+
+    ctx.fillStyle = "#9aa5ac";
+    ctx.font = "10px IBM Plex Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(chart.xLabel, padL + plotW / 2, h - 8);
+    ctx.save();
+    ctx.translate(12, padT + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(chart.yLabel, 0, 0);
+    ctx.restore();
+  }
+
+  function renderMetaTable(record) {
+    canvas.style.display = "none";
+    var table = document.getElementById("metaTable");
+    table.style.display = "table";
+    table.innerHTML = "";
+    Object.keys(record).forEach(function (key) {
+      var tr = document.createElement("tr");
+      var td1 = document.createElement("td"); td1.textContent = key;
+      var td2 = document.createElement("td"); td2.textContent = record[key];
+      tr.appendChild(td1); tr.appendChild(td2);
+      table.appendChild(tr);
+    });
+  }
+
+  function hideVisuals() {
+    canvas.style.display = "none";
+    document.getElementById("metaTable").style.display = "none";
+  }
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+  var state = null;
+
+  function newGame() {
+    state = {
+      seed: Math.floor(Math.random() * 1e9) + Date.now() % 100000,
+      rng: null,
+      shiftNum: 1,
+      roundInShift: 0,
+      score: 0,
+      streak: 0,
+      reliability: 100,
+      shiftCorrect: 0,
+      shiftTotal: 0,
+      mechanicStats: { visualization: { correct: 0, total: 0 }, compression: { correct: 0, total: 0 }, metadata: { correct: 0, total: 0 } },
+      currentRound: null,
+      answered: false
+    };
+    state.rng = makeRng(state.seed);
+  }
+
+  function mechanicLabel(m) {
+    if (m === "visualization") return "Visualization";
+    if (m === "compression") return "Compression Call";
+    return "Metadata Check";
+  }
+
+  function startShift() {
+    state.roundInShift = 0;
+    state.shiftCorrect = 0;
+    state.shiftTotal = 0;
+    document.getElementById("shiftNum").textContent = state.shiftNum;
+    document.getElementById("shiftName").textContent = shiftName(state.shiftNum);
+    buildProgressRow();
+    nextRound();
+  }
+
+  function buildProgressRow() {
+    var row = document.getElementById("progressRow");
+    row.innerHTML = "";
+    for (var i = 0; i < ROUNDS_PER_SHIFT; i++) {
+      var d = document.createElement("div");
+      d.className = "prog-dot";
+      d.id = "dot-" + i;
+      row.appendChild(d);
+    }
+    updateProgressRow();
+  }
+  function updateProgressRow() {
+    for (var i = 0; i < ROUNDS_PER_SHIFT; i++) {
+      var d = document.getElementById("dot-" + i);
+      if (!d) continue;
+      d.className = "prog-dot" + (i < state.roundInShift ? " done" : (i === state.roundInShift ? " current" : ""));
+    }
+  }
+
+  function updateHeader() {
+    document.getElementById("scoreVal").textContent = state.score;
+    document.getElementById("streakVal").textContent = state.streak;
+    document.getElementById("reliabilityNum").textContent = Math.round(state.reliability);
+    var angle = -90 + (state.reliability / 100) * 180;
+    document.getElementById("gaugeNeedle").setAttribute("transform", "rotate(" + angle + " 50 50)");
+  }
+
+  function nextRound() {
+    state.answered = false;
+    var round = genRound(state.rng, state.shiftNum);
+    state.currentRound = round;
+    updateProgressRow();
+    renderRound(round);
+    updateHeader();
+  }
+
+  function renderRound(round) {
+    document.getElementById("mechanicTag").textContent = mechanicLabel(round.mechanic);
+    document.getElementById("promptText").textContent = round.prompt;
+    var fb = document.getElementById("feedback");
+    fb.classList.remove("show", "bad");
+    document.getElementById("continueRow").style.display = "none";
+
+    if (round.mechanic === "visualization") {
+      if (round.chart.kind === "line") drawLineChart(round.chart);
+      else drawScatter(round.chart);
+    } else if (round.mechanic === "metadata") {
+      renderMetaTable(round.record);
+    } else {
+      hideVisuals();
+    }
+
+    var wrap = document.getElementById("choicesWrap");
+    wrap.innerHTML = "";
+    round.choices.forEach(function (choiceText, idx) {
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.textContent = choiceText;
+      btn.addEventListener("click", function () { handleAnswer(idx); });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(idx) {
+    if (state.answered) return;
+    state.answered = true;
+    var round = state.currentRound;
+    var correct = idx === round.correctIndex;
+    var dp = difficultyParams(state.shiftNum);
+
+    var buttons = document.querySelectorAll("#choicesWrap .choice-btn");
+    buttons.forEach(function (b, i) {
+      b.disabled = true;
+      if (i === round.correctIndex) b.classList.add("correct");
+      else if (i === idx) b.classList.add("wrong");
+    });
+
+    state.shiftTotal++;
+    var mstat = state.mechanicStats[round.mechanic];
+    mstat.total++;
+
+    if (correct) {
+      state.shiftCorrect++;
+      mstat.correct++;
+      state.streak++;
+      var basePoints = 80 + state.shiftNum * 15;
+      var streakBonus = Math.min(state.streak - 1, 5) * 12;
+      state.score += basePoints + streakBonus;
+      state.reliability = Math.min(100, state.reliability + 4);
+    } else {
+      state.streak = 0;
+      var penalty = 12 + Math.min(state.shiftNum, 8) * 1.5;
+      state.reliability = Math.max(0, state.reliability - penalty);
+    }
+
+    logEvent({
+      shift: state.shiftNum, roundType: round.type, mechanic: round.mechanic,
+      correct: correct, reliability: Math.round(state.reliability), score: state.score
+    });
+
+    var fb = document.getElementById("feedback");
+    fb.classList.add("show");
+    if (!correct) fb.classList.add("bad");
+    document.getElementById("feedbackVerdict").textContent = correct ? "Correct call" : "Missed call";
+    document.getElementById("feedbackText").textContent = round.explanation;
+
+    updateHeader();
+
+    document.getElementById("continueRow").style.display = "block";
+
+    if (state.reliability <= 0) {
+      document.getElementById("btnContinue").textContent = "View Debrief";
+    } else {
+      document.getElementById("btnContinue").textContent = (state.roundInShift + 1 >= ROUNDS_PER_SHIFT) ? "End Shift" : "Continue";
+    }
+  }
+
+  function onContinue() {
+    if (state.reliability <= 0) {
+      showGameOver();
+      return;
+    }
+    state.roundInShift++;
+    updateProgressRow();
+    if (state.roundInShift >= ROUNDS_PER_SHIFT) {
+      showShiftTransition();
+    } else {
+      nextRound();
+    }
+  }
+
+  function showShiftTransition() {
+    logEvent({ event: "shiftComplete", shift: state.shiftNum, accuracy: state.shiftCorrect / Math.max(1, state.shiftTotal), reliability: Math.round(state.reliability) });
+    switchScreen("screen-transition");
+    var acc = Math.round((state.shiftCorrect / Math.max(1, state.shiftTotal)) * 100);
+    document.getElementById("transitionSubtitle").textContent = "Shift " + state.shiftNum + " Complete";
+    document.getElementById("transitionTitle").textContent = shiftName(state.shiftNum);
+    var blurbs = [
+      "Solid work. The board's steady \u2014 next watch is coming up.",
+      "Storm's building outside. Stay sharp for the next watch.",
+      "Systems humming. Command wants eyes on the next shift already.",
+      "Close call out there, but the station's still online."
+    ];
+    document.getElementById("transitionBlurb").textContent = acc >= 70 ? blurbs[0] : (acc >= 40 ? blurbs[2] : blurbs[3]);
+    document.getElementById("tsAccuracy").textContent = acc + "%";
+    document.getElementById("tsReliability").textContent = Math.round(state.reliability) + "%";
+  }
+
+  function showGameOver() {
+    logEvent({ event: "gameOver", shiftsSurvived: state.shiftNum, score: state.score, mechanicStats: state.mechanicStats });
+    switchScreen("screen-over");
+    document.getElementById("overShifts").textContent = state.shiftNum;
+    document.getElementById("overScore").textContent = state.score;
+
+    var wrap = document.getElementById("breakdownWrap");
+    wrap.innerHTML = "";
+    var labels = { visualization: "Reading Visualizations", compression: "Compression Calls", metadata: "Metadata Checks" };
+    var weakest = null, weakestPct = 101;
+    Object.keys(state.mechanicStats).forEach(function (key) {
+      var s = state.mechanicStats[key];
+      var pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : null;
+      if (pct !== null && pct < weakestPct) { weakestPct = pct; weakest = labels[key]; }
+      var row = document.createElement("div");
+      row.className = "breakdown-row";
+      var barWidth = pct === null ? 0 : pct;
+      row.innerHTML = '<span>' + labels[key] + '</span>' +
+        '<span class="breakdown-bar-wrap"><span class="breakdown-bar" style="width:' + barWidth + '%"></span></span>' +
+        '<span class="breakdown-pct">' + (pct === null ? "\u2014" : pct + "%") + '</span>';
+      wrap.appendChild(row);
+    });
+    var note = document.getElementById("debriefNote");
+    note.textContent = weakest
+      ? ("Engineer's log: focus next watch's review on " + weakest.toLowerCase() + " \u2014 that's where the calls got shaky.")
+      : "Engineer's log: no clear weak spot this run \u2014 nice and even across the board.";
+  }
+
+  function switchScreen(id) {
+    document.querySelectorAll(".screen").forEach(function (s) { s.classList.remove("active"); });
+    document.getElementById(id).classList.add("active");
+  }
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+  document.getElementById("btnStart").addEventListener("click", function () {
+    newGame();
+    switchScreen("screen-game");
+    startShift();
+  });
+  document.getElementById("btnContinue").addEventListener("click", onContinue);
+  document.getElementById("btnNextShift").addEventListener("click", function () {
+    state.shiftNum++;
+    switchScreen("screen-game");
+    startShift();
+  });
+  document.getElementById("btnRestart").addEventListener("click", function () {
+    newGame();
+    switchScreen("screen-game");
+    startShift();
+  });
+
+  window.addEventListener("resize", function () {
+    if (state && state.currentRound && state.currentRound.mechanic === "visualization") {
+      renderRound(state.currentRound);
+      // resizing shouldn't re-shuffle disabled state; if already answered, keep it disabled visually
+      if (state.answered) {
+        var buttons = document.querySelectorAll("#choicesWrap .choice-btn");
+        var round = state.currentRound;
+        buttons.forEach(function (b, i) {
+          b.disabled = true;
+          if (i === round.correctIndex) b.classList.add("correct");
+        });
+      }
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
