@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cipher &amp; Verdict — Agency Casework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --shell-bg:#12141C;
+  --shell-panel:#1A1D29;
+  --shell-panel-2:#20232F;
+  --shell-text:#E7E5DE;
+  --shell-muted:#8B8F9E;
+  --shell-line:#2A2D3A;
+  --gold:#C9A227;
+
+  --ci-panel:#16232E;
+  --ci-panel-2:#1C2E3B;
+  --ci-accent:#4FD1E8;
+  --ci-alert:#F5A623;
+  --ci-danger:#E85B5B;
+  --ci-good:#5FD98A;
+  --ci-text:#D8ECF2;
+
+  --trib-panel:#2E1D14;
+  --trib-panel-2:#3A2618;
+  --trib-accent:#C9A227;
+  --trib-parchment:#EDE4D3;
+  --trib-danger:#B0503F;
+  --trib-good:#8AAE5E;
+  --trib-text:#F1E7D3;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--shell-bg);
+  color:var(--shell-text);
+  font-family:'Inter',system-ui,sans-serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+#app{max-width:720px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.screen{display:none;flex:1;flex-direction:column;padding:22px 20px 32px;}
+.screen.active{display:flex;}
+
+/* ---------- shared chrome ---------- */
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--shell-muted);
+}
+h1.title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:30px;line-height:1.15;margin:8px 0 4px;
+  color:var(--shell-text);letter-spacing:-0.01em;
+}
+.title .accent{color:var(--gold);}
+p.sub{color:var(--shell-muted);font-size:14.5px;line-height:1.5;margin:0 0 20px;}
+.divider{height:1px;background:var(--shell-line);margin:18px 0;}
+.field label{
+  display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--shell-muted);margin-bottom:6px;
+}
+input[type=text]{
+  width:100%;background:var(--shell-panel);border:1px solid var(--shell-line);
+  color:var(--shell-text);font-family:'Inter',sans-serif;font-size:15px;
+  padding:11px 12px;border-radius:6px;outline:none;
+}
+input[type=text]:focus{border-color:var(--gold);}
+button{font-family:'Inter',sans-serif;cursor:pointer;border:none;}
+button:focus-visible,input:focus-visible,.opt-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+.btn-primary{
+  background:var(--gold);color:#1a1508;font-weight:700;font-size:15px;
+  padding:13px 18px;border-radius:8px;letter-spacing:.01em;
+}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-ghost{
+  background:transparent;color:var(--shell-muted);border:1px solid var(--shell-line);
+  font-size:13px;padding:9px 14px;border-radius:7px;
+}
+.btn-ghost:hover{color:var(--shell-text);border-color:var(--shell-muted);}
+
+/* ---------- title screen ---------- */
+#screen-title{justify-content:center;}
+.badge{
+  width:52px;height:52px;border-radius:50%;border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--gold);font-size:18px;
+  margin-bottom:14px;
+}
+.brief-box{
+  background:var(--shell-panel);border:1px solid var(--shell-line);border-radius:10px;
+  padding:16px;margin:16px 0;font-size:13.5px;line-height:1.6;color:var(--shell-muted);
+}
+.brief-box b{color:var(--shell-text);}
+
+/* ---------- zone select ---------- */
+.zone-card{
+  background:var(--shell-panel);border:1px solid var(--shell-line);border-radius:12px;
+  padding:18px;margin-bottom:14px;text-align:left;width:100%;transition:border-color .15s,transform .1s;
+}
+.zone-card:hover{border-color:var(--gold);transform:translateY(-1px);}
+.zone-card .zc-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.zone-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.zone-dot.ci{background:var(--ci-accent);}
+.zone-dot.trib{background:var(--trib-accent);}
+.zone-dot.mix{background:linear-gradient(90deg,var(--ci-accent),var(--trib-accent));}
+.zone-card h3{margin:0;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--shell-text);}
+.zone-card p{margin:4px 0 0;font-size:13px;color:var(--shell-muted);line-height:1.5;}
+
+/* ---------- game screen ---------- */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.hud-left{display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px;}
+.hud-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--shell-muted);text-transform:uppercase;}
+.meter-track{width:100%;height:8px;background:var(--shell-panel);border-radius:4px;overflow:hidden;border:1px solid var(--shell-line);}
+.meter-fill{height:100%;border-radius:4px;transition:width .25s ease;}
+.hud-right{display:flex;gap:14px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--shell-muted);}
+.hud-right b{color:var(--shell-text);}
+.timer-wrap{width:100%;margin-bottom:14px;}
+.timer-track{width:100%;height:5px;background:var(--shell-panel);border-radius:3px;overflow:hidden;}
+.timer-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .1s linear,background .2s;}
+
+.case-shell{
+  border-radius:14px;border:1px solid var(--shell-line);padding:18px;flex:1;
+  display:flex;flex-direction:column;position:relative;overflow:hidden;
+  transition:background .25s,border-color .25s;
+}
+.case-shell.zone-ci{background:linear-gradient(160deg,var(--ci-panel),var(--ci-panel-2));border-color:#2C4656;}
+.case-shell.zone-trib{background:linear-gradient(160deg,var(--trib-panel),var(--trib-panel-2));border-color:#4A3221;}
+
+.case-tag{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:10px;display:inline-block;padding:3px 9px;border-radius:20px;
+}
+.zone-ci .case-tag{color:var(--ci-accent);background:rgba(79,209,232,.1);border:1px solid rgba(79,209,232,.35);}
+.zone-trib .case-tag{color:var(--trib-accent);background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);}
+
+.case-prompt{
+  font-size:16px;line-height:1.5;margin:0 0 14px;
+}
+.zone-ci .case-prompt{color:var(--ci-text);font-family:'Inter',sans-serif;}
+.zone-trib .case-prompt{color:var(--trib-text);font-family:'Zilla Slab',serif;font-weight:600;font-size:17px;}
+
+.case-context{margin-bottom:16px;}
+
+/* message mockup (phishing) */
+.msg-card{
+  background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.08);border-radius:8px;
+  padding:12px 13px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.6;color:var(--ci-text);
+}
+.msg-row{display:flex;gap:6px;margin-bottom:2px;}
+.msg-label{color:var(--ci-accent);flex-shrink:0;width:52px;}
+.msg-link{color:var(--ci-alert);text-decoration:underline;word-break:break-all;}
+.msg-body{margin-top:8px;color:#C9D9DE;}
+
+/* network list (rogue AP) */
+.net-list{display:flex;flex-direction:column;gap:6px;}
+.net-row{
+  background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.08);border-radius:7px;
+  padding:9px 11px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ci-text);
+  display:flex;justify-content:space-between;gap:8px;align-items:center;
+}
+.net-name{font-weight:600;}
+.net-meta{color:#9FC3CE;font-size:11.5px;text-align:right;}
+
+/* design A/B (equity) */
+.design-pair{display:flex;flex-direction:column;gap:10px;}
+.design-box{
+  background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.1);border-radius:8px;
+  padding:11px 13px;font-size:13.5px;line-height:1.5;color:var(--trib-text);
+}
+.design-box b{color:var(--trib-accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;display:block;margin-bottom:3px;}
+
+.options{display:flex;flex-direction:column;gap:9px;margin-top:auto;}
+.opt-btn{
+  text-align:left;width:100%;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.14);
+  border-radius:9px;padding:12px 14px;font-size:14px;line-height:1.4;color:var(--shell-text);
+  transition:border-color .12s,background .12s;
+}
+.zone-ci .opt-btn:hover{border-color:var(--ci-accent);}
+.zone-trib .opt-btn:hover{border-color:var(--trib-accent);}
+.opt-btn:disabled{cursor:default;}
+.opt-btn.correct{border-color:var(--ci-good);background:rgba(95,217,138,.14);}
+.zone-trib .opt-btn.correct{border-color:var(--trib-good);background:rgba(138,174,94,.16);}
+.opt-btn.wrong{border-color:var(--ci-danger);background:rgba(232,91,91,.12);}
+.zone-trib .opt-btn.wrong{border-color:var(--trib-danger);background:rgba(176,80,63,.16);}
+.opt-btn.dim{opacity:.45;}
+
+.feedback{
+  margin-top:12px;font-size:13.5px;line-height:1.55;color:var(--shell-muted);
+  background:rgba(0,0,0,.18);border-left:3px solid var(--gold);padding:10px 12px;border-radius:6px;
+  display:none;
+}
+.feedback.show{display:block;}
+
+.stamp-wrap{position:absolute;top:14px;right:14px;pointer-events:none;z-index:5;}
+.stamp{
+  font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:15px;letter-spacing:.08em;
+  padding:8px 14px;border-radius:6px;border:3px solid;transform:rotate(-8deg);opacity:0;
+  text-transform:uppercase;
+}
+.stamp.show{animation:stampIn .38s cubic-bezier(.2,1.6,.4,1) forwards;}
+@keyframes stampIn{
+  0%{transform:scale(3) rotate(-20deg);opacity:0;}
+  55%{transform:scale(.92) rotate(-6deg);opacity:1;}
+  100%{transform:scale(1) rotate(-8deg);opacity:1;}
+}
+.stamp.good{color:var(--ci-good);border-color:var(--ci-good);}
+.stamp.bad{color:var(--ci-danger);border-color:var(--ci-danger);}
+.zone-trib .stamp.good{color:var(--trib-good);border-color:var(--trib-good);}
+.zone-trib .stamp.bad{color:var(--trib-danger);border-color:var(--trib-danger);}
+
+.next-row{display:flex;justify-content:flex-end;margin-top:12px;}
+.game-footer{display:flex;justify-content:space-between;margin-top:14px;gap:10px;}
+
+/* ---------- debrief ---------- */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.stat-box{background:var(--shell-panel);border:1px solid var(--shell-line);border-radius:9px;padding:12px 14px;}
+.stat-box .n{font-family:'IBM Plex Mono',monospace;font-size:22px;color:var(--gold);font-weight:700;}
+.stat-box .l{font-size:11.5px;color:var(--shell-muted);letter-spacing:.05em;margin-top:2px;}
+.vocab-item{
+  border:1px solid var(--shell-line);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--shell-panel);
+}
+.vocab-item .term{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);font-weight:600;}
+.vocab-item .def{font-size:13px;color:var(--shell-muted);margin-top:3px;line-height:1.45;}
+.status-line{font-size:13px;color:var(--shell-muted);margin-bottom:4px;}
+
+@media (max-width:400px){
+  h1.title{font-size:25px;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ TITLE ============ -->
+  <div class="screen active" id="screen-title">
+    <div class="badge">A9</div>
+    <div class="eyebrow">Interagency Casework Simulator</div>
+    <h1 class="title">Cipher <span class="accent">&amp;</span> Verdict</h1>
+    <p class="sub">You're a rotating field agent splitting time between two divisions: <b>Counter-Intel</b> (cybersecurity threats) and the <b>Ethics Tribunal</b> (bias, access, and crowdsourcing cases). Every case is a judgment call under the clock.</p>
+    <div class="brief-box">
+      <b>How it works:</b> Read the case file, make your call before time runs out, and watch your Trust Rating. Wrong calls or timeouts cost trust — run it out and you're recalled for the day (no permanent loss, just start a new session). Build streaks to raise the stakes and your score.
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="player-name">Agent name (for the leaderboard)</label>
+      <input type="text" id="player-name" maxlength="24" placeholder="e.g. Agent Rivera">
+    </div>
+    <div style="margin-top:18px;">
+      <button class="btn-primary" id="btn-to-zone" style="width:100%;">Begin Briefing →</button>
+    </div>
+  </div>
+
+  <!-- ============ ZONE SELECT ============ -->
+  <div class="screen" id="screen-zone">
+    <div class="eyebrow">Choose Assignment</div>
+    <h1 class="title" style="font-size:24px;">Pick your division</h1>
+    <p class="sub">Full Rotation mixes both — closest to exam day.</p>
+    <button class="zone-card" data-zone="ci">
+      <div class="zc-top"><span class="zone-dot ci"></span><h3>Counter-Intel Division</h3></div>
+      <p>Phishing triage, encryption matching, rogue access points, and incident response.</p>
+    </button>
+    <button class="zone-card" data-zone="trib">
+      <div class="zc-top"><span class="zone-dot trib"></span><h3>Ethics Tribunal</h3></div>
+      <p>Algorithmic bias, digital divide access audits, crowdsourcing verdicts, equity comparisons.</p>
+    </button>
+    <button class="zone-card" data-zone="mix">
+      <div class="zc-top"><span class="zone-dot mix"></span><h3>Full Rotation</h3></div>
+      <p>Cases from both divisions, mixed at random.</p>
+    </button>
+    <button class="btn-ghost" id="btn-back-title" style="margin-top:4px;align-self:flex-start;">← Back</button>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-label">Trust Rating</div>
+        <div class="meter-track"><div class="meter-fill" id="trust-fill" style="width:100%;background:#5FD98A;"></div></div>
+      </div>
+      <div class="hud-right">
+        <span>TIER <b id="hud-tier">1</b></span>
+        <span>STREAK <b id="hud-streak">0</b></span>
+        <span>SCORE <b id="hud-score">0</b></span>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%;"></div></div>
+    </div>
+
+    <div class="case-shell" id="case-shell">
+      <div class="stamp-wrap"><div class="stamp" id="stamp"></div></div>
+      <span class="case-tag" id="case-tag">CASE</span>
+      <p class="case-prompt" id="case-prompt">Loading...</p>
+      <div class="case-context" id="case-context"></div>
+      <div class="options" id="case-options"></div>
+      <div class="feedback" id="case-feedback"></div>
+      <div class="next-row" id="next-row" style="display:none;">
+        <button class="btn-primary" id="btn-next">Next Case →</button>
+      </div>
+    </div>
+
+    <div class="game-footer">
+      <button class="btn-ghost" id="btn-end-session">End Session</button>
+      <span class="hud-label" id="hud-caseno" style="align-self:center;">CASE 1</span>
+    </div>
+  </div>
+
+  <!-- ============ DEBRIEF ============ -->
+  <div class="screen" id="screen-debrief">
+    <div class="eyebrow" id="debrief-eyebrow">Session Complete</div>
+    <h1 class="title" style="font-size:25px;">Debrief</h1>
+    <p class="status-line" id="debrief-status"></p>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="n" id="d-score">0</div><div class="l">SCORE</div></div>
+      <div class="stat-box"><div class="n" id="d-accuracy">0%</div><div class="l">ACCURACY</div></div>
+      <div class="stat-box"><div class="n" id="d-tier">1</div><div class="l">PEAK TIER</div></div>
+      <div class="stat-box"><div class="n" id="d-streak">0</div><div class="l">BEST STREAK</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="eyebrow" style="margin-bottom:8px;">Vocab from this session</div>
+    <div id="vocab-list"></div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-primary" id="btn-play-again" style="flex:1;">Play Again</button>
+      <button class="btn-ghost" id="btn-change-division">Change Division</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ======================================================================
+   CIPHER & VERDICT — game logic
+   ====================================================================== */
+
+// ---- Google Sheets logging endpoint (paste your Apps Script webhook URL) ----
+const GOOGLE_SHEETS_WEBHOOK_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+const GAME_NAME = "Cipher & Verdict";
+
+// ---------------- utility ----------------
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function randInt(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pickN(arr, n, excludeIdx){
+  const pool = arr.filter((_,i)=>i!==excludeIdx);
+  return shuffle(pool).slice(0,n);
+}
+function esc(s){
+  return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+// ---------------- content pools ----------------
+const NAMES = ["Jordan","Priya","Marcus","Elena","Sam","Talia","Devon","Nina","Omar","Casey"];
+const COMPANIES = [
+  {name:"Northgate Bank", domain:"northgatebank.com"},
+  {name:"Cascade Retail", domain:"cascaderetail.com"},
+  {name:"Vantix Cloud", domain:"vantixcloud.com"},
+  {name:"BrightPath University", domain:"brightpathu.edu"},
+  {name:"Lumen Health", domain:"lumenhealth.org"},
+  {name:"Orbital Streaming", domain:"orbitalstream.tv"},
+  {name:"Meridian Airlines", domain:"meridianair.com"},
+  {name:"Fernwood Insurance", domain:"fernwoodinsurance.com"},
+  {name:"PixelCourier Delivery", domain:"pixelcourier.com"},
+  {name:"Solace Telecom", domain:"solacetel.com"},
+];
+function spoofDomain(domain){
+  const base = domain.split('.')[0];
+  const rest = domain.split('.').slice(1).join('.');
+  const tricks = [
+    () => base + "-secure." + rest,
+    () => base.replace(/o/,'0') + "." + rest,
+    () => base + "-verify.net",
+    () => base.replace(/l/,'1') + "." + rest,
+    () => base + "-alerts." + rest,
+    () => base + "." + rest + "-support.com",
+  ];
+  return rand(tricks)();
+}
+
+const FLAG_TYPES = [
+  {id:'domain',    label:"Phishing — the sender's domain doesn't match the real company", def:"Domain spoofing: the sender's address looks close to the real company's domain but isn't exactly it."},
+  {id:'urgency',   label:"Phishing — creates urgent pressure to act immediately", def:"Urgency pressure: manufactured deadlines or threats push you to act before you think it through."},
+  {id:'credential',label:"Phishing — asks you to enter a password or account number directly", def:"Credential harvesting: legitimate companies rarely ask you to type sensitive info into a link from an email."},
+  {id:'link',      label:"Phishing — the link text doesn't match where it actually leads", def:"Link mismatch: the displayed link text and its real destination point to different places."},
+  {id:'generic',   label:"Phishing — uses a generic greeting instead of your name", def:"Generic greeting: mass phishing attempts often can't personalize a real name."},
+];
+const LEGIT_LABEL = "Legitimate — matches the sender's real domain, uses your name, and doesn't ask for credentials directly";
+const LEGIT_DEF = "A legitimate message matches the real company's domain, is personalized, and never demands you type a password into a link.";
+
+const MSG_KINDS = ['reset','invoice','delivery','suspended','refund'];
+function kindSubject(kind, company){
+  return {
+    reset:   `Password reset requested — ${company}`,
+    invoice: `Invoice #${randInt(1000,9999)} due — ${company}`,
+    delivery:`Delivery update for your package — ${company}`,
+    suspended:`Account access limited — ${company}`,
+    refund:  `You have a refund pending — ${company}`,
+  }[kind];
+}
+function kindBody(kind, name, isPhishing, flagId){
+  const urgent = isPhishing && flagId==='urgency';
+  const askCred = isPhishing && flagId==='credential';
+  const greet = (isPhishing && flagId==='generic') ? "Dear Customer," : `Hi ${name},`;
+  const tail = {
+    reset:   askCred ? "Enter your current password and account number below to confirm it's really you." : "Click below to choose a new password.",
+    invoice: askCred ? "Enter your card number on the page below to keep your account active." : "View and pay your invoice through your account dashboard.",
+    delivery:askCred ? "Confirm your address and payment details on the tracking page." : "Track your package status anytime in the app.",
+    suspended:askCred ? "Re-enter your login and security code immediately to restore access." : "Log in through the app to review the notice.",
+    refund:  askCred ? "Provide your bank account number so we can process your refund." : "Refunds are processed automatically to your original payment method.",
+  }[kind];
+  const urgencyLine = urgent ? " This must be completed within 2 hours or your account will be permanently closed." : "";
+  return `${greet} ${tail}${urgencyLine}`;
+}
+
+function genPhishing(){
+  const company = rand(COMPANIES);
+  const kind = rand(MSG_KINDS);
+  const name = rand(NAMES);
+  const isPhishing = Math.random() < 0.5;
+  const flagId = isPhishing ? rand(FLAG_TYPES).id : null;
+  const flagObj = flagId ? FLAG_TYPES.find(f=>f.id===flagId) : null;
+
+  const realFrom = `security@${company.domain}`;
+  const spoofed = spoofDomain(company.domain);
+  const fromAddr = (isPhishing && flagId==='domain') ? `alerts@${spoofed}` : realFrom;
+
+  const linkReal = `https://www.${company.domain}/account`;
+  const linkFake = `https://${spoofed}/verify`;
+  const linkShown = "Review my account →";
+  const linkActual = (isPhishing && flagId==='link') ? linkFake : linkReal;
+
+  const subject = kindSubject(kind, company.name);
+  const body = kindBody(kind, name, isPhishing, flagId);
+
+  const contextHTML = `
+    <div class="msg-card">
+      <div class="msg-row"><span class="msg-label">FROM</span><span>${esc(fromAddr)}</span></div>
+      <div class="msg-row"><span class="msg-label">SUBJ</span><span>${esc(subject)}</span></div>
+      <div class="msg-body">${esc(body)}</div>
+      <div class="msg-row" style="margin-top:8px;"><span class="msg-label">LINK</span><span class="msg-link">${esc(linkShown)} — ${esc(linkActual)}</span></div>
+    </div>`;
+
+  let correctLabel, tag, explain;
+  if(isPhishing){
+    correctLabel = flagObj.label;
+    tag = flagObj.id;
+    explain = flagObj.def;
+  } else {
+    correctLabel = LEGIT_LABEL;
+    tag = 'legit';
+    explain = LEGIT_DEF;
+  }
+  const distractorPool = isPhishing
+    ? [LEGIT_LABEL, ...FLAG_TYPES.filter(f=>f.id!==flagId).map(f=>f.label)]
+    : FLAG_TYPES.map(f=>f.label);
+  const distractors = shuffle(distractorPool).slice(0,3);
+  const options = shuffle([correctLabel, ...distractors]);
+
+  return {
+    typeId:'phishing', zone:'ci', tagLabel:'Phishing Triage',
+    prompt:`Case file: an inbox message flagged for review. What's your call?`,
+    contextHTML, options, correctIndex: options.indexOf(correctLabel),
+    tag, explain,
+  };
+}
+
+const CONCEPTS = [
+  {id:'sym', label:'Symmetric-key encryption', def:'Symmetric encryption: the same key locks and unlocks the data — fast, but both sides need the shared secret ahead of time.'},
+  {id:'asym', label:'Asymmetric (public-key) encryption', def:"Asymmetric encryption: a public key locks data that only the matching private key can unlock — no shared secret needed in advance."},
+  {id:'hash', label:'Hashing', def:"Hashing: a one-way scramble used to verify data hasn't changed (like stored passwords) — it can't be reversed back to the original."},
+  {id:'pki', label:'Digital certificate / PKI', def:"PKI/certificates: proves a website's identity before you trust it, backed by a certificate authority."},
+  {id:'vpn', label:'VPN tunnel', def:'VPN: encrypts traffic between your device and a server, hiding it from others on the same network.'},
+];
+const SCENARIOS_ENC = [
+  "You're sending a locked message that only your friend's private key can open — you never had to meet up and swap a secret code first.",
+  "A website stores your password so that even if hackers steal the database, they can't see the original password.",
+  "You and a coworker share one secret code to quickly lock and unlock files on a shared drive.",
+  "Your browser shows a padlock and confirms 'this really is your bank's website' before you type your card number.",
+  "You're on café Wi-Fi and want to hide your browsing from anyone else on that network.",
+  "Two servers exchange thousands of encrypted messages per second, so speed matters more than solving the key-sharing problem first.",
+  "A journalist wants strangers to send tips that only she can decrypt, without ever exchanging a secret key with them in advance.",
+];
+const SCENARIO_CONCEPT_MAP = ['asym','hash','sym','pki','vpn','sym','asym'];
+function genEncryption(){
+  const idx = randInt(0, SCENARIOS_ENC.length-1);
+  const correctId = SCENARIO_CONCEPT_MAP[idx];
+  const correctObj = CONCEPTS.find(c=>c.id===correctId);
+  const distractors = pickN(CONCEPTS.map(c=>c.label), 3, CONCEPTS.findIndex(c=>c.id===correctId));
+  const options = shuffle([correctObj.label, ...distractors]);
+  return {
+    typeId:'encryption', zone:'ci', tagLabel:'Encryption Match',
+    prompt: SCENARIOS_ENC[idx] + " Which concept is protecting this?",
+    contextHTML:'', options, correctIndex: options.indexOf(correctObj.label),
+    tag: correctId, explain: correctObj.def,
+  };
+}
+
+const AP_CONTEXTS = [
+  {ctx:"airport terminal", prefix:"SkyHarbor"},
+  {ctx:"coffee shop", prefix:"BrewPoint"},
+  {ctx:"university library", prefix:"Founders-Lib"},
+  {ctx:"hotel lobby", prefix:"Regency"},
+  {ctx:"office building", prefix:"Meridian"},
+];
+function genRogueAP(){
+  const {ctx, prefix} = rand(AP_CONTEXTS);
+  const pattern = rand(['open-strong','duplicate']);
+  let nets, rogueName, explain;
+  if(pattern === 'open-strong'){
+    nets = [
+      {ssid:`${prefix}-Guest`, sec:"WPA2", sig:"Strong", note:"official, password posted on-site"},
+      {ssid:`${prefix}-Staff`, sec:"WPA2", sig:"Medium", note:"requires employee login"},
+      {ssid:`${prefix}-Free-WiFi`, sec:"Open", sig:"Very Strong", note:"no password, appeared 10 min ago"},
+      {ssid:"Nearby Business Net", sec:"WPA2", sig:"Weak", note:"neighboring network"},
+    ];
+    rogueName = `${prefix}-Free-WiFi`;
+    explain = "An open network with no password, a suspiciously strong signal, and no history is a classic rogue/evil-twin setup designed to lure connections.";
+  } else {
+    nets = [
+      {ssid:`${prefix}-Staff`, sec:"WPA2", sig:"Medium", note:"the real network — requires login"},
+      {ssid:`${prefix}-Staff`, sec:"Open", sig:"Strong", note:"same name, no password needed"},
+      {ssid:`${prefix}-Guest`, sec:"WPA2", sig:"Medium", note:"official guest network"},
+      {ssid:"Nearby Business Net", sec:"WPA2", sig:"Weak", note:"neighboring network"},
+    ];
+    rogueName = `${prefix}-Staff (Open)`;
+    nets[1].displayName = `${prefix}-Staff (Open)`;
+    explain = "A duplicate SSID of a trusted network, but with weaker/no security, is an evil-twin impersonating the real access point.";
+  }
+  const options = shuffle(nets.map(n => n.displayName || n.ssid));
+  const correctLabel = rogueName;
+  const contextHTML = `<div class="net-list">${nets.map(n=>`
+    <div class="net-row"><span class="net-name">${esc(n.displayName||n.ssid)}</span><span class="net-meta">${n.sec} · ${n.sig}<br>${esc(n.note)}</span></div>`).join('')}</div>`;
+  return {
+    typeId:'rogueap', zone:'ci', tagLabel:'Rogue AP Sweep',
+    prompt:`You're at a ${ctx} checking nearby Wi-Fi. Which network is most likely a rogue access point?`,
+    contextHTML, options, correctIndex: options.indexOf(correctLabel),
+    tag:'rogueAP', explain,
+  };
+}
+
+const SCENARIOS_IR = [
+  {situation:"Files on your laptop are suddenly encrypted and a ransom note demands cryptocurrency payment.",
+   correct:"Disconnect the device from the network immediately",
+   distractors:["Pay the ransom to recover files fastest","Restart the computer and hope it clears up","Forward the ransom note to coworkers for advice"]},
+  {situation:"You get an alert that your account was logged into from a country you've never visited.",
+   correct:"Change your password and enable multi-factor authentication",
+   distractors:["Ignore it since your account still works fine","Post about it on social media to warn friends","Wait a few days to see if it happens again"]},
+  {situation:"You realize you clicked a link five minutes ago and entered your work password into a fake login page.",
+   correct:"Report it to IT/security and change that password right away",
+   distractors:["Delete the email and move on","Wait until something seems wrong before changing it","Forward the email to more coworkers to check if it's real"]},
+  {situation:"Your phone auto-connected to a network with the same name as your office Wi-Fi, but you're nowhere near the office.",
+   correct:"Disconnect and switch to cellular data or a trusted network",
+   distractors:["Keep using it since the name looks right","Turn off your VPN so the connection is faster","Log into your bank account to test if it's safe"]},
+];
+function genIncidentResponse(){
+  const s = rand(SCENARIOS_IR);
+  const options = shuffle([s.correct, ...s.distractors]);
+  return {
+    typeId:'incident', zone:'ci', tagLabel:'Incident Response',
+    prompt:`${s.situation} What's your FIRST move?`,
+    contextHTML:'', options, correctIndex: options.indexOf(s.correct),
+    tag:'incidentResponse', explain:"Containment comes first — isolate or lock down before reporting, restoring, or investigating further.",
+  };
+}
+
+const BIAS_TYPES = [
+  {id:'training', label:'Training data bias', def:'Training data bias: the historical data used to train the system underrepresents or misrepresents certain groups.'},
+  {id:'sampling', label:'Sampling bias', def:'Sampling bias: the data collected only reflects who was easy to reach, leaving others out.'},
+  {id:'encoded', label:'Encoded human bias', def:"Encoded human bias: a designer's rule or feature choice bakes in an unfair assumption, even unintentionally."},
+  {id:'feedback', label:'Feedback loop bias', def:"Feedback loop bias: the system's own outputs shape future data, reinforcing the original pattern over time."},
+];
+const SCENARIOS_BIAS = [
+  {text:"A hiring algorithm trained on ten years of past hiring decisions ranks candidates from a certain college far higher, since that's who was mostly hired before.", correct:'training'},
+  {text:"A city's predictive policing tool sends more patrols to one neighborhood, which records more stops, which the system reads as 'more crime here,' sending even more patrols.", correct:'feedback'},
+  {text:"A loan approval system doesn't ask about race directly, but heavily weighs zip code — which closely tracks race in that city.", correct:'encoded'},
+  {text:"A phone survey about internet habits only reaches people who still have landlines, skewing results toward older respondents.", correct:'sampling'},
+  {text:"A photo-tagging app struggles to recognize darker skin tones because its training set was mostly lighter-skinned faces.", correct:'training'},
+  {text:"A moderation tool flags posts written in a regional dialect as 'low quality' more often, because the people who labeled its training examples weren't familiar with that dialect.", correct:'encoded'},
+];
+function genBias(){
+  const s = rand(SCENARIOS_BIAS);
+  const correctObj = BIAS_TYPES.find(b=>b.id===s.correct);
+  const distractors = pickN(BIAS_TYPES.map(b=>b.label), 3, BIAS_TYPES.findIndex(b=>b.id===s.correct));
+  const options = shuffle([correctObj.label, ...distractors]);
+  return {
+    typeId:'bias', zone:'trib', tagLabel:'Bias Source ID',
+    prompt: s.text + " What's the most likely SOURCE of this bias?",
+    contextHTML:'', options, correctIndex: options.indexOf(correctObj.label),
+    tag: s.correct, explain: correctObj.def,
+  };
+}
+
+const SCENARIOS_ACCESS = [
+  {text:"A school switches all homework submission to a mobile app that requires a smartphone and a data plan.",
+   correct:"Students without a personal smartphone or reliable data plan",
+   distractors:["Students who prefer paper over digital tools","Students who already have laptops at home","Teachers who dislike using new apps"]},
+  {text:"A city moves all public benefit applications online, with no phone or in-person option, in a rural county with patchy broadband.",
+   correct:"Rural residents without reliable home broadband access",
+   distractors:["Residents who like filling out paper forms","People who already have city offices nearby","Anyone under age 30"]},
+  {text:"A university requires all students to join a mandatory live video seminar every weekday afternoon.",
+   correct:"Students working daytime jobs or without strong enough internet for video",
+   distractors:["Students who take detailed notes","Students who live on campus","Students who own laptops"]},
+  {text:"A telehealth program only offers appointments through a video-call app, with no phone-call fallback.",
+   correct:"Patients without a smartphone, webcam, or strong enough internet for video",
+   distractors:["Patients who prefer seeing a doctor in person for checkups","Patients with private insurance","Patients who live in the same city as the clinic"]},
+];
+function genAccess(){
+  const s = rand(SCENARIOS_ACCESS);
+  const options = shuffle([s.correct, ...s.distractors]);
+  return {
+    typeId:'access', zone:'trib', tagLabel:'Access Audit',
+    prompt: s.text + " Who is most likely excluded, and why?",
+    contextHTML:'', options, correctIndex: options.indexOf(s.correct),
+    tag:'digitalDivide', explain:"The digital divide isn't just about wanting access — it's about cost, devices, and infrastructure that aren't equally available.",
+  };
+}
+
+const SCENARIOS_CROWD = [
+  {text:"A citizen-science app lets anyone log bird sightings worldwide, gathering far more data points than any research team could collect alone.", ask:'benefit',
+   correct:"Massive scale of data collection beyond what a small team could gather",
+   distractors:["Guaranteed accuracy from trained experts","Complete protection from vandalism or fake entries","Even participation from every region and demographic"]},
+  {text:"An online encyclopedia is edited by volunteers, with no formal review before publishing.", ask:'risk',
+   correct:"Vulnerable to intentional bad-faith edits or vandalism",
+   distractors:["Too slow to update compared to print encyclopedias","Impossible to cover niche topics","Requires expensive expert staff"]},
+  {text:"A disaster-relief map is built from thousands of on-the-ground text reports sent in by affected residents.", ask:'benefit',
+   correct:"Rapid, real-time information from people who are actually there",
+   distractors:["Perfectly consistent formatting across every report","No risk of duplicate or conflicting reports","Complete data even from areas with no cell service"]},
+  {text:"A crowdsourced translation project only attracts volunteers who are already fluent in English as a second language.", ask:'risk',
+   correct:"Participation skew — the contributor pool doesn't represent all speakers, which can bias the results",
+   distractors:["Translations will be too slow to be useful","The project will run out of funding quickly","There's no way to translate more than one language"]},
+];
+function genCrowd(){
+  const s = rand(SCENARIOS_CROWD);
+  const options = shuffle([s.correct, ...s.distractors]);
+  const askWord = s.ask === 'benefit' ? 'BENEFIT' : 'RISK';
+  return {
+    typeId:'crowd', zone:'trib', tagLabel:'Crowdsource Verdict',
+    prompt: s.text + ` What's the biggest ${askWord} of this approach?`,
+    contextHTML:'', options, correctIndex: options.indexOf(s.correct),
+    tag: 'crowdsourcing_'+s.ask, explain: s.ask==='benefit'
+      ? "Crowdsourcing's core benefit is scale and speed — reach no small team could match on its own."
+      : "Crowdsourcing's core risk is quality control — no gatekeeper vets every contributor or entry.",
+  };
+}
+
+const SCENARIOS_EQUITY = [
+  {designA:"Requires all assignment submissions through a mobile app only.", designB:"Allows submission via app, SMS text, or in-person drop-off.", reason:"it doesn't rely on everyone having the same device or data plan"},
+  {designA:"A voter registration drive that only accepts sign-ups through a smartphone QR code.", designB:"A voter registration drive offering a QR code, a paper form, and a phone hotline.", reason:"it offers multiple ways to participate for people without the same tech access"},
+  {designA:"A city uses only a mobile app to report potholes and outages.", designB:"A city offers the app plus a phone hotline and a paper form at libraries.", reason:"it doesn't exclude residents without a smartphone"},
+  {designA:"A health clinic only lets patients book appointments through an app requiring an account and a smartphone.", designB:"The clinic allows booking via app, phone call, or walk-in.", reason:"it works for patients without a smartphone or app account"},
+  {designA:"A job posting is only advertised on a professional networking app.", designB:"The job posting is advertised on the app, a community bulletin board, and a local radio spot.", reason:"it reaches people who aren't on that particular platform"},
+];
+const WRONG_REASONS = [
+  "it looks more modern and professional",
+  "it costs less money to build",
+  "it's faster for the design team to implement",
+  "it reduces the total number of options people have to consider",
+];
+function genEquity(){
+  const s = rand(SCENARIOS_EQUITY);
+  const wrongs = shuffle(WRONG_REASONS).slice(0,3);
+  const correctLabel = `Design B — because ${s.reason}`;
+  const options = shuffle([
+    correctLabel,
+    `Design A — because ${wrongs[0]}`,
+    `Design A — because ${wrongs[1]}`,
+    `Design B — because ${wrongs[2]}`,
+  ]);
+  const contextHTML = `<div class="design-pair">
+    <div class="design-box"><b>DESIGN A</b>${esc(s.designA)}</div>
+    <div class="design-box"><b>DESIGN B</b>${esc(s.designB)}</div>
+  </div>`;
+  return {
+    typeId:'equity', zone:'trib', tagLabel:'Equity Comparison',
+    prompt:"Which design is more equitable, and why?",
+    contextHTML, options, correctIndex: options.indexOf(correctLabel),
+    tag:'equity', explain:"Equitable design offers more than one path to participate, so it doesn't assume everyone has the same access.",
+  };
+}
+
+const GENERATORS = {
+  phishing: genPhishing, encryption: genEncryption, rogueap: genRogueAP, incident: genIncidentResponse,
+  bias: genBias, access: genAccess, crowd: genCrowd, equity: genEquity,
+};
+const CI_TYPES = ['phishing','encryption','rogueap','incident'];
+const TRIB_TYPES = ['bias','access','crowd','equity'];
+
+const VOCAB = {};
+FLAG_TYPES.forEach(f => VOCAB[f.id] = {term:f.label.split('—')[0].trim(), def:f.def});
+VOCAB['legit'] = {term:'Legitimate message traits', def:LEGIT_DEF};
+CONCEPTS.forEach(c => VOCAB[c.id] = {term:c.label, def:c.def});
+VOCAB['rogueAP'] = {term:'Rogue access point', def:'An unauthorized Wi-Fi network set up to impersonate a trusted one and intercept traffic.'};
+VOCAB['incidentResponse'] = {term:'Incident response', def:'Contain first, then report, restore, and investigate — in that order.'};
+BIAS_TYPES.forEach(b => VOCAB[b.id] = {term:b.label, def:b.def});
+VOCAB['digitalDivide'] = {term:'Digital divide', def:'The gap between those with reliable access to computing/internet and those without.'};
+VOCAB['crowdsourcing_benefit'] = {term:'Crowdsourcing (benefit)', def:'Gathering data or work from a large, distributed group rather than a small team.'};
+VOCAB['crowdsourcing_risk'] = {term:'Crowdsourcing (risk)', def:'Open participation trades away centralized quality control.'};
+VOCAB['equity'] = {term:'Equitable design', def:'Design that offers multiple paths to access so it does not assume uniform resources.'};
+
+// ---------------- state ----------------
+let state = null;
+function freshState(zone){
+  return {
+    zone, playerName:'', tier:1, streak:0, bestStreak:0, trust:100, score:0,
+    totalCases:0, correct:0, perType:{}, caseNo:0, currentCase:null,
+    timerId:null, timeLeft:0, timerDuration:0, tagsSeen:new Set(), ended:false, answered:false,
+  };
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ---------------- title -> zone ----------------
+document.getElementById('btn-to-zone').addEventListener('click', () => {
+  showScreen('screen-zone');
+});
+document.getElementById('btn-back-title').addEventListener('click', () => {
+  showScreen('screen-title');
+});
+
+document.querySelectorAll('.zone-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const zone = card.getAttribute('data-zone');
+    const name = document.getElementById('player-name').value.trim() || 'Agent';
+    startSession(zone, name);
+  });
+});
+
+function startSession(zone, name){
+  state = freshState(zone);
+  state.playerName = name;
+  showScreen('screen-game');
+  nextCase();
+}
+
+function pickType(){
+  if(state.zone === 'ci') return rand(CI_TYPES);
+  if(state.zone === 'trib') return rand(TRIB_TYPES);
+  return rand([...CI_TYPES, ...TRIB_TYPES]);
+}
+
+function timerDurationForTier(tier){
+  return Math.max(9, 24 - (tier-1)*2);
+}
+
+function nextCase(){
+  if(state.ended) return;
+  clearInterval(state.timerId);
+  state.answered = false;
+  state.caseNo++;
+  const typeId = pickType();
+  const caseObj = GENERATORS[typeId]();
+  state.currentCase = caseObj;
+
+  const shell = document.getElementById('case-shell');
+  shell.classList.remove('zone-ci','zone-trib');
+  shell.classList.add(caseObj.zone === 'ci' ? 'zone-ci' : 'zone-trib');
+
+  document.getElementById('case-tag').textContent = caseObj.tagLabel.toUpperCase();
+  document.getElementById('case-prompt').textContent = caseObj.prompt;
+  document.getElementById('case-context').innerHTML = caseObj.contextHTML || '';
+  document.getElementById('case-feedback').classList.remove('show');
+  document.getElementById('case-feedback').textContent = '';
+  document.getElementById('next-row').style.display = 'none';
+  document.getElementById('hud-caseno').textContent = `CASE ${state.caseNo}`;
+  const stamp = document.getElementById('stamp');
+  stamp.className = 'stamp';
+  stamp.textContent = '';
+
+  const optWrap = document.getElementById('case-options');
+  optWrap.innerHTML = '';
+  caseObj.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => handleAnswer(idx));
+    optWrap.appendChild(btn);
+  });
+
+  state.timerDuration = timerDurationForTier(state.tier);
+  state.timeLeft = state.timerDuration;
+  updateTimerUI();
+  state.timerId = setInterval(() => {
+    state.timeLeft -= 0.1;
+    updateTimerUI();
+    if(state.timeLeft <= 0){
+      clearInterval(state.timerId);
+      handleAnswer(-1); // timeout
+    }
+  }, 100);
+
+  updateHud();
+}
+
+function updateTimerUI(){
+  const pct = Math.max(0, (state.timeLeft/state.timerDuration)*100);
+  const fill = document.getElementById('timer-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct < 30 ? 'var(--ci-danger)' : (pct < 60 ? 'var(--ci-alert)' : 'var(--gold)');
+}
+
+function updateHud(){
+  document.getElementById('hud-tier').textContent = state.tier;
+  document.getElementById('hud-streak').textContent = state.streak;
+  document.getElementById('hud-score').textContent = state.score;
+  const trustFill = document.getElementById('trust-fill');
+  trustFill.style.width = Math.max(0,state.trust) + '%';
+  trustFill.style.background = state.trust < 30 ? '#E85B5B' : (state.trust < 60 ? '#F5A623' : '#5FD98A');
+}
+
+function handleAnswer(idx){
+  if(state.answered) return;
+  state.answered = true;
+  clearInterval(state.timerId);
+  const c = state.currentCase;
+  const correct = idx === c.correctIndex;
+
+  const buttons = document.querySelectorAll('#case-options .opt-btn');
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if(i === c.correctIndex) btn.classList.add('correct');
+    else if(i === idx) btn.classList.add('wrong');
+    else btn.classList.add('dim');
+  });
+
+  state.totalCases++;
+  if(!state.perType[c.typeId]) state.perType[c.typeId] = {correct:0, total:0};
+  state.perType[c.typeId].total++;
+  state.tagsSeen.add(c.tag);
+
+  if(correct){
+    state.correct++;
+    state.perType[c.typeId].correct++;
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    state.trust = Math.min(100, state.trust + 4);
+    state.score += 50 + state.tier*15 + state.streak*5;
+    if(state.streak % 3 === 0){ state.tier = Math.min(6, state.tier+1); }
+  } else {
+    state.streak = 0;
+    state.trust -= 18;
+  }
+
+  const stamp = document.getElementById('stamp');
+  const isCI = c.zone === 'ci';
+  stamp.textContent = correct ? (isCI ? 'SECURED' : 'UPHELD') : (isCI ? 'COMPROMISED' : 'OVERRULED');
+  stamp.className = 'stamp show ' + (correct ? 'good' : 'bad');
+
+  const fb = document.getElementById('case-feedback');
+  fb.textContent = c.explain;
+  fb.classList.add('show');
+
+  updateHud();
+  document.getElementById('next-row').style.display = 'flex';
+
+  if(state.trust <= 0){
+    setTimeout(() => endSession('recalled'), 700);
+  }
+}
+
+document.getElementById('btn-next').addEventListener('click', () => nextCase());
+document.getElementById('btn-end-session').addEventListener('click', () => {
+  clearInterval(state.timerId);
+  endSession('ended-by-player');
+});
+
+function endSession(status){
+  state.ended = true;
+  clearInterval(state.timerId);
+  showDebrief(status);
+  logRun(status);
+}
+
+function showDebrief(status){
+  showScreen('screen-debrief');
+  const acc = state.totalCases ? Math.round((state.correct/state.totalCases)*100) : 0;
+  document.getElementById('d-score').textContent = state.score;
+  document.getElementById('d-accuracy').textContent = acc + '%';
+  document.getElementById('d-tier').textContent = state.tier;
+  document.getElementById('d-streak').textContent = state.bestStreak;
+  const statusText = {
+    'recalled': "Trust Rating hit zero — you've been recalled for the day. No permanent damage, just regroup.",
+    'ended-by-player': "Session ended.",
+  }[status] || "Session complete.";
+  document.getElementById('debrief-status').textContent = statusText;
+
+  const vocabWrap = document.getElementById('vocab-list');
+  vocabWrap.innerHTML = '';
+  Array.from(state.tagsSeen).forEach(tag => {
+    const v = VOCAB[tag];
+    if(!v) return;
+    const div = document.createElement('div');
+    div.className = 'vocab-item';
+    div.innerHTML = `<div class="term">${esc(v.term)}</div><div class="def">${esc(v.def)}</div>`;
+    vocabWrap.appendChild(div);
+  });
+  if(state.tagsSeen.size === 0){
+    vocabWrap.innerHTML = '<p class="sub">No cases completed yet.</p>';
+  }
+}
+
+document.getElementById('btn-play-again').addEventListener('click', () => {
+  startSession(state.zone, state.playerName);
+});
+document.getElementById('btn-change-division').addEventListener('click', () => {
+  showScreen('screen-zone');
+});
+
+// ---------------- logging ----------------
+function buildPayload(status){
+  const acc = state.totalCases ? Math.round((state.correct/state.totalCases)*100) : 0;
+  const breakdown = {};
+  Object.keys(state.perType).forEach(k => {
+    breakdown[k] = `${state.perType[k].correct}/${state.perType[k].total}`;
+  });
+  return {
+    game: GAME_NAME,
+    player: state.playerName,
+    zone: state.zone,
+    peakTier: state.tier,
+    bestStreak: state.bestStreak,
+    totalCases: state.totalCases,
+    correctCases: state.correct,
+    accuracy: acc,
+    score: state.score,
+    breakdown,
+    status,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+function logRun(status){
+  const payload = buildPayload(status);
+  try{
+    const backup = JSON.parse(localStorage.getItem('cipherVerdictRuns') || '[]');
+    backup.push(payload);
+    localStorage.setItem('cipherVerdictRuns', JSON.stringify(backup.slice(-50)));
+  }catch(e){ /* localStorage unavailable, skip backup */ }
+
+  if(!GOOGLE_SHEETS_WEBHOOK_URL || GOOGLE_SHEETS_WEBHOOK_URL.indexOf('PASTE_YOUR') === 0){
+    return; // not configured yet
+  }
+  const body = JSON.stringify(payload);
+  try{
+    if(navigator.sendBeacon){
+      navigator.sendBeacon(GOOGLE_SHEETS_WEBHOOK_URL, new Blob([body], {type:'application/json'}));
+    } else {
+      fetch(GOOGLE_SHEETS_WEBHOOK_URL, {method:'POST', body, keepalive:true});
+    }
+  }catch(e){ /* network unavailable, backup already saved */ }
+}
+
+window.addEventListener('pagehide', () => {
+  if(state && !state.ended && state.totalCases > 0){
+    logRun('abandoned');
+  }
+});
+</script>
+</body>
+</html>

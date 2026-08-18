@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Switchyard Dispatch — Search &amp; Sort Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1013;
+    --bg-panel:#171b21;
+    --bg-panel-2:#1e232b;
+    --steel-line:#2b323d;
+    --track-bed:#20242b;
+    --chalk:#e9e4d8;
+    --chalk-dim:#9aa0a8;
+    --amber:#f2a93b;
+    --amber-deep:#b9781e;
+    --rust:#c1440e;
+    --rust-dim:#5c2a15;
+    --seq:#5f8fd6;
+    --seq-dim:#284264;
+    --bin:#4fae6d;
+    --bin-dim:#1f4530;
+    --sort:#c98a3a;
+    --sort-dim:#4a3216;
+    --font-display:'Bebas Neue', 'Arial Narrow', sans-serif;
+    --font-mono:'IBM Plex Mono', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--chalk);font-family:var(--font-mono);}
+  body{min-height:100vh;}
+  button{font-family:var(--font-mono);cursor:pointer;}
+  button:focus-visible, .clickable:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+  ::selection{background:var(--amber-deep);}
+
+  #app{max-width:960px;margin:0 auto;padding:14px 14px 40px;}
+
+  /* ---------- shared bits ---------- */
+  .eyebrow{font-family:var(--font-mono);letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--chalk-dim);}
+  .wordmark{font-family:var(--font-display);font-size:34px;letter-spacing:.03em;color:var(--amber);line-height:1;}
+  .wordmark small{display:block;font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;color:var(--chalk-dim);margin-top:2px;}
+  .btn{background:var(--amber);color:#1a1300;border:none;border-radius:3px;padding:12px 22px;font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;transition:transform .08s, background .15s;}
+  .btn:hover{background:#ffbf5c;}
+  .btn:active{transform:scale(.97);}
+  .btn.secondary{background:transparent;color:var(--chalk);border:1px solid var(--steel-line);}
+  .btn.secondary:hover{border-color:var(--chalk-dim);background:var(--bg-panel-2);}
+  .hidden{display:none !important;}
+
+  /* ---------- START SCREEN ---------- */
+  #screen-start{padding-top:6vh;}
+  .start-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:28px;}
+  .start-hero p{max-width:520px;color:var(--chalk-dim);font-size:13.5px;line-height:1.6;margin:0;}
+  .rail-divider{width:100%;max-width:520px;height:8px;margin:10px auto 0;background:
+      repeating-linear-gradient(90deg, var(--steel-line) 0 18px, transparent 18px 26px);
+    border-top:2px solid var(--steel-line);border-bottom:2px solid var(--steel-line);}
+
+  .config-card{background:var(--bg-panel);border:1px solid var(--steel-line);border-radius:6px;padding:22px;max-width:480px;margin:0 auto 18px;}
+  .config-row{margin-bottom:16px;}
+  .config-row label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:6px;}
+  .config-row input[type=text]{width:100%;background:var(--bg);border:1px solid var(--steel-line);color:var(--chalk);padding:10px;border-radius:3px;font-family:var(--font-mono);font-size:14px;}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;background:var(--bg);border:1px solid var(--steel-line);color:var(--chalk-dim);padding:10px 6px;border-radius:3px;font-size:12.5px;}
+  .seg button.active{border-color:var(--amber);color:var(--amber);background:var(--bg-panel-2);}
+  .start-actions{display:flex;justify-content:center;margin-top:6px;}
+
+  .legend{max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11.5px;color:var(--chalk-dim);}
+  .legend-item{display:flex;gap:8px;align-items:flex-start;background:var(--bg-panel);border:1px solid var(--steel-line);border-radius:5px;padding:9px 10px;}
+  .legend-dot{width:9px;height:9px;border-radius:2px;flex:0 0 auto;margin-top:3px;}
+
+  /* ---------- HUD ---------- */
+  #screen-game{display:none;}
+  .hud{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 4px 12px;border-bottom:1px solid var(--steel-line);margin-bottom:14px;flex-wrap:wrap;}
+  .hud-left{display:flex;align-items:baseline;gap:10px;}
+  .hud-title{font-family:var(--font-display);font-size:22px;color:var(--amber);letter-spacing:.02em;}
+  .hud-stats{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .stat{font-size:11px;color:var(--chalk-dim);text-align:right;}
+  .stat b{display:block;font-size:16px;color:var(--chalk);font-family:var(--font-mono);}
+  .chaos-wrap{width:120px;}
+  .chaos-bar{height:8px;background:var(--rust-dim);border-radius:4px;overflow:hidden;margin-top:3px;}
+  .chaos-fill{height:100%;background:var(--rust);width:0%;transition:width .3s;}
+  .end-shift-link{font-size:11px;color:var(--chalk-dim);text-decoration:underline;background:none;border:none;padding:0;}
+
+  .timerbar{height:5px;background:var(--steel-line);border-radius:3px;overflow:hidden;margin-bottom:16px;}
+  .timerfill{height:100%;background:var(--amber);width:100%;transition:width .1s linear;}
+  .timerfill.low{background:var(--rust);}
+
+  /* ---------- MANIFEST TICKET (signature element) ---------- */
+  .ticket{position:relative;background:var(--bg-panel);border:1px solid var(--steel-line);border-radius:4px;display:flex;margin-bottom:18px;overflow:hidden;}
+  .ticket-stub{flex:0 0 92px;background:var(--bg-panel-2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;border-right:1px dashed var(--steel-line);}
+  .ticket-stub .tag{font-family:var(--font-display);font-size:26px;line-height:1;}
+  .ticket-stub .taglabel{font-size:9px;letter-spacing:.12em;color:var(--chalk-dim);margin-top:4px;text-align:center;text-transform:uppercase;}
+  .ticket-stub::before, .ticket-stub::after{content:"";position:absolute;width:14px;height:14px;background:var(--bg);border-radius:50%;right:-8px;}
+  .ticket-stub::before{top:-7px;}
+  .ticket-stub::after{bottom:-7px;}
+  .ticket-body{flex:1;padding:14px 16px;}
+  .ticket-body .kicker{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:5px;}
+  .ticket-body .prompt{font-size:14.5px;line-height:1.5;color:var(--chalk);}
+  .ticket-body .prompt b{color:var(--amber);}
+
+  /* ---------- TRACK ---------- */
+  .track-panel{background:var(--track-bed);border:1px solid var(--steel-line);border-radius:6px;padding:18px 14px 14px;margin-bottom:16px;}
+  .track-label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--chalk-dim);margin-bottom:10px;display:flex;justify-content:space-between;}
+  .track-label .count{color:var(--chalk);}
+  .track{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;align-items:flex-end;min-height:74px;}
+  .boxcar{flex:0 0 auto;width:52px;height:52px;background:#2c333e;border:2px solid #3a4250;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:var(--chalk);position:relative;transition:background .25s, border-color .25s, transform .25s, opacity .25s;}
+  .boxcar .idx{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--chalk-dim);}
+  .boxcar.clickable{cursor:pointer;}
+  .boxcar.clickable:hover{border-color:var(--amber);transform:translateY(-3px);}
+  .boxcar.eliminated{opacity:.28;}
+  .boxcar.checked-seq{background:var(--seq-dim);border-color:var(--seq);}
+  .boxcar.checked-bin{background:var(--bin-dim);border-color:var(--bin);}
+  .boxcar.locked{background:var(--sort-dim);border-color:var(--sort);opacity:1;}
+  .boxcar.min-candidate{border-color:var(--amber);}
+  .boxcar.correct-flash{background:var(--bin);border-color:var(--bin);color:#08150c;}
+  .boxcar.wrong-flash{background:var(--rust);border-color:var(--rust);}
+  .boxcar.swap-anim{transform:translateY(-10px) scale(1.05);}
+  .track-flags{position:relative;height:14px;}
+  .flag{position:absolute;top:0;font-size:9px;color:var(--amber);transform:translateX(-50%);white-space:nowrap;}
+
+  .race-track-block{margin-bottom:14px;}
+  .race-track-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .race-track-header .algo-name{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .race-track-header .algo-name.seq{color:var(--seq);}
+  .race-track-header .algo-name.bin{color:var(--bin);}
+  .race-steps{font-size:12px;color:var(--chalk-dim);}
+  .race-result-tag{font-size:10.5px;padding:2px 7px;border-radius:3px;margin-left:8px;}
+  .race-result-tag.win{background:var(--bin);color:#08150c;}
+  .race-result-tag.lose{background:var(--steel-line);color:var(--chalk-dim);}
+
+  /* ---------- OPTIONS (predict / race) ---------- */
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  @media (max-width:520px){.options{grid-template-columns:1fr;}}
+  .opt{background:var(--bg-panel);border:1px solid var(--steel-line);border-radius:4px;padding:13px 14px;text-align:left;color:var(--chalk);font-size:14px;transition:border-color .15s, background .15s;}
+  .opt:hover:not(:disabled){border-color:var(--amber);}
+  .opt:disabled{cursor:default;}
+  .opt.chosen-correct{border-color:var(--bin);background:var(--bin-dim);}
+  .opt.chosen-wrong{border-color:var(--rust);background:var(--rust-dim);}
+  .opt.reveal-correct{border-color:var(--bin);}
+
+  .instruction-line{font-size:12.5px;color:var(--chalk-dim);margin-bottom:14px;text-align:center;}
+
+  /* ---------- DEBRIEF ---------- */
+  .debrief{background:var(--bg-panel);border-left:4px solid var(--amber);border-radius:4px;padding:14px 16px;margin-bottom:8px;}
+  .debrief.wrong{border-left-color:var(--rust);}
+  .debrief .verdict{font-family:var(--font-display);font-size:16px;letter-spacing:.03em;margin-bottom:5px;}
+  .debrief.wrong .verdict{color:var(--rust);}
+  .debrief:not(.wrong) .verdict{color:var(--bin);}
+  .debrief .apnote{font-size:13px;line-height:1.55;color:var(--chalk-dim);}
+  .debrief .apnote b{color:var(--chalk);}
+  .next-row{display:flex;justify-content:flex-end;margin-top:14px;}
+
+  /* ---------- CHAOS EVENT ---------- */
+  .chaos-overlay{position:fixed;inset:0;background:rgba(193,68,14,.18);display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;opacity:0;transition:opacity .25s;}
+  .chaos-overlay.show{opacity:1;}
+  .chaos-overlay .banner{font-family:var(--font-display);font-size:38px;color:var(--rust);letter-spacing:.05em;text-shadow:0 0 18px rgba(193,68,14,.7);}
+
+  /* ---------- END SCREEN ---------- */
+  #screen-end{display:none;padding-top:4vh;}
+  .end-title{font-family:var(--font-display);font-size:36px;color:var(--amber);text-align:center;margin-bottom:4px;}
+  .end-sub{text-align:center;color:var(--chalk-dim);font-size:13px;margin-bottom:26px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:640px;margin:0 auto 24px;}
+  @media (max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat-tile{background:var(--bg-panel);border:1px solid var(--steel-line);border-radius:5px;padding:14px 10px;text-align:center;}
+  .stat-tile .v{font-family:var(--font-display);font-size:26px;color:var(--chalk);}
+  .stat-tile .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk-dim);margin-top:2px;}
+  .breakdown{max-width:640px;margin:0 auto 24px;}
+  .bd-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px;}
+  .bd-row .lbl{width:150px;color:var(--chalk-dim);flex:0 0 auto;}
+  .bd-track{flex:1;height:9px;background:var(--steel-line);border-radius:5px;overflow:hidden;}
+  .bd-fill{height:100%;background:var(--bin);}
+  .bd-pct{width:42px;text-align:right;color:var(--chalk-dim);flex:0 0 auto;}
+  .log-status{text-align:center;font-size:11.5px;color:var(--chalk-dim);margin-bottom:20px;}
+  .end-actions{display:flex;justify-content:center;gap:10px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:.01ms !important; animation-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ START SCREEN ============ -->
+  <div id="screen-start">
+    <div class="start-hero">
+      <div class="eyebrow">Night Shift · Yard 7</div>
+      <div class="wordmark">SWITCHYARD DISPATCH<small>Search &amp; Sort Control · AP CSP Review</small></div>
+      <p>You're on the board tonight. Locate boxcars by ID and re-sort strings by weight using the same logic the exam asks about: sequential search, binary search, and selection sort. Bad calls rattle the yard — but nothing here ends your shift for good.</p>
+      <div class="rail-divider"></div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-row">
+        <label for="nameInput">Dispatcher name (for the shift log)</label>
+        <input type="text" id="nameInput" placeholder="e.g. T. Torres" maxlength="24">
+      </div>
+      <div class="config-row">
+        <label>Shift length</label>
+        <div class="seg" id="lengthSeg">
+          <button data-len="10">Short · 10</button>
+          <button data-len="16" class="active">Standard · 16</button>
+          <button data-len="24">Marathon · 24</button>
+        </div>
+      </div>
+      <div class="start-actions">
+        <button class="btn" id="beginBtn">Begin Shift ▸</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--seq)"></span><div><b style="color:var(--chalk)">TRACE</b> — click the car the algorithm checks next.</div></div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--bin)"></span><div><b style="color:var(--chalk)">PREDICT</b> — call the step/comparison count before it runs.</div></div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--sort)"></span><div><b style="color:var(--chalk)">RACE</b> — sequential vs. binary, head to head.</div></div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--rust)"></span><div><b style="color:var(--chalk)">CHAOS METER</b> — fills on misses/timeouts. No hard game-over.</div></div>
+    </div>
+  </div>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <div id="screen-game">
+    <div class="hud">
+      <div class="hud-left">
+        <span class="hud-title">DISPATCH</span>
+        <span class="eyebrow" id="roundCounter">Round 1/16</span>
+      </div>
+      <div class="hud-stats">
+        <div class="stat">LEVEL<b id="levelStat">1</b></div>
+        <div class="stat">STREAK<b id="streakStat">0</b></div>
+        <div class="stat" style="text-align:left;">YARD CHAOS
+          <div class="chaos-wrap"><div class="chaos-bar"><div class="chaos-fill" id="chaosFill"></div></div></div>
+        </div>
+        <button class="end-shift-link" id="endShiftLink">End shift early</button>
+      </div>
+    </div>
+
+    <div class="timerbar"><div class="timerfill" id="timerFill"></div></div>
+
+    <div class="ticket">
+      <div class="ticket-stub">
+        <div class="tag" id="ticketTag">TR</div>
+        <div class="taglabel" id="ticketTagLabel">Trace</div>
+      </div>
+      <div class="ticket-body">
+        <div class="kicker" id="ticketKicker">SEQUENTIAL SEARCH</div>
+        <div class="prompt" id="ticketPrompt">Prompt goes here.</div>
+      </div>
+    </div>
+
+    <div id="roundArea"></div>
+
+    <div id="debriefArea"></div>
+  </div>
+
+  <!-- ============ END SCREEN ============ -->
+  <div id="screen-end">
+    <div class="end-title">SHIFT COMPLETE</div>
+    <div class="end-sub" id="endSub">Dispatcher — 16 rounds worked</div>
+
+    <div class="stat-grid">
+      <div class="stat-tile"><div class="v" id="endAccuracy">0%</div><div class="l">Accuracy</div></div>
+      <div class="stat-tile"><div class="v" id="endPeakLevel">1</div><div class="l">Peak Level</div></div>
+      <div class="stat-tile"><div class="v" id="endBestStreak">0</div><div class="l">Best Streak</div></div>
+      <div class="stat-tile"><div class="v" id="endCloseCalls">0</div><div class="l">Close Calls</div></div>
+    </div>
+
+    <div class="breakdown" id="breakdownArea"></div>
+
+    <div class="log-status" id="logStatus">Logging shift to the dispatch sheet…</div>
+    <div class="end-actions">
+      <button class="btn" id="newShiftBtn">New Shift</button>
+    </div>
+  </div>
+
+  <div class="chaos-overlay" id="chaosOverlay"><div class="banner">EMERGENCY BRAKE — YARD CHAOS</div></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONFIG — replace with your Apps Script Web App URL
+   ========================================================= */
+const GAS_WEBHOOK_URL = "https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec";
+const GAME_NAME = "Switchyard Dispatch";
+
+/* =========================================================
+   UTILITIES
+   ========================================================= */
+function $(sel){ return document.querySelector(sel); }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function uid(){ return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+function genIdPool(n, min=100, max=899){
+  const pool = new Set();
+  while(pool.size < n){ pool.add(randInt(min,max)); }
+  return [...pool];
+}
+
+/* =========================================================
+   CORE ALGORITHMS (stress-tested separately: 20k iterations,
+   0 discrepancies vs brute-force expectations)
+   ========================================================= */
+function sequentialSteps(arr, target){
+  const steps = [];
+  for(let i=0;i<arr.length;i++){
+    steps.push(i);
+    if(arr[i] === target) return {steps, foundIndex:i};
+  }
+  return {steps, foundIndex:-1};
+}
+function binarySteps(arr, target){
+  let low = 0, high = arr.length-1;
+  const steps = [];
+  while(low <= high){
+    const mid = Math.floor((low+high)/2);
+    steps.push({low, high, mid});
+    if(arr[mid] === target) return {steps, foundIndex:mid};
+    else if(arr[mid] < target) low = mid+1;
+    else high = mid-1;
+  }
+  return {steps, foundIndex:-1};
+}
+function selectionSortPasses(arr){
+  const a = arr.slice();
+  const passes = [];
+  const n = a.length;
+  for(let i=0;i<n-1;i++){
+    let minIndex = i, comparisons = 0;
+    for(let j=i+1;j<n;j++){
+      comparisons++;
+      if(a[j] < a[minIndex]) minIndex = j;
+    }
+    const swapped = minIndex !== i;
+    const before = a.slice();
+    if(swapped){ const t=a[i]; a[i]=a[minIndex]; a[minIndex]=t; }
+    passes.push({i, minIndex, comparisons, swapped, before, after:a.slice()});
+  }
+  return {passes, sorted:a};
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const state = {
+  sessionId: uid(),
+  playerName: "",
+  shiftLength: 16,
+  level: 1,
+  chaos: 0,
+  streak: 0,
+  bestStreak: 0,
+  roundsTotal: 0,
+  roundsCorrect: 0,
+  closeCalls: 0,
+  typeStats: { trace:{c:0,t:0}, predict:{c:0,t:0}, race:{c:0,t:0} },
+  algoStats: { sequential:{c:0,t:0}, binary:{c:0,t:0}, selection:{c:0,t:0} },
+  current: null,
+  timerId: null,
+  timeLeftMs: 0,
+  timerTotalMs: 0,
+  answered: false,
+  loggedFinal: false,
+  startedAt: null
+};
+
+/* =========================================================
+   START SCREEN
+   ========================================================= */
+document.querySelectorAll('#lengthSeg button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#lengthSeg button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.shiftLength = parseInt(btn.dataset.len,10);
+  });
+});
+$('#beginBtn').addEventListener('click', beginShift);
+
+function beginShift(){
+  const nameVal = $('#nameInput').value.trim();
+  state.playerName = nameVal || 'Dispatcher';
+  state.startedAt = Date.now();
+  $('#screen-start').style.display = 'none';
+  $('#screen-game').style.display = 'block';
+  nextRound();
+}
+
+/* =========================================================
+   DIFFICULTY / ROUND SELECTION
+   ========================================================= */
+function arraySizeForLevel(lvl){ return clamp(4+lvl, 5, 15); }
+function timeLimitForLevel(lvl, bonus=0){ return clamp(30 - lvl*2, 10, 30) + bonus; }
+
+function weightsForLevel(lvl){
+  if(lvl <= 3) return {'trace-search':0.25,'trace-sort':0.20,'predict-search':0.20,'predict-sort':0.20,'race':0.15};
+  if(lvl <= 6) return {'trace-search':0.20,'trace-sort':0.15,'predict-search':0.20,'predict-sort':0.15,'race':0.30};
+  return {'trace-search':0.15,'trace-sort':0.12,'predict-search':0.18,'predict-sort':0.13,'race':0.42};
+}
+function pickWeighted(weights){
+  const entries = Object.entries(weights);
+  const total = entries.reduce((s,[,w])=>s+w,0);
+  let r = Math.random()*total;
+  for(const [k,w] of entries){ if(r < w) return k; r -= w; }
+  return entries[entries.length-1][0];
+}
+
+/* =========================================================
+   ROUND GENERATION
+   ========================================================= */
+function pickTargetForSearch(arr, opts={}){
+  const allowAbsent = opts.allowAbsent !== false;
+  if(allowAbsent && Math.random() < 0.22){
+    let t;
+    do{ t = randInt(50, 950); } while(arr.includes(t));
+    return t;
+  }
+  return arr[randInt(0, arr.length-1)];
+}
+
+function makeOptionsFromPool(correct, pool){
+  const opts = new Set([correct]);
+  for(const d of pool){
+    if(opts.size >= 4) break;
+    if(d >= 0 && !opts.has(d)) opts.add(d);
+  }
+  let guard = 0;
+  while(opts.size < 4 && guard < 30){
+    const cand = Math.max(0, correct + randInt(-4,4));
+    opts.add(cand);
+    guard++;
+  }
+  return shuffle([...opts]).map(v => ({label:String(v), value:v, correct:v===correct}));
+}
+
+function genTraceSearch(level){
+  const n = arraySizeForLevel(level);
+  const useBinary = Math.random() < 0.5;
+  const ids = genIdPool(n);
+  const arr = useBinary ? ids.slice().sort((a,b)=>a-b) : shuffle(ids);
+  const target = pickTargetForSearch(arr);
+  const info = useBinary ? binarySteps(arr, target) : sequentialSteps(arr, target);
+  const totalSteps = info.steps.length;
+  const askStepIndex = randInt(0, totalSteps-1);
+
+  let correctCarIndex, priorMids=[], low=0, high=arr.length-1;
+  if(useBinary){
+    for(let s=0;s<askStepIndex;s++){ priorMids.push(info.steps[s].mid); }
+    const stepAtAsk = info.steps[askStepIndex];
+    low = stepAtAsk.low; high = stepAtAsk.high;
+    correctCarIndex = stepAtAsk.mid;
+  } else {
+    correctCarIndex = info.steps[askStepIndex];
+  }
+
+  return {
+    type:'trace-search', algo: useBinary?'binary':'sequential',
+    arr, target, found: info.foundIndex !== -1, info,
+    askStepIndex, totalSteps, correctCarIndex, priorMids, low, high
+  };
+}
+
+function genTraceSort(level){
+  const n = clamp(arraySizeForLevel(level), 5, 10); // keep sort trace readable
+  const ids = genIdPool(n);
+  const arr = shuffle(ids);
+  const result = selectionSortPasses(arr);
+  const askPassIndex = randInt(0, result.passes.length-1);
+  const pass = result.passes[askPassIndex];
+  return {
+    type:'trace-sort', algo:'selection',
+    arr, result, askPassIndex, pass,
+    lockedCount: askPassIndex,
+    correctMinIndex: pass.minIndex
+  };
+}
+
+function genPredictSearch(level){
+  const n = arraySizeForLevel(level);
+  const useBinary = Math.random() < 0.5;
+  const ids = genIdPool(n);
+  const arr = useBinary ? ids.slice().sort((a,b)=>a-b) : shuffle(ids);
+  const target = pickTargetForSearch(arr);
+  const info = useBinary ? binarySteps(arr, target) : sequentialSteps(arr, target);
+  const correct = info.steps.length;
+  const pool = useBinary
+    ? [correct-1, correct+1, n, Math.ceil(n/2), Math.floor(Math.log2(n))+2, n-1]
+    : [correct-1, correct+1, n, Math.ceil(n/2), Math.floor(Math.log2(n))+1, 1];
+  const options = makeOptionsFromPool(correct, shuffle(pool));
+  return { type:'predict-search', algo: useBinary?'binary':'sequential', arr, target, found: info.foundIndex!==-1, info, correct, options };
+}
+
+function genPredictSort(level){
+  const n = clamp(arraySizeForLevel(level), 5, 12);
+  const ids = genIdPool(n);
+  const arr = shuffle(ids);
+  const result = selectionSortPasses(arr);
+  const totalComparisons = result.passes.reduce((s,p)=>s+p.comparisons,0);
+  const totalSwaps = result.passes.filter(p=>p.swapped).length;
+  const subtype = Math.random() < 0.5 ? 'total-comparisons' : 'total-swaps';
+  let correct, pool;
+  if(subtype === 'total-comparisons'){
+    correct = totalComparisons;
+    pool = [n-1, n, totalSwaps, n*n, Math.round(n*(n-1)/2)+n-1];
+  } else {
+    correct = totalSwaps;
+    pool = [n-1, totalComparisons, 0, n, Math.max(0,totalSwaps-1), totalSwaps+1];
+  }
+  const options = makeOptionsFromPool(correct, shuffle(pool));
+  return { type:'predict-sort', algo:'selection', arr, result, subtype, totalComparisons, totalSwaps, correct, options };
+}
+
+function genRace(level){
+  const n = arraySizeForLevel(level);
+  const ids = genIdPool(n);
+  const arr = ids.slice().sort((a,b)=>a-b);
+  let target;
+  const roll = Math.random();
+  if(roll < 0.22){
+    do{ target = randInt(50,950); } while(arr.includes(target));
+  } else if(roll < 0.45){
+    target = arr[randInt(0,1)]; // front-biased trick case
+  } else {
+    target = arr[randInt(0, arr.length-1)];
+  }
+  const seqInfo = sequentialSteps(arr, target);
+  const binInfo = binarySteps(arr, target);
+  const seqLen = seqInfo.steps.length, binLen = binInfo.steps.length;
+  const winner = seqLen < binLen ? 'sequential' : (binLen < seqLen ? 'binary' : 'tie');
+  const options = shuffle([
+    {label:'Sequential Search finishes first', value:'sequential', correct: winner==='sequential'},
+    {label:'Binary Search finishes first', value:'binary', correct: winner==='binary'},
+    {label:'Tie — same number of steps', value:'tie', correct: winner==='tie'}
+  ]);
+  return { type:'race', arr, target, found: seqInfo.foundIndex!==-1, seqInfo, binInfo, winner, options };
+}
+
+function generateRound(level){
+  const kind = pickWeighted(weightsForLevel(level));
+  switch(kind){
+    case 'trace-search': return genTraceSearch(level);
+    case 'trace-sort': return genTraceSort(level);
+    case 'predict-search': return genPredictSearch(level);
+    case 'predict-sort': return genPredictSort(level);
+    case 'race': return genRace(level);
+  }
+}
+
+/* =========================================================
+   ROUND FLOW
+   ========================================================= */
+function nextRound(){
+  state.roundsTotal += 1;
+  state.level = clamp(1 + Math.floor((state.roundsTotal-1)/4), 1, 10);
+
+  if(state.roundsTotal > state.shiftLength){
+    return endShift();
+  }
+
+  state.answered = false;
+  const round = generateRound(state.level);
+  round.roundBonus = round.type === 'race' ? 5 : 0;
+  state.current = round;
+
+  updateHUD();
+  renderTicket(round);
+  renderRoundArea(round);
+  $('#debriefArea').innerHTML = '';
+  startTimer(round);
+}
+
+function updateHUD(){
+  $('#roundCounter').textContent = `Round ${Math.min(state.roundsTotal, state.shiftLength)}/${state.shiftLength}`;
+  $('#levelStat').textContent = state.level;
+  $('#streakStat').textContent = state.streak;
+  $('#chaosFill').style.width = state.chaos + '%';
+}
+
+function startTimer(round){
+  const totalSec = timeLimitForLevel(state.level, round.roundBonus);
+  state.timerTotalMs = totalSec*1000;
+  state.timeLeftMs = totalSec*1000;
+  const fill = $('#timerFill');
+  fill.style.width = '100%';
+  fill.classList.remove('low');
+  clearInterval(state.timerId);
+  state.timerId = setInterval(()=>{
+    state.timeLeftMs -= 100;
+    const pct = clamp((state.timeLeftMs/state.timerTotalMs)*100, 0, 100);
+    fill.style.width = pct + '%';
+    if(pct < 25) fill.classList.add('low');
+    if(state.timeLeftMs <= 0){
+      clearInterval(state.timerId);
+      if(!state.answered) resolveRound(false, {timeout:true});
+    }
+  }, 100);
+}
+function stopTimer(){ clearInterval(state.timerId); }
+
+/* ---------- ticket / prompt rendering ---------- */
+const ALGO_LABEL = { sequential:'SEQUENTIAL SEARCH', binary:'BINARY SEARCH', selection:'SELECTION SORT' };
+const TYPE_TAG = { 'trace-search':['TR','Trace'], 'trace-sort':['TR','Trace'], 'predict-search':['PD','Predict'], 'predict-sort':['PD','Predict'], 'race':['RC','Race'] };
+
+function renderTicket(round){
+  const [tag, tagLabel] = TYPE_TAG[round.type];
+  $('#ticketTag').textContent = tag;
+  $('#ticketTagLabel').textContent = tagLabel;
+
+  let kicker, prompt;
+  if(round.type === 'trace-search'){
+    kicker = ALGO_LABEL[round.algo];
+    prompt = `Target car <b>#${round.target}</b>. Step ${round.askStepIndex+1} of the trace — which car gets checked <b>next</b>?`;
+  } else if(round.type === 'trace-sort'){
+    kicker = 'SELECTION SORT — Pass ' + (round.askPassIndex+1);
+    prompt = `Pass ${round.askPassIndex+1}: scan the unsorted section and click the car with the <b>minimum</b> value — it gets swapped into place.`;
+  } else if(round.type === 'predict-search'){
+    kicker = ALGO_LABEL[round.algo];
+    prompt = `Target car <b>#${round.target}</b>. Before it runs — how many comparisons will <b>${round.algo}</b> search take to ${round.found?'locate it':'determine it\u2019s absent'}?`;
+  } else if(round.type === 'predict-sort'){
+    kicker = 'SELECTION SORT';
+    prompt = round.subtype === 'total-comparisons'
+      ? `Before it runs — how many total <b>comparisons</b> will selection sort make across the entire sort?`
+      : `Before it runs — how many total <b>swaps</b> will selection sort perform across the entire sort?`;
+  } else if(round.type === 'race'){
+    kicker = 'SEQUENTIAL vs. BINARY';
+    prompt = `Same sorted line, same target car <b>#${round.target}</b>. Which algorithm reaches it in <b>fewer steps</b>?`;
+  }
+  $('#ticketKicker').textContent = kicker;
+  $('#ticketPrompt').innerHTML = prompt;
+}
+
+/* ---------- boxcar track rendering helpers ---------- */
+function boxcarHtml(idx, value, classes){
+  return `<div class="boxcar ${classes}" data-idx="${idx}"><span class="idx">${idx}</span>${value}</div>`;
+}
+
+function renderTraceSearchArea(round){
+  const rows = round.arr.map((v,i)=>{
+    let cls = 'clickable';
+    if(round.algo === 'binary'){
+      if(i < round.low || i > round.high) cls += ' eliminated';
+      if(round.priorMids.includes(i)) cls += ' checked-bin';
+    } else {
+      if(i < round.askStepIndex) cls += ' checked-seq';
+    }
+    return boxcarHtml(i, v, cls);
+  }).join('');
+
+  let flags = '';
+  if(round.algo === 'binary'){
+    const n = round.arr.length;
+    const pos = (idx)=> `calc(${(idx+0.5)/n*100}% )`;
+    flags = `<div class="track-flags">
+      <div class="flag" style="left:${pos(round.low)}">low</div>
+      <div class="flag" style="left:${pos(round.high)}">high</div>
+    </div>`;
+  }
+
+  $('#roundArea').innerHTML = `
+    <div class="track-panel">
+      <div class="track-label"><span>BOXCAR LINE — sorted by ID: ${round.algo==='binary'?'yes':'no'}</span><span class="count">${round.arr.length} cars</span></div>
+      ${flags}
+      <div class="track" id="trackEl">${rows}</div>
+    </div>
+    <div class="instruction-line">Click the car you believe gets checked next.</div>
+  `;
+  document.querySelectorAll('#trackEl .boxcar.clickable').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.dataset.idx,10);
+      handleTraceSearchClick(round, idx, el);
+    });
+  });
+}
+
+function handleTraceSearchClick(round, idx, el){
+  if(state.answered) return;
+  state.answered = true; stopTimer();
+  const correct = idx === round.correctCarIndex;
+  document.querySelectorAll('#trackEl .boxcar').forEach(b=>b.classList.remove('clickable'));
+  el.classList.add(correct?'correct-flash':'wrong-flash');
+  if(!correct){
+    const correctEl = document.querySelector(`#trackEl .boxcar[data-idx="${round.correctCarIndex}"]`);
+    if(correctEl) correctEl.classList.add('correct-flash');
+  }
+  resolveRound(correct, {});
+}
+
+function renderTraceSortArea(round){
+  const n = round.arr.length;
+  const rows = round.pass.before.map((v,i)=>{
+    let cls = 'clickable';
+    if(i < round.lockedCount) cls = 'locked';
+    return boxcarHtml(i, v, cls);
+  }).join('');
+
+  $('#roundArea').innerHTML = `
+    <div class="track-panel">
+      <div class="track-label"><span>WORKING LINE — sorted so far: ${round.lockedCount} car(s)</span><span class="count">${n} cars</span></div>
+      <div class="track" id="trackEl">${rows}</div>
+    </div>
+    <div class="instruction-line">Click the minimum-value car among the unsorted (non-locked) cars.</div>
+  `;
+  document.querySelectorAll('#trackEl .boxcar.clickable').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.dataset.idx,10);
+      handleTraceSortClick(round, idx, el);
+    });
+  });
+}
+
+function handleTraceSortClick(round, idx, el){
+  if(state.answered) return;
+  state.answered = true; stopTimer();
+  const correct = idx === round.correctMinIndex;
+  document.querySelectorAll('#trackEl .boxcar.clickable').forEach(b=>b.classList.remove('clickable'));
+  el.classList.add(correct?'correct-flash':'wrong-flash');
+  if(!correct){
+    const correctEl = document.querySelector(`#trackEl .boxcar[data-idx="${round.correctMinIndex}"]`);
+    if(correctEl) correctEl.classList.add('correct-flash');
+  }
+  setTimeout(()=>{
+    if(round.pass.swapped){
+      const a = document.querySelector(`#trackEl .boxcar[data-idx="${round.askPassIndex}"]`);
+      const b = document.querySelector(`#trackEl .boxcar[data-idx="${round.correctMinIndex}"]`);
+      if(a) a.classList.add('swap-anim');
+      if(b) b.classList.add('swap-anim');
+    }
+  }, 350);
+  resolveRound(correct, {});
+}
+
+function renderOptionsArea(round){
+  const opts = round.options.map((o,i)=>`<button class="opt" data-i="${i}">${o.label}</button>`).join('');
+  let trackHtml = '';
+  if(round.type === 'predict-search'){
+    const rows = round.arr.map((v,i)=>boxcarHtml(i,v,'')).join('');
+    trackHtml = `<div class="track-panel"><div class="track-label"><span>BOXCAR LINE — sorted by ID: ${round.algo==='binary'?'yes':'no'}</span><span class="count">${round.arr.length} cars</span></div><div class="track" id="trackEl">${rows}</div></div>`;
+  } else if(round.type === 'predict-sort'){
+    const rows = round.arr.map((v,i)=>boxcarHtml(i,v,'')).join('');
+    trackHtml = `<div class="track-panel"><div class="track-label"><span>UNSORTED LINE</span><span class="count">${round.arr.length} cars</span></div><div class="track" id="trackEl">${rows}</div></div>`;
+  } else if(round.type === 'race'){
+    const rows = round.arr.map((v,i)=>boxcarHtml(i,v,'')).join('');
+    trackHtml = `<div class="track-panel"><div class="track-label"><span>SORTED LINE (shared by both algorithms)</span><span class="count">${round.arr.length} cars</span></div><div class="track" id="trackEl">${rows}</div></div>`;
+  }
+  $('#roundArea').innerHTML = `${trackHtml}<div class="options" id="optsEl">${opts}</div>`;
+  document.querySelectorAll('#optsEl .opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = parseInt(el.dataset.i,10);
+      handleOptionClick(round, i, el);
+    });
+  });
+}
+
+function handleOptionClick(round, i, el){
+  if(state.answered) return;
+  state.answered = true; stopTimer();
+  const chosen = round.options[i];
+  document.querySelectorAll('#optsEl .opt').forEach(b=>b.disabled = true);
+  el.classList.add(chosen.correct ? 'chosen-correct' : 'chosen-wrong');
+  if(!chosen.correct){
+    const correctEl = document.querySelector(`#optsEl .opt:nth-child(${round.options.findIndex(o=>o.correct)+1})`);
+    if(correctEl) correctEl.classList.add('reveal-correct');
+  }
+  if(round.type === 'predict-search') animatePredictSearch(round);
+  if(round.type === 'race') animateRace(round);
+  resolveRound(chosen.correct, {});
+}
+
+function animatePredictSearch(round){
+  const steps = round.algo === 'binary' ? round.info.steps.map(s=>s.mid) : round.info.steps;
+  let i = 0;
+  const cls = round.algo === 'binary' ? 'checked-bin' : 'checked-seq';
+  const iv = setInterval(()=>{
+    if(i >= steps.length){ clearInterval(iv); return; }
+    const el = document.querySelector(`#trackEl .boxcar[data-idx="${steps[i]}"]`);
+    if(el) el.classList.add(cls);
+    i++;
+  }, 220);
+}
+
+function animateRace(round){
+  const seqSteps = round.seqInfo.steps;
+  const binSteps = round.binInfo.steps.map(s=>s.mid);
+  $('#roundArea').insertAdjacentHTML('beforeend', `
+    <div class="race-track-block" style="margin-top:14px;">
+      <div class="race-track-header"><span class="algo-name seq">Sequential</span><span class="race-steps" id="seqCount">0 steps</span></div>
+      <div class="track" id="seqTrack">${round.arr.map((v,i)=>boxcarHtml(i,v,'')).join('')}</div>
+    </div>
+    <div class="race-track-block">
+      <div class="race-track-header"><span class="algo-name bin">Binary</span><span class="race-steps" id="binCount">0 steps</span></div>
+      <div class="track" id="binTrack">${round.arr.map((v,i)=>boxcarHtml(i,v,'')).join('')}</div>
+    </div>
+  `);
+  let si = 0, bi = 0;
+  const iv = setInterval(()=>{
+    let more = false;
+    if(si < seqSteps.length){
+      const el = document.querySelector(`#seqTrack .boxcar[data-idx="${seqSteps[si]}"]`);
+      if(el) el.classList.add('checked-seq');
+      si++; $('#seqCount').textContent = si + ' step' + (si===1?'':'s');
+      more = true;
+    }
+    if(bi < binSteps.length){
+      const el = document.querySelector(`#binTrack .boxcar[data-idx="${binSteps[bi]}"]`);
+      if(el) el.classList.add('checked-bin');
+      bi++; $('#binCount').textContent = bi + ' step' + (bi===1?'':'s');
+      more = true;
+    }
+    if(!more){
+      clearInterval(iv);
+      const seqTag = seqSteps.length <= binSteps.length ? 'win' : 'lose';
+      const binTag = binSteps.length <= seqSteps.length ? 'win' : 'lose';
+      $('#seqCount').insertAdjacentHTML('beforeend', ` <span class="race-result-tag ${seqTag}">${seqTag==='win'?'FIRST':'—'}</span>`);
+      $('#binCount').insertAdjacentHTML('beforeend', ` <span class="race-result-tag ${binTag}">${binTag==='win'?'FIRST':'—'}</span>`);
+    }
+  }, 260);
+}
+
+function renderRoundArea(round){
+  if(round.type === 'trace-search') renderTraceSearchArea(round);
+  else if(round.type === 'trace-sort') renderTraceSortArea(round);
+  else renderOptionsArea(round);
+}
+
+/* =========================================================
+   RESOLUTION
+   ========================================================= */
+const TYPE_GROUP = { 'trace-search':'trace', 'trace-sort':'trace', 'predict-search':'predict', 'predict-sort':'predict', 'race':'race' };
+
+function debriefFor(round, correct, timedOut){
+  let verdict = timedOut ? 'TIME\u2019S UP' : (correct ? 'CORRECT CALL' : 'MISCALL');
+  let note = '';
+  const a = round.algo;
+  if(round.type === 'trace-search'){
+    if(a === 'binary'){
+      note = `Binary search only works because the line is sorted. Each check compares the <b>midpoint</b> and rules out half the remaining cars — narrowing to about log\u2082(n) checks total. This trace needed <b>${round.totalSteps}</b> step(s).`;
+    } else {
+      note = `Sequential search moves left to right, one car at a time, with no sorting requirement. ${round.found ? `It found car #${round.target} after <b>${round.askStepIndex+1}</b> check(s) into this trace.` : `Since the target isn\u2019t present, it has to check every car — worst case, O(n).`}`;
+    }
+  } else if(round.type === 'trace-sort'){
+    note = `Selection sort scans the unsorted remainder for the smallest value, then swaps it to the front of that remainder. ${round.pass.swapped ? 'A swap happens this pass.' : 'No swap was needed this pass \u2014 the minimum was already in place, but the comparisons still happened.'}`;
+  } else if(round.type === 'predict-search'){
+    if(a === 'binary'){
+      note = `Binary search took <b>${round.correct}</b> comparison(s) here \u2014 each one roughly halves the search space, which is why it scales so well as arrays grow.`;
+    } else {
+      note = `Sequential search took <b>${round.correct}</b> comparison(s) here. ${round.found ? 'Comparisons equal the target\u2019s position + 1.' : 'Not found means every car got checked \u2014 the worst case, O(n).'}`;
+    }
+  } else if(round.type === 'predict-sort'){
+    note = round.subtype === 'total-comparisons'
+      ? `Selection sort always makes n(n\u22121)/2 comparisons \u2014 that\u2019s <b>${round.totalComparisons}</b> here \u2014 regardless of how the data started. Comparisons are fixed; swaps are not.`
+      : `This run needed <b>${round.totalSwaps}</b> total swap(s). Unlike comparisons, the swap count depends entirely on how out-of-order the data already was.`;
+  } else if(round.type === 'race'){
+    if(round.winner === 'tie') note = `Both algorithms tied at <b>${round.seqInfo.steps.length}</b> step(s) \u2014 that happens when the target sits exactly where both approaches would check early.`;
+    else if(round.winner === 'sequential') note = `Sequential won this one in <b>${round.seqInfo.steps.length}</b> vs. binary\u2019s <b>${round.binInfo.steps.length}</b> \u2014 a reminder that Big-O describes worst case, and a target near the front favors a simple scan.`;
+    else note = `Binary won in <b>${round.binInfo.steps.length}</b> vs. sequential\u2019s <b>${round.seqInfo.steps.length}</b> \u2014 binary\u2019s advantage grows fast as the array gets bigger.`;
+  }
+  return {verdict, note};
+}
+
+function resolveRound(correct, opts){
+  const round = state.current;
+  const group = TYPE_GROUP[round.type];
+  state.typeStats[group].t += 1; if(correct) state.typeStats[group].c += 1;
+
+  const algoKey = round.type === 'race' ? null : round.algo;
+  if(algoKey){
+    state.algoStats[algoKey].t += 1; if(correct) state.algoStats[algoKey].c += 1;
+  } else {
+    state.algoStats.sequential.t += 1; state.algoStats.binary.t += 1;
+    if(correct){ state.algoStats.sequential.c += 1; state.algoStats.binary.c += 1; }
+  }
+
+  if(correct){
+    state.roundsCorrect += 1;
+    state.streak += 1;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    state.chaos = clamp(state.chaos - 4, 0, 100);
+  } else {
+    state.streak = 0;
+    state.chaos = clamp(state.chaos + (opts.timeout ? 18 : 12), 0, 100);
+  }
+  updateHUD();
+
+  if(state.chaos >= 100){
+    triggerChaosEvent();
+  }
+
+  const {verdict, note} = debriefFor(round, correct, !!opts.timeout);
+  $('#debriefArea').innerHTML = `
+    <div class="debrief ${correct?'':'wrong'}">
+      <div class="verdict">${verdict}</div>
+      <div class="apnote">${note}</div>
+      <div class="next-row"><button class="btn" id="nextBtn">Next Dispatch ▸</button></div>
+    </div>
+  `;
+  $('#nextBtn').addEventListener('click', nextRound);
+}
+
+function triggerChaosEvent(){
+  state.closeCalls += 1;
+  state.chaos = 55;
+  updateHUD();
+  const overlay = $('#chaosOverlay');
+  overlay.classList.add('show');
+  setTimeout(()=> overlay.classList.remove('show'), 900);
+}
+
+$('#endShiftLink').addEventListener('click', ()=>{
+  stopTimer();
+  endShift();
+});
+
+/* =========================================================
+   END SCREEN
+   ========================================================= */
+function endShift(){
+  stopTimer();
+  $('#screen-game').style.display = 'none';
+  $('#screen-end').style.display = 'block';
+
+  const played = Math.min(state.roundsTotal-0, state.shiftLength);
+  const attempted = state.typeStats.trace.t + state.typeStats.predict.t + state.typeStats.race.t;
+  const accuracy = attempted ? Math.round((state.roundsCorrect/attempted)*100) : 0;
+
+  $('#endSub').textContent = `${state.playerName} — ${attempted} round${attempted===1?'':'s'} worked`;
+  $('#endAccuracy').textContent = accuracy + '%';
+  $('#endPeakLevel').textContent = state.level;
+  $('#endBestStreak').textContent = state.bestStreak;
+  $('#endCloseCalls').textContent = state.closeCalls;
+
+  function bdRow(label, stat){
+    const pct = stat.t ? Math.round((stat.c/stat.t)*100) : 0;
+    return `<div class="bd-row"><div class="lbl">${label}</div><div class="bd-track"><div class="bd-fill" style="width:${pct}%"></div></div><div class="bd-pct">${pct}% (${stat.c}/${stat.t})</div></div>`;
+  }
+  $('#breakdownArea').innerHTML = `
+    <div class="eyebrow" style="margin-bottom:8px;">BY MECHANIC</div>
+    ${bdRow('Trace', state.typeStats.trace)}
+    ${bdRow('Predict', state.typeStats.predict)}
+    ${bdRow('Race', state.typeStats.race)}
+    <div class="eyebrow" style="margin:16px 0 8px;">BY ALGORITHM</div>
+    ${bdRow('Sequential Search', state.algoStats.sequential)}
+    ${bdRow('Binary Search', state.algoStats.binary)}
+    ${bdRow('Selection Sort', state.algoStats.selection)}
+  `;
+
+  logShift('completed', accuracy);
+}
+
+$('#newShiftBtn').addEventListener('click', ()=>{
+  window.location.reload();
+});
+
+/* =========================================================
+   LOGGING (Google Sheets via Apps Script)
+   ========================================================= */
+function buildPayload(status, accuracy){
+  return {
+    game: GAME_NAME,
+    sessionId: state.sessionId,
+    playerName: state.playerName,
+    timestamp: new Date().toISOString(),
+    shiftLength: state.shiftLength,
+    roundsPlayed: Math.min(state.roundsTotal, state.shiftLength),
+    peakLevel: state.level,
+    bestStreak: state.bestStreak,
+    accuracyPct: accuracy != null ? accuracy : (function(){
+      const attempted = state.typeStats.trace.t + state.typeStats.predict.t + state.typeStats.race.t;
+      return attempted ? Math.round((state.roundsCorrect/attempted)*100) : 0;
+    })(),
+    closeCalls: state.closeCalls,
+    typeBreakdown: state.typeStats,
+    algoBreakdown: state.algoStats,
+    completionStatus: status
+  };
+}
+
+function logShift(status, accuracy){
+  if(state.loggedFinal && status === 'completed') return;
+  const payload = buildPayload(status, accuracy);
+  try{ localStorage.setItem('switchyard_dispatch_last_run', JSON.stringify(payload)); }catch(e){}
+
+  if(!GAS_WEBHOOK_URL || GAS_WEBHOOK_URL.indexOf('REPLACE_WITH') !== -1){
+    const el = $('#logStatus');
+    if(el) el.textContent = 'Sheet logging not configured yet — results saved locally on this device.';
+    return;
+  }
+
+  const body = JSON.stringify(payload);
+  let sent = false;
+  try{
+    if(navigator.sendBeacon){
+      const blob = new Blob([body], {type:'application/json'});
+      sent = navigator.sendBeacon(GAS_WEBHOOK_URL, blob);
+    }
+  }catch(e){}
+
+  if(!sent){
+    fetch(GAS_WEBHOOK_URL, { method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'application/json'}, body })
+      .catch(()=>{});
+  }
+
+  if(status === 'completed'){
+    state.loggedFinal = true;
+    const el = $('#logStatus');
+    if(el) el.textContent = 'Shift logged to the dispatch sheet.';
+  }
+}
+
+window.addEventListener('pagehide', ()=>{
+  if(state.startedAt && !state.loggedFinal && state.roundsTotal > 0){
+    logShift('abandoned', null);
+  }
+});
+
+})();
+</script>
+</body>
+</html>

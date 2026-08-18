@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code ER — Diagnose. Test. Treat.</title>
+<style>
+  :root{
+    --bg:#0a1420;
+    --bg-2:#071019;
+    --panel:#101d2e;
+    --panel-2:#16273c;
+    --line:#22344a;
+    --text:#e7edf3;
+    --text-dim:#7f93a8;
+    --text-dimmer:#54677d;
+    --cyan:#43e8d8;
+    --cyan-dim:#1f5c56;
+    --amber:#f5b942;
+    --amber-dim:#5c4a1f;
+    --red:#ff5c5c;
+    --red-dim:#5c2323;
+    --violet:#b48cff;
+    --violet-dim:#3a2f5c;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+  body{background:radial-gradient(ellipse at 50% -10%, #0f2233 0%, var(--bg) 55%, var(--bg-2) 100%);}
+  .hidden{display:none !important;}
+  button{font-family:inherit;cursor:pointer;}
+  .screen{max-width:920px;margin:0 auto;padding:18px 16px 60px;}
+
+  /* ---------- Top bar / ECG signature ---------- */
+  .ecg-wrap{position:sticky;top:0;z-index:20;background:linear-gradient(180deg, var(--bg-2) 70%, transparent);
+    padding:8px 0 4px;border-bottom:1px solid var(--line);}
+  .ecg-strip{width:100%;height:46px;overflow:hidden;position:relative;background:#050c14;border:1px solid var(--line);border-radius:6px;}
+  .ecg-track{position:absolute;top:0;left:0;height:100%;width:200%;display:flex;animation:scrollECG 2.2s linear infinite;}
+  .ecg-track svg{height:100%;width:50%;flex:0 0 50%;display:block;}
+  .ecg-track.critical{animation-duration:0.9s;}
+  @keyframes scrollECG{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  .ecg-line{fill:none;stroke:var(--cyan);stroke-width:2;filter:drop-shadow(0 0 4px rgba(67,232,216,.6));}
+  .ecg-track.critical .ecg-line{stroke:var(--red);filter:drop-shadow(0 0 5px rgba(255,92,92,.7));}
+  .ecg-track.warn .ecg-line{stroke:var(--amber);}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px 0;font-family:var(--mono);font-size:12px;color:var(--text-dim);flex-wrap:wrap;}
+  .brand{font-family:var(--mono);font-weight:700;letter-spacing:.14em;color:var(--cyan);font-size:13px;}
+  .stat-chip{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:4px 10px;}
+  .stat-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .vital-bar{width:80px;height:8px;background:#050c14;border-radius:6px;overflow:hidden;border:1px solid var(--line);}
+  .vital-fill{height:100%;background:var(--cyan);transition:width .4s ease, background .4s ease;}
+  .vital-fill.warn{background:var(--amber);}
+  .vital-fill.crit{background:var(--red);}
+
+  /* ---------- Title screen ---------- */
+  .title-card{text-align:center;padding:60px 10px 20px;}
+  .title-card h1{font-family:var(--mono);font-size:44px;letter-spacing:.05em;margin:0 0 6px;color:var(--text);}
+  .title-card h1 span{color:var(--cyan);}
+  .title-card p.tag{color:var(--text-dim);font-size:15px;max-width:520px;margin:0 auto 26px;line-height:1.5;}
+  .badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;}
+  .badge{font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:20px;border:1px solid var(--line);color:var(--text-dim);}
+  .badge.syntax{border-color:var(--amber-dim);color:var(--amber);}
+  .badge.runtime{border-color:var(--red-dim);color:var(--red);}
+  .badge.logic{border-color:var(--violet-dim);color:var(--violet);}
+  .badge.healthy{border-color:var(--cyan-dim);color:var(--cyan);}
+
+  input[type=text]{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:8px;font-family:var(--sans);font-size:14px;width:220px;}
+  input[type=text]:focus{outline:2px solid var(--cyan);outline-offset:1px;}
+
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:12px 22px;border-radius:8px;font-size:14px;font-weight:600;transition:transform .12s, border-color .2s, background .2s;}
+  .btn:hover{border-color:var(--cyan);transform:translateY(-1px);}
+  .btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+  .btn-primary{background:var(--cyan);color:#04211d;border-color:var(--cyan);}
+  .btn-primary:hover{background:#5cf3e3;}
+  .btn-ghost{background:transparent;color:var(--text-dim);}
+  .btn-small{padding:6px 12px;font-size:12px;}
+
+  /* ---------- Chart card ---------- */
+  .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:18px;overflow:hidden;}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px dashed var(--line);background:var(--panel-2);}
+  .chart-head .chartid{font-family:var(--mono);color:var(--text-dim);font-size:12px;letter-spacing:.05em;}
+  .chart-head .patient{font-family:var(--mono);font-size:15px;color:var(--cyan);font-weight:700;}
+  .chief{padding:14px 16px 4px;font-size:14px;color:var(--text);line-height:1.5;}
+  .chief b{color:var(--amber);}
+  .code-box{margin:12px 16px 14px;background:#050c14;border:1px solid var(--line);border-radius:8px;overflow-x:auto;}
+  .code-line{display:flex;font-family:var(--mono);font-size:13px;line-height:1.7;white-space:pre;}
+  .code-line .ln{width:34px;flex:0 0 34px;text-align:right;padding-right:10px;color:var(--text-dimmer);user-select:none;border-right:1px solid var(--line);margin-right:10px;}
+  .code-line .code{color:#d7e6f0;}
+
+  .stage-track{display:flex;gap:6px;padding:0 16px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;}
+  .stage-pill{padding:4px 10px;border-radius:14px;border:1px solid var(--line);color:var(--text-dimmer);}
+  .stage-pill.active{border-color:var(--cyan);color:var(--cyan);background:rgba(67,232,216,.08);}
+  .stage-pill.done{border-color:var(--line);color:var(--text-dim);}
+
+  .action-zone{padding:6px 16px 18px;}
+  .action-title{font-size:13px;color:var(--text-dim);margin-bottom:10px;}
+  .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .opt-grid.five{grid-template-columns:1fr 1fr;}
+  .opt-btn{text-align:left;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:12px 14px;font-size:13.5px;line-height:1.4;transition:border-color .15s, transform .1s;}
+  .opt-btn:hover{border-color:var(--cyan);transform:translateY(-1px);}
+  .opt-btn .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--text-dim);margin-bottom:3px;}
+
+  .timer-row{display:flex;align-items:center;gap:10px;padding:0 16px 10px;}
+  .timer-bar-outer{flex:1;height:8px;background:#050c14;border-radius:6px;overflow:hidden;border:1px solid var(--line);}
+  .timer-bar-inner{height:100%;background:var(--cyan);transition:width .25s linear, background .25s;}
+  .timer-label{font-family:var(--mono);font-size:11px;color:var(--text-dim);width:34px;text-align:right;}
+
+  .feedback-panel{margin:0 16px 18px;padding:14px 16px;border-radius:8px;font-size:13.5px;line-height:1.5;display:none;}
+  .feedback-panel.show{display:block;}
+  .feedback-panel.correct{background:rgba(67,232,216,.08);border:1px solid var(--cyan-dim);color:var(--text);}
+  .feedback-panel.wrong{background:rgba(255,92,92,.08);border:1px solid var(--red-dim);color:var(--text);}
+  .feedback-panel .fh{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.05em;margin-bottom:6px;}
+  .feedback-panel.correct .fh{color:var(--cyan);}
+  .feedback-panel.wrong .fh{color:var(--red);}
+
+  .queue-note{padding:0 16px 10px;font-size:12px;color:var(--amber);font-family:var(--mono);display:none;}
+  .queue-note.show{display:block;}
+
+  .bottombar{display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+  .footer-link{color:var(--text-dimmer);font-size:12px;text-decoration:underline;background:none;border:none;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(4,8,14,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
+  .modal-overlay.hidden{display:none;}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;}
+  .modal h2{margin-top:0;font-family:var(--mono);color:var(--cyan);font-size:18px;letter-spacing:.03em;}
+  .glossary-item{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+  .glossary-item:last-child{border-bottom:none;}
+  .glossary-item .term{font-family:var(--mono);font-weight:700;font-size:13px;margin-bottom:3px;}
+  .glossary-item p{margin:0;font-size:13px;color:var(--text-dim);line-height:1.5;}
+  .term.syntax{color:var(--amber);} .term.runtime{color:var(--red);} .term.logic{color:var(--violet);} .term.healthy{color:var(--cyan);}
+
+  .center-col{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;}
+  .recap-line{display:flex;justify-content:space-between;width:100%;max-width:340px;font-family:var(--mono);font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line);}
+  .big-stat{font-size:38px;font-family:var(--mono);color:var(--cyan);font-weight:700;}
+
+  .vocab-card{margin:14px 16px;padding:14px 16px;border:1px solid var(--violet-dim);background:rgba(180,140,255,.06);border-radius:8px;}
+  .vocab-card .vh{font-family:var(--mono);color:var(--violet);font-size:11px;letter-spacing:.08em;margin-bottom:8px;}
+  @media (max-width:520px){ .opt-grid{grid-template-columns:1fr;} .title-card h1{font-size:32px;} }
+</style>
+</head>
+<body>
+
+<div class="ecg-wrap">
+  <div class="screen" style="padding-bottom:0;">
+    <div class="ecg-strip"><div class="ecg-track" id="ecgTrack">
+      <svg viewBox="0 0 300 46" preserveAspectRatio="none"><polyline class="ecg-line" points="0,23 20,23 26,23 30,8 34,38 38,14 42,23 60,23 100,23 106,23 110,8 114,38 118,14 122,23 140,23 180,23 186,23 190,8 194,38 198,14 202,23 220,23 260,23 266,23 270,8 274,38 278,14 282,23 300,23"/></svg>
+      <svg viewBox="0 0 300 46" preserveAspectRatio="none"><polyline class="ecg-line" points="0,23 20,23 26,23 30,8 34,38 38,14 42,23 60,23 100,23 106,23 110,8 114,38 118,14 122,23 140,23 180,23 186,23 190,8 194,38 198,14 202,23 220,23 260,23 266,23 270,8 274,38 278,14 282,23 300,23"/></svg>
+    </div></div>
+    <div class="topbar">
+      <div class="brand">🏥 CODE ER</div>
+      <div class="stat-chips" id="topStats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TITLE SCREEN -->
+<div class="screen" id="screen-title">
+  <div class="title-card">
+    <h1>CODE <span>ER</span></h1>
+    <p class="tag">Patients keep arriving with broken programs. Diagnose the error, order the right test, then treat it — before the ward's vitals crash. Every shift gets busier.</p>
+    <div class="badge-row">
+      <span class="badge syntax">SYNTAX</span>
+      <span class="badge runtime">RUNTIME</span>
+      <span class="badge logic">LOGIC</span>
+      <span class="badge healthy">HEALTHY</span>
+    </div>
+    <div class="center-col">
+      <input type="text" id="playerNameInput" placeholder="Your name (for the shift log)" maxlength="24">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn btn-primary" id="startBtn">Start Shift 1</button>
+        <button class="btn btn-ghost" id="glossaryBtnTitle">📋 Field Guide</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen hidden" id="screen-game">
+  <div class="chart-card">
+    <div class="chart-head">
+      <span class="chartid" id="chartId">CHART #—</span>
+      <span class="patient" id="patientName">—</span>
+    </div>
+    <div class="chief" id="chiefComplaint"></div>
+    <div class="code-box" id="codeBox"></div>
+    <div class="stage-track" id="stageTrack"></div>
+    <div class="queue-note" id="queueNote">⚠ SURGE: multiple patients waiting — clock's running short this round.</div>
+    <div class="timer-row">
+      <span class="timer-label" id="timerLabel">--s</span>
+      <div class="timer-bar-outer"><div class="timer-bar-inner" id="timerBar"></div></div>
+    </div>
+    <div class="action-zone">
+      <div class="action-title" id="actionTitle">What's your diagnosis?</div>
+      <div class="opt-grid" id="optGrid"></div>
+    </div>
+    <div class="feedback-panel" id="feedbackPanel">
+      <div class="fh" id="feedbackHead"></div>
+      <div id="feedbackBody"></div>
+      <div style="margin-top:10px;text-align:right;"><button class="btn btn-small btn-primary" id="continueBtn">Continue →</button></div>
+    </div>
+  </div>
+  <div class="bottombar">
+    <button class="footer-link" id="glossaryBtnGame">📋 Field Guide</button>
+    <button class="footer-link" id="clockOutBtn">Clock out &amp; save shift log</button>
+  </div>
+</div>
+
+<!-- VOCAB FLASH SCREEN -->
+<div class="screen hidden" id="screen-vocab">
+  <div class="chart-card">
+    <div class="chart-head"><span class="chartid">📟 QUICK CALL — OVERHEAD PAGE</span></div>
+    <div class="vocab-card">
+      <div class="vh">BONUS · NO PENALTY FOR A MISS</div>
+      <div id="vocabQuestion" style="font-size:14.5px;margin-bottom:12px;"></div>
+      <div class="opt-grid" id="vocabOptGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHIFT DEBRIEF SCREEN -->
+<div class="screen hidden" id="screen-debrief">
+  <div class="chart-card">
+    <div class="chart-head"><span class="patient">🗂 END-OF-SHIFT DEBRIEF</span></div>
+    <div class="center-col" style="padding:20px 16px;">
+      <div id="debriefShiftLabel" style="font-family:var(--mono);color:var(--text-dim);"></div>
+      <div class="big-stat" id="debriefScore">0</div>
+      <div style="color:var(--text-dim);font-size:13px;">points this shift</div>
+      <div id="debriefRecap" style="width:100%;max-width:420px;margin-top:10px;"></div>
+      <button class="btn btn-primary" id="nextShiftBtn" style="margin-top:16px;">Start Next Shift</button>
+      <button class="footer-link" id="debriefClockOutBtn">Clock out here instead</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div class="screen hidden" id="screen-over">
+  <div class="chart-card">
+    <div class="chart-head"><span class="patient" id="overTitle">🚨 CODE BLUE</span></div>
+    <div class="center-col" style="padding:24px 16px;">
+      <p id="overMessage" style="color:var(--text-dim);max-width:420px;"></p>
+      <div class="recap-line"><span>Shift reached</span><span id="overShift"></span></div>
+      <div class="recap-line"><span>Patients treated</span><span id="overPatients"></span></div>
+      <div class="recap-line"><span>Best streak</span><span id="overStreak"></span></div>
+      <div class="recap-line"><span>Diagnosis accuracy</span><span id="overAccDiag"></span></div>
+      <div class="recap-line"><span>Test-order accuracy</span><span id="overAccTest"></span></div>
+      <div class="recap-line"><span>Treatment accuracy</span><span id="overAccTreat"></span></div>
+      <button class="btn btn-primary" id="playAgainBtn" style="margin-top:16px;">Start a New Shift</button>
+      <div id="logStatus" style="font-size:11px;color:var(--text-dimmer);font-family:var(--mono);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GLOSSARY MODAL -->
+<div class="modal-overlay hidden" id="glossaryModal">
+  <div class="modal">
+    <h2>📋 Field Guide</h2>
+    <div class="glossary-item"><div class="term syntax">SYNTAX ERROR</div><p>Python can't even parse the code — it's caught before the program runs at all. Missing colons, unmatched brackets, misspelled keywords.</p></div>
+    <div class="glossary-item"><div class="term runtime">RUNTIME ERROR</div><p>The code is valid and starts running, then crashes partway through because of what happens with a specific input. Shows up as a named error like IndexError or ValueError.</p></div>
+    <div class="glossary-item"><div class="term logic">LOGIC ERROR</div><p>The code runs from start to finish with no crash and no error message — it just produces the wrong answer.</p></div>
+    <div class="glossary-item"><div class="term healthy">HEALTHY</div><p>Runs correctly with no crash and the right output. Not every patient is sick — knowing when there's <em>no</em> error is its own skill.</p></div>
+    <div class="glossary-item"><div class="term" style="color:var(--cyan)">TYPICAL CASE TEST</div><p>Ordinary, expected input — the kind of input the program will see most often.</p></div>
+    <div class="glossary-item"><div class="term" style="color:var(--amber)">BOUNDARY CASE TEST</div><p>Input right at the edge of what's valid — an empty list, the first/last index, a minimum or maximum allowed value.</p></div>
+    <div class="glossary-item"><div class="term" style="color:var(--violet)">EDGE CASE TEST</div><p>Unusual but still valid input that stresses the logic without being at a strict boundary — all-negative numbers, duplicates, a huge or oddly-shaped input.</p></div>
+    <div class="glossary-item"><div class="term" style="color:var(--red)">INVALID / EXCEPTION-INPUT TEST</div><p>Input the program should reject or handle carefully — wrong data type, out-of-range value, malformed text.</p></div>
+    <div class="glossary-item"><div class="term">N/A — WON'T RUN TO TEST</div><p>Syntax errors are caught before any code executes, so no test case can "run into" them — testing doesn't apply the same way.</p></div>
+    <button class="btn btn-ghost" id="closeGlossaryBtn" style="margin-top:6px;">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================ CASE BANK ============================ */
+const CASE_BANK = [
+/* ---------------- TIER 1 : SYNTAX ---------------- */
+{id:'s1',category:'syntax',tier:1,patientName:'check_passing()',
+ code:['def check_passing(grade):','    if grade >= 60','        return "Pass"','    return "Fail"'],
+ symptom:"Won't run at all — Python flags a problem <b>before the program even starts</b>.",
+ diagExplain:"Missing colon after the if-condition. Python can't parse this — that's a syntax error, caught before execution even begins.",
+ testAnswer:'na',testRationale:"Syntax errors are caught before any code runs, so no test case gets the chance to run into it.",
+ treatments:[
+   {text:"Add a colon after `grade >= 60`",correct:true,explain:"Right — every if-statement needs a colon to open its block."},
+   {text:"Change `if` to `while`",correct:false,explain:"Changes the logic entirely and still has no colon — doesn't fix the syntax problem."},
+   {text:"Wrap the if-statement in a try/except block",correct:false,explain:"try/except handles runtime errors, not syntax errors — the code still won't parse."}
+ ]},
+{id:'s2',category:'syntax',tier:1,patientName:'find_max()',
+ code:['def find_max(numbers):','    largest = numbers[0]','    for n in numbers:','        if n > largest:','            largest = n','    return largest','','print("Max value:", find_max([4, 9, 2, 7])'],
+ symptom:"Crashes immediately, pointing at the very <b>last line</b> — before find_max ever runs.",
+ diagExplain:"The call to print() is missing its closing parenthesis. Python can't parse the statement — syntax error.",
+ testAnswer:'na',testRationale:"It never gets the chance to execute, so there's nothing a test case could have run against.",
+ treatments:[
+   {text:"Add the missing closing parenthesis after the list",correct:true,explain:"Right — that closes the print() call properly."},
+   {text:"Move the print statement above the function definition",correct:false,explain:"Doesn't fix the missing parenthesis, and now find_max wouldn't even be defined yet when called."},
+   {text:"Add a colon at the end of the print line",correct:false,explain:"print() calls don't need colons — that's not the actual problem."}
+ ]},
+{id:'s3',category:'syntax',tier:1,patientName:'average_grade()',
+ code:['def average_grade(grades):','    total = 0','    for g in grades:','        total += g','    retrun total / len(grades)'],
+ symptom:"Python refuses to run the file at all, pointing at the <b>return line</b>.",
+ diagExplain:"'retrun' isn't a recognized Python keyword — a typo causing a syntax error.",
+ testAnswer:'na',testRationale:"The file won't even parse, so no test can be run against it yet.",
+ treatments:[
+   {text:"Fix the spelling: change `retrun` to `return`",correct:true,explain:"Right — that's the exact typo causing the failure."},
+   {text:"Change `retrun total` to `retrun(total)`",correct:false,explain:"Still misspelled — adding parentheses doesn't fix the keyword itself."},
+   {text:"Delete the line entirely",correct:false,explain:"Removes the crash, but now the function returns None instead of the average — trades one bug for another."}
+ ]},
+/* ---------------- TIER 1 : RUNTIME ---------------- */
+{id:'r1',category:'runtime',tier:1,patientName:'calculate_average()',
+ code:['def calculate_average(scores):','    total = sum(scores)','    return total / len(scores)','','print(calculate_average([]))'],
+ symptom:"Runs, starts executing, then crashes: <b>'ZeroDivisionError: division by zero'</b>.",
+ diagExplain:"The code is valid and runs — it crashes partway through because of a specific input (an empty list). That's a runtime error.",
+ testAnswer:'boundary',testRationale:"An empty list is a boundary — the smallest possible size for this input. A boundary test would have caught this.",
+ treatments:[
+   {text:"Add a check: if the list is empty, return 0 (or handle it) before dividing",correct:true,explain:"Right — that handles the boundary case directly."},
+   {text:"Wrap the whole program in a while loop",correct:false,explain:"Doesn't address the division by zero at all."},
+   {text:"Change `len(scores)` to `len(scores) + 1`",correct:false,explain:"Avoids the crash but now gives a mathematically wrong average for every input."}
+ ]},
+{id:'r2',category:'runtime',tier:1,patientName:'greet()',
+ code:['def greet(name, age):','    print("Hello " + name + ", you are " + age + " years old.")','','greet("Mia", 14)'],
+ symptom:"Crashes: <b>\"TypeError: can only concatenate str (not 'int') to str\"</b>.",
+ diagExplain:"This runs, then crashes because `age` is an int and can't be joined to a string with +. Caught during execution — runtime error.",
+ testAnswer:'typical',testRationale:"This fails on totally ordinary input — a normal call already breaks it, no special case needed.",
+ treatments:[
+   {text:"Convert age to a string: `str(age)`",correct:true,explain:"Right — that fixes the type mismatch directly."},
+   {text:"Change age's value to \"14\" everywhere it's called",correct:false,explain:"Fragile — fixes only this one call site, not the function itself."},
+   {text:"Remove age from the print statement",correct:false,explain:"Avoids the crash but loses required information from the output."}
+ ]},
+{id:'r3',category:'runtime',tier:1,patientName:'get_third_item()',
+ code:['def get_third_item(my_list):','    return my_list[2]','','print(get_third_item([10, 20]))'],
+ symptom:"Crashes: <b>'IndexError: list index out of range'</b>.",
+ diagExplain:"Runs fine for lists with 3+ items, but crashes on this input. Fails partway through execution — runtime error.",
+ testAnswer:'boundary',testRationale:"A list shorter than expected is a boundary case for this function.",
+ treatments:[
+   {text:"Check the list's length before indexing, or handle the short-list case",correct:true,explain:"Right — that protects against lists that are too short."},
+   {text:"Change `my_list[2]` to `my_list[3]`",correct:false,explain:"Still crashes on this input — wrong index either way."},
+   {text:"Add more items to the list being passed in",correct:false,explain:"Fixes this one call, not the function's ability to handle short lists in general."}
+ ]},
+/* ---------------- TIER 1 : LOGIC ---------------- */
+{id:'l1',category:'logic',tier:1,patientName:'check_passing()',
+ code:['def check_passing(grade):','    if grade > 60:','        return "Pass"','    return "Fail"'],
+ symptom:"Runs perfectly, no crash — but a grade of <b>exactly 60</b> is marked as failing, and 60 should pass.",
+ diagExplain:"No crash, no parsing problem — the code runs and gives an answer, it's just the wrong answer. Logic error.",
+ testAnswer:'boundary',testRationale:"The bug only shows up right at the passing threshold (60) — a classic boundary case.",
+ treatments:[
+   {text:"Change `>` to `>=`",correct:true,explain:"Right — that includes 60 as passing."},
+   {text:"Change `60` to `61` in the condition",correct:false,explain:"Shifts the bug instead of fixing it — now 61 would incorrectly fail too under the same flawed reasoning."},
+   {text:"Change `return \"Fail\"` to `return \"Pass\"`",correct:false,explain:"That would make everyone pass — massively overcorrects."}
+ ]},
+{id:'l2',category:'logic',tier:1,patientName:'sum_list()',
+ code:['def sum_list(numbers):','    total = 0','    for i in range(len(numbers) - 1):','        total += numbers[i]','    return total'],
+ symptom:"Runs with no crash, but the total is always <b>missing the last number</b> in the list.",
+ diagExplain:"No error message at all — it runs fine and gives an answer, just the wrong one. Logic error.",
+ testAnswer:'typical',testRationale:"This breaks on any normal list — a typical test with a few numbers already reveals it's off by one.",
+ treatments:[
+   {text:"Change `range(len(numbers) - 1)` to `range(len(numbers))`",correct:true,explain:"Right — that includes every index, including the last one."},
+   {text:"Change `total += numbers[i]` to `total += numbers[i+1]`",correct:false,explain:"Now it skips the first element and crashes with an IndexError on the last iteration instead."},
+   {text:"Add `total += numbers[-1]` after the loop",correct:false,explain:"Patches the symptom without fixing the actual range — fragile and confusing."}
+ ]},
+{id:'l3',category:'logic',tier:1,patientName:'count_positive()',
+ code:['def count_positive(numbers):','    count = 0','    for n in numbers:','        if n > 0:','            count = 1','    return count'],
+ symptom:"Runs fine, no crash — but no matter how many positive numbers are in the list, it always reports <b>0 or 1</b>, never higher.",
+ diagExplain:"It runs and returns a number — just not the right one. `count = 1` overwrites the running total instead of adding to it. Logic error.",
+ testAnswer:'typical',testRationale:"Any list with more than one positive number already shows the bug — no special case needed.",
+ treatments:[
+   {text:"Change `count = 1` to `count += 1`",correct:true,explain:"Right — that accumulates the count instead of overwriting it."},
+   {text:"Change `count = 1` to `count = count + 2`",correct:false,explain:"Overcounts instead of counting correctly — doubling isn't the same as accumulating by one."},
+   {text:"Move `count = 0` inside the for loop",correct:false,explain:"That resets count back to 0 every single iteration — it would always end up 0."}
+ ]},
+/* ---------------- TIER 1 : HEALTHY ---------------- */
+{id:'h1',category:'healthy',tier:1,patientName:'calculate_average()',
+ code:['def calculate_average(scores):','    if len(scores) == 0:','        return 0','    return sum(scores) / len(scores)','','print(calculate_average([85, 90, 78]))'],
+ symptom:"Runs with no crash and prints <b>84.33333333333333</b> — matches what's expected.",
+ diagExplain:"No crash, correct output, and it even handles the empty-list case. This patient's healthy.",
+ testAnswer:'boundary',testRationale:"It already passed a typical test — the next thing worth confirming is the empty-list boundary, which is already handled here.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — nothing here is broken."},
+   {text:"Add a try/except around the division anyway, just to be safe",correct:false,explain:"There's no error to catch — unnecessary handling can hide future real problems."},
+   {text:"Change `== 0` to `< 1`",correct:false,explain:"Functionally identical for list lengths — changes nothing, risks a typo for no benefit."}
+ ]},
+{id:'h2',category:'healthy',tier:1,patientName:'is_even()',
+ code:['def is_even(number):','    return number % 2 == 0','','print(is_even(7))','print(is_even(-4))'],
+ symptom:"Runs cleanly and correctly prints <b>False</b> then <b>True</b>, including for the negative number.",
+ diagExplain:"Correct output for both a typical and a negative input. Nothing to fix.",
+ testAnswer:'edge',testRationale:"It's already been tried on a negative number — a good edge case — and held up; worth checking 0 too.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — modulo already handles negatives correctly in Python."},
+   {text:"Add a special case for negative numbers",correct:false,explain:"Unnecessary — the modulo operator already works correctly on negatives."},
+   {text:"Change `== 0` to `is 0`",correct:false,explain:"`is` checks identity, not equality — this would introduce a bug where there wasn't one."}
+ ]},
+{id:'h3',category:'healthy',tier:1,patientName:'get_passing_grades()',
+ code:['def get_passing_grades(grades):','    return [g for g in grades if g >= 60]','','print(get_passing_grades([55, 60, 88, 42, 91]))'],
+ symptom:"Runs cleanly and prints <b>[60, 88, 91]</b> — exactly the passing grades.",
+ diagExplain:"Correct on this input, no crash, no red flags. Healthy.",
+ testAnswer:'boundary',testRationale:"Worth confirming behavior right at the threshold (a grade of exactly 60) — and it's already included correctly here.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — the boundary at 60 is already handled correctly."},
+   {text:"Add `.copy()` to the list before filtering",correct:false,explain:"Unnecessary — the list comprehension already builds a new list."},
+   {text:"Change `>=` to `>`",correct:false,explain:"That would incorrectly exclude a grade of exactly 60 — introduces a bug."}
+ ]},
+/* ---------------- TIER 2 : SYNTAX ---------------- */
+{id:'s4',category:'syntax',tier:2,patientName:'get_grade_labels()',
+ code:['def get_grade_labels():','    labels = {90: "A", 80: "B", 70: "C", 60: "D"','    return labels'],
+ symptom:"Doesn't run at all — Python complains <b>before any output appears</b>.",
+ diagExplain:"The dictionary literal opens with `{` but never closes it before `return`. Missing closing brace — syntax error.",
+ testAnswer:'na',testRationale:"It never runs, so no test case gets a chance to catch anything.",
+ treatments:[
+   {text:'Add the missing `}` after "D"',correct:true,explain:"Right — that closes the dictionary literal."},
+   {text:"Add a `}` after `return labels`",correct:false,explain:"The dictionary itself needs closing before `return` — the brace has to close the literal, not appear after."},
+   {text:"Change the dictionary to a list",correct:false,explain:"Changes the data structure entirely and breaks anything expecting a dictionary."}
+ ]},
+{id:'s5',category:'syntax',tier:2,patientName:'summarize()',
+ code:['def summarize(name, score, grade):','    print(name, "scored", score "and earned", grade)','','summarize("Jae", 95, "A")'],
+ symptom:"Fails before running anything — Python points at the <b>print line</b>.",
+ diagExplain:"There's no comma or operator between `score` and \"and earned\" — Python can't parse two expressions sitting next to each other. Syntax error.",
+ testAnswer:'na',testRationale:"The statement can't even be parsed, so there's nothing a test case could run into.",
+ treatments:[
+   {text:'Add a comma between `score` and "and earned"',correct:true,explain:"Right — that separates the two items properly."},
+   {text:'Remove the quotes around "and earned"',correct:false,explain:"That would try to run `and earned` as code, causing a different error (NameError)."},
+   {text:'Add parentheses around `score "and earned"`',correct:false,explain:"Grouping doesn't add the missing separator Python needs between the two items."}
+ ]},
+{id:'s6',category:'syntax',tier:2,patientName:'find_min()',
+ code:['def find_min(numbers):','    smallest = numbers[0]','    for n in numbers:','        if n < smallest:','        smallest = n','    return smallest'],
+ symptom:"Fails immediately: <b>'IndentationError: expected an indented block'</b>.",
+ diagExplain:"The line after `if n < smallest:` needs to be indented one more level to be inside the if-block. Caught before running — syntax error.",
+ testAnswer:'na',testRationale:"Python won't even start running this file, so no test can be run yet.",
+ treatments:[
+   {text:"Indent `smallest = n` one level further, under the if statement",correct:true,explain:"Right — that puts the assignment inside the if-block where it belongs."},
+   {text:"Remove the colon after `if n < smallest`",correct:false,explain:"The if-statement needs that colon — removing it creates a different syntax error."},
+   {text:"Move `return smallest` inside the for loop",correct:false,explain:"Doesn't address the indentation problem, and would return after just the first number."}
+ ]},
+/* ---------------- TIER 2 : RUNTIME ---------------- */
+{id:'r4',category:'runtime',tier:2,patientName:'get_price()',
+ code:['def get_price(catalog, item):','    return catalog[item]','','prices = {"pen": 1.50, "notebook": 3.00}','print(get_price(prices, "eraser"))'],
+ symptom:"Starts up fine, then crashes: <b>'KeyError: eraser'</b>.",
+ diagExplain:"Dictionary access works for keys that exist and fails for one that doesn't — a runtime error triggered by a specific input.",
+ testAnswer:'invalid',testRationale:'"eraser" isn\'t a valid key in this catalog — exactly what an invalid-input test is designed to catch.',
+ treatments:[
+   {text:'Use `catalog.get(item, "Not found")` instead of `catalog[item]`',correct:true,explain:"Right — that handles missing keys gracefully."},
+   {text:'Add `"eraser": 0` to the dictionary',correct:false,explain:"Patches this one missing key instead of handling any missing key in general."},
+   {text:"Wrap the dictionary in a list",correct:false,explain:"Breaks the key-based lookup logic entirely."}
+ ]},
+{id:'r5',category:'runtime',tier:2,patientName:'double_input()',
+ code:['def double_input():','    value = input("Enter a number: ")','    return int(value) * 2','','print(double_input())'],
+ symptom:"Runs and prompts for input — typing 'five' instead of 5 crashes it: <b>'ValueError: invalid literal for int()'</b>.",
+ diagExplain:"It runs, prompts, and only fails depending on what's typed. That input-dependent crash is a runtime error.",
+ testAnswer:'invalid',testRationale:"Non-numeric text is invalid input for `int()` — exactly what an invalid-input test targets.",
+ treatments:[
+   {text:"Wrap the conversion in a try/except and ask again on bad input",correct:true,explain:"Right — that gracefully handles non-numeric input."},
+   {text:"Change `int(value)` to `float(value)`",correct:false,explain:"Still crashes on non-numeric text like 'five' — just a different error."},
+   {text:"Remove the `int()` conversion entirely",correct:false,explain:"Stops the crash, but `* 2` on a string doubles the text ('5' becomes '55') instead of doing math."}
+ ]},
+{id:'r6',category:'runtime',tier:2,patientName:'find_student()',
+ code:['def find_student(students, name):','    for s in students:','        if s["name"] == name:','            return s','    return None','','student = find_student([{"name": "Kai"}, {"name": "Ana"}], "Sam")','print(student["name"])'],
+ symptom:"Search runs fine, then crashes: <b>\"TypeError: 'NoneType' object is not subscriptable\"</b>.",
+ diagExplain:"find_student runs fine — it legitimately returns None when no match is found, and the caller doesn't check for that. Runtime error.",
+ testAnswer:'invalid',testRationale:"Searching for a name that isn't in the list is exactly what a test should confirm the program handles gracefully.",
+ treatments:[
+   {text:'Check if `student` is `None` before accessing `student["name"]`',correct:true,explain:"Right — that handles the no-match case safely."},
+   {text:'Change `return None` to `return ""`',correct:false,explain:"Avoids this crash but now silently returns an empty string, hiding that no match was found."},
+   {text:'Remove the last `print(student["name"])` line entirely',correct:false,explain:"Removes the crash by removing the useful output too — not a real fix."}
+ ]},
+/* ---------------- TIER 2 : LOGIC ---------------- */
+{id:'l4',category:'logic',tier:2,patientName:'product_of_list()',
+ code:['def product_of_list(numbers):','    total = 0','    for n in numbers:','        total *= n','    return total'],
+ symptom:"Runs with no crash, but the result is <b>always 0</b>, no matter what numbers go in.",
+ diagExplain:"It runs and returns a value — always wrong, because of how `total` is initialized. Logic error.",
+ testAnswer:'typical',testRationale:"Any ordinary list of numbers already produces the wrong result — no special input required.",
+ treatments:[
+   {text:"Change `total = 0` to `total = 1`",correct:true,explain:"Right — multiplying starts safely from 1, not 0."},
+   {text:"Change `total *= n` to `total += n`",correct:false,explain:"That turns this into a sum function instead of a product function — wrong operation."},
+   {text:"Change `for n in numbers` to `for n in numbers[1:]`",correct:false,explain:"Skipping the first number doesn't fix the initialization — total still starts at 0."}
+ ]},
+{id:'l5',category:'logic',tier:2,patientName:'is_valid_grade()',
+ code:['def is_valid_grade(grade):','    if grade >= 0 or grade <= 100:','        return True','    return False'],
+ symptom:"Runs fine, but accepts clearly invalid grades like <b>-50 and 250</b> as valid.",
+ diagExplain:"No crash — it runs and gives an answer for every input, just the wrong answer for out-of-range grades. Logic error.",
+ testAnswer:'invalid',testRationale:"Feeding it an out-of-range number like -50 or 250 is what exposes this — an invalid-input test.",
+ treatments:[
+   {text:"Change `or` to `and`",correct:true,explain:"Right — now both conditions must hold, correctly bounding the range."},
+   {text:"Change `grade >= 0` to `grade > 0`",correct:false,explain:"Doesn't touch the real problem — `or` still lets almost anything through."},
+   {text:"Add `return False` before the if-statement",correct:false,explain:"An unreachable line before the if-statement never executes and changes nothing."}
+ ]},
+{id:'l6',category:'logic',tier:2,patientName:'find_max()',
+ code:['def find_max(numbers):','    largest = 0','    for n in numbers:','        if n > largest:','            largest = n','    return largest','','print(find_max([-8, -3, -15]))'],
+ symptom:"Runs with no crash and prints <b>0</b> — but 0 was never even in the list.",
+ diagExplain:"Runs and returns a value, just the wrong one for lists of all-negative numbers. Logic error.",
+ testAnswer:'edge',testRationale:"A list of all-negative numbers is an unusual-but-valid input that exposes the bad starting assumption — a good edge case.",
+ treatments:[
+   {text:"Change `largest = 0` to `largest = numbers[0]`",correct:true,explain:"Right — start from an actual value in the list, not an assumed 0."},
+   {text:"Change `n > largest` to `n >= largest`",correct:false,explain:"Doesn't fix the flawed starting value — still returns 0 for an all-negative list."},
+   {text:"Add `numbers.sort()` before the loop",correct:false,explain:"Sorting doesn't fix the comparison against a starting value of 0."}
+ ]},
+/* ---------------- TIER 2 : HEALTHY ---------------- */
+{id:'h4',category:'healthy',tier:2,patientName:'average_of_two()',
+ code:['def average_of_two(a, b):','    return (a + b) / 2','','print(average_of_two(4, 4))','print(average_of_two(-6, 6))'],
+ symptom:"Runs cleanly, prints <b>4.0</b> then <b>0.0</b>, both mathematically correct.",
+ diagExplain:"Correct results on a repeated-value case and a positive/negative mix. Healthy.",
+ testAnswer:'edge',testRationale:"Already tested with equal values and opposite-sign values — solid edge case coverage.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — both results are correct."},
+   {text:"Add rounding to the return value",correct:false,explain:"Unnecessary — changes correct precise output for no reason."},
+   {text:"Convert a and b to int() before adding",correct:false,explain:"Would break decimal inputs — introduces a real bug."}
+ ]},
+{id:'h5',category:'healthy',tier:2,patientName:'has_duplicates()',
+ code:['def has_duplicates(items):','    return len(items) != len(set(items))','','print(has_duplicates([1, 2, 3]))','print(has_duplicates([1, 2, 2]))','print(has_duplicates([]))'],
+ symptom:"Runs cleanly, correctly prints <b>False, True</b>, then <b>False</b> for the empty list.",
+ diagExplain:"Correct across a typical case and a boundary case (empty list). Healthy.",
+ testAnswer:'boundary',testRationale:"Already checked against the empty-list boundary and handled it correctly.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — the empty-list boundary is already handled correctly."},
+   {text:"Add an if-check for empty lists that returns False",correct:false,explain:"Already works correctly — this adds unnecessary complexity."},
+   {text:"Change `set(items)` to `list(items)`",correct:false,explain:"Would break the duplicate-checking logic, since a list preserves duplicates."}
+ ]},
+{id:'h6',category:'healthy',tier:2,patientName:'get_last_n()',
+ code:['def get_last_n(items, n):','    if n <= 0:','        return []','    return items[-n:]','','print(get_last_n([1, 2, 3, 4, 5], 2))','print(get_last_n([1, 2, 3], 0))'],
+ symptom:"Runs cleanly, prints <b>[4, 5]</b> then <b>[]</b>, both correct.",
+ diagExplain:"Handles a typical request and the n=0 boundary correctly. Healthy.",
+ testAnswer:'boundary',testRationale:"n=0 is the boundary here, and it's already confirmed working.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — the n=0 boundary is already handled."},
+   {text:"Add a check for negative n specifically",correct:false,explain:"`n <= 0` already covers negative numbers too — redundant."},
+   {text:"Change `items[-n:]` to `items[len(items)-n:]`",correct:false,explain:"Equivalent when it works, but unnecessarily complicated with no real benefit."}
+ ]},
+/* ---------------- TIER 3 : SYNTAX ---------------- */
+{id:'s7',category:'syntax',tier:3,patientName:'describe_score()',
+ code:['def describe_score(name, score):','    return f"{name} scored {score points."','','print(describe_score("Rae", 92))'],
+ symptom:"Fails before anything runs — the error points <b>inside the f-string</b>.",
+ diagExplain:'The f-string opens `{score` but never closes that brace before the string ends. Invisible at a glance, but still a parsing problem — syntax error.',
+ testAnswer:'na',testRationale:"It never runs, so no test case gets a chance to catch anything.",
+ treatments:[
+   {text:"Add the closing `}` after `score`",correct:true,explain:"Right — that closes the interpolated expression properly."},
+   {text:"Remove the `f` before the string",correct:false,explain:"Removes the syntax error but also removes all interpolation — name and score would print as literal text."},
+   {text:"Change the string to use single quotes",correct:false,explain:"Quote style isn't the issue — the unclosed brace is."}
+ ]},
+{id:'s8',category:'syntax',tier:3,patientName:'calculate_total()',
+ code:['def calculate_total(price, discount):','    class = price - discount','    return class'],
+ symptom:"Fails to run at all — Python flags a problem on the <b>second line</b>.",
+ diagExplain:"`class` is a reserved Python keyword and can't be used as a variable name. Caught before the program runs — syntax error.",
+ testAnswer:'na',testRationale:"The file can't even be parsed, so no test case applies.",
+ treatments:[
+   {text:"Rename the variable to something like `total`",correct:true,explain:"Right — that avoids the reserved keyword entirely."},
+   {text:'Add quotes around class: "class"',correct:false,explain:"Turns it into a string, which doesn't fix the assignment or the second use as a variable name."},
+   {text:"Import the `class` module",correct:false,explain:"`class` isn't a module — it's a reserved keyword, and this doesn't address the actual issue."}
+ ]},
+{id:'s9',category:'syntax',tier:3,patientName:'grade_letter()',
+ code:['def grade_letter(score):','    if score >= 90:','        return "A"','    else if score >= 80:','        return "B"','    else:','        return "C"'],
+ symptom:"Fails before running — Python flags the line with <b>'else if'</b>.",
+ diagExplain:"Python doesn't use 'else if' — the correct keyword is 'elif'. A classic slip from switching between languages. Syntax error.",
+ testAnswer:'na',testRationale:"It never runs, so no test case gets a chance to catch anything.",
+ treatments:[
+   {text:"Change `else if` to `elif`",correct:true,explain:"Right — that's the correct Python keyword."},
+   {text:"Change `else if score >= 80:` to `else: if score >= 80:`",correct:false,explain:"Technically two statements now, but needs its own colon/indentation — messier and error-prone vs. the simple `elif` fix."},
+   {text:"Remove the `else if` branch entirely",correct:false,explain:"Removes the syntax error by deleting needed logic — grades 80–89 would no longer get a 'B'."}
+ ]},
+/* ---------------- TIER 3 : RUNTIME ---------------- */
+{id:'r7',category:'runtime',tier:3,patientName:'get_grade_trend()',
+ code:['def get_grade_trend(grades):','    changes = []','    for i in range(1, len(grades)):','        changes.append(grades[i] - grades[i - 1])','    return changes[0]','','print(get_grade_trend([82, 90, 95]))'],
+ symptom:"Works fine for a normal list of grades, but crashes with <b>'IndexError: list index out of range'</b> when given a list of just <b>one</b> grade.",
+ diagExplain:"Runs successfully for typical input — only fails for a specific edge input (a single-element list), during execution. Runtime error, even though the failure is boundary-specific.",
+ testAnswer:'boundary',testRationale:"A list with just one grade is the boundary — the smallest input where `changes` ends up empty.",
+ treatments:[
+   {text:"Check if `changes` is empty before returning `changes[0]`, or return the whole list instead",correct:true,explain:"Right — that guards against the empty-changes case."},
+   {text:"Change `range(1, len(grades))` to `range(len(grades))`",correct:false,explain:"Now `grades[i-1]` wraps around to the last element on the first pass — trades this crash for a wraparound logic bug."},
+   {text:"Change `changes[0]` to `changes[-1]`",correct:false,explain:"Still crashes on a single-element list, since `changes` is empty either way."}
+ ]},
+{id:'r8',category:'runtime',tier:3,patientName:'get_username()',
+ code:['def get_username(users, user_id):','    user = users.get(user_id)','    return user["name"].upper()','','users = {1: {"name": "Ravi"}, 2: {"name": "Lina"}}','print(get_username(users, 3))'],
+ symptom:"Works for existing user IDs, but crashes for a missing one: <b>\"TypeError: 'NoneType' object is not subscriptable\"</b>.",
+ diagExplain:"Runs fine for valid IDs, only breaks for a specific kind of input. Still a runtime error — the crash happens while executing, not before.",
+ testAnswer:'invalid',testRationale:"A user ID that doesn't exist in the dictionary is invalid input for this function.",
+ treatments:[
+   {text:'Check if `user` is `None` before accessing `user["name"]`',correct:true,explain:"Right — that handles the missing-ID case safely."},
+   {text:"Change `.get(user_id)` to `[user_id]`",correct:false,explain:"Switches to a method that raises KeyError immediately — still crashes, just differently."},
+   {text:"Add `user_id = 1` as a default parameter",correct:false,explain:"Doesn't address missing IDs in general — just changes which ID is used by default."}
+ ]},
+{id:'r9',category:'runtime',tier:3,patientName:'parse_coordinates()',
+ code:['def parse_coordinates(text):','    x, y = text.split(",")','    return int(x), int(y)','','print(parse_coordinates("3,4"))','print(parse_coordinates("7"))'],
+ symptom:'Works for input like "3,4", but crashes on \'7\': <b>\'ValueError: not enough values to unpack\'</b>.',
+ diagExplain:"Runs correctly for well-formed input, fails only for malformed input during execution. Runtime error.",
+ testAnswer:'invalid',testRationale:"Text without a comma is invalid input for this function's expected format.",
+ treatments:[
+   {text:"Check that `text` contains a comma (or the split produces exactly 2 parts) before unpacking",correct:true,explain:"Right — that guards against malformed input."},
+   {text:'Change `text.split(",")` to `text.split()`',correct:false,explain:"Splits on whitespace instead of commas — breaks the normal '3,4' case entirely."},
+   {text:"Wrap only the return line in a try/except that does nothing on failure",correct:false,explain:"Silently swallowing the error hides the problem instead of handling it meaningfully."}
+ ]},
+/* ---------------- TIER 3 : LOGIC ---------------- */
+{id:'l7',category:'logic',tier:3,patientName:'get_grade_trend()',
+ code:['def get_grade_trend(grades):','    changes = []','    for i in range(len(grades)):','        changes.append(grades[i] - grades[i - 1])','    return changes'],
+ symptom:"Runs with no crash and returns a full list — but the <b>first value</b> is wildly wrong.",
+ diagExplain:"No crash anywhere — Python accepts `grades[-1]` as valid (it wraps to the last item), so this produces an answer for every input. Just wrong on the first comparison. Logic error.",
+ testAnswer:'boundary',testRationale:"Index 0 is the boundary where the wraparound happens — a boundary test on the start of the list catches it.",
+ treatments:[
+   {text:"Change the loop to start at `range(1, len(grades))`",correct:true,explain:"Right — that removes the invalid first comparison entirely."},
+   {text:"Change `grades[i - 1]` to `grades[i + 1]`",correct:false,explain:"Shifts the wraparound problem to the end of the list, and now crashes with an IndexError on the last index."},
+   {text:"Add `if i > 0` inside the loop, but still append something for i == 0",correct:false,explain:"Appending a placeholder for i==0 still isn't a real trend value."}
+ ]},
+{id:'l8',category:'logic',tier:3,patientName:'total_reached_goal()',
+ code:['def total_reached_goal(prices, goal):','    total = 0','    for p in prices:','        total += p','    return total == goal'],
+ symptom:"Runs fine, but with prices that should add up exactly to the goal (like <b>[0.1, 0.2]</b> and goal <b>0.3</b>), it returns <b>False</b> instead of True.",
+ diagExplain:"No crash — Python evaluates the comparison and returns a legitimate True/False. It's wrong because of how floating-point numbers are stored. Logic error.",
+ testAnswer:'edge',testRationale:"Floating-point numbers that don't add up 'cleanly' are an unusual-but-valid edge case — not a boundary and not invalid input.",
+ treatments:[
+   {text:"Compare using a small tolerance, like `abs(total - goal) < 0.0001`, instead of `==`",correct:true,explain:"Right — that accounts for floating-point imprecision."},
+   {text:"Round `goal` to the nearest whole number before comparing",correct:false,explain:"Loses precision entirely — would mark plenty of genuinely correct totals as wrong."},
+   {text:"Change `prices` to only ever contain whole numbers",correct:false,explain:"That's a constraint on the caller, not a fix to the function."}
+ ]},
+{id:'l9',category:'logic',tier:3,patientName:'add_student()',
+ code:['def add_student(name, roster=[]):','    roster.append(name)','    return roster','','print(add_student("Kai"))','print(add_student("Lin"))'],
+ symptom:"Runs with no crash. First call prints <b>['Kai']</b> as expected, but the second prints <b>['Kai', 'Lin']</b> instead of just ['Lin'].",
+ diagExplain:"Nothing crashes — every call returns a valid list. The default list is created once and reused across every call. A classic, sneaky Python logic error.",
+ testAnswer:'typical',testRationale:"This shows up the moment the function is called more than once with default arguments — no unusual input needed.",
+ treatments:[
+   {text:"Change the default to `roster=None`, and create a new list inside if `roster is None`",correct:true,explain:"Right — that avoids reusing the same default list across calls."},
+   {text:"Change `roster=[]` to `roster=list()`",correct:false,explain:"Still creates the list exactly once, at function definition time — same bug."},
+   {text:"Call `roster.clear()` at the start of the function",correct:false,explain:"Would wipe out any roster the caller intentionally passed in."}
+ ]},
+/* ---------------- TIER 3 : HEALTHY ---------------- */
+{id:'h7',category:'healthy',tier:3,patientName:'get_valid_scores()',
+ code:['def get_valid_scores(raw_scores):','    valid = []','    for s in raw_scores:','        if (n := int(s)) >= 0:','            valid.append(n)','    return valid','','print(get_valid_scores(["85", "-3", "92", "0"]))'],
+ symptom:"Runs cleanly and prints <b>[85, 92, 0]</b> — correctly converts and filters out the negative score.",
+ diagExplain:"Unusual syntax (the walrus operator `:=`) but valid Python, and it works correctly, including at the zero boundary. Healthy.",
+ testAnswer:'boundary',testRationale:"Already tested against 0, the boundary between valid and invalid scores, and handled it correctly.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — unusual-looking isn't the same as broken."},
+   {text:"Replace `:=` with a separate `n = int(s)` line above the if",correct:false,explain:"Would produce identical behavior — no actual bug to fix."},
+   {text:"Change `>= 0` to `> 0`",correct:false,explain:"Would incorrectly exclude a legitimate score of exactly 0 — introduces a bug."}
+ ]},
+{id:'h8',category:'healthy',tier:3,patientName:'in_valid_range()',
+ code:['def in_valid_range(score):','    return 0 <= score <= 100','','print(in_valid_range(-5))','print(in_valid_range(100))','print(in_valid_range(50))'],
+ symptom:"Runs cleanly, correctly prints <b>False, True, True</b>.",
+ diagExplain:"Correct results including right at the upper boundary of 100. Healthy — chained comparisons like this are valid, idiomatic Python.",
+ testAnswer:'boundary',testRationale:"Already confirmed at the 100 boundary and handled correctly, without an off-by-one mistake.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — the 100 boundary is already handled correctly."},
+   {text:"Rewrite as `0 <= score and score <= 100`",correct:false,explain:"Functionally identical to what's already there — rewriting correct code for no reason isn't a fix."},
+   {text:"Change the second `<=` to `<`",correct:false,explain:"Would incorrectly reject a score of exactly 100 — turns working code into buggy code."}
+ ]},
+{id:'h9',category:'healthy',tier:3,patientName:'factorial()',
+ code:['def factorial(n):','    if n <= 1:','        return 1','    return n * factorial(n - 1)','','print(factorial(0))','print(factorial(5))'],
+ symptom:"Runs cleanly, correctly prints <b>1</b> then <b>120</b>.",
+ diagExplain:"Base case correctly handles both 0 and 1, and the recursive case works for typical input. Healthy.",
+ testAnswer:'boundary',testRationale:"0 is the boundary edge for factorial, and it's already confirmed correct here.",
+ treatments:[
+   {text:"No fix needed — discharge the patient",correct:true,explain:"Right — factorial(0) returning 1 is the correct boundary behavior."},
+   {text:"Change `n <= 1` to `n == 1`",correct:false,explain:"Breaks the n=0 case — factorial(0) would recurse into negative numbers with no base case reached."},
+   {text:"Add a check for negative numbers that returns 0",correct:false,explain:"Not part of what's being tested here, and doesn't fix any actual bug present in this code."}
+ ]}
+];
+
+const TEST_LABELS = {typical:"Typical Case Test", boundary:"Boundary Case Test", edge:"Edge Case Test", invalid:"Invalid / Exception-Input Test", na:"N/A — Won't Run to Test"};
+const TEST_ORDER = ['typical','boundary','edge','invalid','na'];
+const DIAG_LABELS = {syntax:"Syntax Error", runtime:"Runtime Error", logic:"Logic Error", healthy:"Healthy — No Error"};
+const DIAG_ORDER = ['syntax','runtime','logic','healthy'];
+
+const VOCAB_FLASH = [
+ {q:"Which error type is caught <b>before</b> the program even runs?",opts:["Syntax Error","Runtime Error","Logic Error"],a:"Syntax Error"},
+ {q:"Which error type happens <b>partway through execution</b>, often with a named crash like IndexError?",opts:["Syntax Error","Runtime Error","Logic Error"],a:"Runtime Error"},
+ {q:"Which error type produces <b>no crash and no error message</b>, just a wrong answer?",opts:["Syntax Error","Runtime Error","Logic Error"],a:"Logic Error"},
+ {q:"Which test type uses input right at the <b>edge of what's valid</b>, like an empty list?",opts:["Typical Case","Boundary Case","Edge Case"],a:"Boundary Case"},
+ {q:"Which test type checks <b>unusual-but-valid</b> input, like all-negative numbers?",opts:["Boundary Case","Edge Case","Invalid Input"],a:"Edge Case"},
+ {q:"Which test type deliberately uses input the program should <b>reject or handle carefully</b>, like text where a number is expected?",opts:["Typical Case","Edge Case","Invalid Input"],a:"Invalid Input"},
+ {q:"Which test type uses <b>ordinary, expected</b> input?",opts:["Typical Case","Boundary Case","Edge Case"],a:"Typical Case"},
+ {q:"True or false: a program with no error messages is <b>guaranteed</b> bug-free.",opts:["True","False"],a:"False"},
+ {q:"'Missing colon' and 'unmatched parenthesis' are examples of which error type?",opts:["Syntax Error","Runtime Error","Logic Error"],a:"Syntax Error"},
+ {q:"A patient whose code runs correctly with no crash and the right output should be diagnosed as:",opts:["Logic Error","Runtime Error","Healthy"],a:"Healthy"}
+];
+
+/* ============================ STATE ============================ */
+let S = null;
+function freshState(){
+  return {
+    screen:'title', playerName:'', shift:1, patientsThisShift:0, patientsTarget:3,
+    patientIndex:0, activeCase:null, stage:'diagnose', stability:100, streak:0, maxStreak:0,
+    score:0, shiftScore:0, patientsTreated:0, surge:false,
+    stats:{diagnose:{c:0,t:0},test:{c:0,t:0},treat:{c:0,t:0}},
+    seenCategories:new Set(), seenTests:new Set(), usedIds:[],
+    timer:null, timeLeft:0, timeTotal:0, paused:false,
+    completion:'in_progress'
+  };
+}
+
+/* ============================ UTIL ============================ */
+function $(id){return document.getElementById(id);}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));$(id).classList.remove('hidden');}
+function pct(c,t){return t===0?'—':Math.round((c/t)*100)+'%';}
+
+function tierForShift(shift){
+  if(shift<=1) return [1];
+  if(shift===2) return [1,2];
+  if(shift<=4) return [2];
+  if(shift===5) return [2,3];
+  return [3];
+}
+function patientsForShift(shift){ return Math.min(3+shift, 10); }
+function baseTimerForTier(tier){ return tier===1?26:(tier===2?20:15); }
+
+function nextCase(){
+  const tiers = tierForShift(S.shift);
+  let pool = CASE_BANK.filter(c=>tiers.includes(c.tier) && !S.usedIds.includes(c.id));
+  if(pool.length===0){ S.usedIds = []; pool = CASE_BANK.filter(c=>tiers.includes(c.tier)); }
+  const chosen = pick(pool);
+  S.usedIds.push(chosen.id);
+  return chosen;
+}
+
+/* ============================ ECG SIGNATURE ============================ */
+function updateECG(){
+  const track = $('ecgTrack');
+  track.classList.remove('critical','warn');
+  let speed = 2.2;
+  if(S && S.screen==='game'){
+    if(S.stability<=30){ track.classList.add('critical'); speed=0.9; }
+    else if(S.stability<=60){ track.classList.add('warn'); speed=1.5; }
+    if(S.timeLeft>0 && S.timeTotal>0 && (S.timeLeft/S.timeTotal)<0.25){ track.classList.add('critical'); speed=0.8; }
+  }
+  track.style.animationDuration = speed+'s';
+}
+
+/* ============================ TOP STATS ============================ */
+function renderTopStats(){
+  const el = $('topStats');
+  if(!S || S.screen==='title'){ el.innerHTML=''; return; }
+  const stabClass = S.stability<=30?'crit':(S.stability<=60?'warn':'');
+  el.innerHTML = `
+    <span class="stat-chip">SHIFT <b style="color:var(--cyan)">${S.shift}</b></span>
+    <span class="stat-chip">PATIENT <b>${S.patientIndex+1}</b>/${S.patientsTarget}</span>
+    <span class="stat-chip">VITALS <span class="vital-bar"><span class="vital-fill ${stabClass}" style="width:${Math.max(0,S.stability)}%"></span></span></span>
+    <span class="stat-chip">STREAK 🔥${S.streak}</span>
+    <span class="stat-chip">SCORE ${S.score}</span>
+  `;
+}
+
+/* ============================ TIMER ============================ */
+function startTimer(seconds, onExpire){
+  clearTimer();
+  S.timeTotal = seconds; S.timeLeft = seconds; S.paused=false;
+  renderTimer();
+  S.timer = setInterval(()=>{
+    if(S.paused) return;
+    S.timeLeft -= 0.1;
+    if(S.timeLeft<=0){ clearTimer(); S.timeLeft=0; renderTimer(); onExpire(); return; }
+    renderTimer();
+  },100);
+}
+function clearTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } }
+function renderTimer(){
+  const p = Math.max(0, S.timeLeft/S.timeTotal);
+  const bar = $('timerBar'); bar.style.width=(p*100)+'%';
+  bar.style.background = p<0.25?'var(--red)':(p<0.5?'var(--amber)':'var(--cyan)');
+  $('timerLabel').textContent = Math.max(0,Math.ceil(S.timeLeft))+'s';
+  updateECG();
+}
+
+/* ============================ RENDER PATIENT ============================ */
+function renderStageTrack(){
+  const stages = [['diagnose','1 · DIAGNOSE'],['test','2 · TEST'],['treat','3 · TREAT']];
+  const order = ['diagnose','test','treat'];
+  const curIdx = order.indexOf(S.stage);
+  $('stageTrack').innerHTML = stages.map(([key,label],i)=>{
+    let cls = 'stage-pill';
+    if(i<curIdx) cls+=' done'; else if(i===curIdx) cls+=' active';
+    return `<span class="${cls}">${label}</span>`;
+  }).join('');
+}
+
+function renderPatient(){
+  const c = S.activeCase;
+  $('chartId').textContent = 'CHART #' + (1000+Math.floor(Math.random()*8999));
+  $('patientName').textContent = c.patientName;
+  $('chiefComplaint').innerHTML = '<b>Chief complaint:</b> ' + c.symptom;
+  $('codeBox').innerHTML = c.code.map((line,i)=>`<div class="code-line"><span class="ln">${i+1}</span><span class="code">${escapeHtml(line)}</span></div>`).join('');
+  $('queueNote').classList.toggle('show', S.surge);
+  renderStageTrack();
+  $('feedbackPanel').classList.remove('show','correct','wrong');
+  renderStageActions();
+}
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderStageActions(){
+  const c = S.activeCase;
+  let opts, title;
+  if(S.stage==='diagnose'){
+    title = "What's your diagnosis?";
+    opts = shuffle(DIAG_ORDER).map(key=>({key, label:DIAG_LABELS[key]}));
+  } else if(S.stage==='test'){
+    title = "Which test would best confirm this?";
+    opts = shuffle(TEST_ORDER).map(key=>({key, label:TEST_LABELS[key]}));
+  } else {
+    title = "How do you treat this patient?";
+    opts = shuffle(c.treatments.map((t,i)=>({key:i, label:t.text})));
+  }
+  $('actionTitle').textContent = title;
+  const grid = $('optGrid');
+  grid.className = 'opt-grid' + (opts.length>4?' five':'');
+  grid.innerHTML = opts.map(o=>`<button class="opt-btn" data-key="${o.key}">${o.label}</button>`).join('');
+  Array.from(grid.children).forEach(btn=>{
+    btn.addEventListener('click', ()=>handleAnswer(btn.dataset.key));
+  });
+
+  const baseTier = c.tier;
+  let seconds = baseTimerForTier(baseTier) - Math.max(0, S.shift - (baseTier===1?1:(baseTier===2?3:5)));
+  seconds = Math.max(8, seconds);
+  if(S.surge) seconds = Math.round(seconds*0.7);
+  startTimer(seconds, ()=>handleAnswer(null));
+}
+
+/* ============================ ANSWER HANDLING ============================ */
+function handleAnswer(rawKey){
+  clearTimer();
+  const c = S.activeCase;
+  const grid = $('optGrid');
+  Array.from(grid.children).forEach(b=>b.disabled=true);
+
+  let correct=false, explain='', headOk='', headBad='';
+  if(S.stage==='diagnose'){
+    correct = rawKey===c.category;
+    S.stats.diagnose.t++; if(correct) S.stats.diagnose.c++;
+    explain = c.diagExplain;
+    headOk='✓ CORRECT DIAGNOSIS'; headBad='✗ MISDIAGNOSED';
+  } else if(S.stage==='test'){
+    correct = rawKey===c.testAnswer;
+    S.stats.test.t++; if(correct) S.stats.test.c++;
+    explain = c.testRationale + (correct?'':` The best choice here was <b>${TEST_LABELS[c.testAnswer]}</b>.`);
+    headOk='✓ RIGHT TEST ORDERED'; headBad='✗ WRONG TEST ORDERED';
+  } else {
+    const idx = parseInt(rawKey,10);
+    const chosen = isNaN(idx)? null : c.treatments[idx];
+    correct = chosen ? chosen.correct : false;
+    S.stats.treat.t++; if(correct) S.stats.treat.c++;
+    explain = chosen ? chosen.explain : "No treatment selected in time — the correct move was: " + c.treatments.find(t=>t.correct).text;
+    headOk='✓ PATIENT TREATED'; headBad='✗ TREATMENT FAILED';
+  }
+
+  applyResult(correct);
+  showFeedback(correct, correct?headOk:headBad, explain);
+}
+
+function applyResult(correct){
+  if(correct){
+    S.score += 10; S.shiftScore += 10; S.streak++;
+    if(S.streak>S.maxStreak) S.maxStreak = S.streak;
+    if(S.streak>0 && S.streak%5===0){ S.stability = Math.min(100, S.stability+5); }
+  } else {
+    S.streak = 0;
+    const penalty = S.stage==='diagnose'?12:(S.stage==='test'?8:10);
+    S.stability = Math.max(0, S.stability - penalty);
+  }
+  renderTopStats();
+}
+
+function showFeedback(correct, head, body){
+  const panel = $('feedbackPanel');
+  panel.classList.add('show', correct?'correct':'wrong');
+  panel.classList.remove(correct?'wrong':'correct');
+  $('feedbackHead').textContent = head;
+  $('feedbackBody').innerHTML = body;
+  updateECG();
+  const btn = $('continueBtn');
+  btn.onclick = advanceStage;
+}
+
+function advanceStage(){
+  if(S.stability<=0){ return codeBlue(); }
+  if(S.stage==='diagnose'){ S.stage='test'; renderPatient(); return; }
+  if(S.stage==='test'){ S.stage='treat'; renderPatient(); return; }
+  finishPatient();
+}
+
+function finishPatient(){
+  S.patientsTreated++;
+  S.patientIndex++;
+  S.surge=false;
+  if(S.patientIndex>=S.patientsTarget){ return endShift(); }
+  maybeVocabFlash(()=>loadNextPatient());
+}
+
+function loadNextPatient(){
+  S.stage='diagnose';
+  S.activeCase = nextCase();
+  const surgeChance = Math.min(0.45, 0.05*S.shift);
+  S.surge = Math.random() < surgeChance;
+  show('screen-game');
+  renderTopStats();
+  renderPatient();
+}
+
+/* ============================ VOCAB FLASH ============================ */
+function maybeVocabFlash(cb){
+  if(Math.random() < 0.28){
+    const item = pick(VOCAB_FLASH);
+    show('screen-vocab');
+    $('vocabQuestion').innerHTML = item.q;
+    const opts = shuffle(item.opts);
+    $('vocabOptGrid').innerHTML = opts.map(o=>`<button class="opt-btn" data-v="${o}">${o}</button>`).join('');
+    Array.from($('vocabOptGrid').children).forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const ok = btn.dataset.v===item.a;
+        Array.from($('vocabOptGrid').children).forEach(b=>b.disabled=true);
+        if(ok){ S.stability=Math.min(100,S.stability+5); S.score+=5; }
+        btn.style.borderColor = ok?'var(--cyan)':'var(--red)';
+        setTimeout(cb, 700);
+      });
+    });
+  } else {
+    cb();
+  }
+}
+
+/* ============================ SHIFT FLOW ============================ */
+function startShift(){
+  S.patientIndex=0; S.shiftScore=0; S.stage='diagnose';
+  S.patientsTarget = patientsForShift(S.shift);
+  loadNextPatient();
+}
+
+function endShift(){
+  show('screen-debrief');
+  $('debriefShiftLabel').textContent = 'SHIFT ' + S.shift + ' COMPLETE';
+  $('debriefScore').textContent = S.shiftScore;
+  const cats = new Set(); let usedTests=new Set();
+  // gather recap of terms from used case ids this shift roughly via categories touched overall
+  const recapCats = Array.from(new Set(CASE_BANK.filter(c=>S.usedIds.includes(c.id)).map(c=>c.category)));
+  const recapTests = Array.from(new Set(CASE_BANK.filter(c=>S.usedIds.includes(c.id)).map(c=>c.testAnswer)));
+  let html = '<div style="text-align:left;font-size:13px;color:var(--text-dim);">';
+  html += '<div style="font-family:var(--mono);color:var(--cyan);margin-bottom:6px;">TERMS YOU WORKED WITH THIS SHIFT:</div>';
+  recapCats.forEach(cat=>{ html += `<div style="margin-bottom:4px;"><b style="color:var(--text)">${DIAG_LABELS[cat]}</b> — ${glossaryShort(cat)}</div>`; });
+  recapTests.forEach(t=>{ if(t) html += `<div style="margin-bottom:4px;"><b style="color:var(--text)">${TEST_LABELS[t]}</b> — ${glossaryShortTest(t)}</div>`; });
+  html += '</div>';
+  $('debriefRecap').innerHTML = html;
+  logResult('shift_complete');
+}
+function glossaryShort(cat){
+  return {syntax:"caught before the program runs.",runtime:"crashes partway through execution.",logic:"runs fine but gives a wrong answer.",healthy:"no error — working as intended."}[cat];
+}
+function glossaryShortTest(t){
+  return {typical:"ordinary, expected input.",boundary:"input right at the edge of valid.",edge:"unusual but valid input.",invalid:"input that should be rejected or handled carefully.",na:"doesn't apply — nothing ran."}[t];
+}
+
+function codeBlue(){
+  S.completion='code_blue';
+  finishGame('🚨 CODE BLUE', "Ward vitals hit zero. Every ER has a rough shift — here's how this one went.");
+}
+function clockOut(){
+  S.completion='completed';
+  finishGame('🛑 SHIFT ENDED', "You clocked out early. Here's the shift log.");
+}
+function finishGame(title, message){
+  clearTimer();
+  show('screen-over');
+  $('overTitle').textContent = title;
+  $('overMessage').textContent = message;
+  $('overShift').textContent = S.shift;
+  $('overPatients').textContent = S.patientsTreated;
+  $('overStreak').textContent = S.maxStreak;
+  $('overAccDiag').textContent = pct(S.stats.diagnose.c, S.stats.diagnose.t);
+  $('overAccTest').textContent = pct(S.stats.test.c, S.stats.test.t);
+  $('overAccTreat').textContent = pct(S.stats.treat.c, S.stats.treat.t);
+  logResult(S.completion);
+}
+
+/* ============================ LOGGING ============================ */
+const SHEETS_WEBHOOK_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+function buildLogPayload(status){
+  return {
+    game:"Code ER",
+    playerName:S.playerName||"Anonymous",
+    shiftReached:S.shift,
+    patientsTreated:S.patientsTreated,
+    maxStreak:S.maxStreak,
+    accuracyDiagnose:pct(S.stats.diagnose.c,S.stats.diagnose.t),
+    accuracyTest:pct(S.stats.test.c,S.stats.test.t),
+    accuracyTreat:pct(S.stats.treat.c,S.stats.treat.t),
+    score:S.score,
+    completionStatus:status,
+    timestamp:new Date().toISOString()
+  };
+}
+function logResult(status){
+  const payload = buildLogPayload(status);
+  try{ localStorage.setItem('codeER_lastRun', JSON.stringify(payload)); }catch(e){}
+  if(!SHEETS_WEBHOOK_URL || SHEETS_WEBHOOK_URL.indexOf('PASTE_YOUR') === 0){
+    const el = $('logStatus'); if(el) el.textContent = '(Sheets logging not configured — saved locally only)';
+    return;
+  }
+  const body = JSON.stringify(payload);
+  try{
+    if(navigator.sendBeacon){
+      const blob = new Blob([body], {type:'application/json'});
+      navigator.sendBeacon(SHEETS_WEBHOOK_URL, blob);
+    } else {
+      fetch(SHEETS_WEBHOOK_URL, {method:'POST', body, headers:{'Content-Type':'application/json'}, keepalive:true}).catch(()=>{});
+    }
+    const el = $('logStatus'); if(el) el.textContent = 'Shift log sent.';
+  }catch(e){
+    const el = $('logStatus'); if(el) el.textContent = 'Logging failed — saved locally only.';
+  }
+}
+window.addEventListener('pagehide', ()=>{
+  if(S && S.screen!=='title' && S.completion==='in_progress'){
+    logResult('abandoned');
+  }
+});
+
+/* ============================ NAV / EVENTS ============================ */
+function goTitle(){ show('screen-title'); renderTopStats(); }
+
+$('startBtn').addEventListener('click', ()=>{
+  S = freshState();
+  S.playerName = $('playerNameInput').value.trim();
+  S.screen='game';
+  startShift();
+});
+$('nextShiftBtn').addEventListener('click', ()=>{
+  S.shift++; S.completion='in_progress';
+  S.screen='game';
+  startShift();
+});
+$('debriefClockOutBtn').addEventListener('click', clockOut);
+$('clockOutBtn').addEventListener('click', clockOut);
+$('playAgainBtn').addEventListener('click', ()=>{ S=null; goTitle(); });
+
+function openGlossary(){ S && (S.paused=true); $('glossaryModal').classList.remove('hidden'); }
+function closeGlossary(){ S && (S.paused=false); $('glossaryModal').classList.add('hidden'); }
+$('glossaryBtnTitle').addEventListener('click', openGlossary);
+$('glossaryBtnGame').addEventListener('click', openGlossary);
+$('closeGlossaryBtn').addEventListener('click', closeGlossary);
+$('glossaryModal').addEventListener('click', (e)=>{ if(e.target.id==='glossaryModal') closeGlossary(); });
+
+setInterval(updateECG, 400);
+goTitle();
+
+})();
+</script>
+</body>
+</html>

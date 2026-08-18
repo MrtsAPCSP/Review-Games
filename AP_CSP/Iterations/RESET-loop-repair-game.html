@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESET :: Temporal Loop Repair</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14110F;
+    --panel:#211C17;
+    --panel-light:#2A231C;
+    --panel-border:#4a3d2c;
+    --brass:#C9974B;
+    --brass-bright:#E3B96B;
+    --brass-dim:#7d613a;
+    --warn:#B3453D;
+    --warn-bright:#E0655A;
+    --good:#7C9473;
+    --good-bright:#9FBB93;
+    --paper:#EFE6CE;
+    --paper-dim:#A79C82;
+    --crt-glow: rgba(201,151,75,0.18);
+    --font-display:'Oswald',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+    --font-flavor:'Special Elite',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--paper);font-family:var(--font-mono);min-height:100vh;}
+  body{
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(201,151,75,0.06), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+  }
+  #app{max-width:900px;margin:0 auto;padding:22px 16px 60px;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadeIn .4s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  h1,h2,h3{font-family:var(--font-display);text-transform:uppercase;letter-spacing:1px;margin:0;}
+
+  .brand{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:6px;}
+  .gear{
+    width:34px;height:34px;border:3px solid var(--brass);border-radius:50%;
+    position:relative;flex-shrink:0;animation:spin 8s linear infinite;
+    box-shadow:0 0 10px var(--crt-glow);
+  }
+  .gear::before,.gear::after{
+    content:'';position:absolute;background:var(--brass);
+  }
+  .gear::before{width:3px;height:44px;top:-8px;left:50%;transform:translateX(-50%);}
+  .gear::after{width:44px;height:3px;left:-8px;top:50%;transform:translateY(-50%);}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+  .title-main{font-size:2.6rem;font-weight:700;color:var(--brass-bright);text-shadow:0 0 18px var(--crt-glow);}
+  .subtitle{text-align:center;color:var(--paper-dim);font-family:var(--font-flavor);font-size:.95rem;margin-bottom:26px;letter-spacing:.5px;}
+
+  .card{background:var(--panel);border:1px solid var(--panel-border);border-radius:6px;padding:18px 20px;margin-bottom:16px;box-shadow:inset 0 0 30px rgba(0,0,0,0.3);}
+
+  .blurb{font-family:var(--font-flavor);font-size:.95rem;line-height:1.6;color:var(--paper);}
+
+  .diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:18px 0;}
+  @media(max-width:640px){.diff-grid{grid-template-columns:1fr;}}
+  .diff-card{
+    background:var(--panel-light);border:2px solid var(--panel-border);border-radius:6px;
+    padding:16px 12px;text-align:center;cursor:pointer;transition:all .15s ease;
+  }
+  .diff-card:hover{border-color:var(--brass);transform:translateY(-2px);}
+  .diff-card.selected{border-color:var(--brass-bright);background:#33291b;box-shadow:0 0 16px var(--crt-glow);}
+  .diff-card .dlabel{font-family:var(--font-display);color:var(--brass-bright);font-size:1.1rem;letter-spacing:1px;margin-bottom:6px;}
+  .diff-card .ddesc{font-size:.78rem;color:var(--paper-dim);line-height:1.4;}
+
+  .btn{
+    font-family:var(--font-display);text-transform:uppercase;letter-spacing:1.5px;font-size:1rem;
+    background:linear-gradient(180deg,var(--brass-bright),var(--brass));color:#221a0f;border:none;
+    padding:14px 28px;border-radius:4px;cursor:pointer;font-weight:600;
+    box-shadow:0 3px 0 var(--brass-dim), 0 4px 12px rgba(0,0,0,0.4);
+    transition:transform .1s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--brass-dim);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-row{text-align:center;margin-top:8px;}
+  .btn-secondary{background:linear-gradient(180deg,#3a322580,var(--panel-light));color:var(--paper);border:1px solid var(--panel-border);box-shadow:none;}
+
+  .highscore{text-align:center;color:var(--paper-dim);font-size:.85rem;margin-top:-6px;margin-bottom:18px;}
+  .highscore b{color:var(--brass);}
+
+  /* ---- game header ---- */
+  .hud{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+  .hud-block{text-align:center;min-width:70px;}
+  .hud-label{font-family:var(--font-display);font-size:.65rem;color:var(--paper-dim);letter-spacing:1px;}
+  .hud-value{font-family:var(--font-mono);font-size:1.3rem;font-weight:600;color:var(--brass-bright);}
+
+  .meter-wrap{margin-bottom:6px;}
+  .meter-label{display:flex;justify-content:space-between;font-family:var(--font-display);font-size:.7rem;color:var(--paper-dim);letter-spacing:1px;margin-bottom:3px;}
+  .meter-track{
+    height:16px;border:2px solid var(--panel-border);border-radius:3px;background:#0d0b09;
+    position:relative;overflow:hidden;
+  }
+  .meter-track::after{
+    content:'';position:absolute;inset:0;
+    background-image:repeating-linear-gradient(90deg, transparent 0 18px, rgba(0,0,0,0.35) 18px 20px);
+    pointer-events:none;
+  }
+  .meter-fill{height:100%;transition:width .3s ease, background .3s ease;background:var(--good);}
+  .meter-fill.warn{background:var(--warn);}
+  .meter-fill.mid{background:var(--brass);}
+  .stability-critical .meter-fill{animation:flicker .6s infinite;}
+  @keyframes flicker{0%,100%{opacity:1;}50%{opacity:.55;}}
+
+  .timer-track{height:10px;border:1px solid var(--panel-border);border-radius:2px;background:#0d0b09;overflow:hidden;}
+  .timer-fill{height:100%;background:var(--brass);transition:width 1s linear, background .3s ease;}
+
+  .flavor{font-family:var(--font-flavor);font-size:.85rem;color:var(--paper-dim);text-align:center;margin:14px 0;min-height:1.3em;}
+
+  .type-badge{
+    display:inline-block;font-family:var(--font-display);font-size:.7rem;letter-spacing:1.5px;
+    color:var(--brass);border:1px solid var(--brass-dim);border-radius:3px;padding:3px 10px;margin-bottom:10px;
+  }
+
+  .code-panel{
+    background:#0b0a08;border:1px solid var(--panel-border);border-radius:5px;padding:16px 18px;
+    font-family:var(--font-mono);font-size:1.05rem;line-height:1.6;color:#bfe3c8;
+    white-space:pre;overflow-x:auto;position:relative;box-shadow:inset 0 0 24px rgba(0,0,0,0.5);
+    text-shadow:0 0 6px rgba(191,227,200,0.25);
+  }
+  .code-panel::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, transparent 1px, transparent 2px);
+  }
+
+  .prompt-text{font-family:var(--font-display);font-size:1.05rem;color:var(--paper);margin:16px 0 10px;letter-spacing:.3px;}
+
+  .options{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
+  .opt-btn{
+    text-align:left;background:var(--panel-light);border:1px solid var(--panel-border);color:var(--paper);
+    font-family:var(--font-mono);font-size:.92rem;padding:11px 14px;border-radius:4px;cursor:pointer;white-space:pre-wrap;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt-btn:hover:not(:disabled){border-color:var(--brass);background:#332a1c;}
+  .opt-btn:disabled{cursor:default;}
+  .opt-btn.correct{border-color:var(--good-bright);background:#233324;color:var(--good-bright);}
+  .opt-btn.wrong{border-color:var(--warn-bright);background:#361d1b;color:var(--warn-bright);}
+
+  table.trace-table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-family:var(--font-mono);}
+  table.trace-table th,table.trace-table td{border:1px solid var(--panel-border);padding:8px 10px;text-align:center;}
+  table.trace-table th{background:var(--panel-light);color:var(--brass);font-family:var(--font-display);font-size:.75rem;letter-spacing:1px;}
+  table.trace-table input{
+    width:64px;background:#0d0b09;border:1px solid var(--brass-dim);color:var(--paper);
+    font-family:var(--font-mono);font-size:.95rem;text-align:center;padding:5px;border-radius:3px;
+  }
+  table.trace-table input.correct{border-color:var(--good-bright);color:var(--good-bright);}
+  table.trace-table input.wrong{border-color:var(--warn-bright);color:var(--warn-bright);}
+  table.trace-table .given{color:var(--paper-dim);}
+
+  .feedback{display:none;margin-top:10px;padding:14px 16px;border-radius:5px;border:1px solid var(--panel-border);background:var(--panel-light);}
+  .feedback.show{display:block;animation:fadeIn .3s ease;}
+  .feedback.ok{border-color:var(--good);}
+  .feedback.bad{border-color:var(--warn);}
+  .feedback-head{font-family:var(--font-display);letter-spacing:1px;font-size:.95rem;margin-bottom:6px;}
+  .feedback.ok .feedback-head{color:var(--good-bright);}
+  .feedback.bad .feedback-head{color:var(--warn-bright);}
+  .feedback-body{font-size:.88rem;line-height:1.5;color:var(--paper);}
+
+  .end-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0;}
+  @media(max-width:520px){.end-stats{grid-template-columns:1fr;}}
+  .stat-box{background:var(--panel-light);border:1px solid var(--panel-border);border-radius:5px;padding:12px 14px;text-align:center;}
+  .stat-box .sv{font-size:1.6rem;color:var(--brass-bright);font-weight:600;}
+  .stat-box .sl{font-family:var(--font-display);font-size:.7rem;color:var(--paper-dim);letter-spacing:1px;margin-top:2px;}
+
+  .type-breakdown{margin-top:6px;font-size:.85rem;}
+  .tb-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--panel-border);}
+  .tb-row:last-child{border-bottom:none;}
+
+  .newbest{color:var(--brass-bright);font-family:var(--font-display);letter-spacing:1px;text-align:center;margin-top:-4px;margin-bottom:14px;}
+
+  ::selection{background:var(--brass-dim);}
+  @media (prefers-reduced-motion: reduce){.gear{animation:none;}.stability-critical .meter-fill{animation:none;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START SCREEN -->
+  <div class="screen active" id="screen-start">
+    <div class="brand"><div class="gear"></div><div class="title-main">RESET</div><div class="gear" style="animation-direction:reverse;"></div></div>
+    <div class="subtitle">TEMPORAL LOOP REPAIR DIVISION — CLEARANCE PENDING</div>
+
+    <div class="card">
+      <p class="blurb">Facility Seven has been stuck resetting the same hour for longer than anyone can confirm. Every "day," a loop misfires somewhere in the system — a counter that never stops, a range that's one short, a total that doesn't add up. You're the technician who reads the code and fixes it before the reset hits. Get it wrong enough times and the facility destabilizes. Get it right, and maybe — <em>maybe</em> — today is the day the loop finally breaks.</p>
+    </div>
+
+    <h3 style="text-align:center;color:var(--paper-dim);font-size:.85rem;margin-bottom:4px;">SELECT CLEARANCE LEVEL</h3>
+    <div class="diff-grid" id="diff-grid">
+      <div class="diff-card" data-diff="trainee">
+        <div class="dlabel">Trainee</div>
+        <div class="ddesc">Single for/while loops. Generous timer. Start here if loops still feel shaky.</div>
+      </div>
+      <div class="diff-card" data-diff="technician">
+        <div class="dlabel">Technician</div>
+        <div class="ddesc">Nested loops appear early. Trickier off-by-ones. Tighter timer.</div>
+      </div>
+      <div class="diff-card" data-diff="architect">
+        <div class="dlabel">Loop Architect</div>
+        <div class="ddesc">Nested loops, negative steps, and infinite-loop traps from round one.</div>
+      </div>
+    </div>
+
+    <div class="highscore" id="highscore-line"></div>
+
+    <div class="btn-row"><button class="btn" id="start-btn" disabled>Select a clearance level</button></div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-block"><div class="hud-label">STAGE</div><div class="hud-value" id="hud-stage">1</div></div>
+      <div class="hud-block"><div class="hud-label">SCORE</div><div class="hud-value" id="hud-score">0</div></div>
+      <div class="hud-block"><div class="hud-label">STREAK</div><div class="hud-value" id="hud-streak">0</div></div>
+    </div>
+
+    <div class="meter-wrap" id="stability-wrap">
+      <div class="meter-label"><span>TEMPORAL STABILITY</span><span id="stability-pct">100%</span></div>
+      <div class="meter-track"><div class="meter-fill" id="stability-fill" style="width:100%;"></div></div>
+    </div>
+
+    <div class="meter-wrap">
+      <div class="meter-label"><span>TIME</span><span id="timer-txt">--</span></div>
+      <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%;"></div></div>
+    </div>
+
+    <div class="flavor" id="flavor-text"></div>
+
+    <div class="card">
+      <div class="type-badge" id="type-badge">PREDICT OUTPUT</div>
+      <div class="code-panel" id="code-panel"></div>
+      <div class="prompt-text" id="prompt-text"></div>
+      <div id="answer-area"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-head" id="feedback-head"></div>
+        <div class="feedback-body" id="feedback-body"></div>
+        <div class="btn-row"><button class="btn" id="continue-btn">Continue</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="screen" id="screen-end">
+    <div class="brand"><div class="gear"></div><div class="title-main" id="end-title">CORE RESET</div><div class="gear" style="animation-direction:reverse;"></div></div>
+    <div class="subtitle" id="end-subtitle">The facility destabilized. The loop resets. You remember everything.</div>
+    <div class="newbest" id="newbest-line" style="display:none;">⚡ NEW BEST STAGE REACHED ⚡</div>
+
+    <div class="end-stats">
+      <div class="stat-box"><div class="sv" id="end-stage">1</div><div class="sl">STAGE REACHED</div></div>
+      <div class="stat-box"><div class="sv" id="end-score">0</div><div class="sl">SCORE</div></div>
+      <div class="stat-box"><div class="sv" id="end-accuracy">0%</div><div class="sl">ACCURACY</div></div>
+      <div class="stat-box"><div class="sv" id="end-streak">0</div><div class="sl">BEST STREAK</div></div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:.85rem;color:var(--paper-dim);margin-bottom:8px;">DIAGNOSTIC BREAKDOWN</h3>
+      <div class="type-breakdown" id="type-breakdown"></div>
+    </div>
+
+    <div class="btn-row" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn" id="retry-btn">Re-initiate Reset</button>
+      <button class="btn btn-secondary" id="menu-btn">Change Clearance Level</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===================================================================
+// ===== CORE LOGIC (stress-tested standalone before embedding) =====
+// ===================================================================
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = randInt(0, i);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function pyRange(start, stop, step) {
+  const arr = [];
+  if (step === 0) return arr;
+  if (step > 0) { for (let i = start; i < stop; i += step) arr.push(i); }
+  else { for (let i = start; i > stop; i += step) arr.push(i); }
+  return arr;
+}
+function rangeText(start, stop, step) {
+  return step === 1 ? `range(${start}, ${stop})` : `range(${start}, ${stop}, ${step})`;
+}
+function makeCountedRange(start, step, count) {
+  const stop = start + count * step;
+  const list = pyRange(start, stop, step);
+  return { start, step, stop, count, list };
+}
+function getStageConfig(stageRaw) {
+  const stage = Math.min(stageRaw, 12);
+  return {
+    stage: stageRaw,
+    timer: Math.max(14, 40 - (stage - 1) * 3),
+    allowNegativeStep: stage >= 2,
+    allowNested: stage >= 4,
+    allowInfiniteTrap: stage >= 3,
+    maxOuter: stage >= 6 ? 4 : 3,
+    countRange: stage <= 2 ? [3, 5] : stage <= 5 ? [3, 6] : [4, 7]
+  };
+}
+function buildOptions(correctText, distractorCandidates, fillerFn) {
+  const seen = new Set([correctText]);
+  const opts = [correctText];
+  for (const cand of distractorCandidates) {
+    if (opts.length >= 4) break;
+    if (!seen.has(cand)) { seen.add(cand); opts.push(cand); }
+  }
+  let fillerTries = 0;
+  while (opts.length < 4 && fillerTries < 20) {
+    const f = fillerFn(fillerTries);
+    fillerTries++;
+    if (!seen.has(f)) { seen.add(f); opts.push(f); }
+  }
+  const shuffled = shuffle(opts);
+  return { options: shuffled, correctIndex: shuffled.indexOf(correctText) };
+}
+const BODY_KINDS = {
+  identity: { code: 'print(i)', fn: i => i },
+  double: { code: 'print(i * 2)', fn: i => i * 2 },
+  plusone: { code: 'print(i + 1)', fn: i => i + 1 }
+};
+function randomCountedRange(cfg) {
+  const step = choice(cfg.allowNegativeStep ? [1, 1, 2, -1, -2] : [1, 1, 2]);
+  const count = randInt(cfg.countRange[0], cfg.countRange[1]);
+  const start = randInt(cfg.allowNegativeStep ? -5 : 0, 9);
+  return makeCountedRange(start, step, count);
+}
+function genOutputQuestion(cfg) {
+  const kinds = ['for-simple', 'for-accum', 'while-count'];
+  if (cfg.allowNested) kinds.push('nested', 'nested');
+  const kind = choice(kinds);
+
+  if (kind === 'nested') {
+    const outerCount = randInt(2, cfg.maxOuter);
+    const innerCount = randInt(2, Math.max(2, Math.floor(12 / outerCount)));
+    const outerStart = randInt(0, 3), innerStart = randInt(0, 3);
+    const outer = makeCountedRange(outerStart, 1, outerCount);
+    const inner = makeCountedRange(innerStart, 1, innerCount);
+    const lines = [];
+    for (const i of outer.list) for (const j of inner.list) lines.push(`${i} ${j}`);
+    const correctText = lines.join('\n');
+    const code = `for i in ${rangeText(outer.start, outer.stop, 1)}:\n    for j in ${rangeText(inner.start, inner.stop, 1)}:\n        print(i, j)`;
+
+    const swapped = []; for (const i of outer.list) for (const j of inner.list) swapped.push(`${j} ${i}`);
+    const outerOnly = []; for (const i of outer.list) for (const _j of inner.list) outerOnly.push(`${i}`);
+    const outerList2 = pyRange(outer.start, outer.stop - 1, 1);
+    const shortOuter = []; for (const i of outerList2) for (const j of inner.list) shortOuter.push(`${i} ${j}`);
+    const { options, correctIndex } = buildOptions(correctText, [swapped.join('\n'), outerOnly.join('\n'), shortOuter.join('\n')],
+      (n) => lines.slice(0, Math.max(1, lines.length - 1 - n)).join('\n') + (n % 2 ? '\n(nothing else)' : ''));
+
+    const q = { type: 'output', code, prompt: 'What does this print?', options, correctIndex,
+      explain: `The outer loop runs i = ${outer.list.join(', ')} and for each i, the inner loop runs j = ${inner.list.join(', ')} — printing every (i, j) pair in that order.` };
+    q.correctText = q.options[q.correctIndex];
+    return q;
+  }
+
+  const body = choice(Object.keys(BODY_KINDS));
+  const { code: bodyCode, fn } = BODY_KINDS[body];
+  const { start, stop, step, count, list } = randomCountedRange(cfg);
+  const correctText = list.map(fn).join('\n');
+  const code = kind === 'while-count'
+    ? `i = ${start}\nwhile i ${step > 0 ? '<' : '>'} ${stop}:\n    ${bodyCode}\n    ${step >= 0 ? `i += ${step}` : `i -= ${Math.abs(step)}`}`
+    : `for i in ${rangeText(start, stop, step)}:\n    ${bodyCode}`;
+
+  if (kind === 'for-accum') {
+    const total = list.reduce((a, b) => a + b, 0);
+    const shortList = pyRange(start, start + (count - 1) * step, step);
+    const longList = pyRange(start, start + (count + 1) * step, step);
+    const accCode = `total = 0\nfor i in ${rangeText(start, stop, step)}:\n    total += i\nprint(total)`;
+    const { options, correctIndex } = buildOptions(String(total),
+      [String(shortList.reduce((a, b) => a + b, 0)), String(longList.reduce((a, b) => a + b, 0)), String(count)],
+      (n) => String(total + (n % 2 === 0 ? (n + 1) : -(n + 1))));
+    const q = { type: 'output', code: accCode, prompt: 'What does this print?', options, correctIndex,
+      explain: `i takes the values ${list.join(', ')}. Summing them gives ${total}.` };
+    q.correctText = q.options[q.correctIndex];
+    return q;
+  }
+
+  const shortList = pyRange(start, start + (count - 1) * step, step).map(fn).join('\n');
+  const longList = pyRange(start, start + (count + 1) * step, step).map(fn).join('\n');
+  const shiftedList = pyRange(start + step, start + step + count * step, step).map(fn).join('\n');
+  const { options, correctIndex } = buildOptions(correctText, [shortList, longList, shiftedList],
+    (n) => list.slice().reverse().map(fn).join('\n') + (n ? ' ' : ''));
+  const q = { type: 'output', code, prompt: 'What does this print?', options, correctIndex,
+    explain: `i takes the values ${list.join(', ')} in order, and each line prints ${bodyCode.replace('print(', '').replace(')', '')} for that i.` };
+  q.correctText = q.options[q.correctIndex];
+  return q;
+}
+function genCountQuestion(cfg) {
+  const wantInfinite = cfg.allowInfiniteTrap && Math.random() < 0.3;
+
+  if (wantInfinite) {
+    const start = randInt(0, 5);
+    const stop = start + randInt(3, 7);
+    const cond = choice(['<', '>']);
+    const actualStop = cond === '<' ? stop : start - randInt(3, 7);
+    const code = `i = ${start}\nwhile i ${cond} ${actualStop}:\n    print(i)`;
+    const guesses = new Set();
+    while (guesses.size < 3) guesses.add(String(randInt(2, 9)));
+    const { options, correctIndex } = buildOptions('Infinite loop', [...guesses], (n) => String(10 + n));
+    const q = { type: 'count', code, prompt: 'How many times will `print(i)` execute?', options, correctIndex,
+      explain: `i is never changed inside the loop, so the condition never becomes false — this loop never terminates.` };
+    q.correctText = q.options[q.correctIndex];
+    return q;
+  }
+
+  const nested = cfg.allowNested && Math.random() < 0.4;
+  if (nested) {
+    const outerCount = randInt(2, cfg.maxOuter);
+    const innerCount = randInt(2, Math.max(2, Math.floor(12 / outerCount)));
+    const outer = makeCountedRange(randInt(0, 3), 1, outerCount);
+    const inner = makeCountedRange(randInt(0, 3), 1, innerCount);
+    const code = `for i in ${rangeText(outer.start, outer.stop, 1)}:\n    for j in ${rangeText(inner.start, inner.stop, 1)}:\n        print(i, j)`;
+    const total = outerCount * innerCount;
+    const { options, correctIndex } = buildOptions(String(total),
+      [String(outerCount + innerCount), String(total + innerCount), String(outerCount)],
+      (n) => String(total + n + 1));
+    const q = { type: 'count', code, prompt: 'How many total times will `print(i, j)` execute?', options, correctIndex,
+      explain: `The outer loop runs ${outerCount} times, and for each of those, the inner loop runs ${innerCount} times: ${outerCount} × ${innerCount} = ${total}.` };
+    q.correctText = q.options[q.correctIndex];
+    return q;
+  }
+
+  const { start, stop, step, count } = randomCountedRange(cfg);
+  const bodyCode = choice(['print(i)', 'print(i * 2)']);
+  const code = `for i in ${rangeText(start, stop, step)}:\n    ${bodyCode}`;
+  const candidates = [String(count - 1), String(count + 1), String(count + 2)].filter(v => Number(v) >= 0);
+  const { options, correctIndex } = buildOptions(String(count), candidates, (n) => String(count + 3 + n));
+  const q = { type: 'count', code, prompt: `How many times will \`${bodyCode}\` execute?`, options, correctIndex,
+    explain: `range(${start}, ${stop}${step !== 1 ? ', ' + step : ''}) produces ${count} value${count === 1 ? '' : 's'}: ${pyRange(start, stop, step).join(', ')}.` };
+  q.correctText = q.options[q.correctIndex];
+  return q;
+}
+function genDebugQuestion() {
+  const bugType = choice(['offbyone-stop', 'infinite-missing-incr', 'zero-iterations', 'offbyone-start']);
+
+  if (bugType === 'offbyone-stop') {
+    const a = randInt(0, 4), b = a + randInt(3, 7);
+    const code = `for i in range(${a}, ${b}):\n    print(i)`;
+    const correct = `Off-by-one: range(${a}, ${b}) stops before ${b}, so it should be range(${a}, ${b + 1}) to include ${b}.`;
+    const opts = [correct,
+      `Off-by-one: it should start at ${a + 1} instead of ${a}.`,
+      `The step is missing — it should be range(${a}, ${b}, 2).`,
+      `This code is correct as written.`];
+    return { type: 'debug', code, prompt: `This loop should print integers from ${a} through ${b} (inclusive). What's wrong?`,
+      options: shuffle(opts), correctText: correct };
+  }
+  if (bugType === 'infinite-missing-incr') {
+    const a = randInt(0, 4), b = a + randInt(3, 6);
+    const code = `i = ${a}\nwhile i < ${b}:\n    print(i)`;
+    const correct = `Infinite loop: i is never updated inside the loop, so the condition i < ${b} never becomes false.`;
+    const opts = [correct,
+      `Off-by-one: the condition should be i <= ${b}.`,
+      `It should use a for loop with range(${a}, ${b}) instead of while.`,
+      `This code is correct as written.`];
+    return { type: 'debug', code, prompt: `This loop should print ${a} through ${b - 1}, then stop. What's wrong?`,
+      options: shuffle(opts), correctText: correct };
+  }
+  if (bugType === 'zero-iterations') {
+    const a = randInt(0, 3), b = a + randInt(3, 6);
+    const code = `i = ${a}\nwhile i > ${b}:\n    print(i)\n    i += 1`;
+    const correct = `Zero iterations: since ${a} is not greater than ${b}, the condition i > ${b} is False immediately, so the loop body never runs. It should be i < ${b}.`;
+    const opts = [correct,
+      `Infinite loop: i increases forever and will never stop.`,
+      `Off-by-one: the condition should be i >= ${b}.`,
+      `This code is correct as written.`];
+    return { type: 'debug', code, prompt: `This loop should count up from ${a} to ${b}, printing each value. What's wrong?`,
+      options: shuffle(opts), correctText: correct };
+  }
+  const n = randInt(4, 8);
+  const code = `for i in range(1, ${n + 1}):\n    print(i)`;
+  const correct = `Off-by-one at the start: range(1, ${n + 1}) produces 1 through ${n}, but it should be range(0, ${n}) to get 0 through ${n - 1}.`;
+  const opts = [correct,
+    `Off-by-one: the stop value should be ${n + 2} instead of ${n + 1}.`,
+    `The loop is missing a step argument.`,
+    `This code is correct as written.`];
+  return { type: 'debug', code, prompt: `This loop should print ${n} values: 0 through ${n - 1}. What's wrong?`,
+    options: shuffle(opts), correctText: correct };
+}
+function genTraceQuestion(cfg) {
+  const step = choice(cfg.allowNegativeStep ? [1, 1, 2, -1] : [1, 1, 2]);
+  const count = randInt(3, 5);
+  const start = randInt(cfg.allowNegativeStep ? -4 : 0, 6);
+  const { stop, list } = makeCountedRange(start, step, count);
+  let running = 0;
+  const rows = list.map((i, idx) => { running += i; return { iter: idx + 1, i, total: running }; });
+  const code = `total = 0\nfor i in ${rangeText(start, stop, step)}:\n    total += i`;
+  const blankBoth = cfg.stage >= 4;
+  return { type: 'trace', code, prompt: 'Complete the trace table for this loop.', rows, blankBoth };
+}
+function generateQuestion(stage) {
+  const cfg = getStageConfig(stage);
+  const type = choice(['output', 'output', 'count', 'debug', 'trace']);
+  if (type === 'output') return genOutputQuestion(cfg);
+  if (type === 'count') return genCountQuestion(cfg);
+  if (type === 'debug') return genDebugQuestion(cfg);
+  return genTraceQuestion(cfg);
+}
+
+// ===================================================================
+// ===== GAME CONTROLLER =====
+// ===================================================================
+const DIFFICULTIES = {
+  trainee: { label: 'Trainee', startStage: 1 },
+  technician: { label: 'Technician', startStage: 4 },
+  architect: { label: 'Loop Architect', startStage: 7 }
+};
+const TYPE_LABELS = { output: 'PREDICT THE OUTPUT', count: 'ITERATION COUNT', debug: 'DEBUG THE LOOP', trace: 'TRACE THE LOOP' };
+const FLAVOR_LINES = [
+  "The lab lights flicker. The counter resets to zero — again.",
+  "Day forty-seven. Or is it day one. The loop doesn't care.",
+  "A technician's voice echoes: \"Trace it before it traces you.\"",
+  "The clock on the wall spins backward, then stops.",
+  "Somewhere, a printer is jammed mid-loop, forever.",
+  "You've read this line of code before. Or you will, again.",
+  "The reset klaxon is quieter today. That's not a good sign.",
+  "Coffee's still warm. Somehow it's always still warm.",
+  "The whiteboard says FIX THE LOOP in your own handwriting.",
+  "Static crackles. The facility remembers what you don't."
+];
+
+let state = null;
+
+function $(id) { return document.getElementById(id); }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function initHighScoreDisplay() {
+  const bestStage = localStorage.getItem('reset_best_stage');
+  const bestScore = localStorage.getItem('reset_best_score');
+  if (bestStage && bestScore) {
+    $('highscore-line').innerHTML = `Best run: Stage <b>${bestStage}</b> &middot; Score <b>${bestScore}</b>`;
+  } else {
+    $('highscore-line').innerHTML = `No runs logged yet. The loop is waiting.`;
+  }
+}
+
+let selectedDiff = null;
+document.querySelectorAll('.diff-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedDiff = card.dataset.diff;
+    $('start-btn').disabled = false;
+    $('start-btn').textContent = 'Initiate Reset Sequence';
+  });
+});
+
+$('start-btn').addEventListener('click', () => { if (selectedDiff) startRun(selectedDiff); });
+$('continue-btn').addEventListener('click', () => nextRound());
+$('retry-btn').addEventListener('click', () => startRun(state.diffKey));
+$('menu-btn').addEventListener('click', () => { showScreen('screen-start'); initHighScoreDisplay(); });
+
+function startRun(diffKey) {
+  state = {
+    diffKey,
+    stage: DIFFICULTIES[diffKey].startStage,
+    roundsInStage: 0,
+    score: 0,
+    streak: 0,
+    bestStreak: 0,
+    stability: 100,
+    correctCount: 0,
+    totalCount: 0,
+    typeStats: { output: { c: 0, t: 0 }, count: { c: 0, t: 0 }, debug: { c: 0, t: 0 }, trace: { c: 0, t: 0 } },
+    timerId: null,
+    timeLeft: 0,
+    timerMax: 0,
+    currentQuestion: null,
+    answered: false
+  };
+  showScreen('screen-game');
+  updateHud();
+  nextRound();
+}
+
+function updateHud() {
+  $('hud-stage').textContent = state.stage;
+  $('hud-score').textContent = state.score;
+  $('hud-streak').textContent = state.streak;
+  const pct = Math.max(0, Math.min(100, state.stability));
+  $('stability-pct').textContent = pct + '%';
+  const fill = $('stability-fill');
+  fill.style.width = pct + '%';
+  fill.classList.remove('warn', 'mid');
+  if (pct <= 25) fill.classList.add('warn');
+  else if (pct <= 55) fill.classList.add('mid');
+  $('stability-wrap').classList.toggle('stability-critical', pct <= 20);
+}
+
+function nextRound() {
+  state.answered = false;
+  $('feedback').classList.remove('show', 'ok', 'bad');
+  const q = generateQuestion(state.stage);
+  state.currentQuestion = q;
+  const cfg = getStageConfig(state.stage);
+  state.timerMax = cfg.timer;
+  state.timeLeft = cfg.timer;
+
+  $('type-badge').textContent = TYPE_LABELS[q.type];
+  $('code-panel').textContent = q.code;
+  $('prompt-text').textContent = q.prompt;
+  $('flavor-text').textContent = choice(FLAVOR_LINES);
+  updateHud();
+  renderAnswerArea(q);
+  startTimer();
+}
+
+function renderAnswerArea(q) {
+  const area = $('answer-area');
+  area.innerHTML = '';
+  if (q.type === 'trace') {
+    const table = document.createElement('table');
+    table.className = 'trace-table';
+    const thead = document.createElement('tr');
+    thead.innerHTML = '<th>Iteration</th><th>i</th><th>total</th>';
+    table.appendChild(thead);
+    q.rows.forEach(row => {
+      const tr = document.createElement('tr');
+      const tdIter = document.createElement('td');
+      tdIter.textContent = row.iter;
+      tr.appendChild(tdIter);
+
+      const tdI = document.createElement('td');
+      if (q.blankBoth) {
+        tdI.innerHTML = `<input type="text" data-row="${row.iter}" data-col="i" data-ans="${row.i}">`;
+      } else {
+        tdI.innerHTML = `<span class="given">${row.i}</span>`;
+      }
+      tr.appendChild(tdI);
+
+      const tdT = document.createElement('td');
+      tdT.innerHTML = `<input type="text" data-row="${row.iter}" data-col="total" data-ans="${row.total}">`;
+      tr.appendChild(tdT);
+
+      table.appendChild(tr);
+    });
+    area.appendChild(table);
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = 'Check Trace';
+    btn.addEventListener('click', () => submitTrace());
+    const row = document.createElement('div');
+    row.className = 'btn-row';
+    row.appendChild(btn);
+    area.appendChild(row);
+    return;
+  }
+
+  // MCQ types: output, count, debug
+  const optsDiv = document.createElement('div');
+  optsDiv.className = 'options';
+  q.options.forEach((optText) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = optText;
+    btn.addEventListener('click', () => selectAnswer(optText));
+    optsDiv.appendChild(btn);
+  });
+  area.appendChild(optsDiv);
+}
+
+function startTimer() {
+  clearInterval(state.timerId);
+  updateTimerBar();
+  state.timerId = setInterval(() => {
+    state.timeLeft -= 1;
+    updateTimerBar();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerId);
+      if (!state.answered) handleTimeout();
+    }
+  }, 1000);
+}
+function updateTimerBar() {
+  const pct = Math.max(0, (state.timeLeft / state.timerMax) * 100);
+  $('timer-fill').style.width = pct + '%';
+  $('timer-txt').textContent = Math.max(0, state.timeLeft) + 's';
+  const fillEl = $('timer-fill');
+  fillEl.style.background = pct <= 25 ? 'var(--warn)' : pct <= 55 ? 'var(--brass)' : 'var(--good)';
+}
+
+function selectAnswer(optText) {
+  if (state.answered) return;
+  state.answered = true;
+  clearInterval(state.timerId);
+  const q = state.currentQuestion;
+  const isCorrect = optText === q.correctText;
+
+  document.querySelectorAll('.opt-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === q.correctText) btn.classList.add('correct');
+    else if (btn.textContent === optText && !isCorrect) btn.classList.add('wrong');
+  });
+
+  handleAnswer(isCorrect, q.explain || q.correctText);
+}
+
+function submitTrace() {
+  if (state.answered) return;
+  const q = state.currentQuestion;
+  const inputs = document.querySelectorAll('#answer-area input');
+  let allCorrect = true;
+  inputs.forEach(inp => {
+    const given = inp.value.trim();
+    const ans = inp.dataset.ans;
+    const ok = given !== '' && Number(given) === Number(ans);
+    inp.classList.add(ok ? 'correct' : 'wrong');
+    inp.disabled = true;
+    if (!ok) allCorrect = false;
+  });
+  state.answered = true;
+  clearInterval(state.timerId);
+  const explain = allCorrect
+    ? 'Every value in the trace matches — nice tracking of the running total.'
+    : 'Some cells are off — remember total only updates after total += i runs for that iteration.';
+  handleAnswer(allCorrect, explain);
+}
+
+function handleTimeout() {
+  state.answered = true;
+  const q = state.currentQuestion;
+  if (q.type === 'trace') {
+    document.querySelectorAll('#answer-area input').forEach(inp => { inp.disabled = true; inp.classList.add('wrong'); });
+  } else {
+    document.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === q.correctText) btn.classList.add('correct');
+    });
+  }
+  handleAnswer(false, q.explain || q.correctText || '', true);
+}
+
+function handleAnswer(isCorrect, explainText, timedOut) {
+  const q = state.currentQuestion;
+  state.totalCount++;
+  state.typeStats[q.type].t++;
+
+  if (isCorrect) {
+    state.typeStats[q.type].c++;
+    state.correctCount++;
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    const base = 100 + state.stage * 8;
+    const speedBonus = Math.round(state.timeLeft * 2);
+    const streakBonus = (state.streak % 3 === 0) ? 50 : 0;
+    state.score += base + speedBonus + streakBonus;
+    state.stability = Math.min(100, state.stability + 4 + Math.floor(state.streak / 3) * 2);
+    state.roundsInStage++;
+    if (state.roundsInStage >= 3) { state.stage++; state.roundsInStage = 0; }
+  } else {
+    state.streak = 0;
+    state.stability -= (12 + Math.floor(state.stage / 3));
+  }
+  updateHud();
+
+  const fb = $('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.classList.remove(isCorrect ? 'bad' : 'ok');
+  $('feedback-head').textContent = isCorrect ? 'STABLE — CORRECT' : (timedOut ? "TIME'S UP" : 'DESTABILIZED — INCORRECT');
+  $('feedback-body').textContent = explainText;
+
+  if (state.stability <= 0) {
+    $('continue-btn').textContent = 'View Report';
+    $('continue-btn').onclick = () => endRun();
+  } else {
+    $('continue-btn').textContent = 'Continue';
+    $('continue-btn').onclick = () => nextRound();
+  }
+}
+
+function endRun() {
+  clearInterval(state.timerId);
+  const bestStagePrev = Number(localStorage.getItem('reset_best_stage') || 0);
+  const bestScorePrev = Number(localStorage.getItem('reset_best_score') || 0);
+  const isNewBest = state.stage > bestStagePrev || (state.stage === bestStagePrev && state.score > bestScorePrev);
+  if (state.stage > bestStagePrev) localStorage.setItem('reset_best_stage', state.stage);
+  if (state.score > bestScorePrev) localStorage.setItem('reset_best_score', state.score);
+
+  $('newbest-line').style.display = isNewBest ? 'block' : 'none';
+  $('end-stage').textContent = state.stage;
+  $('end-score').textContent = state.score;
+  const acc = state.totalCount ? Math.round((state.correctCount / state.totalCount) * 100) : 0;
+  $('end-accuracy').textContent = acc + '%';
+  $('end-streak').textContent = state.bestStreak;
+
+  const tb = $('type-breakdown');
+  tb.innerHTML = '';
+  Object.keys(TYPE_LABELS).forEach(type => {
+    const s = state.typeStats[type];
+    const pct = s.t ? Math.round((s.c / s.t) * 100) : null;
+    const row = document.createElement('div');
+    row.className = 'tb-row';
+    row.innerHTML = `<span>${TYPE_LABELS[type]}</span><span>${s.t ? pct + '% (' + s.c + '/' + s.t + ')' : '—'}</span>`;
+    tb.appendChild(row);
+  });
+
+  showScreen('screen-end');
+}
+
+initHighScoreDisplay();
+</script>
+</body>
+</html>

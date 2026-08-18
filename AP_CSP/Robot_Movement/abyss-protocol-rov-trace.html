@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abyss Protocol — ROV Trace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep1:#020814;
+    --deep2:#041225;
+    --deep3:#082238;
+    --panel:#0a1f33;
+    --panel-light:#0f2f4c;
+    --cyan:#3ee6d8;
+    --cyan-dim:#1c8f87;
+    --amber:#ffb454;
+    --red:#ff5c5c;
+    --green:#5cffa0;
+    --text:#cfe9ec;
+    --text-dim:#7fa3ac;
+    --rock:#3a2c26;
+    --font-display:'Orbitron', sans-serif;
+    --font-mono:'Share Tech Mono', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(ellipse at 50% -10%, var(--deep3), var(--deep2) 45%, var(--deep1) 100%);
+    color:var(--text);
+    font-family:var(--font-mono);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  #bg-bubbles{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .bubble{position:absolute; bottom:-40px; border-radius:50%; background:rgba(62,230,216,0.06); animation:rise linear infinite;}
+  @keyframes rise{ from{transform:translateY(0);} to{transform:translateY(-110vh);} }
+
+  #app{position:relative; z-index:1; max-width:900px; margin:0 auto; padding:16px; min-height:100vh; display:flex; flex-direction:column;}
+
+  .screen{display:none;}
+  .screen.active{display:flex; flex-direction:column; flex:1;}
+
+  h1,h2,h3{font-family:var(--font-display); margin:0 0 8px 0; letter-spacing:0.5px;}
+  h1{font-size:1.5rem; color:var(--cyan); text-shadow:0 0 12px rgba(62,230,216,0.5);}
+  h2{font-size:1.1rem; color:var(--cyan);}
+  p{line-height:1.5; color:var(--text);}
+
+  .card{background:linear-gradient(180deg, var(--panel), var(--panel-light)); border:1px solid rgba(62,230,216,0.25); border-radius:10px; padding:16px; box-shadow:0 0 24px rgba(0,0,0,0.4) inset, 0 4px 18px rgba(0,0,0,0.5);}
+
+  /* ---- START SCREEN ---- */
+  #screen-start{gap:14px; justify-content:center;}
+  .brief-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;}
+  @media (max-width:560px){ .brief-grid{grid-template-columns:1fr;} }
+  .cmd-item{background:rgba(0,0,0,0.25); border-left:3px solid var(--cyan-dim); padding:8px 10px; border-radius:4px; font-size:0.85rem;}
+  .cmd-item code{color:var(--amber); font-weight:bold;}
+  .legend-row{display:flex; align-items:center; gap:8px; font-size:0.85rem; margin:4px 0; color:var(--text-dim);}
+  .legend-swatch{width:22px; height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0;}
+  .btn{
+    font-family:var(--font-display); font-weight:700; letter-spacing:0.5px;
+    background:linear-gradient(180deg, var(--cyan), var(--cyan-dim));
+    color:#02141a; border:none; border-radius:8px; padding:12px 20px; font-size:0.95rem;
+    cursor:pointer; transition:transform .08s, box-shadow .15s;
+    box-shadow:0 0 18px rgba(62,230,216,0.35);
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 0 26px rgba(62,230,216,0.55);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:0.35; cursor:not-allowed; box-shadow:none;}
+  .btn-secondary{background:transparent; border:1px solid var(--cyan-dim); color:var(--cyan); box-shadow:none;}
+  .btn-danger{background:linear-gradient(180deg, #ff8a8a, var(--red)); box-shadow:0 0 18px rgba(255,92,92,0.35);}
+  .btn-amber{background:linear-gradient(180deg, #ffd08a, var(--amber)); box-shadow:0 0 18px rgba(255,180,84,0.35);}
+
+  /* ---- GAME SCREEN ---- */
+  #screen-game{gap:10px;}
+  #hud{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+  .hud-block{background:rgba(0,0,0,0.3); border:1px solid rgba(62,230,216,0.2); border-radius:8px; padding:6px 12px; text-align:center; min-width:90px;}
+  .hud-label{font-size:0.65rem; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase;}
+  .hud-value{font-family:var(--font-display); font-size:1.15rem; color:var(--cyan); font-weight:700;}
+  .hud-value.warn{color:var(--red); animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+  #power-bar-wrap{flex:1; min-width:140px; height:34px; background:rgba(0,0,0,0.35); border-radius:8px; border:1px solid rgba(62,230,216,0.2); overflow:hidden; position:relative;}
+  #power-bar-fill{height:100%; background:linear-gradient(90deg, var(--cyan-dim), var(--cyan)); transition:width .3s linear, background .3s;}
+  #power-bar-text{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:0.8rem; text-shadow:0 1px 2px #000;}
+
+  #zone-banner{font-size:0.8rem; color:var(--amber); text-align:center; letter-spacing:1px;}
+
+  #game-main{display:grid; grid-template-columns:1fr; gap:12px; flex:1;}
+  @media (min-width:640px){ #game-main{grid-template-columns:1.1fr 1fr;} }
+
+  #pseudo-panel{overflow:auto; max-height:360px;}
+  #pseudo-panel pre{margin:0; font-size:0.82rem; line-height:1.55; white-space:pre;}
+  .kw{color:var(--amber); font-weight:bold;}
+  .fn{color:var(--cyan);}
+  .rel{color:var(--green);}
+  .cmt{color:var(--text-dim); font-style:italic;}
+
+  #grid-panel{display:flex; flex-direction:column; align-items:center; gap:10px;}
+  #grid-wrap{width:100%; max-width:300px; aspect-ratio:1/1;}
+  #grid{width:100%; height:100%; display:grid; gap:3px;}
+  .cell{position:relative; background:rgba(255,255,255,0.03); border:1px solid rgba(62,230,216,0.12); border-radius:4px; display:flex; align-items:center; justify-content:center;}
+  .cell.rock{background:linear-gradient(160deg, #4a3a30, var(--rock)); border-color:rgba(0,0,0,0.4);}
+  .cell.rock::after{content:"▲"; font-size:0.9rem; color:#6b5445; transform:scale(1.4);}
+  .cell.markable{cursor:pointer;}
+  .cell.markable:hover{background:rgba(62,230,216,0.15);}
+  .cell.selected{background:rgba(62,230,216,0.28); box-shadow:0 0 0 2px var(--cyan) inset;}
+  .rov-icon, .target-icon{font-size:1.3rem; line-height:1; transition:transform .2s;}
+  .rov-icon{color:var(--cyan); text-shadow:0 0 8px rgba(62,230,216,0.8);}
+  .target-icon{color:var(--amber); opacity:0.85;}
+  .start-tag{position:absolute; bottom:1px; right:2px; font-size:0.5rem; color:var(--text-dim); letter-spacing:0.5px;}
+
+  #answer-controls{display:flex; flex-direction:column; gap:8px; width:100%;}
+  .malfunction-row{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .mal-btn{font-family:var(--font-mono); font-size:0.72rem; background:rgba(255,92,92,0.08); border:1px solid rgba(255,92,92,0.4); color:#ffb3b3; border-radius:6px; padding:8px 4px; cursor:pointer; text-align:center; line-height:1.3;}
+  .mal-btn:hover{background:rgba(255,92,92,0.18);}
+  .mal-btn:disabled{opacity:0.3; cursor:not-allowed;}
+  .mark-btn{background:rgba(62,230,216,0.1); border:1px solid var(--cyan-dim); color:var(--cyan); border-radius:6px; padding:10px; font-family:var(--font-mono); font-size:0.8rem; cursor:pointer;}
+  .mark-btn.active{background:rgba(62,230,216,0.3); box-shadow:0 0 10px rgba(62,230,216,0.4);}
+  .mark-btn:disabled{opacity:0.3; cursor:not-allowed;}
+
+  #dir-controls{display:none; grid-template-columns:repeat(4,1fr); gap:6px;}
+  #dir-controls.show{display:grid;}
+  .dir-btn{background:rgba(255,180,84,0.08); border:1px solid var(--amber); color:var(--amber); border-radius:6px; padding:8px; font-size:1.1rem; cursor:pointer;}
+  .dir-btn.selected{background:rgba(255,180,84,0.35); box-shadow:0 0 10px rgba(255,180,84,0.5);}
+
+  #confirm-btn{display:none;}
+  #confirm-btn.show{display:block;}
+
+  /* ---- FEEDBACK OVERLAY ---- */
+  #feedback-overlay{
+    position:fixed; inset:0; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(2,8,20,0.72);
+    opacity:0; pointer-events:none;
+    transition:opacity .18s;
+  }
+  #feedback-overlay.show{opacity:1; pointer-events:auto;}
+  #feedback-card{background:var(--panel); border:2px solid var(--cyan); border-radius:12px; padding:20px 26px; text-align:center; max-width:340px; box-shadow:0 0 40px rgba(62,230,216,0.4);}
+  #feedback-card.wrong{border-color:var(--red); box-shadow:0 0 40px rgba(255,92,92,0.4);}
+  #feedback-title{font-family:var(--font-display); font-size:1.3rem; margin-bottom:6px;}
+  #feedback-title.correct{color:var(--green);}
+  #feedback-title.wrong{color:var(--red);}
+  #feedback-detail{font-size:0.85rem; color:var(--text-dim); margin-bottom:4px;}
+  #feedback-delta{font-family:var(--font-display); font-size:1rem; color:var(--amber);}
+
+  /* ---- GAME OVER ---- */
+  #screen-over{gap:14px; justify-content:center; text-align:center;}
+  .stat-row{display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin:10px 0;}
+  .stat-block{min-width:100px;}
+  .stat-num{font-family:var(--font-display); font-size:1.8rem; color:var(--cyan);}
+  .stat-lbl{font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;}
+  #best-badge{color:var(--amber); font-family:var(--font-display); font-size:0.9rem; margin-top:6px;}
+
+  .footer-note{text-align:center; font-size:0.7rem; color:var(--text-dim); margin-top:auto; padding-top:14px;}
+</style>
+</head>
+<body>
+<div id="bg-bubbles"></div>
+<div id="app">
+
+  <!-- START / BRIEFING SCREEN -->
+  <div id="screen-start" class="screen active">
+    <h1>🌊 ABYSS PROTOCOL</h1>
+    <h2 style="color:var(--text-dim); font-size:0.9rem; font-weight:normal; font-family:var(--font-mono);">ROV Trace — predict the dive computer's next move</h2>
+    <div class="card">
+      <p style="margin-top:0;">You're piloting a deep-trench ROV by reading its dive-computer pseudocode <em>before</em> it executes. Trace each program in your head, then report what actually happens.</p>
+      <div class="brief-grid">
+        <div class="cmd-item"><code>MOVE_FORWARD()</code><br>Moves 1 square in the direction the ROV is facing. Fails (collision/breach) if something's in the way!</div>
+        <div class="cmd-item"><code>ROTATE_LEFT() / ROTATE_RIGHT()</code><br>Turns 90°. Does NOT move the ROV.</div>
+        <div class="cmd-item"><code>CAN_MOVE(direction)</code><br>Returns true/false. Direction is <span class="rel-inline">forward, backward, left,</span> or <span class="rel-inline">right</span> — relative to the ROV's current facing.</div>
+        <div class="cmd-item"><code>PROCEDURE / REPEAT</code><br>Standard AP pseudocode blocks: <code>IF/ELSE</code>, <code>REPEAT n TIMES</code>, <code>REPEAT UNTIL (condition)</code>, and reusable <code>PROCEDURE</code>s.</div>
+      </div>
+      <div class="legend-row"><span class="legend-swatch" style="background:rgba(62,230,216,0.15); color:var(--cyan);">▲</span> ROV start position &amp; facing</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:var(--rock); color:#6b5445;">▲</span> Rock formation — blocks movement</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:rgba(255,180,84,0.15); color:var(--amber);">◆</span> Your predicted final position</div>
+      <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:0;">Every dive is timed. Correct traces extend your power reserve and take you deeper; wrong ones drain it fast. Sometimes the ROV doesn't land safely at all — watch for collisions, boundary breaches, and loops that never end.</p>
+    </div>
+    <button class="btn" id="btn-start-dive" style="align-self:center;">START DIVE ▶</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="screen-game" class="screen">
+    <div id="hud">
+      <div class="hud-block"><div class="hud-label">Depth</div><div class="hud-value" id="hud-depth">0m</div></div>
+      <div id="power-bar-wrap"><div id="power-bar-fill" style="width:100%;"></div><div id="power-bar-text">90s</div></div>
+      <div class="hud-block"><div class="hud-label">Solved</div><div class="hud-value" id="hud-solved">0</div></div>
+    </div>
+    <div id="zone-banner">SURFACE WATERS</div>
+
+    <div id="game-main">
+      <div class="card" id="pseudo-panel">
+        <pre id="pseudo-code"></pre>
+      </div>
+      <div class="card" id="grid-panel">
+        <div id="grid-wrap"><div id="grid"></div></div>
+        <div id="answer-controls">
+          <button class="mark-btn" id="btn-mark">📍 MARK SAFE POSITION</button>
+          <div id="dir-controls">
+            <button class="dir-btn" data-dir="0">↑</button>
+            <button class="dir-btn" data-dir="1">→</button>
+            <button class="dir-btn" data-dir="2">↓</button>
+            <button class="dir-btn" data-dir="3">←</button>
+          </div>
+          <button class="btn" id="confirm-btn">CONFIRM TRACE</button>
+          <div class="malfunction-row">
+            <button class="mal-btn" data-outcome="crash">⚠ COLLISION<br>hits a rock</button>
+            <button class="mal-btn" data-outcome="boundary">⚠ HULL BREACH<br>exits the grid</button>
+            <button class="mal-btn" data-outcome="infinite" style="grid-column:1/3;">♾ SYSTEM LOOP<br>never terminates</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="screen-over" class="screen">
+    <h1>DIVE COMPLETE</h1>
+    <div class="card">
+      <div class="stat-row">
+        <div class="stat-block"><div class="stat-num" id="final-depth">0m</div><div class="stat-lbl">Depth Reached</div></div>
+        <div class="stat-block"><div class="stat-num" id="final-solved">0</div><div class="stat-lbl">Traces Solved</div></div>
+        <div class="stat-block"><div class="stat-num" id="final-accuracy">0%</div><div class="stat-lbl">Accuracy</div></div>
+      </div>
+      <div id="best-badge"></div>
+    </div>
+    <button class="btn" id="btn-restart">DIVE AGAIN ▶</button>
+  </div>
+
+  <div id="feedback-overlay">
+    <div id="feedback-card" class="card">
+      <div id="feedback-title"></div>
+      <div id="feedback-detail"></div>
+      <div id="feedback-delta"></div>
+    </div>
+  </div>
+
+  <div class="footer-note">ABYSS PROTOCOL · AP CSP Robot &amp; Procedural Abstraction Trainer</div>
+</div>
+<script>
+// ===== ABYSS PROTOCOL — core engine (no DOM dependencies) =====
+// Directions: 0=UP 1=RIGHT 2=DOWN 3=LEFT (clockwise)
+const DIR_NAMES = ['UP', 'RIGHT', 'DOWN', 'LEFT'];
+const DELTAS = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+const ARROW = ['\u2191', '\u2192', '\u2193', '\u2190'];
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function relToAbs(dir, rel) {
+  switch (rel) {
+    case 'forward': return dir;
+    case 'right': return (dir + 1) % 4;
+    case 'backward': return (dir + 2) % 4;
+    case 'left': return (dir + 3) % 4;
+    default: throw new Error('bad rel ' + rel);
+  }
+}
+
+function inBounds(r, c, size) {
+  return r >= 0 && c >= 0 && r < size && c < size;
+}
+
+function canMoveAt(state, grid, size, rel) {
+  const abs = relToAbs(state.dir, rel);
+  const [dr, dc] = DELTAS[abs];
+  const r = state.row + dr, c = state.col + dc;
+  if (!inBounds(r, c, size)) return false;
+  if (grid[r][c] === 'rock') return false;
+  return true;
+}
+
+// ---------- GRID / START GENERATION ----------
+function generateGrid(size, rockCount, rng, forceBoxIn) {
+  const grid = [];
+  for (let r = 0; r < size; r++) grid.push(new Array(size).fill('empty'));
+
+  let start;
+  if (forceBoxIn) {
+    // pick an interior cell so all 4 neighbors exist, then wall them all in
+    const r = 1 + Math.floor(rng() * (size - 2));
+    const c = 1 + Math.floor(rng() * (size - 2));
+    start = { row: r, col: c };
+    for (const [dr, dc] of DELTAS) grid[r + dr][c + dc] = 'rock';
+  } else {
+    start = { row: Math.floor(rng() * size), col: Math.floor(rng() * size) };
+    let placed = 0, tries = 0;
+    while (placed < rockCount && tries < 60) {
+      tries++;
+      const r = Math.floor(rng() * size), c = Math.floor(rng() * size);
+      if (r === start.row && c === start.col) continue;
+      if (grid[r][c] === 'rock') continue;
+      grid[r][c] = 'rock';
+      placed++;
+    }
+  }
+  const dir = Math.floor(rng() * 4);
+  return { grid, start: { row: start.row, col: start.col, dir } };
+}
+
+// ---------- PROGRAM (AST) GENERATION ----------
+// Statement shapes:
+// {t:'move'} {t:'left'} {t:'right'}
+// {t:'if', rel, negate, then:[...], else:[...]|null}
+// {t:'repeatN', n, body:[...]}
+// {t:'repeatUntil', rel, negate, body:[...]}
+// {t:'call', name}                (procedure call, param baked at def time)
+// {t:'callParam', name, arg}      (procedure call passing a relative direction)
+
+const RELS = ['forward', 'left', 'right', 'backward'];
+
+function randRel(rng) { return RELS[Math.floor(rng() * RELS.length)]; }
+
+function basicStmt(rng) {
+  const roll = rng();
+  if (roll < 0.45) return { t: 'move' };
+  if (roll < 0.72) return { t: 'left' };
+  return { t: 'right' };
+}
+
+function genZone1(rng) {
+  const len = 4 + Math.floor(rng() * 3); // 4-6
+  const body = [];
+  for (let i = 0; i < len; i++) body.push(basicStmt(rng));
+  return { body, procedures: {} };
+}
+
+function genZone2(rng) {
+  const len = 4 + Math.floor(rng() * 3); // 4-6
+  const body = [];
+  for (let i = 0; i < len; i++) {
+    if (rng() < 0.4) {
+      const rel = randRel(rng);
+      const negate = rng() < 0.3;
+      const thenBlock = [basicStmt(rng)];
+      const hasElse = rng() < 0.5;
+      body.push({ t: 'if', rel, negate, then: thenBlock, else: hasElse ? [basicStmt(rng)] : null });
+    } else {
+      body.push(basicStmt(rng));
+    }
+  }
+  return { body, procedures: {} };
+}
+
+function genZone3(rng, boxedIn) {
+  const body = [];
+  if (boxedIn) {
+    // classic "look for an opening" pattern that never resolves when boxed in
+    body.push({ t: 'repeatUntil', rel: 'forward', negate: false, body: [{ t: 'right' }] });
+    return { body, procedures: {} };
+  }
+  const len = 4 + Math.floor(rng() * 3);
+  for (let i = 0; i < len; i++) {
+    const roll = rng();
+    if (roll < 0.22) {
+      const n = 2 + Math.floor(rng() * 3);
+      const bodyLen = 1 + Math.floor(rng() * 2);
+      const inner = [];
+      for (let j = 0; j < bodyLen; j++) inner.push(basicStmt(rng));
+      body.push({ t: 'repeatN', n, body: inner });
+    } else if (roll < 0.40) {
+      const rel = randRel(rng);
+      const negate = rng() < 0.5;
+      body.push({ t: 'repeatUntil', rel, negate, body: [basicStmt(rng)] });
+    } else if (roll < 0.65) {
+      const rel = randRel(rng);
+      const negate = rng() < 0.3;
+      body.push({ t: 'if', rel, negate, then: [basicStmt(rng)], else: rng() < 0.5 ? [basicStmt(rng)] : null });
+    } else {
+      body.push(basicStmt(rng));
+    }
+  }
+  return { body, procedures: {} };
+}
+
+function genZone4(rng, boxedIn) {
+  if (boxedIn) return genZone3(rng, true);
+  const procName = rng() < 0.5 ? 'checkAndGo' : 'edgeProbe';
+  // PROCEDURE procName(direction) { IF (CAN_MOVE(direction)) { MOVE_FORWARD() } }
+  // wait — MOVE_FORWARD always moves forward-facing, not param dir, so to keep the
+  // param meaningful we rotate to face param dir conceptually via relative check only
+  // (the robot checks CAN_MOVE(param) then moves forward only if param=='forward').
+  // To keep semantics crystal clear for students, define proc body using the
+  // parameter purely inside the CAN_MOVE test, paired with a forward move guarded by it.
+  const procBody = [{ t: 'ifParam', arg: 'PARAM', then: [{ t: 'move' }], else: null }];
+  const procedures = { [procName]: { param: 'direction', body: procBody } };
+
+  const len = 4 + Math.floor(rng() * 3);
+  const body = [];
+  for (let i = 0; i < len; i++) {
+    const roll = rng();
+    if (roll < 0.30) {
+      body.push({ t: 'callParam', name: procName, arg: randRel(rng) });
+    } else if (roll < 0.50) {
+      const n = 2 + Math.floor(rng() * 2);
+      body.push({ t: 'repeatN', n, body: [{ t: 'callParam', name: procName, arg: randRel(rng) }] });
+    } else if (roll < 0.68) {
+      const rel = randRel(rng);
+      body.push({ t: 'repeatUntil', rel, negate: rng() < 0.5, body: [basicStmt(rng)] });
+    } else if (roll < 0.85) {
+      const rel = randRel(rng);
+      body.push({ t: 'if', rel, negate: rng() < 0.3, then: [basicStmt(rng)], else: rng() < 0.4 ? [basicStmt(rng)] : null });
+    } else {
+      body.push(basicStmt(rng));
+    }
+  }
+  return { body, procedures };
+}
+
+// ---------- SIMULATION ----------
+const HALT = Symbol('halt');
+const MAX_UNTIL_ITERS = 30;
+const MAX_TOTAL_STEPS = 400;
+
+function simulate(program, grid, size, start) {
+  const state = { row: start.row, col: start.col, dir: start.dir };
+  const path = [{ row: start.row, col: start.col, dir: start.dir }];
+  let steps = 0;
+  let outcome = null;
+
+  function step() {
+    steps++;
+    if (steps > MAX_TOTAL_STEPS) { outcome = { type: 'infinite' }; return HALT; }
+  }
+
+  function doMove() {
+    if (!canMoveAt(state, grid, size, 'forward')) {
+      const abs = state.dir;
+      const [dr, dc] = DELTAS[abs];
+      const r = state.row + dr, c = state.col + dc;
+      if (!inBounds(r, c, size)) outcome = { type: 'boundary' };
+      else outcome = { type: 'crash' };
+      return HALT;
+    }
+    const [dr, dc] = DELTAS[state.dir];
+    state.row += dr; state.col += dc;
+    path.push({ row: state.row, col: state.col, dir: state.dir });
+    return null;
+  }
+
+  function resolveCond(rel, negate) {
+    const val = canMoveAt(state, grid, size, rel);
+    return negate ? !val : val;
+  }
+
+  function execBlock(block, procedures, paramCtx) {
+    for (const stmt of block) {
+      const sig = step();
+      if (sig === HALT) return HALT;
+      const r = execStmt(stmt, procedures, paramCtx);
+      if (r === HALT) return HALT;
+    }
+    return null;
+  }
+
+  function execStmt(stmt, procedures, paramCtx) {
+    switch (stmt.t) {
+      case 'move': return doMove();
+      case 'left': state.dir = (state.dir + 3) % 4; return null;
+      case 'right': state.dir = (state.dir + 1) % 4; return null;
+      case 'if': {
+        const cond = resolveCond(stmt.rel, stmt.negate);
+        if (cond) return execBlock(stmt.then, procedures, paramCtx);
+        if (stmt.else) return execBlock(stmt.else, procedures, paramCtx);
+        return null;
+      }
+      case 'ifParam': {
+        const rel = paramCtx ? paramCtx : 'forward';
+        const cond = canMoveAt(state, grid, size, rel);
+        if (cond) return execBlock(stmt.then, procedures, paramCtx);
+        if (stmt.else) return execBlock(stmt.else, procedures, paramCtx);
+        return null;
+      }
+      case 'repeatN': {
+        for (let i = 0; i < stmt.n; i++) {
+          const sig = step();
+          if (sig === HALT) return HALT;
+          const r = execBlock(stmt.body, procedures, paramCtx);
+          if (r === HALT) return HALT;
+        }
+        return null;
+      }
+      case 'repeatUntil': {
+        let iters = 0;
+        while (true) {
+          if (resolveCond(stmt.rel, stmt.negate)) break;
+          iters++;
+          if (iters > MAX_UNTIL_ITERS) { outcome = { type: 'infinite' }; return HALT; }
+          const sig = step();
+          if (sig === HALT) return HALT;
+          const r = execBlock(stmt.body, procedures, paramCtx);
+          if (r === HALT) return HALT;
+        }
+        return null;
+      }
+      case 'call': {
+        const proc = procedures[stmt.name];
+        return execBlock(proc.body, procedures, paramCtx);
+      }
+      case 'callParam': {
+        const proc = procedures[stmt.name];
+        return execBlock(proc.body, procedures, stmt.arg);
+      }
+      default: throw new Error('unknown stmt ' + stmt.t);
+    }
+  }
+
+  const result = execBlock(program.body, program.procedures || {}, null);
+  if (result === HALT) {
+    return { outcome: outcome || { type: 'infinite' }, finalState: state, steps, path };
+  }
+  return { outcome: { type: 'normal', row: state.row, col: state.col, dir: state.dir }, finalState: state, steps, path };
+}
+
+// ---------- PSEUDOCODE RENDERING ----------
+function relLabel(rel) { return rel; }
+
+function renderBlock(block, indent, lines, paramName) {
+  const pad = '  '.repeat(indent);
+  for (const stmt of block) {
+    switch (stmt.t) {
+      case 'move': lines.push(pad + 'MOVE_FORWARD()'); break;
+      case 'left': lines.push(pad + 'ROTATE_LEFT()'); break;
+      case 'right': lines.push(pad + 'ROTATE_RIGHT()'); break;
+      case 'if': {
+        const cond = (stmt.negate ? 'NOT ' : '') + `CAN_MOVE(${relLabel(stmt.rel)})`;
+        lines.push(pad + `IF (${cond})`);
+        lines.push(pad + '{');
+        renderBlock(stmt.then, indent + 1, lines, paramName);
+        lines.push(pad + '}');
+        if (stmt.else) {
+          lines.push(pad + 'ELSE');
+          lines.push(pad + '{');
+          renderBlock(stmt.else, indent + 1, lines, paramName);
+          lines.push(pad + '}');
+        }
+        break;
+      }
+      case 'ifParam': {
+        lines.push(pad + `IF (CAN_MOVE(${paramName}))`);
+        lines.push(pad + '{');
+        renderBlock(stmt.then, indent + 1, lines, paramName);
+        lines.push(pad + '}');
+        break;
+      }
+      case 'repeatN':
+        lines.push(pad + `REPEAT ${stmt.n} TIMES`);
+        lines.push(pad + '{');
+        renderBlock(stmt.body, indent + 1, lines, paramName);
+        lines.push(pad + '}');
+        break;
+      case 'repeatUntil': {
+        const cond = (stmt.negate ? 'NOT ' : '') + `CAN_MOVE(${relLabel(stmt.rel)})`;
+        lines.push(pad + `REPEAT UNTIL (${cond})`);
+        lines.push(pad + '{');
+        renderBlock(stmt.body, indent + 1, lines, paramName);
+        lines.push(pad + '}');
+        break;
+      }
+      case 'call':
+        lines.push(pad + `${stmt.name}()`);
+        break;
+      case 'callParam':
+        lines.push(pad + `${stmt.name}(${relLabel(stmt.arg)})`);
+        break;
+      default: throw new Error('unknown render stmt ' + stmt.t);
+    }
+  }
+}
+
+function renderProgram(program) {
+  const lines = [];
+  const procNames = Object.keys(program.procedures || {});
+  for (const name of procNames) {
+    const proc = program.procedures[name];
+    lines.push(`PROCEDURE ${name}(${proc.param})`);
+    lines.push('{');
+    renderBlock(proc.body, 1, lines, proc.param);
+    lines.push('}');
+    lines.push('');
+  }
+  lines.push('// main sequence');
+  renderBlock(program.body, 0, lines, null);
+  return lines.join('\n');
+}
+
+// ---------- ROUND GENERATION (ties grid + program + simulation together) ----------
+const ZONES = [
+  { key: 1, name: 'Surface Waters', size: 4, rocks: 0 },
+  { key: 2, name: 'Twilight Zone', size: 5, rocks: 2 },
+  { key: 3, name: 'Midnight Zone', size: 5, rocks: 3 },
+  { key: 4, name: 'Abyssal Trench', size: 6, rocks: 3 },
+];
+
+function zoneForRound(roundsSolved) {
+  if (roundsSolved < 4) return ZONES[0];
+  if (roundsSolved < 9) return ZONES[1];
+  if (roundsSolved < 15) return ZONES[2];
+  return ZONES[3];
+}
+
+// Chance we retry (looking for a "normal" outcome) when a trap outcome comes up.
+// Keeps "healthy patient" cases well-represented in easier zones while still
+// letting traps show up often in the hardest zone.
+const NORMAL_RETRY_BIAS = { 1: 1.0, 2: 0.55, 3: 0.4, 4: 0.25 };
+
+function generateRound(roundsSolved, rng) {
+  const zone = zoneForRound(roundsSolved);
+  let boxedIn = false;
+  if (zone.key >= 3 && rng() < 0.22) boxedIn = true;
+
+  const { grid, start } = generateGrid(zone.size, zone.rocks, rng, boxedIn);
+
+  let program;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    if (zone.key === 1) program = genZone1(rng);
+    else if (zone.key === 2) program = genZone2(rng);
+    else if (zone.key === 3) program = genZone3(rng, boxedIn);
+    else program = genZone4(rng, boxedIn);
+
+    const result = simulate(program, grid, zone.size, start);
+
+    if (result.outcome.type !== 'normal') {
+      // boxed-in rounds are intentionally always traps (infinite) - never retry those away
+      if (!boxedIn && rng() < NORMAL_RETRY_BIAS[zone.key]) continue;
+    }
+
+    return { zone, grid, size: zone.size, start, program, result };
+  }
+  // fallback: trivial safe program if we somehow failed to find one
+  const safe = { body: [{ t: 'left' }, { t: 'right' }], procedures: {} };
+  const result = simulate(safe, grid, zone.size, start);
+  return { zone, grid, size: zone.size, start, program: safe, result };
+}
+
+const Engine = {
+  DIR_NAMES, ARROW, DELTAS,
+  mulberry32,
+  generateGrid, generateRound, simulate, renderProgram,
+  zoneForRound, ZONES,
+};
+
+if (typeof module !== 'undefined' && module.exports) module.exports = Engine;
+if (typeof window !== 'undefined') window.AbyssEngine = Engine;
+
+// ===== ABYSS PROTOCOL — game/UI layer =====
+(function () {
+  const $ = (sel) => document.querySelector(sel);
+  const $all = (sel) => Array.from(document.querySelectorAll(sel));
+
+  const screens = { start: $('#screen-start'), game: $('#screen-game'), over: $('#screen-over') };
+  function showScreen(name) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  // ---------- background bubbles (purely decorative, pointer-events:none set in CSS) ----------
+  (function spawnBubbles() {
+    const wrap = $('#bg-bubbles');
+    for (let i = 0; i < 18; i++) {
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      const size = 4 + Math.random() * 14;
+      b.style.width = size + 'px';
+      b.style.height = size + 'px';
+      b.style.left = Math.random() * 100 + '%';
+      b.style.animationDuration = (10 + Math.random() * 14) + 's';
+      b.style.animationDelay = (Math.random() * 14) + 's';
+      wrap.appendChild(b);
+    }
+  })();
+
+  const DEPTH_PER_ZONE = { 1: 15, 2: 25, 3: 35, 4: 50 };
+  const TIME_BONUS_PER_ZONE = { 1: 10, 2: 9, 3: 8, 4: 7 };
+  const WRONG_PENALTY = 12;
+  const START_TIME = 90;
+  const BEST_KEY = 'abyssProtocolBestDepth';
+
+  let state = null;
+  let timerHandle = null;
+  let inputLocked = false;
+
+  function resetState() {
+    state = {
+      roundsSolved: 0,
+      attempts: 0,
+      correct: 0,
+      depth: 0,
+      timeLeft: START_TIME,
+      round: null,
+      selectedCell: null,
+      selectedDir: null,
+      marking: false,
+      paused: false,
+    };
+    inputLocked = false;
+  }
+
+  // ---------- pseudocode syntax highlighting (display-only; source is generated, not user text) ----------
+  function highlight(text) {
+    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return escaped.split('\n').map(line => {
+      if (line.trim().startsWith('//')) return `<span class="cmt">${line}</span>`;
+      let out = line;
+      out = out.replace(/\b(MOVE_FORWARD|ROTATE_LEFT|ROTATE_RIGHT|CAN_MOVE)\b/g, '<span class="fn">$1</span>');
+      out = out.replace(/\b(IF|ELSE|REPEAT|TIMES|UNTIL|NOT|PROCEDURE)\b/g, '<span class="kw">$1</span>');
+      out = out.replace(/\b(forward|backward|left|right)\b(?=\)|,)/g, '<span class="rel">$1</span>');
+      return out;
+    }).join('\n');
+  }
+
+  // ---------- grid rendering ----------
+  function renderGrid(round) {
+    const grid = $('#grid');
+    grid.style.gridTemplateColumns = `repeat(${round.size}, 1fr)`;
+    grid.innerHTML = '';
+    for (let r = 0; r < round.size; r++) {
+      for (let c = 0; c < round.size; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        if (round.grid[r][c] === 'rock') {
+          cell.classList.add('rock');
+        }
+        if (r === round.start.row && c === round.start.col) {
+          const icon = document.createElement('div');
+          icon.className = 'rov-icon';
+          icon.textContent = '▲';
+          icon.style.transform = `rotate(${round.start.dir * 90}deg)`;
+          cell.appendChild(icon);
+          const tag = document.createElement('div');
+          tag.className = 'start-tag';
+          tag.textContent = 'START';
+          cell.appendChild(tag);
+        }
+        cell.addEventListener('click', () => onCellClick(r, c));
+        grid.appendChild(cell);
+      }
+    }
+    updateMarkableCells();
+  }
+
+  function updateMarkableCells() {
+    $all('.cell').forEach(cell => {
+      const r = +cell.dataset.row, c = +cell.dataset.col;
+      const isRock = state.round.grid[r][c] === 'rock';
+      cell.classList.toggle('markable', state.marking && !isRock && !inputLocked);
+    });
+  }
+
+  function onCellClick(r, c) {
+    if (!state.marking || inputLocked) return;
+    if (state.round.grid[r][c] === 'rock') return;
+    state.selectedCell = { row: r, col: c };
+    $all('.cell').forEach(cell => {
+      cell.classList.toggle('selected', +cell.dataset.row === r && +cell.dataset.col === c);
+    });
+    // (re)place target icon
+    $all('.target-icon').forEach(el => el.remove());
+    const cellEl = $all('.cell').find(cell => +cell.dataset.row === r && +cell.dataset.col === c);
+    const icon = document.createElement('div');
+    icon.className = 'target-icon';
+    icon.textContent = '◆';
+    if (state.selectedDir !== null) icon.style.transform = `rotate(${state.selectedDir * 90}deg)`;
+    cellEl.appendChild(icon);
+    updateConfirmEnabled();
+  }
+
+  function onDirClick(dir) {
+    if (!state.marking || inputLocked) return;
+    state.selectedDir = dir;
+    $all('.dir-btn').forEach(btn => btn.classList.toggle('selected', +btn.dataset.dir === dir));
+    const targetIcon = $('.target-icon');
+    if (targetIcon) targetIcon.style.transform = `rotate(${dir * 90}deg)`;
+    updateConfirmEnabled();
+  }
+
+  function updateConfirmEnabled() {
+    $('#confirm-btn').disabled = !(state.selectedCell && state.selectedDir !== null);
+  }
+
+  function setMarking(on) {
+    state.marking = on;
+    $('#btn-mark').classList.toggle('active', on);
+    $('#dir-controls').classList.toggle('show', on);
+    $('#confirm-btn').classList.toggle('show', on);
+    updateMarkableCells();
+    if (!on) {
+      state.selectedCell = null;
+      state.selectedDir = null;
+      $all('.target-icon').forEach(el => el.remove());
+      $all('.cell.selected').forEach(el => el.classList.remove('selected'));
+      $all('.dir-btn.selected').forEach(el => el.classList.remove('selected'));
+    }
+    updateConfirmEnabled();
+  }
+
+  // ---------- round lifecycle ----------
+  function nextRound() {
+    const seed = (Date.now() % 2147483647) ^ Math.floor(Math.random() * 1e9);
+    const rng = AbyssEngine.mulberry32(seed);
+    const round = AbyssEngine.generateRound(state.roundsSolved, rng);
+    state.round = round;
+    state.selectedCell = null;
+    state.selectedDir = null;
+    inputLocked = false;
+
+    $('#pseudo-code').innerHTML = highlight(AbyssEngine.renderProgram(round.program));
+    $('#zone-banner').textContent = `${'▾'.repeat(round.zone.key)} ${round.zone.name.toUpperCase()}`;
+    renderGrid(round);
+    setMarking(false);
+    setControlsEnabled(true);
+  }
+
+  function setControlsEnabled(on) {
+    $('#btn-mark').disabled = !on;
+    $all('.mal-btn').forEach(b => b.disabled = !on);
+    updateMarkableCells();
+  }
+
+  function submitAnswer(guess) {
+    if (inputLocked || !state.round) return;
+    inputLocked = true;
+    setControlsEnabled(false);
+    updateMarkableCells();
+
+    const outcome = state.round.result.outcome;
+    let correct = false;
+    if (guess.type === 'normal') {
+      correct = outcome.type === 'normal' && guess.row === outcome.row && guess.col === outcome.col && guess.dir === outcome.dir;
+    } else {
+      correct = guess.type === outcome.type;
+    }
+
+    state.attempts++;
+    const zoneKey = state.round.zone.key;
+
+    let deltaText = '';
+    if (correct) {
+      state.correct++;
+      state.roundsSolved++;
+      const gain = DEPTH_PER_ZONE[zoneKey];
+      const bonus = TIME_BONUS_PER_ZONE[zoneKey];
+      state.depth += gain;
+      state.timeLeft += bonus;
+      deltaText = `+${gain}m depth · +${bonus}s power`;
+    } else {
+      state.timeLeft -= WRONG_PENALTY;
+      deltaText = `-${WRONG_PENALTY}s power`;
+    }
+
+    updateHud();
+    showFeedback(correct, outcome, deltaText);
+  }
+
+  function outcomeLabel(outcome) {
+    switch (outcome.type) {
+      case 'normal': {
+        const dirName = AbyssEngine.DIR_NAMES[outcome.dir];
+        return `Lands safely at row ${outcome.row + 1}, col ${outcome.col + 1}, facing ${dirName}.`;
+      }
+      case 'crash': return 'Collides with a rock formation.';
+      case 'boundary': return 'Attempts to exit the trench boundary — hull breach.';
+      case 'infinite': return 'The loop never terminates — system stuck.';
+      default: return '';
+    }
+  }
+
+  function showFeedback(correct, outcome, deltaText) {
+    const overlay = $('#feedback-overlay');
+    const card = $('#feedback-card');
+    const title = $('#feedback-title');
+    card.classList.toggle('wrong', !correct);
+    title.className = correct ? 'correct' : 'wrong';
+    title.textContent = correct ? '✓ TRACE CORRECT' : '✗ TRACE INCORRECT';
+    $('#feedback-detail').textContent = outcomeLabel(outcome);
+    $('#feedback-delta').textContent = deltaText;
+    overlay.classList.add('show');
+    state.paused = true;
+
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      state.paused = false;
+      if (state.timeLeft <= 0) {
+        endGame();
+      } else {
+        nextRound();
+      }
+    }, 1400);
+  }
+
+  // ---------- HUD / timer ----------
+  function updateHud() {
+    $('#hud-depth').textContent = state.depth + 'm';
+    $('#hud-solved').textContent = state.roundsSolved;
+    const pct = Math.max(0, Math.min(100, (state.timeLeft / START_TIME) * 100));
+    const fill = $('#power-bar-fill');
+    fill.style.width = pct + '%';
+    const secDisplay = Math.max(0, Math.ceil(state.timeLeft));
+    $('#power-bar-text').textContent = secDisplay + 's';
+    const low = state.timeLeft <= 15;
+    fill.style.background = low ? 'linear-gradient(90deg, #a63b3b, var(--red))' : '';
+    $('#power-bar-text').classList.toggle('warn', low);
+  }
+
+  let lastTick = null;
+  function tick(ts) {
+    if (lastTick === null) lastTick = ts;
+    const dt = (ts - lastTick) / 1000;
+    lastTick = ts;
+    if (!state.paused && screens.game.classList.contains('active')) {
+      state.timeLeft -= dt;
+      updateHud();
+      if (state.timeLeft <= 0 && !inputLocked) {
+        state.timeLeft = 0;
+        updateHud();
+        endGame();
+        return;
+      }
+    }
+    timerHandle = requestAnimationFrame(tick);
+  }
+
+  function endGame() {
+    if (timerHandle) cancelAnimationFrame(timerHandle);
+    timerHandle = null;
+    lastTick = null;
+    inputLocked = true;
+    $('#feedback-overlay').classList.remove('show');
+
+    const accuracy = state.attempts > 0 ? Math.round((state.correct / state.attempts) * 100) : 0;
+    $('#final-depth').textContent = state.depth + 'm';
+    $('#final-solved').textContent = state.roundsSolved;
+    $('#final-accuracy').textContent = accuracy + '%';
+
+    let best = 0;
+    try { best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0; } catch (e) { best = 0; }
+    const badge = $('#best-badge');
+    if (state.depth > best) {
+      try { localStorage.setItem(BEST_KEY, String(state.depth)); } catch (e) {}
+      badge.textContent = `🏆 NEW BEST DEPTH! (previous best: ${best}m)`;
+    } else {
+      badge.textContent = `Best depth so far: ${best}m`;
+    }
+    showScreen('over');
+  }
+
+  function startGame() {
+    resetState();
+    showScreen('game');
+    updateHud();
+    nextRound();
+    lastTick = null;
+    if (timerHandle) cancelAnimationFrame(timerHandle);
+    timerHandle = requestAnimationFrame(tick);
+  }
+
+  // ---------- wiring ----------
+  $('#btn-start-dive').addEventListener('click', startGame);
+  $('#btn-restart').addEventListener('click', startGame);
+  $('#btn-mark').addEventListener('click', () => { if (!inputLocked) setMarking(!state.marking); });
+  $all('.dir-btn').forEach(btn => btn.addEventListener('click', () => onDirClick(+btn.dataset.dir)));
+  $('#confirm-btn').addEventListener('click', () => {
+    if (state.selectedCell && state.selectedDir !== null) {
+      submitAnswer({ type: 'normal', row: state.selectedCell.row, col: state.selectedCell.col, dir: state.selectedDir });
+    }
+  });
+  $all('.mal-btn').forEach(btn => btn.addEventListener('click', () => submitAnswer({ type: btn.dataset.outcome })));
+
+  showScreen('start');
+})();
+
+</script>
+</body>
+</html>

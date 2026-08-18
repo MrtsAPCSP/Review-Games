@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFELINE: Grid Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1c;
+  --bg-grid:#0d1526;
+  --panel:#121a2b;
+  --panel-alt:#182238;
+  --panel-raised:#1c2740;
+  --border:#26324a;
+  --border-bright:#37476b;
+  --text:#e7ecf5;
+  --text-muted:#8b98b3;
+  --text-dim:#5b6883;
+  --green:#3ddc84;
+  --green-dim:#1f5c3c;
+  --amber:#f2a93b;
+  --amber-dim:#7a5a1f;
+  --red:#e5484d;
+  --red-dim:#6b2226;
+  --blue:#4fa8e8;
+  --blue-dim:#1f4666;
+  --command:#ffb020;
+  --font-display:'Big Shoulders Condensed', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+  --font-body:'Inter', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,176,32,0.06), transparent),
+    radial-gradient(ellipse 700px 500px at 100% 100%, rgba(79,168,232,0.05), transparent),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+button{
+  font-family:var(--font-body);
+  cursor:pointer;
+  border:none;
+  background:none;
+  color:inherit;
+}
+button:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--command);
+  outline-offset:2px;
+}
+.hidden{display:none !important;}
+.screen{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  font-size:11px;
+  color:var(--amber);
+}
+h1,h2,h3{font-family:var(--font-display); font-weight:800; margin:0; letter-spacing:0.01em;}
+
+/* ===== Title Screen ===== */
+#title-screen{
+  justify-content:center;
+  padding:32px 20px;
+  gap:28px;
+  text-align:center;
+  position:relative;
+}
+.title-mark{
+  font-family:var(--font-display);
+  font-size:clamp(48px,9vw,96px);
+  font-weight:800;
+  line-height:0.95;
+  letter-spacing:0.01em;
+  background:linear-gradient(180deg,#fff 0%, var(--command) 120%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 0 40px rgba(255,176,32,0.15);
+}
+.title-sub{
+  font-family:var(--font-mono);
+  color:var(--text-muted);
+  font-size:14px;
+  max-width:520px;
+  line-height:1.6;
+}
+.title-diagram{
+  width:min(560px,90vw);
+  margin-top:8px;
+}
+.btn-row{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:6px;}
+.btn{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:0.03em;
+  padding:14px 30px;
+  border-radius:6px;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn-primary{
+  background:var(--command);
+  color:#1a1206;
+  box-shadow:0 4px 0 #a86c0f, 0 8px 24px rgba(255,176,32,0.25);
+}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:0 5px 0 #a86c0f, 0 10px 28px rgba(255,176,32,0.3);}
+.btn-primary:active{transform:translateY(2px); box-shadow:0 2px 0 #a86c0f;}
+.btn-secondary{
+  background:var(--panel-alt);
+  border:1px solid var(--border-bright);
+  color:var(--text);
+}
+.btn-secondary:hover{background:var(--panel-raised);}
+.btn-ghost{
+  border:1px solid var(--border);
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+  font-size:12px;
+  padding:8px 14px;
+  border-radius:5px;
+  letter-spacing:0.05em;
+}
+.btn-ghost:hover{color:var(--text); border-color:var(--border-bright);}
+
+/* ===== Game Screen layout ===== */
+#game-screen{
+  width:100%;
+  min-height:100vh;
+  align-items:stretch;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 20px;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  gap:16px;
+  flex-wrap:wrap;
+}
+.topbar-left{display:flex; align-items:center; gap:14px;}
+.brand{font-family:var(--font-display); font-weight:800; font-size:20px; color:var(--command); letter-spacing:0.02em;}
+.stat-chip{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--text-muted);
+  background:var(--panel-alt);
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:5px 10px;
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+.stat-chip b{color:var(--text); font-weight:600;}
+.stat-chip.score b{color:var(--green);}
+.stat-chip.wave b{color:var(--amber);}
+
+.main-area{
+  display:flex;
+  gap:14px;
+  padding:16px;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:center;
+}
+.canvas-panel{
+  background:
+    linear-gradient(var(--bg-grid) 0 0),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 32px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 32px);
+  border:1px solid var(--border);
+  border-radius:10px;
+  position:relative;
+  width:min(900px, 100%);
+  flex:2 1 560px;
+  overflow:hidden;
+  min-height:420px;
+}
+.phase-banner{
+  position:absolute;
+  top:0; left:0; right:0;
+  padding:10px 16px;
+  background:linear-gradient(180deg, rgba(10,15,28,0.9), rgba(10,15,28,0));
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:0.1em;
+  color:var(--text-muted);
+  z-index:5;
+  display:flex;
+  justify-content:space-between;
+  pointer-events:none;
+}
+.phase-banner .tag{color:var(--amber);}
+#network-svg{width:100%; height:520px; display:block;}
+@media (max-width:640px){ #network-svg{height:440px;} }
+
+.node-shape{transition:fill .25s ease, stroke .25s ease;}
+.node-label{
+  font-family:var(--font-mono);
+  font-size:12px;
+  fill:var(--text);
+  text-anchor:middle;
+  pointer-events:none;
+}
+.node-sub{
+  font-family:var(--font-mono);
+  font-size:9px;
+  fill:var(--text-dim);
+  text-anchor:middle;
+  pointer-events:none;
+}
+.edge-line{
+  stroke:var(--border-bright);
+  stroke-width:3;
+  transition:stroke .25s ease, stroke-width .2s ease;
+}
+.edge-line.clickable{cursor:pointer;}
+.edge-hit{fill:none; stroke:transparent; stroke-width:20; cursor:pointer;}
+.node-group{cursor:pointer;}
+.node-group.not-clickable{cursor:default;}
+.pulse-dash{
+  stroke-dasharray:6 6;
+  animation:dashmove 1.4s linear infinite;
+}
+@keyframes dashmove{ to{ stroke-dashoffset:-24; } }
+@keyframes sparkflash{
+  0%{opacity:1;}
+  100%{opacity:0;}
+}
+.spark{
+  fill:var(--red);
+  animation:sparkflash 0.6s ease-out forwards;
+}
+.selectable-hover:hover{filter:brightness(1.3);}
+
+.sidebar{
+  flex:1 1 300px;
+  min-width:280px;
+  max-width:380px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px 16px;
+}
+.card-title{
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin-bottom:10px;
+}
+.meter-track{
+  height:14px;
+  background:var(--panel-alt);
+  border:1px solid var(--border);
+  border-radius:7px;
+  overflow:hidden;
+  position:relative;
+}
+.meter-fill{
+  height:100%;
+  border-radius:7px;
+  background:linear-gradient(90deg, var(--green), #2fb96f);
+  transition:width .3s ease, background .3s ease;
+}
+.meter-fill.warn{background:linear-gradient(90deg, var(--amber), #d68f2a);}
+.meter-fill.crit{background:linear-gradient(90deg, var(--red), #b83338);}
+.meter-row{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px; color:var(--text-muted); margin-top:6px;}
+
+.q-prompt{font-size:15px; line-height:1.5; margin-bottom:10px; font-weight:500;}
+.q-hint{font-family:var(--font-mono); font-size:11px; color:var(--text-dim); margin-bottom:10px;}
+.q-timerbar{height:5px; background:var(--panel-alt); border-radius:3px; overflow:hidden; margin-bottom:12px;}
+.q-timerfill{height:100%; background:var(--blue); transition:width .1s linear;}
+.q-options{display:flex; flex-direction:column; gap:8px;}
+.opt-btn{
+  text-align:left;
+  padding:10px 12px;
+  border-radius:6px;
+  border:1px solid var(--border-bright);
+  background:var(--panel-alt);
+  font-size:13px;
+  color:var(--text);
+}
+.opt-btn:hover{background:var(--panel-raised);}
+.opt-btn.correct{background:var(--green-dim); border-color:var(--green); color:#fff;}
+.opt-btn.incorrect{background:var(--red-dim); border-color:var(--red); color:#fff;}
+.feedback-box{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:6px;
+  font-size:13px;
+  line-height:1.5;
+  display:none;
+}
+.feedback-box.show{display:block;}
+.feedback-box.correct{background:rgba(61,220,132,0.1); border:1px solid var(--green);}
+.feedback-box.incorrect{background:rgba(229,72,77,0.1); border:1px solid var(--red);}
+
+.confirm-row{margin-top:10px; display:flex; gap:8px;}
+.small-btn{
+  font-family:var(--font-mono);
+  font-size:12px;
+  padding:7px 12px;
+  border-radius:5px;
+  border:1px solid var(--border-bright);
+  background:var(--panel-alt);
+}
+.small-btn:hover{background:var(--panel-raised);}
+.small-btn.primary{background:var(--command); color:#1a1206; border-color:var(--command); font-weight:700;}
+
+.crew-list{display:flex; gap:8px; flex-wrap:wrap;}
+.crew-slot{
+  width:64px; height:64px;
+  border-radius:8px;
+  border:1px solid var(--border-bright);
+  background:var(--panel-alt);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-size:10px; color:var(--text-muted);
+  position:relative;
+  overflow:hidden;
+}
+.crew-slot.idle{cursor:pointer;}
+.crew-slot.idle:hover{border-color:var(--blue); color:var(--blue);}
+.crew-slot.armed{border-color:var(--amber); color:var(--amber); box-shadow:0 0 0 2px rgba(242,169,59,0.25);}
+.crew-slot.busy{border-color:var(--blue); color:var(--blue);}
+.crew-progress{position:absolute; bottom:0; left:0; height:4px; background:var(--blue); width:0%;}
+.crew-icon{font-size:18px; margin-bottom:2px;}
+
+.log-feed{
+  font-family:var(--font-mono);
+  font-size:11px;
+  max-height:150px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.log-entry{padding:4px 6px; border-radius:4px; border-left:2px solid var(--border-bright); color:var(--text-muted);}
+.log-entry.down{border-color:var(--red); color:#f0b3b5;}
+.log-entry.reroute{border-color:var(--amber); color:#f5d29b;}
+.log-entry.restore{border-color:var(--green); color:#a9ecc7;}
+.log-entry.destroyed{border-color:var(--red); color:#f0b3b5; font-weight:700;}
+
+.instructions-text{font-size:13px; color:var(--text-muted); line-height:1.6;}
+
+/* ===== Modals ===== */
+.modal-backdrop{
+  position:fixed; inset:0;
+  background:rgba(5,8,15,0.75);
+  display:flex; align-items:center; justify-content:center;
+  z-index:50;
+  padding:20px;
+}
+.modal{
+  background:var(--panel);
+  border:1px solid var(--border-bright);
+  border-radius:14px;
+  max-width:640px;
+  width:100%;
+  max-height:88vh;
+  overflow-y:auto;
+  padding:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.modal h2{font-size:28px; margin-bottom:6px;}
+.modal .close-row{display:flex; justify-content:flex-end; margin-top:20px;}
+.vocab-card{
+  background:var(--panel-alt);
+  border-left:3px solid var(--command);
+  border-radius:6px;
+  padding:12px 14px;
+  margin-top:14px;
+  font-size:13px;
+  line-height:1.6;
+}
+.vocab-term{font-family:var(--font-mono); color:var(--command); font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.06em; display:block; margin-bottom:4px;}
+.field-manual-section{margin-bottom:20px;}
+.field-manual-section h3{font-size:18px; color:var(--amber); margin-bottom:6px;}
+.field-manual-section p{font-size:14px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;}
+.mini-diagram{display:flex; gap:24px; margin-top:10px; flex-wrap:wrap;}
+.mini-diagram svg{background:var(--panel-alt); border-radius:8px; border:1px solid var(--border);}
+.mini-diagram figcaption{font-family:var(--font-mono); font-size:11px; color:var(--text-dim); text-align:center; margin-top:6px;}
+
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0;}
+.stat-box{background:var(--panel-alt); border:1px solid var(--border); border-radius:8px; padding:12px;}
+.stat-box .num{font-family:var(--font-display); font-size:28px; font-weight:800; color:var(--command);}
+.stat-box .lbl{font-family:var(--font-mono); font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em;}
+.newbest{color:var(--green); font-family:var(--font-mono); font-size:12px; margin-top:4px;}
+
+.debrief-body{font-size:14px; color:var(--text-muted); line-height:1.6;}
+.debrief-title{display:flex; align-items:center; gap:10px; margin-bottom:4px;}
+.debrief-title .wave-num{font-family:var(--font-mono); color:var(--text-dim); font-size:13px;}
+
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--border-bright); border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+@media (prefers-reduced-motion: reduce){
+  .pulse-dash{animation:none;}
+  .spark{animation:none; opacity:0;}
+  .btn-primary:hover{transform:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== TITLE SCREEN ===================== -->
+<div id="title-screen" class="screen">
+  <div class="eyebrow">AP CSP &middot; Big Idea 4 &middot; Networks &amp; the Internet</div>
+  <h1 class="title-mark">LIFELINE</h1>
+  <div class="eyebrow" style="color:var(--text-muted); font-size:13px;">GRID OPS &mdash; DISASTER COMMS DIVISION</div>
+  <p class="title-sub">A storm has taken out half the region's comm towers. Shelters, hospitals, and field teams need a live line to Command &mdash; and it's your grid. Read every network before it breaks. Then keep it breathing.</p>
+  <svg class="title-diagram" id="title-svg" viewBox="0 0 560 160"></svg>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-start">Start Shift</button>
+    <button class="btn btn-secondary" id="btn-manual">Field Manual</button>
+  </div>
+  <button class="btn-ghost" id="btn-clear-best" style="margin-top:8px;">Reset best run</button>
+</div>
+
+<!-- ===================== GAME SCREEN ===================== -->
+<div id="game-screen" class="screen hidden">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="brand">LIFELINE</span>
+      <span class="stat-chip wave">WAVE <b id="stat-wave">1</b></span>
+      <span class="stat-chip score">SCORE <b id="stat-score">0</b></span>
+      <span class="stat-chip">STREAK <b id="stat-streak">0</b></span>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-ghost" id="btn-manual-2">FIELD MANUAL</button>
+      <button class="btn-ghost" id="btn-end-shift">END SHIFT</button>
+    </div>
+  </div>
+
+  <div class="main-area">
+    <div class="canvas-panel">
+      <div class="phase-banner">
+        <span id="phase-label" class="tag">WAVE 1 &mdash; DIAGRAM REVIEW</span>
+        <span id="phase-sub"></span>
+      </div>
+      <svg id="network-svg" viewBox="0 0 900 560"></svg>
+    </div>
+
+    <div class="sidebar">
+      <!-- Uptime meter always visible during a wave -->
+      <div class="card" id="uptime-card">
+        <div class="card-title">Grid Uptime</div>
+        <div class="meter-track"><div class="meter-fill" id="uptime-fill" style="width:100%;"></div></div>
+        <div class="meter-row"><span id="uptime-pct">100%</span><span id="crews-count">2 crews</span></div>
+      </div>
+
+      <!-- Diagram phase question card -->
+      <div class="card hidden" id="question-card">
+        <div class="card-title">Read The Grid &mdash; Question <span id="q-index">1</span>/<span id="q-total">2</span></div>
+        <div class="q-timerbar"><div class="q-timerfill" id="q-timerfill" style="width:100%;"></div></div>
+        <div class="q-prompt" id="q-prompt">Loading...</div>
+        <div class="q-hint" id="q-hint"></div>
+        <div class="q-options" id="q-options"></div>
+        <div class="confirm-row hidden" id="q-confirm-row">
+          <button class="small-btn primary" id="q-confirm-btn">Confirm Selection</button>
+          <button class="small-btn" id="q-clear-btn">Clear</button>
+        </div>
+        <div class="feedback-box" id="q-feedback"></div>
+      </div>
+
+      <!-- Defense phase timer -->
+      <div class="card hidden" id="defense-card">
+        <div class="card-title">Wave Timer</div>
+        <div class="meter-track"><div class="meter-fill" id="defense-timer-fill" style="width:100%; background:linear-gradient(90deg, var(--blue), #2f7fb9);"></div></div>
+        <div class="meter-row"><span id="defense-time-left">30s</span><span id="defense-score-gain">+0 this wave</span></div>
+      </div>
+
+      <!-- Repair crews -->
+      <div class="card hidden" id="crews-card">
+        <div class="card-title">Repair Crews &mdash; click one, then click a downed link</div>
+        <div class="crew-list" id="crew-list"></div>
+      </div>
+
+      <!-- Event log -->
+      <div class="card hidden" id="log-card">
+        <div class="card-title">Ops Log</div>
+        <div class="log-feed" id="log-feed"></div>
+      </div>
+
+      <!-- Instructions (shown at wave start briefly / diagram phase) -->
+      <div class="card" id="legend-card">
+        <div class="card-title">Legend</div>
+        <div class="instructions-text" id="legend-text">
+          <span style="color:var(--command);">&#9679;</span> Command &nbsp;
+          <span style="color:var(--blue);">&#9670;</span> Relay &nbsp;
+          <span style="color:var(--green);">&#9632;</span> Hospital / Shelter<br>
+          <span style="color:var(--green);">Green</span> link = up &middot;
+          <span style="color:var(--red);">Red</span> = down &middot;
+          <span style="color:var(--amber);">Amber</span> = rerouted
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FIELD MANUAL MODAL ===================== -->
+<div class="modal-backdrop hidden" id="manual-modal">
+  <div class="modal">
+    <h2>Field Manual</h2>
+    <p class="instructions-text" style="margin-bottom:18px;">Everything on the exam about keeping a network alive, in three ideas.</p>
+
+    <div class="field-manual-section">
+      <h3>Redundancy</h3>
+      <p>A network has <b>redundancy</b> when there's more than one path between two points. If one path goes down, traffic still gets through &mdash; just by a different route. Redundancy is what makes a network able to survive damage.</p>
+    </div>
+
+    <div class="field-manual-section">
+      <h3>Single Point of Failure (SPOF)</h3>
+      <p>A <b>single point of failure</b> is a link or device that, if it fails, cuts off part of the network with no other way through. Spotting the SPOF means tracing every path a site has back to Command &mdash; if there's only one path, that path is a SPOF.</p>
+    </div>
+
+    <div class="field-manual-section">
+      <h3>Fault Tolerance</h3>
+      <p>A system is <b>fault-tolerant</b> if it keeps working even when a piece of it fails. The real Internet is designed this way on purpose: routers automatically send packets around outages, using whatever redundant paths exist. No redundancy, no fault tolerance &mdash; that's the whole game.</p>
+    </div>
+
+    <div class="mini-diagram">
+      <figure>
+        <svg width="240" height="130" viewBox="0 0 240 130">
+          <line x1="30" y1="65" x2="210" y2="65" stroke="#e5484d" stroke-width="4"/>
+          <circle cx="30" cy="65" r="16" fill="#182238" stroke="#ffb020" stroke-width="2"/>
+          <text x="30" y="69" text-anchor="middle" fill="#e7ecf5" font-family="JetBrains Mono" font-size="10">CMD</text>
+          <circle cx="210" cy="65" r="16" fill="#182238" stroke="#3ddc84" stroke-width="2"/>
+          <text x="210" y="69" text-anchor="middle" fill="#e7ecf5" font-family="JetBrains Mono" font-size="10">H1</text>
+          <text x="120" y="45" text-anchor="middle" fill="#e5484d" font-family="JetBrains Mono" font-size="10">SPOF</text>
+        </svg>
+        <figcaption>One path = single point of failure</figcaption>
+      </figure>
+      <figure>
+        <svg width="240" height="130" viewBox="0 0 240 130">
+          <line x1="30" y1="55" x2="210" y2="55" stroke="#3ddc84" stroke-width="4"/>
+          <line x1="30" y1="75" x2="210" y2="75" stroke="#3ddc84" stroke-width="4"/>
+          <circle cx="30" cy="65" r="16" fill="#182238" stroke="#ffb020" stroke-width="2"/>
+          <text x="30" y="69" text-anchor="middle" fill="#e7ecf5" font-family="JetBrains Mono" font-size="10">CMD</text>
+          <circle cx="210" cy="65" r="16" fill="#182238" stroke="#3ddc84" stroke-width="2"/>
+          <text x="210" y="69" text-anchor="middle" fill="#e7ecf5" font-family="JetBrains Mono" font-size="10">H1</text>
+          <text x="120" y="98" text-anchor="middle" fill="#3ddc84" font-family="JetBrains Mono" font-size="10">redundant</text>
+        </svg>
+        <figcaption>Two paths = fault-tolerant</figcaption>
+      </figure>
+    </div>
+
+    <div class="field-manual-section" style="margin-top:20px;">
+      <h3>How a shift works</h3>
+      <p>Each wave: first you <b>read the grid</b> &mdash; a few questions about the network on screen. Then the storm hits and you <b>defend it live</b> &mdash; links and towers fail, you dispatch repair crews to fix downed links before Grid Uptime hits zero. Towers (relays) that get destroyed stay down for the wave &mdash; only redundancy saves those sites. Waves get bigger and meaner the longer you survive. There's no game over &mdash; just how long your grid holds.</p>
+    </div>
+
+    <div class="close-row"><button class="btn btn-primary" id="btn-manual-close">Got it</button></div>
+  </div>
+</div>
+
+<!-- ===================== DEBRIEF MODAL ===================== -->
+<div class="modal-backdrop hidden" id="debrief-modal">
+  <div class="modal">
+    <div class="debrief-title"><h2 id="debrief-headline">Wave Complete</h2><span class="wave-num" id="debrief-wave-num">WAVE 1</span></div>
+    <div class="stat-grid" id="debrief-stats"></div>
+    <div class="debrief-body" id="debrief-narrative"></div>
+    <div class="vocab-card hidden" id="debrief-vocab">
+      <span class="vocab-term" id="vocab-term">Term</span>
+      <span id="vocab-def">Definition</span>
+    </div>
+    <div class="close-row"><button class="btn btn-primary" id="btn-next-wave">Next Wave &rarr;</button></div>
+  </div>
+</div>
+
+<!-- ===================== SUMMARY MODAL ===================== -->
+<div class="modal-backdrop hidden" id="summary-modal">
+  <div class="modal">
+    <h2>Shift Report</h2>
+    <p class="instructions-text">Here's how the grid held up.</p>
+    <div class="stat-grid" id="summary-stats"></div>
+    <div id="summary-best"></div>
+    <div class="close-row" style="gap:10px;">
+      <button class="btn btn-secondary" id="btn-back-title">Title Screen</button>
+      <button class="btn btn-primary" id="btn-play-again">New Shift</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   GRAPH ENGINE
+   ========================================================= */
+
+function buildWave(wave, rng){
+  rng = rng || Math.random;
+  const numSites = Math.min(3 + Math.floor(wave/2), 8);
+  const numRelays = wave < 3 ? 0 : Math.min(1 + Math.floor((wave-3)/2), 4);
+  const nodes = {};
+  const edges = [];
+  let edgeSeq = 0;
+
+  const cmd = {id:'CMD', type:'command', label:'CMD', kind:'command', alive:true};
+  nodes.CMD = cmd;
+
+  const relays = [];
+  for (let i=0;i<numRelays;i++){
+    const r = {id:'R'+(i+1), type:'relay', label:'R'+(i+1), kind:'relay', alive:true};
+    nodes[r.id]=r; relays.push(r);
+  }
+
+  const sites=[];
+  for (let i=0;i<numSites;i++){
+    const kind = (i%2===0)?'hospital':'shelter';
+    const s = {id:'N'+(i+1), type:'site', label:(kind==='hospital'?'H':'S')+(Math.floor(i/2)+1), kind, alive:true};
+    nodes[s.id]=s; sites.push(s);
+  }
+
+  function addEdge(a,b){
+    if (a===b) return null;
+    if (edges.some(e=> (e.a===a&&e.b===b)||(e.a===b&&e.b===a))) return null;
+    const e = {id:'E'+(++edgeSeq), a, b, alive:true, failedAt:null, repairing:false, repairProgress:0, repairCrew:null};
+    edges.push(e);
+    return e;
+  }
+
+  relays.forEach((r,i)=>{
+    if (i===0 || rng() < 0.6) addEdge(cmd.id, r.id);
+    else {
+      const parent = relays[Math.floor(rng()*i)];
+      addEdge(parent.id, r.id);
+    }
+  });
+
+  const hubs = relays.length? relays.map(r=>r.id) : [cmd.id];
+  sites.forEach((s,i)=>{
+    let hub;
+    if (i < hubs.length) hub = hubs[i];
+    else hub = hubs[Math.floor(rng()*hubs.length)];
+    addEdge(hub, s.id);
+  });
+
+  const base = Math.floor(wave/2);
+  let redundancyBudget = Math.max(0, base + Math.floor(rng()*3) - 1);
+  if (rng() < 0.18) redundancyBudget += 2 + Math.floor(rng()*2);
+  const allIds = Object.keys(nodes);
+  let attempts=0, added=0;
+  while (added < redundancyBudget && attempts < 60){
+    attempts++;
+    const a = allIds[Math.floor(rng()*allIds.length)];
+    const b = allIds[Math.floor(rng()*allIds.length)];
+    if (a===b) continue;
+    const e = addEdge(a,b);
+    if (e) added++;
+  }
+
+  return {wave, nodes, edges, sites, relays, cmd};
+}
+
+function computeReachable(graph){
+  const {nodes, edges, cmd} = graph;
+  const adj = {};
+  Object.keys(nodes).forEach(id=>adj[id]=[]);
+  edges.forEach(e=>{
+    if (!e.alive) return;
+    if (!nodes[e.a].alive || !nodes[e.b].alive) return;
+    adj[e.a].push(e.b); adj[e.b].push(e.a);
+  });
+  const seen = new Set();
+  if (nodes[cmd.id].alive){
+    const stack=[cmd.id]; seen.add(cmd.id);
+    while(stack.length){
+      const cur = stack.pop();
+      adj[cur].forEach(n=>{ if(!seen.has(n)){ seen.add(n); stack.push(n);} });
+    }
+  }
+  return seen;
+}
+
+function analyzeFaultTolerance(graph){
+  const baseline = computeReachable(graph);
+  const baselineSites = graph.sites.filter(s=>baseline.has(s.id)).map(s=>s.id);
+  const spofEdges = [];
+  const spofNodes = [];
+  const safeEdges = [];
+  graph.edges.forEach(e=>{
+    e.alive=false;
+    const r = computeReachable(graph);
+    const impact = baselineSites.filter(id=>!r.has(id));
+    e.alive=true;
+    if (impact.length) spofEdges.push({edge:e, impact});
+    else safeEdges.push(e);
+  });
+  graph.relays.forEach(rl=>{
+    rl.alive=false;
+    const r = computeReachable(graph);
+    const impact = baselineSites.filter(id=> id!==rl.id && !r.has(id));
+    rl.alive=true;
+    if (impact.length) spofNodes.push({node:rl, impact});
+  });
+  return {spofEdges, spofNodes, safeEdges, baselineSites};
+}
+
+function neighborsOf(graph, nodeId, excludeEdgeId){
+  const out = [];
+  graph.edges.forEach(e=>{
+    if (e.id===excludeEdgeId) return;
+    if (!e.alive) return;
+    if (e.a===nodeId) out.push(e.b);
+    else if (e.b===nodeId) out.push(e.a);
+  });
+  return out;
+}
+
+function findFixCandidates(graph, spofEdge, rng){
+  rng = rng || Math.random;
+  const allIds = Object.keys(graph.nodes);
+  const pairs=[];
+  for (let a=0;a<allIds.length;a++){
+    for (let b=a+1;b<allIds.length;b++){
+      const idA=allIds[a], idB=allIds[b];
+      if (idA==='CMD'&&idB==='CMD') continue;
+      if (graph.edges.some(e=>(e.a===idA&&e.b===idB)||(e.a===idB&&e.b===idA))) continue;
+      pairs.push([idA,idB]);
+    }
+  }
+  for (let i=pairs.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); const t=pairs[i]; pairs[i]=pairs[j]; pairs[j]=t; }
+  const fixing=[], nonfixing=[];
+  for (const [a,b] of pairs){
+    const testEdge = {id:'TEST', a, b, alive:true};
+    graph.edges.push(testEdge);
+    spofEdge.edge.alive=false;
+    const r = computeReachable(graph);
+    const stillImpacted = spofEdge.impact.some(id=>!r.has(id));
+    spofEdge.edge.alive=true;
+    graph.edges.pop();
+    if (!stillImpacted) fixing.push([a,b]); else nonfixing.push([a,b]);
+    if (fixing.length>=1 && nonfixing.length>=3) break;
+  }
+  return {fixing, nonfixing};
+}
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+function layoutGraph(graph){
+  const W=900, H=560;
+  graph.cmd.x = 110; graph.cmd.y = H/2;
+  const relays = graph.relays;
+  const sites = graph.sites;
+  const relayX = relays.length ? 440 : null;
+  relays.forEach((r,i)=>{
+    const n = relays.length;
+    const pad = 90;
+    r.y = n===1 ? H/2 : pad + i*((H-2*pad)/(n-1));
+    r.x = relayX;
+  });
+  const siteX = relays.length ? 760 : 560;
+  sites.forEach((s,i)=>{
+    const n = sites.length;
+    const pad = 55;
+    s.y = n===1 ? H/2 : pad + i*((H-2*pad)/(n-1));
+    s.x = siteX + (i%2===0?0:0);
+  });
+}
+
+/* =========================================================
+   VOCAB BANK
+   ========================================================= */
+const VOCAB = {
+  spof: {term:'Single Point of Failure', def:"A link or device that, if it fails, disconnects part of the network because no other path exists. Finding the SPOF means finding the one path with no backup."},
+  redundancy: {term:'Redundancy', def:'Having more than one path between two points in a network. Redundant paths are what let traffic reroute automatically when one path fails.'},
+  faulttolerant: {term:'Fault Tolerance', def:'The ability of a system to keep working even when part of it fails. A network is fault-tolerant only where it has redundancy \u2014 everywhere else, a failure means an outage.'},
+  cascade: {term:'Cascading Failure', def:'When one failure overloads or breaks the backup path that was covering for it, causing a second failure. Redundancy protects against one failure at a time, not infinite failures.'},
+  destroyed: {term:'Permanent Node Loss', def:'A destroyed relay cannot be repaired mid-outage \u2014 real infrastructure damage takes more than a quick patch. Only pre-existing redundant paths can save the sites that depended on it.'}
+};
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+
+const state = {
+  wave: 1,
+  score: 0,
+  cleanStreak: 0,
+  maxCrews: 2,
+  graph: null,
+  analysis: null,
+  phase: 'idle',
+  uptime: 100,
+  waveHadStrike: false,
+  waveHadDowntime: false,
+  waveTags: new Set(),
+  diagram: { questions: [], index: 0, correctCount: 0, selection: new Set(), timer: null, timeLeft: 0, perQTime: 20, awaitingMulti: false },
+  defense: { elapsed:0, duration:30, crews:[], nextFailureAt:0, interval:null, scoreGained:0, armedCrewId:null },
+  run: { wavesCompleted:0, totalCorrect:0, totalQuestions:0, bestStreak:0 }
+};
+
+function resetRunState(){
+  state.wave = 1;
+  state.score = 0;
+  state.cleanStreak = 0;
+  state.maxCrews = 2;
+  state.run = { wavesCompleted:0, totalCorrect:0, totalQuestions:0, bestStreak:0 };
+}
+
+/* =========================================================
+   DOM HELPERS
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const svgNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent){
+  const e = document.createElementNS(svgNS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+/* =========================================================
+   RENDERING THE NETWORK DIAGRAM
+   ========================================================= */
+
+function statusColor(status){
+  return status==='down' ? 'var(--red)' : status==='rerouted' ? 'var(--amber)' : status==='repairing' ? 'var(--blue)' : 'var(--green)';
+}
+
+function edgeStatus(e){
+  if (!e.alive) return e.repairing ? 'repairing' : 'down';
+  return 'up';
+}
+
+// determine which sites are currently disconnected given live graph
+function currentDisconnectedSites(graph){
+  const reach = computeReachable(graph);
+  return graph.sites.filter(s=> s.alive && !reach.has(s.id));
+}
+
+function nodeShapePath(kind, cx, cy, r){
+  switch(kind){
+    case 'command': {
+      // hexagon
+      let pts=[];
+      for (let i=0;i<6;i++){
+        const ang = Math.PI/3*i - Math.PI/2;
+        pts.push((cx+r*Math.cos(ang)).toFixed(1)+','+(cy+r*Math.sin(ang)).toFixed(1));
+      }
+      return pts.join(' ');
+    }
+    case 'relay': {
+      // diamond
+      return [
+        (cx).toFixed(1)+','+(cy-r).toFixed(1),
+        (cx+r).toFixed(1)+','+(cy).toFixed(1),
+        (cx).toFixed(1)+','+(cy+r).toFixed(1),
+        (cx-r).toFixed(1)+','+(cy).toFixed(1)
+      ].join(' ');
+    }
+    case 'hospital': {
+      const s=r*0.9;
+      return [
+        (cx-s).toFixed(1)+','+(cy-s).toFixed(1),
+        (cx+s).toFixed(1)+','+(cy-s).toFixed(1),
+        (cx+s).toFixed(1)+','+(cy+s).toFixed(1),
+        (cx-s).toFixed(1)+','+(cy+s).toFixed(1)
+      ].join(' ');
+    }
+    default: return null; // shelter uses circle+triangle combo, handled separately
+  }
+}
+
+let clickHandlers = { node: null, edge: null };
+
+function renderGraph(graph, opts){
+  opts = opts || {};
+  const svg = $('network-svg');
+  svg.innerHTML = '';
+  const defs = el('defs', {}, svg);
+
+  const disconnected = new Set(currentDisconnectedSites(graph).map(s=>s.id));
+
+  // draw edges first
+  graph.edges.forEach(e=>{
+    const a = graph.nodes[e.a], b = graph.nodes[e.b];
+    const status = edgeStatus(e);
+    const group = el('g', {}, svg);
+    const hit = el('line', {x1:a.x, y1:a.y, x2:b.x, y2:b.y, class:'edge-hit'}, group);
+    const line = el('line', {
+      x1:a.x, y1:a.y, x2:b.x, y2:b.y,
+      class:'edge-line' + (status==='up' && !opts.diagramMode ? ' pulse-dash' : ''),
+      stroke: statusColor(status),
+      'stroke-dasharray': status==='down' ? '2 6' : (status==='up' && !opts.diagramMode ? '6 6' : 'none')
+    }, group);
+    if (opts.onEdgeClick && opts.clickableEdgeIds && opts.clickableEdgeIds.has(e.id)){
+      hit.classList.add('clickable');
+      hit.addEventListener('click', ()=>opts.onEdgeClick(e));
+      hit.classList.add('selectable-hover');
+    }
+    if (opts.highlightEdgeIds && opts.highlightEdgeIds.has(e.id)){
+      line.setAttribute('stroke-width','5');
+      line.setAttribute('stroke', 'var(--command)');
+    }
+  });
+
+  // draw nodes
+  Object.values(graph.nodes).forEach(n=>{
+    const g = el('g', {class:'node-group' + (opts.clickableNodeIds && opts.clickableNodeIds.has(n.id) ? '' : ' not-clickable'), transform:`translate(${n.x},${n.y})`}, svg);
+    let fill = 'var(--panel-raised)';
+    let stroke = 'var(--border-bright)';
+    if (n.type==='command') stroke = 'var(--command)';
+    else if (!n.alive) { fill = 'var(--red-dim)'; stroke='var(--red)'; }
+    else if (n.type==='site' && disconnected.has(n.id)) { fill='var(--red-dim)'; stroke='var(--red)'; }
+    else if (n.type==='relay') stroke='var(--blue)';
+    else if (n.type==='site') stroke='var(--green)';
+
+    if (opts.selectedNodeIds && opts.selectedNodeIds.has(n.id)){ stroke='var(--command)'; }
+
+    const r = n.type==='command' ? 26 : n.type==='relay' ? 20 : 20;
+    if (n.type==='command'){
+      el('polygon', {points:nodeShapePath('command',0,0,r), fill, stroke, 'stroke-width':2.5, class:'node-shape'}, g);
+    } else if (n.type==='relay'){
+      el('polygon', {points:nodeShapePath('relay',0,0,r), fill, stroke, 'stroke-width':2.5, class:'node-shape'}, g);
+    } else if (n.kind==='hospital'){
+      el('rect', {x:-r*0.85, y:-r*0.85, width:r*1.7, height:r*1.7, rx:4, fill, stroke, 'stroke-width':2.5, class:'node-shape'}, g);
+      el('line', {x1:-8, y1:0, x2:8, y2:0, stroke:stroke, 'stroke-width':2.5}, g);
+      el('line', {x1:0, y1:-8, x2:0, y2:8, stroke:stroke, 'stroke-width':2.5}, g);
+    } else {
+      el('circle', {r, fill, stroke, 'stroke-width':2.5, class:'node-shape'}, g);
+      el('path', {d:`M -9 4 L 0 -8 L 9 4 Z`, fill:'none', stroke:stroke, 'stroke-width':2}, g);
+    }
+    el('text', {y:5, class:'node-label'}, g).textContent = n.label;
+    el('text', {y:r+14, class:'node-sub'}, g).textContent = n.type==='command' ? 'COMMAND' : n.type==='relay' ? 'RELAY' : (n.kind==='hospital'?'HOSPITAL':'SHELTER');
+
+    if (opts.onNodeClick && opts.clickableNodeIds && opts.clickableNodeIds.has(n.id)){
+      g.addEventListener('click', ()=>opts.onNodeClick(n));
+      g.classList.add('selectable-hover');
+    }
+  });
+}
+
+/* =========================================================
+   TITLE SCREEN MINI DIAGRAM (decorative, non-interactive)
+   ========================================================= */
+function renderTitleDiagram(){
+  const svg = $('title-svg');
+  svg.innerHTML='';
+  const nodes = [
+    {x:40,y:80,label:'CMD',type:'command'},
+    {x:220,y:40,label:'R1',type:'relay'},
+    {x:220,y:120,label:'R2',type:'relay'},
+    {x:420,y:20,label:'H1',type:'site'},
+    {x:420,y:60,label:'S1',type:'site'},
+    {x:420,y:100,label:'H2',type:'site'},
+    {x:420,y:140,label:'S2',type:'site'}
+  ];
+  const edges = [[0,1],[0,2],[1,2],[1,3],[1,4],[2,5],[2,6],[3,4]];
+  edges.forEach(([a,b])=>{
+    el('line', {x1:nodes[a].x,y1:nodes[a].y,x2:nodes[b].x,y2:nodes[b].y, stroke:'var(--border-bright)', 'stroke-width':2.5, class:'pulse-dash'}, svg);
+  });
+  nodes.forEach(n=>{
+    const g = el('g', {transform:`translate(${n.x},${n.y})`}, svg);
+    const stroke = n.type==='command'?'var(--command)':n.type==='relay'?'var(--blue)':'var(--green)';
+    el('circle', {r:14, fill:'var(--panel-raised)', stroke, 'stroke-width':2}, g);
+    el('text', {y:3, class:'node-label', style:'font-size:9px;'}, g).textContent = n.label;
+  });
+}
+renderTitleDiagram();
+
+/* =========================================================
+   DIAGRAM PHASE: QUESTION GENERATION
+   ========================================================= */
+
+function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function generateQuestions(graph, analysis, count){
+  const pool = [];
+
+  // Type 1: click the SPOF
+  pool.push(function(){
+    const hasSpof = analysis.spofEdges.length>0 || analysis.spofNodes.length>0;
+    let targetIds = new Set();
+    let targetEdgeIds = new Set();
+    let targetNodeIds = new Set();
+    analysis.spofEdges.forEach(x=>targetEdgeIds.add(x.edge.id));
+    analysis.spofNodes.forEach(x=>targetNodeIds.add(x.node.id));
+    return {
+      type:'spof-click',
+      prompt: hasSpof ? "Click the network's Single Point of Failure \u2014 the one link or relay that would knock out a site if it failed." : "Click the Single Point of Failure. If you think there isn't one, use the button below.",
+      hint: 'Click a link or a relay tower on the diagram.',
+      clickableEdgeIds: targetEdgeIds.size? new Set(graph.edges.map(e=>e.id)) : new Set(graph.edges.map(e=>e.id)),
+      clickableNodeIds: new Set(graph.relays.map(r=>r.id)),
+      needsNoSpofButton: true,
+      check(clickedId){
+        if (clickedId==='__NO_SPOF__') return !hasSpof;
+        return targetEdgeIds.has(clickedId) || targetNodeIds.has(clickedId);
+      },
+      explain: hasSpof ? "That link/relay was the only path keeping at least one site connected \u2014 no backup route existed for it." : "This network has no single point of failure right now \u2014 every site has at least one redundant path to Command.",
+      vocabTag: hasSpof ? 'spof' : 'faulttolerant'
+    };
+  });
+
+  // Type 2: fault tolerant yes/no
+  pool.push(function(){
+    const isFT = analysis.spofEdges.length===0 && analysis.spofNodes.length===0;
+    return {
+      type:'yesno',
+      prompt: 'Is this network fault-tolerant \u2014 meaning every site has a backup path if one link fails?',
+      hint: '',
+      options: ['Yes, it\u2019s fault-tolerant', 'No, there\u2019s a single point of failure'],
+      check(choiceIndex){ return (choiceIndex===0) === isFT; },
+      explain: isFT ? 'Correct \u2014 every site keeps a path to Command even if any one link fails.' : 'Correct \u2014 at least one link or relay has no backup, so it\'s a single point of failure.',
+      vocabTag: isFT ? 'faulttolerant' : 'spof'
+    };
+  });
+
+  // Type 3: impact select (multi-select sites disconnected if X fails)
+  if (analysis.spofEdges.length>0 || analysis.safeEdges.length>0){
+    pool.push(function(){
+      const useSpof = analysis.spofEdges.length>0 && Math.random()<0.65;
+      let targetEdge, impactIds;
+      if (useSpof){
+        const pick = pickRandom(analysis.spofEdges);
+        targetEdge = pick.edge; impactIds = new Set(pick.impact);
+      } else if (analysis.safeEdges.length>0){
+        targetEdge = pickRandom(analysis.safeEdges); impactIds = new Set();
+      } else {
+        const pick = pickRandom(analysis.spofEdges);
+        targetEdge = pick.edge; impactIds = new Set(pick.impact);
+      }
+      const a = graph.nodes[targetEdge.a], b = graph.nodes[targetEdge.b];
+      return {
+        type:'impact-select',
+        prompt: `If the link between ${a.label} and ${b.label} fails, which site(s) lose contact with Command? Click all that apply, then confirm. (Click nothing + confirm if none do.)`,
+        hint: 'Multi-select on the diagram, then hit Confirm.',
+        clickableNodeIds: new Set(graph.sites.map(s=>s.id)),
+        highlightEdgeIds: new Set([targetEdge.id]),
+        multi: true,
+        check(selectedIds){
+          if (selectedIds.size!==impactIds.size) return false;
+          for (const id of selectedIds) if (!impactIds.has(id)) return false;
+          return true;
+        },
+        explain: impactIds.size ? `${[...impactIds].map(id=>graph.nodes[id].label).join(', ')} would lose contact \u2014 that link was their only path.` : 'No sites lose contact \u2014 they all have a redundant path around that link.',
+        vocabTag: impactIds.size ? 'spof' : 'redundancy'
+      };
+    });
+  }
+
+  // Type 4: add link to fix SPOF (MCQ)
+  if (analysis.spofEdges.length>0){
+    pool.push(function(){
+      const target = pickRandom(analysis.spofEdges);
+      const res = findFixCandidates(graph, target, Math.random);
+      if (res.fixing.length===0) return null;
+      const correct = res.fixing[0];
+      const distractors = res.nonfixing.slice(0,2);
+      const options = [correct, ...distractors];
+      for (let i=options.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=options[i]; options[i]=options[j]; options[j]=t; }
+      const correctKey = correct.join('|');
+      const a = graph.nodes[target.edge.a], b = graph.nodes[target.edge.b];
+      return {
+        type:'mcq',
+        prompt: `The link ${a.label}\u2013${b.label} is a single point of failure. Which added link would fix it?`,
+        hint: '',
+        options: options.map(([x,y])=>`Add link: ${graph.nodes[x].label} \u2013 ${graph.nodes[y].label}`),
+        correctIndex: options.findIndex(o=>o.join('|')===correctKey),
+        explain: `Adding ${graph.nodes[correct[0]].label}\u2013${graph.nodes[correct[1]].label} gives the affected site(s) a second path that doesn't run through the broken link.`,
+        vocabTag: 'redundancy'
+      };
+    });
+  }
+
+  // Type 5: reroute prediction
+  pool.push(function(){
+    const candidates = graph.sites.filter(s=>{
+      const deg = graph.edges.filter(e=>(e.a===s.id||e.b===s.id)).length;
+      return deg>=2;
+    });
+    if (candidates.length===0) return null;
+    const site = pickRandom(candidates);
+    const myEdges = graph.edges.filter(e=>e.a===site.id||e.b===site.id);
+    const primary = pickRandom(myEdges);
+    primary.alive=false;
+    const reach = computeReachable(graph);
+    primary.alive=true;
+    if (!reach.has(site.id)) return null; // that edge was actually a SPOF for it, not a reroute case
+    const altNeighbors = neighborsOf(graph, site.id, primary.id).filter(id=>reach.has(id));
+    if (altNeighbors.length===0) return null;
+    const correctId = altNeighbors[0];
+    const otherHub = primary.a===site.id ? primary.b : primary.a;
+    return {
+      type:'node-click',
+      prompt: `Link ${site.label}\u2013${graph.nodes[otherHub].label} fails. Click the node that keeps ${site.label} connected to Command instead.`,
+      hint: 'Click a node on the diagram.',
+      clickableNodeIds: new Set(Object.keys(graph.nodes).filter(id=>id!==site.id)),
+      highlightEdgeIds: new Set([primary.id]),
+      check(clickedId){ return clickedId===correctId; },
+      explain: `${site.label} still reaches Command through ${graph.nodes[correctId].label} \u2014 that's the redundant path.`,
+      vocabTag: 'redundancy'
+    };
+  });
+
+  // build final list
+  const built = [];
+  const usedTypes = [];
+  let guard=0;
+  while (built.length<count && guard<40){
+    guard++;
+    const gen = pickRandom(pool);
+    const q = gen();
+    if (!q) continue;
+    if (built.length>0 && built[built.length-1].type===q.type && pool.length>2) continue;
+    built.push(q);
+  }
+  return built;
+}
+
+/* =========================================================
+   DIAGRAM PHASE FLOW
+   ========================================================= */
+
+function startDiagramPhase(){
+  state.phase = 'diagram';
+  const qCount = 2 + (state.wave%3===0?1:0);
+  state.diagram.questions = generateQuestions(state.graph, state.analysis, qCount);
+  state.diagram.index = 0;
+  state.diagram.correctCount = 0;
+  state.diagram.perQTime = Math.max(12, 22-state.wave);
+
+  $('question-card').classList.remove('hidden');
+  $('defense-card').classList.add('hidden');
+  $('crews-card').classList.add('hidden');
+  $('log-card').classList.add('hidden');
+  $('phase-label').textContent = `WAVE ${state.wave} \u2014 DIAGRAM REVIEW`;
+  $('phase-sub').textContent = 'Read the network before the storm hits';
+
+  renderGraph(state.graph, {diagramMode:true});
+  askQuestion();
+}
+
+function askQuestion(){
+  const q = state.diagram.questions[state.diagram.index];
+  if (!q){ finishDiagramPhase(); return; }
+  state.diagram.selection = new Set();
+  $('q-index').textContent = state.diagram.index+1;
+  $('q-total').textContent = state.diagram.questions.length;
+  $('q-prompt').textContent = q.prompt;
+  $('q-hint').textContent = q.hint || '';
+  $('q-feedback').className = 'feedback-box';
+  $('q-feedback').textContent = '';
+  $('q-options').innerHTML = '';
+  $('q-confirm-row').classList.toggle('hidden', !q.multi);
+
+  let clickableEdgeIds = q.clickableEdgeIds || new Set();
+  let clickableNodeIds = q.clickableNodeIds || new Set();
+
+  if (q.type==='yesno' || q.type==='mcq'){
+    q.options.forEach((opt,i)=>{
+      const btn = document.createElement('button');
+      btn.className='opt-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', ()=>{
+        const ok = q.type==='yesno' ? q.check(i) : (i===q.correctIndex);
+        lockOptionButtons(ok, i);
+        resolveAnswer(ok, q);
+      });
+      $('q-options').appendChild(btn);
+    });
+  }
+
+  if (q.needsNoSpofButton){
+    const btn = document.createElement('button');
+    btn.className='opt-btn';
+    btn.textContent = "No SPOF \u2014 this network is fully fault-tolerant";
+    btn.addEventListener('click', ()=>{
+      const ok = q.check('__NO_SPOF__');
+      resolveAnswer(ok, q);
+    });
+    $('q-options').appendChild(btn);
+  }
+
+  renderGraph(state.graph, {
+    diagramMode:true,
+    clickableEdgeIds: (q.type==='spof-click') ? clickableEdgeIds : new Set(),
+    clickableNodeIds: (q.type==='spof-click' || q.type==='node-click' || q.type==='impact-select') ? clickableNodeIds : new Set(),
+    highlightEdgeIds: q.highlightEdgeIds || new Set(),
+    selectedNodeIds: state.diagram.selection,
+    onEdgeClick: (q.type==='spof-click') ? (e)=>{ resolveAnswer(q.check(e.id), q); } : null,
+    onNodeClick: (q.type==='spof-click') ? (n)=>{ resolveAnswer(q.check(n.id), q); }
+                 : (q.type==='node-click') ? (n)=>{ resolveAnswer(q.check(n.id), q); }
+                 : (q.type==='impact-select') ? (n)=>{ toggleSelection(n.id); reRenderForQuestion(q); }
+                 : null
+  });
+
+  if (q.type==='impact-select'){
+    $('q-confirm-btn').onclick = ()=>{ resolveAnswer(q.check(state.diagram.selection), q); };
+    $('q-clear-btn').onclick = ()=>{ state.diagram.selection.clear(); reRenderForQuestion(q); };
+  }
+
+  startQuestionTimer();
+}
+
+function reRenderForQuestion(q){
+  renderGraph(state.graph, {
+    diagramMode:true,
+    clickableNodeIds: q.clickableNodeIds || new Set(),
+    highlightEdgeIds: q.highlightEdgeIds || new Set(),
+    selectedNodeIds: state.diagram.selection,
+    onNodeClick: (n)=>{ toggleSelection(n.id); reRenderForQuestion(q); }
+  });
+}
+
+function toggleSelection(id){
+  if (state.diagram.selection.has(id)) state.diagram.selection.delete(id);
+  else state.diagram.selection.add(id);
+}
+
+function lockOptionButtons(ok, chosenIndex){
+  const btns = $('q-options').querySelectorAll('.opt-btn');
+  btns.forEach((b,i)=>{
+    b.disabled = true;
+    if (i===chosenIndex) b.classList.add(ok?'correct':'incorrect');
+  });
+}
+
+function startQuestionTimer(){
+  clearInterval(state.diagram.timer);
+  state.diagram.timeLeft = state.diagram.perQTime;
+  $('q-timerfill').style.width='100%';
+  state.diagram.timer = setInterval(()=>{
+    state.diagram.timeLeft -= 0.1;
+    const pct = Math.max(0, state.diagram.timeLeft/state.diagram.perQTime*100);
+    $('q-timerfill').style.width = pct+'%';
+    if (state.diagram.timeLeft<=0){
+      clearInterval(state.diagram.timer);
+      resolveAnswer(false, state.diagram.questions[state.diagram.index], true);
+    }
+  }, 100);
+}
+
+function resolveAnswer(correct, q, timedOut){
+  clearInterval(state.diagram.timer);
+  state.run.totalQuestions++;
+  if (correct) { state.run.totalCorrect++; state.diagram.correctCount++; }
+  else { applyStrike(); }
+
+  const fb = $('q-feedback');
+  fb.classList.add('show');
+  fb.classList.add(correct?'correct':'incorrect');
+  fb.textContent = (timedOut? "Time's up. " : (correct? 'Correct. ' : 'Not quite. ')) + q.explain;
+  state.waveTags.add(q.vocabTag);
+
+  setTimeout(()=>{
+    fb.classList.remove('show','correct','incorrect');
+    state.diagram.index++;
+    askQuestion();
+  }, correct? 1400 : 2400);
+}
+
+function applyStrike(){
+  state.waveHadStrike = true;
+  setUptime(state.uptime - 15);
+}
+
+function finishDiagramPhase(){
+  $('question-card').classList.add('hidden');
+  if (state.uptime<=0){ endWave('strikeout'); return; }
+  startDefensePhase();
+}
+
+/* =========================================================
+   UPTIME METER
+   ========================================================= */
+function setUptime(val){
+  state.uptime = Math.max(0, Math.min(100, val));
+  const fill = $('uptime-fill');
+  fill.style.width = state.uptime+'%';
+  fill.className = 'meter-fill' + (state.uptime<30?' crit':state.uptime<60?' warn':'');
+  $('uptime-pct').textContent = Math.round(state.uptime)+'%';
+  if (state.uptime<100) state.waveHadDowntime = true;
+}
+
+/* =========================================================
+   DEFENSE PHASE
+   ========================================================= */
+
+function startDefensePhase(){
+  state.phase = 'defense';
+  $('defense-card').classList.remove('hidden');
+  $('crews-card').classList.remove('hidden');
+  $('log-card').classList.remove('hidden');
+  $('phase-label').textContent = `WAVE ${state.wave} \u2014 LIVE DEFENSE`;
+  $('phase-sub').textContent = 'Failures incoming. Dispatch crews to downed links.';
+  $('log-feed').innerHTML = '';
+
+  const d = state.defense;
+  d.elapsed = 0;
+  d.duration = 20 + Math.min(state.wave,8)*2;
+  d.scoreGained = 0;
+  d.armedCrewId = null;
+  d.crews = [];
+  for (let i=0;i<state.maxCrews;i++) d.crews.push({id:'crew'+i, busy:false, edgeId:null, progress:0});
+  d.nextFailureAt = 2 + Math.random()*2;
+
+  $('crews-count').textContent = state.maxCrews+' crews';
+  renderCrews();
+  renderGraph(state.graph, buildDefenseRenderOpts());
+  updateDefenseTimerUI();
+
+  clearInterval(d.interval);
+  d.interval = setInterval(defenseTick, 100);
+}
+
+function buildDefenseRenderOpts(){
+  const d = state.defense;
+  const downEdges = new Set(state.graph.edges.filter(e=>!e.alive && !e.repairing).map(e=>e.id));
+  return {
+    clickableEdgeIds: d.armedCrewId ? downEdges : new Set(),
+    onEdgeClick: d.armedCrewId ? (e)=>tryDeployToEdge(e) : null,
+    clickableNodeIds: new Set()
+  };
+}
+
+function failureIntervalForWave(){
+  const base = Math.max(3.2, 7 - state.wave*0.28);
+  return base * (0.75 + Math.random()*0.6);
+}
+
+function defenseTick(){
+  const d = state.defense;
+  d.elapsed += 0.1;
+  updateDefenseTimerUI();
+
+  if (d.elapsed >= d.nextFailureAt){
+    triggerFailure();
+    d.nextFailureAt = d.elapsed + failureIntervalForWave();
+    if (state.wave>=5 && Math.random()<0.22){
+      // cascade: schedule a near-simultaneous second failure
+      setTimeout(()=>{ if (state.phase==='defense') triggerFailure(true); }, 500+Math.random()*400);
+    }
+  }
+
+  d.crews.forEach(c=>{
+    if (c.busy){
+      c.progress += 0.1;
+      const dur = 4 + (state.wave>=6?1:0);
+      if (c.progress>=dur) completeRepair(c);
+    }
+  });
+
+  const disc = currentDisconnectedSites(state.graph);
+  if (disc.length>0){
+    setUptime(state.uptime - 0.25*disc.length);
+    d.scoreGained += 0; // no points while down
+  } else {
+    setUptime(state.uptime + 0.05);
+    const connectedCount = state.graph.sites.filter(s=>s.alive).length;
+    const gain = 0.2*connectedCount;
+    state.score += gain;
+    d.scoreGained += gain;
+  }
+  $('stat-score').textContent = Math.round(state.score);
+  $('defense-score-gain').textContent = '+'+Math.round(d.scoreGained)+' this wave';
+  renderCrews();
+
+  if (state.uptime<=0){ clearInterval(d.interval); endWave('gridfailure'); return; }
+  if (d.elapsed>=d.duration){ clearInterval(d.interval); endWave('survived'); return; }
+}
+
+function updateDefenseTimerUI(){
+  const d = state.defense;
+  const left = Math.max(0, d.duration-d.elapsed);
+  $('defense-time-left').textContent = Math.ceil(left)+'s';
+  $('defense-timer-fill').style.width = Math.max(0,(left/d.duration*100))+'%';
+}
+
+function triggerFailure(isCascade){
+  const graph = state.graph;
+  const beforeReach = computeReachable(graph);
+  const liveEdges = graph.edges.filter(e=>e.alive && !e.repairing);
+  const liveRelays = graph.relays.filter(r=>r.alive);
+  if (liveEdges.length===0 && liveRelays.length===0) return;
+
+  const nodeProb = liveRelays.length ? Math.min(0.08+state.wave*0.025, 0.35) : 0;
+  const doNode = Math.random()<nodeProb;
+
+  if (doNode && liveRelays.length){
+    const relay = pickRandom(liveRelays);
+    relay.alive = false;
+    const afterReach = computeReachable(graph);
+    const newlyDown = graph.sites.filter(s=>beforeReach.has(s.id) && !afterReach.has(s.id));
+    if (newlyDown.length){
+      logEvent('destroyed', `RELAY DESTROYED: ${relay.label} \u2014 ${newlyDown.map(s=>s.label).join(', ')} offline. No repair possible this wave.`);
+      state.waveTags.add('destroyed');
+    } else {
+      logEvent('reroute', `RELAY DESTROYED: ${relay.label} \u2014 traffic rerouted, no sites affected.`);
+      state.waveTags.add('redundancy');
+      state.score += 30; 
+    }
+  } else if (liveEdges.length){
+    const edge = pickRandom(liveEdges);
+    edge.alive = false;
+    edge.failedAt = state.defense.elapsed;
+    const afterReach = computeReachable(graph);
+    const newlyDown = graph.sites.filter(s=>beforeReach.has(s.id) && !afterReach.has(s.id));
+    const a = graph.nodes[edge.a].label, b = graph.nodes[edge.b].label;
+    if (newlyDown.length){
+      logEvent('down', `LINK DOWN: ${a}\u2013${b} \u2014 ${newlyDown.map(s=>s.label).join(', ')} lost contact.`);
+      state.waveTags.add('spof');
+    } else {
+      logEvent('reroute', `LINK DOWN: ${a}\u2013${b} \u2014 rerouted automatically, no impact.`);
+      state.waveTags.add('redundancy');
+      state.score += 30;
+    }
+  }
+  if (isCascade) state.waveTags.add('cascade');
+  renderGraph(graph, buildDefenseRenderOpts());
+}
+
+function logEvent(cls, text){
+  const feed = $('log-feed');
+  const row = document.createElement('div');
+  row.className = 'log-entry '+cls;
+  row.textContent = text;
+  feed.insertBefore(row, feed.firstChild);
+  while (feed.children.length>30) feed.removeChild(feed.lastChild);
+}
+
+function renderCrews(){
+  const list = $('crew-list');
+  list.innerHTML='';
+  state.defense.crews.forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'crew-slot ' + (c.busy?'busy':(state.defense.armedCrewId===c.id?'armed':'idle'));
+    const dur = 4 + (state.wave>=6?1:0);
+    div.innerHTML = `<div class="crew-icon">${c.busy?'\u{1F527}':'\u{1F6E0}'}</div><div>${c.busy?'REPAIRING':(state.defense.armedCrewId===c.id?'ARMED':'READY')}</div>`;
+    if (c.busy){
+      const bar = document.createElement('div');
+      bar.className='crew-progress';
+      bar.style.width = Math.min(100, c.progress/dur*100)+'%';
+      div.appendChild(bar);
+    } else {
+      div.addEventListener('click', ()=>{
+        state.defense.armedCrewId = (state.defense.armedCrewId===c.id) ? null : c.id;
+        renderCrews();
+        renderGraph(state.graph, buildDefenseRenderOpts());
+      });
+    }
+    list.appendChild(div);
+  });
+}
+
+function tryDeployToEdge(edge){
+  const d = state.defense;
+  const crew = d.crews.find(c=>c.id===d.armedCrewId);
+  if (!crew || crew.busy) return;
+  if (edge.alive || edge.repairing) return;
+  crew.busy = true;
+  crew.edgeId = edge.id;
+  crew.progress = 0;
+  edge.repairing = true;
+  d.armedCrewId = null;
+  const a = state.graph.nodes[edge.a].label, b = state.graph.nodes[edge.b].label;
+  logEvent('reroute', `Crew dispatched to ${a}\u2013${b}.`);
+  renderCrews();
+  renderGraph(state.graph, buildDefenseRenderOpts());
+}
+
+function completeRepair(crew){
+  const edge = state.graph.edges.find(e=>e.id===crew.edgeId);
+  if (edge){
+    edge.alive = true;
+    edge.repairing = false;
+    const a = state.graph.nodes[edge.a].label, b = state.graph.nodes[edge.b].label;
+    const rapid = (state.defense.elapsed - (edge.failedAt||0)) < 6;
+    state.score += rapid ? 75 : 50;
+    logEvent('restore', `RESTORED: ${a}\u2013${b} back online.${rapid?' (Rapid Response bonus)':''}`);
+  }
+  crew.busy = false;
+  crew.edgeId = null;
+  crew.progress = 0;
+  renderGraph(state.graph, buildDefenseRenderOpts());
+}
+
+/* =========================================================
+   WAVE / DEBRIEF / RUN FLOW
+   ========================================================= */
+
+function startWave(waveNum){
+  state.wave = waveNum;
+  state.uptime = 100;
+  state.waveHadStrike = false;
+  state.waveHadDowntime = false;
+  state.waveTags = new Set();
+  setUptime(100);
+  $('stat-wave').textContent = waveNum;
+  $('stat-streak').textContent = state.cleanStreak;
+
+  const graph = buildWave(waveNum, Math.random);
+  layoutGraph(graph);
+  const analysis = analyzeFaultTolerance(graph);
+  state.graph = graph;
+  state.analysis = analysis;
+
+  startDiagramPhase();
+}
+
+function endWave(reason){
+  clearInterval(state.defense.interval);
+  state.run.wavesCompleted++;
+
+  const perfect = !state.waveHadDowntime && !state.waveHadStrike;
+  if (perfect){
+    state.cleanStreak++;
+    if (state.cleanStreak % 3 === 0 && state.maxCrews<4){
+      state.maxCrews++;
+    }
+  } else {
+    state.cleanStreak = 0;
+  }
+  state.run.bestStreak = Math.max(state.run.bestStreak, state.cleanStreak);
+  $('stat-streak').textContent = state.cleanStreak;
+  $('stat-score').textContent = Math.round(state.score);
+
+  showDebrief(reason, perfect);
+}
+
+function pickVocabTag(){
+  const priority = ['spof','cascade','destroyed','redundancy','faulttolerant'];
+  for (const p of priority) if (state.waveTags.has(p)) return p;
+  return 'faulttolerant';
+}
+
+function showDebrief(reason, perfect){
+  $('debrief-wave-num').textContent = 'WAVE '+state.wave;
+  let headline, narrative;
+  if (reason==='gridfailure'){
+    headline = 'Grid Failure';
+    narrative = "Uptime hit zero \u2014 too many sites went dark at once. The grid drops for a moment, but Command reroutes and the next wave begins.";
+  } else if (reason==='strikeout'){
+    headline = 'Grid Failure (Review Phase)';
+    narrative = 'Too many misreads on the diagram drained the grid before the storm even hit. Take a breath \u2014 the next network is coming up.';
+  } else if (perfect){
+    headline = 'Perfect Grid';
+    narrative = 'Zero downtime, zero misreads. Every failure this wave was either rerouted automatically or patched before it mattered.';
+  } else {
+    headline = 'Wave Survived';
+    narrative = 'The grid took some damage but held. Command stayed reachable by the time the storm passed.';
+  }
+  $('debrief-headline').textContent = headline;
+  $('debrief-narrative').textContent = narrative;
+
+  const acc = state.diagram.questions.length ? Math.round(state.diagram.correctCount/state.diagram.questions.length*100) : 0;
+  $('debrief-stats').innerHTML = `
+    <div class="stat-box"><div class="num">${acc}%</div><div class="lbl">Diagram Accuracy</div></div>
+    <div class="stat-box"><div class="num">${Math.round(state.defense.scoreGained)}</div><div class="lbl">Defense Points</div></div>
+    <div class="stat-box"><div class="num">${Math.round(state.uptime)}%</div><div class="lbl">Ending Uptime</div></div>
+    <div class="stat-box"><div class="num">${state.cleanStreak}</div><div class="lbl">Clean Streak</div></div>
+  `;
+
+  const tag = pickVocabTag();
+  const v = VOCAB[tag];
+  $('vocab-term').textContent = v.term;
+  $('vocab-def').textContent = v.def;
+  $('debrief-vocab').classList.remove('hidden');
+
+  $('debrief-modal').classList.remove('hidden');
+}
+
+function showSummary(){
+  const r = state.run;
+  const acc = r.totalQuestions ? Math.round(r.totalCorrect/r.totalQuestions*100) : 0;
+  $('summary-stats').innerHTML = `
+    <div class="stat-box"><div class="num">${Math.round(state.score)}</div><div class="lbl">Resilience Score</div></div>
+    <div class="stat-box"><div class="num">${r.wavesCompleted}</div><div class="lbl">Waves Survived</div></div>
+    <div class="stat-box"><div class="num">${acc}%</div><div class="lbl">Diagram Accuracy</div></div>
+    <div class="stat-box"><div class="num">${r.bestStreak}</div><div class="lbl">Best Clean Streak</div></div>
+  `;
+  let best = {score:0, waves:0};
+  try{ best = JSON.parse(localStorage.getItem('lifeline_highscore')||'{"score":0,"waves":0}'); }catch(e){}
+  let newBest = '';
+  if (Math.round(state.score) > best.score){
+    newBest = 'New best score!';
+    best.score = Math.round(state.score);
+  }
+  if (r.wavesCompleted > best.waves){
+    newBest += (newBest?' ':'') + 'New best wave count!';
+    best.waves = r.wavesCompleted;
+  }
+  try{ localStorage.setItem('lifeline_highscore', JSON.stringify(best)); }catch(e){}
+  $('summary-best').innerHTML = newBest
+    ? `<div class="newbest">\u2605 ${newBest}</div>`
+    : `<div class="instructions-text">Best run so far: ${best.score} pts across ${best.waves} waves.</div>`;
+  $('summary-modal').classList.remove('hidden');
+}
+
+/* =========================================================
+   WIRING / EVENT LISTENERS
+   ========================================================= */
+
+$('btn-start').addEventListener('click', ()=>{
+  resetRunState();
+  $('title-screen').classList.add('hidden');
+  $('game-screen').classList.remove('hidden');
+  startWave(1);
+});
+
+$('btn-manual').addEventListener('click', ()=> $('manual-modal').classList.remove('hidden'));
+$('btn-manual-2').addEventListener('click', ()=> $('manual-modal').classList.remove('hidden'));
+$('btn-manual-close').addEventListener('click', ()=> $('manual-modal').classList.add('hidden'));
+
+$('btn-clear-best').addEventListener('click', ()=>{
+  try{ localStorage.removeItem('lifeline_highscore'); }catch(e){}
+  alert('Best run cleared.');
+});
+
+$('btn-next-wave').addEventListener('click', ()=>{
+  $('debrief-modal').classList.add('hidden');
+  startWave(state.wave+1);
+});
+
+$('btn-end-shift').addEventListener('click', ()=>{
+  clearInterval(state.defense.interval);
+  clearInterval(state.diagram.timer);
+  showSummary();
+});
+
+$('btn-back-title').addEventListener('click', ()=>{
+  $('summary-modal').classList.add('hidden');
+  $('game-screen').classList.add('hidden');
+  $('title-screen').classList.remove('hidden');
+});
+
+$('btn-play-again').addEventListener('click', ()=>{
+  $('summary-modal').classList.add('hidden');
+  resetRunState();
+  startWave(1);
+});
+
+})();
+</script>
+</body>
+</html>
